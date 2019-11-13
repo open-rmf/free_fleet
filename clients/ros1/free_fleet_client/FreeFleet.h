@@ -30,6 +30,13 @@ typedef struct FreeFleetData_RobotMode
   uint32_t mode;
 } FreeFleetData_RobotMode;
 
+extern const dds_topic_descriptor_t FreeFleetData_RobotMode_desc;
+
+#define FreeFleetData_RobotMode__alloc() \
+((FreeFleetData_RobotMode*) dds_alloc (sizeof (FreeFleetData_RobotMode)));
+
+#define FreeFleetData_RobotMode_free(d,o) \
+dds_sample_free ((d), &FreeFleetData_RobotMode_desc, (o))
 
 
 typedef struct FreeFleetData_Location
@@ -42,6 +49,13 @@ typedef struct FreeFleetData_Location
   char * level_name;
 } FreeFleetData_Location;
 
+extern const dds_topic_descriptor_t FreeFleetData_Location_desc;
+
+#define FreeFleetData_Location__alloc() \
+((FreeFleetData_Location*) dds_alloc (sizeof (FreeFleetData_Location)));
+
+#define FreeFleetData_Location_free(d,o) \
+dds_sample_free ((d), &FreeFleetData_Location_desc, (o))
 
 typedef struct FreeFleetData_RobotState_path_seq
 {
@@ -68,6 +82,13 @@ typedef struct FreeFleetData_RobotState
   FreeFleetData_RobotState_path_seq path;
 } FreeFleetData_RobotState;
 
+extern const dds_topic_descriptor_t FreeFleetData_RobotState_desc;
+
+#define FreeFleetData_RobotState__alloc() \
+((FreeFleetData_RobotState*) dds_alloc (sizeof (FreeFleetData_RobotState)));
+
+#define FreeFleetData_RobotState_free(d,o) \
+dds_sample_free ((d), &FreeFleetData_RobotState_desc, (o))
 
 #ifdef __cplusplus
 }
