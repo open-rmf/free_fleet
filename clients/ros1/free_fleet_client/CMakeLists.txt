@@ -1,25 +1,32 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.0)
 project(free_fleet_client)
 
+include(ExternalProject)
+
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
-find_package(CycloneDDS REQUIRED PATHS /opt/ros/dashing)
+
+set(CYCLONE_INSTALL_PATH ${CMAKE_BINARY_DIR}/cyclonedds)
+
+ExternalProject_Add(cyclonedds
+  GIT_REPOSITORY https://github.com/eclipse-cyclonedds/cyclonedds.git
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CYCLONE_INSTALL_PATH} -DBUILD_IDLC=NO -DBUILD_SHARED_LIBS=FALSE
+)
 
 catkin_package()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  /opt/ros/dashing/include
+  ${CYCLONE_INSTALL_PATH}/include
 )
 
-link_directories(/opt/ros/dashing/lib)
+link_directories(${CYCLONE_INSTALL_PATH}/lib)
 
-idlc_generate(free_fleet_messages_lib FreeFleet.idl)
-
-add_executable(free_fleet_client free_fleet_client.cpp)
+add_executable(free_fleet_client free_fleet_client.cpp FreeFleet.c)
 target_link_libraries(
   free_fleet_client
-  free_fleet_messages_lib
   ddsc
+  crypto
+  ssl
   ${catkin_LIBRARIES})
 
 install(TARGETS free_fleet_client
