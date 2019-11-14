@@ -1,5 +1,6 @@
-This repository is under active development. Things will be quite unstable for a
-while. Please open an issue ticket on this repo if you have problems. Cheers.
+This repository is under active development. Things will be quite unstable
+for a while. Please open an issue ticket on this repo if you have problems.
+Cheers.
 
 # Overview
 Welcome to `free_fleet`, an open-source robot fleet management system.
