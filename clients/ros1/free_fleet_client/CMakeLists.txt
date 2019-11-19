@@ -29,6 +29,16 @@ target_link_libraries(
   ssl
   ${catkin_LIBRARIES})
 
-install(TARGETS free_fleet_client
+add_executable(test_client
+  src/main.cpp
+  src/Client.cpp
+  src/FreeFleet.c)
+target_link_libraries(test_client
+  ddsc
+  crypto
+  ssl
+  ${catkin_LIBRARIES})
+
+install(TARGETS free_fleet_client test_client
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
