@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>free_fleet_utils</name>
+  <version>0.0.1</version>
+  <description>Free Fleet utilites</description>
+
+  <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
+  <license>Apache 2.0</license>
+  <author email="aaron@openrobotics.org">Aaron Chong</author>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>

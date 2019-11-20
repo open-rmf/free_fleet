@@ -15,30 +15,47 @@
  *
  */
 
-#include "Client.hpp"
+#ifndef INCLUDE__FREE_FLEET_UTILS__PUBLISHER_HPP
+#define INCLUDE__FREE_FLEET_UTILS__PUBLISHER_HPP
+
+#include <iostream>
+#include <memory>
+
+#include <dds/dds.h>
 
 namespace free_fleet
 {
-
-std::shared_ptr<Client> Client::make(
-    const std::string& _fleet_name,
-    Duration _publish_frequency)
+namespace utilities
 {
-  std::shared_ptr<Client> client(new Client(_fleet_name, _publish_frequency));
-  return client;
-}
 
-Client::Client(
-    const std::string& _fleet_name,
-    Duration _publish_frequency)
-: fleet_name(_fleet_name),
-  publish_frequency(_publish_frequency)
+struct PublisherConfig
 {
-  
+  std::string topic_name;
+  dds_entity_t participant;
+  dds_topic_descriptor* descriptor;
+  dds_qos_t* qos;
+  dds_listener_t* listener;
+};
 
-}
+class Publisher
+{
+public:
 
-Client::~Client()
-{}
+  Publisher(const PublisherConfig& config);
 
+  ~Publisher();
+
+private:
+
+  dds_entity_t participant;
+
+  dds_entity_t topic;
+
+  dds_entity_t writer;
+
+};
+
+} // namespace utilities
 } // namespace free_fleet
+
+#endif // INCLUDE__FREE_FLEET_UTILS__PUBLISHER_HPP

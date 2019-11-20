@@ -15,30 +15,14 @@
  *
  */
 
-#include "Client.hpp"
+#include <free_fleet_utilities/Publisher.hpp>
 
 namespace free_fleet
 {
-
-std::shared_ptr<Client> Client::make(
-    const std::string& _fleet_name,
-    Duration _publish_frequency)
+namespace utilities
 {
-  std::shared_ptr<Client> client(new Client(_fleet_name, _publish_frequency));
-  return client;
-}
 
-Client::Client(
-    const std::string& _fleet_name,
-    Duration _publish_frequency)
-: fleet_name(_fleet_name),
-  publish_frequency(_publish_frequency)
-{
-  
 
-}
 
-Client::~Client()
-{}
-
+} // namespace utilities
 } // namespace free_fleet
