@@ -18,8 +18,11 @@
 #ifndef FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
 #define FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
 
+#include <mutex>
+#include <atomic>
 #include <chrono>
 #include <memory>
+#include <thread>
 
 #include <ros/ros.h>
 #include <dds/dds.h>
@@ -32,26 +35,66 @@ namespace free_fleet
 class Client
 {
 public:
-  
+
   using SharedPtr = std::shared_ptr<Client>;
   using Duration = std::chrono::steady_clock::duration;
 
+  /// Factory function that creates an instance of the Free Fleet DDS Client
+  ///
   static SharedPtr make(
       const std::string& fleet_name,
       Duration publish_frequency = std::chrono::milliseconds(500));
 
+  /// Desctructor
   ~Client();
+
+  /// Checks that the Client is ready to start
+  ///
+  bool is_ready();
+
+  /// Starts the Client with a starting state
+  ///
+  bool start(const FreeFleetData_RobotState& start_state);
+
+  /// Updates the Client with the newest RobotState, in order to be passed to
+  /// the server.
+  ///
+  void update_robot_state(const FreeFleetData_RobotState& state);
+  
+  struct PublishHandler
+  {
+    dds_entity_t topic;
+    dds_entity_t writer;
+  };
 
 private:
   std::string fleet_name;
   Duration publish_frequency;
+  std::atomic<bool> ready;
 
-  std::unique_ptr<dds_entity_t> participant;
-  std::unique_ptr<dds_entity_t> robot_state_topic;
+  dds_return_t return_code;
+  dds_entity_t participant;
+  dds_qos_t* qos;
+
+  std::unique_ptr<ros::Rate> rate;
+  PublishHandler robot_state_pub;
+  // more publishers and subscribers to come
+
+  std::mutex robot_state_mutex;
+  FreeFleetData_RobotState robot_state;
+
+  std::thread run_thread;
 
   Client(
       const std::string& fleet_name,
       Duration publish_frequency = std::chrono::milliseconds(500));
+
+  bool make_publish_handler(
+      const dds_topic_descriptor_t* descriptor,
+      const std::string& topic_name,
+      PublishHandler& publisher);
+
+  void run_thread_fn();
 
 };
 

@@ -29,7 +29,6 @@ Assuming we use a regular catkin workspace, we create symlinks to the various RO
 mkdir -p ~/client_ws/src
 cd ~/client_ws/src
 ln -s ~/free_fleet/clients/ros1/free_fleet_client free_fleet_client
-ln -s ~/free_fleet/utils free_fleet_utils
 ```
 
 We can then proceed to build the project, 
@@ -38,4 +37,11 @@ We can then proceed to build the project,
 cd ~/client_ws
 source /opt/ros/melodic/setup.bash
 catkin build
+```
+
+To check that everything is good to go, we can run an example,
+
+```
+source devel/setup.bash
+rosrun free_fleet_client test_client
 ```

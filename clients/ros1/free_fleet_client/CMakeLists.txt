@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(free_fleet_client)
 
+# -----------------------------------------------------------------------------
+
 include(ExternalProject)
 
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
@@ -14,31 +16,29 @@ ExternalProject_Add(cyclonedds
 
 catkin_package()
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-  ${CYCLONE_INSTALL_PATH}/include
-)
-
 link_directories(${CYCLONE_INSTALL_PATH}/lib)
 
-add_executable(free_fleet_client free_fleet_client.cpp FreeFleet.c)
-target_link_libraries(
-  free_fleet_client
-  ddsc
-  crypto
-  ssl
-  ${catkin_LIBRARIES})
+# -----------------------------------------------------------------------------
 
-add_executable(test_client
+add_executable(free_fleet_client
   src/main.cpp
   src/Client.cpp
-  src/FreeFleet.c)
-target_link_libraries(test_client
+  src/FreeFleet.c
+)
+target_link_libraries(free_fleet_client
   ddsc
   crypto
   ssl
-  ${catkin_LIBRARIES})
+  ${catkin_LIBRARIES}
+)
+target_include_directories(free_fleet_client
+  PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${CYCLONE_INSTALL_PATH}/include
+)
 
-install(TARGETS free_fleet_client test_client
+# -----------------------------------------------------------------------------
+
+install(TARGETS free_fleet_client
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
