@@ -5,7 +5,13 @@ project(free_fleet_client)
 
 include(ExternalProject)
 
-find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
+find_package(catkin REQUIRED COMPONENTS 
+  roscpp 
+  sensor_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
 
 set(CYCLONE_INSTALL_PATH ${CMAKE_BINARY_DIR}/cyclonedds)
 

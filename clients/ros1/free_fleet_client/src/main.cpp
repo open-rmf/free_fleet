@@ -20,6 +20,7 @@
 #include "Client.hpp"
 #include "FreeFleet.h"
 
+
 int main(int argc, char** argv)
 {
   // Initialize all the ROS 1 items
@@ -28,8 +29,9 @@ int main(int argc, char** argv)
   ROS_INFO("greetings from free_fleet_client");
 
   // Will most likely only need to define the fleet_name
-  std::string fleet_name = "fake_fleet";
-  auto client = free_fleet::Client::make(fleet_name);
+  free_fleet::ClientConfig config;
+  config.fleet_name = "fake_fleet";
+  auto client = free_fleet::Client::make(config);
 
   // Checks if the DDS client was created and is ready to roll
   if (!client || !client->is_ready())
@@ -38,8 +40,10 @@ int main(int argc, char** argv)
   // Create a starting state
   ros::Time t_start(ros::Time::now());
   FreeFleetData_RobotState msg;
-  msg.name = "robot_name";
-  msg.model = "robot_model";
+  std::string robot_name = "robot_name";
+  std::copy(robot_name.begin(), robot_name.end(), msg.name);
+  std::string robot_model = "robot_model";
+  std::copy(robot_model.begin(), robot_model.end(), msg.model);
   msg.mode.mode = FreeFleetData_RobotMode_Constants_MODE_IDLE;
   msg.battery_percent = 100.0;
   msg.location.sec = t_start.sec;
@@ -47,7 +51,8 @@ int main(int argc, char** argv)
   msg.location.x = 1.0;
   msg.location.y = 2.0;
   msg.location.yaw = 3.0;
-  msg.location.level_name = "L1";
+  std::string level_name = "L1";
+  msg.location.level_name = &level_name[0];
   msg.path._maximum = 0;
   msg.path._length = 0;
   msg.path._buffer = NULL;
@@ -57,20 +62,21 @@ int main(int argc, char** argv)
   if (!client->start(msg))
     return 1;
 
+  ros::spin();
   // Periodically updating the state to test the client
-  ros::Time t_prev_send(ros::Time::now());
-  while (ros::ok())
-  {
-    ros::Time t(ros::Time::now());
-    if ((t - t_prev_send).toSec() > 2.0)
-    {
-      t_prev_send = t;
-      msg.location.sec = t.sec;
-      msg.location.nanosec = t.nsec;
+  // ros::Time t_prev_send(ros::Time::now());
+  // while (ros::ok())
+  // {
+  //   ros::Time t(ros::Time::now());
+  //   if ((t - t_prev_send).toSec() > 2.0)
+  //   {
+  //     t_prev_send = t;
+  //     msg.location.sec = t.sec;
+  //     msg.location.nanosec = t.nsec;
 
-      client->update_robot_state(msg);
-    }
-  }
-  
+  //     client->update_robot_state(msg);
+  //   }
+  // }
+
   return 0;
 }
