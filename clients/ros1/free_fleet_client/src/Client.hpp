@@ -76,7 +76,7 @@ public:
   /// Starts the Client with a starting state, most importantly the robot name,
   /// robot model, level name
   ///
-  void start(const FreeFleetData_RobotState& start_state);
+  void start(FreeFleetData_RobotMode start_mode);
 
   /// Updates the Client with the newest RobotState, in order to be passed to
   /// the server.
@@ -88,7 +88,7 @@ public:
     dds_entity_t topic;
     dds_entity_t writer;
 
-    bool is_ok();
+    // bool is_ok();
   };
 
 private:
@@ -115,11 +115,16 @@ private:
   geometry_msgs::TransformStamped robot_transform_stamped;
 
   // create other subscribers here for updates
+  ros::Subscriber mode_sub;
   ros::Subscriber battery_percent_sub;
-  ros::Subscriber level_name_sub;
   ros::Subscriber path_sub;
+  ros::Subscriber level_name_sub;
 
   std::mutex robot_state_mutex;
+  bool mode_received;
+  bool battery_received;
+  bool path_received;
+  bool level_name_received;
   FreeFleetData_RobotState robot_state;
 
   PublishHandler robot_state_pub;

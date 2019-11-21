@@ -32,7 +32,11 @@ std::shared_ptr<Client> Client::make(const ClientConfig& _config)
 
 Client::Client(const ClientConfig& _config)
 : client_config(_config),
-  tf2_listener(tf2_buffer)
+  tf2_listener(tf2_buffer),
+  mode_received(false),
+  battery_received(false),
+  path_received(false),
+  level_name_received(false)
 {
   ready = false;
 
@@ -104,10 +108,11 @@ bool Client::make_publish_handler(
 
 bool Client::is_ready()
 {
-  return ready && robot_state_pub.is_ok();
+  // return ready && robot_state_pub.is_ok();
+  return ready;
 }
 
-void Client::start(const FreeFleetData_RobotState& _state)
+void Client::start(FreeFleetData_RobotMode _start_mode)
 {
   if (!is_ready())
   {
@@ -115,8 +120,7 @@ void Client::start(const FreeFleetData_RobotState& _state)
     return;
   }
 
-  robot_name = _state.name;
-  node.reset(new ros::NodeHandle(robot_name + "_node"));
+  node.reset(new ros::NodeHandle(client_config.robot_name + "_node"));
   rate.reset(new ros::Rate(1.0));
 
   battery_percent_sub = node->subscribe(
@@ -129,26 +133,27 @@ void Client::start(const FreeFleetData_RobotState& _state)
 
   {
     WriteLock robot_state_lock(robot_state_mutex);
-    robot_state = _state;
+    robot_state.mode = _start_mode;
   }
 
+  ROS_INFO("Client: starting run thread.");
   run_thread = std::thread(std::bind(&Client::run_thread_fn, this));
 }
 
-bool Client::PublishHandler::is_ok()
-{
-  uint32_t status;
-  dds_return_t rc = dds_get_status_changes(writer, &status);
-  if (rc != DDS_RETCODE_OK)
-  {
-    DDS_FATAL("dds_get_status_changes: %s\n", dds_strretcode(-rc));
-    return false;
-  }
+// bool Client::PublishHandler::is_ok()
+// {
+//   uint32_t status;
+//   dds_return_t rc = dds_get_status_changes(writer, &status);
+//   if (rc != DDS_RETCODE_OK)
+//   {
+//     ROS_FATAL("dds_get_status_changes: %s\n", dds_strretcode(-rc));
+//     return false;
+//   }
 
-  if (!(status & DDS_PUBLICATION_MATCHED_STATUS))
-    return false;
-  return true;
-}
+//   if (!(status & DDS_PUBLICATION_MATCHED_STATUS))
+//     return false;
+//   return true;
+// }
 
 bool Client::get_robot_transform()
 {
