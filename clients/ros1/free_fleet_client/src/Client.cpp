@@ -54,14 +54,17 @@ Client::Client(const ClientConfig& _config)
     return;
 
   // more publishers and subscribers to come
-
+  
   ready = true;
 }
 
 Client::~Client()
 {
   if (run_thread.joinable())
+  {
+    ROS_INFO("run_thread(): joined.");
     run_thread.join();
+  }
 
   dds_delete_qos(qos);
   return_code = dds_delete(participant);
@@ -104,10 +107,13 @@ bool Client::is_ready()
   return ready && robot_state_pub.is_ok();
 }
 
-bool Client::start(const FreeFleetData_RobotState& _state)
+void Client::start(const FreeFleetData_RobotState& _state)
 {
   if (!is_ready())
-    return false;
+  {
+    ROS_ERROR("Client: is not ready, can't start.");
+    return;
+  }
 
   robot_name = _state.name;
   node.reset(new ros::NodeHandle(robot_name + "_node"));
@@ -127,7 +133,6 @@ bool Client::start(const FreeFleetData_RobotState& _state)
   }
 
   run_thread = std::thread(std::bind(&Client::run_thread_fn, this));
-  return true;
 }
 
 bool Client::PublishHandler::is_ok()
@@ -224,6 +229,7 @@ float Client::get_yaw_from_transform(
 
 void Client::run_thread_fn()
 {
+  ROS_INFO("run_thread(): started.");
   while (node->ok())
   {
     ros::spinOnce();

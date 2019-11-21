@@ -41,6 +41,7 @@ namespace free_fleet
 struct ClientConfig
 {
   std::string fleet_name;
+  std::string robot_name;
   std::string map_frame = "/map";
   std::string target_frame = "/base_footprint";
   std::string battery_state_topic = "/battery_state";
@@ -75,7 +76,7 @@ public:
   /// Starts the Client with a starting state, most importantly the robot name,
   /// robot model, level name
   ///
-  bool start(const FreeFleetData_RobotState& start_state);
+  void start(const FreeFleetData_RobotState& start_state);
 
   /// Updates the Client with the newest RobotState, in order to be passed to
   /// the server.

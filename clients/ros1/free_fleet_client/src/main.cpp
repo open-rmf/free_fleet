@@ -31,11 +31,15 @@ int main(int argc, char** argv)
   // Will most likely only need to define the fleet_name
   free_fleet::ClientConfig config;
   config.fleet_name = "fake_fleet";
+  config.robot_name = "fake_robot";
   auto client = free_fleet::Client::make(config);
 
   // Checks if the DDS client was created and is ready to roll
-  if (!client || !client->is_ready())
-    return 1;
+  while(!client || !client->is_ready())
+  {
+    ROS_WARN("Client: is not ready yet.");
+    ros::Duration(1.0).sleep(); 
+  }
 
   // Create a starting state
   ros::Time t_start(ros::Time::now());
@@ -59,10 +63,14 @@ int main(int argc, char** argv)
   msg.path._release = true;  // not sure what this means
 
   // Start running the client with the starting state
-  if (!client->start(msg))
-    return 1;
+  // if (!client->is_ready() || !client->start(msg))
+  // {
+  //   ROS_ERROR("something went wrong when starting!");
+  //   return 1;
+  // }
 
-  ros::spin();
+  ROS_INFO("starting to spin.");
+  // ros::spin();
   // Periodically updating the state to test the client
   // ros::Time t_prev_send(ros::Time::now());
   // while (ros::ok())
@@ -78,5 +86,6 @@ int main(int argc, char** argv)
   //   }
   // }
 
+  ROS_INFO("closing down.");
   return 0;
 }
