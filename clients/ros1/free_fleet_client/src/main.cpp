@@ -52,21 +52,7 @@ int main(int argc, char** argv)
   auto client = free_fleet::Client::make(config);
 
   // Checks if the DDS client was created and is ready to roll
-  int try_iters = 10;
-  int curr_iter = 0;
-  bool is_ready = false;
-  while (!is_ready || curr_iter < try_iters)
-  {
-    is_ready = client->is_ready();
-    if (is_ready)
-      break;
-
-    ROS_WARN("Client: is not ready yet.");
-    ros::Duration(1.0).sleep(); 
-
-    ++curr_iter;
-  }
-  if (!is_ready)
+  if (!client->is_ready())
   {
     ROS_ERROR("Client: unable to initialize.");
     return 1;

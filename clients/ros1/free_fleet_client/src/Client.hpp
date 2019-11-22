@@ -30,6 +30,10 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 
+#include <move_base_msgs/MoveBaseGoal.h>
+#include <move_base_msgs/MoveBaseAction.h>
+#include <actionlib/client/simple_action_client.h>
+
 #include <free_fleet_msgs/RobotMode.h>
 #include <free_fleet_msgs/Location.h>
 #include <free_fleet_msgs/PathSequence.h>
@@ -56,6 +60,8 @@ struct ClientConfig
   std::string map_frame = "map";
   std::string target_frame = "base_footprint";
   
+  std::string move_base_action_name = "move_base";
+
   dds_domainid_t dds_domain = DDS_DOMAIN_DEFAULT;
   std::string dds_state_topic = "robot_state";
   std::string dds_command_topic = "robot_command";
@@ -99,11 +105,11 @@ public:
     dds_entity_t writer;
   };
 
-  struct DDSSubscriberHandler
+  struct DDSSubscribeHandler
   {
     dds_entity_t topic;
     dds_entity_t reader;
-  }
+  };
 
 private:
 
@@ -138,10 +144,17 @@ private:
 
   // --------------------------------------------------------------------------
   // Everything needed for receiving commands and passing it down
-
-  FreeFleetData_RobotState_path_seq path_command;
+  
+  void* location_command_samples[1];
+  dds_sample_info_t infos[1];
 
   FreeFleetData_Location location_command;
+
+  using MoveBaseClient = 
+      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
+  MoveBaseClient move_base_client;
+
+  DDSSubscribeHandler location_command_sub;
 
   // --------------------------------------------------------------------------
 
@@ -152,7 +165,12 @@ private:
   bool make_publish_handler(
       const dds_topic_descriptor_t* descriptor,
       const std::string& topic_name,
-      DDSPublishHandler& publisher);
+      DDSPublishHandler& publish_handler);
+
+  bool make_subscribe_handler(
+      const dds_topic_descriptor_t* descriptor,
+      const std::string& topic_name,
+      DDSSubscribeHandler& subscriber_handler);
 
   bool get_robot_transform();
 
@@ -166,13 +184,17 @@ private:
 
   bool publish_robot_state();
 
+  bool read_commands();
+
+  bool send_commands();
+
   float get_yaw_from_transform(
       const geometry_msgs::TransformStamped& transform_stamped) const; 
 
   void run_thread_fn();
 
   // --------------------------------------------------------------------------
-  // malloc and free related stuff here, maybe?
+  // some C memory related stuff
 
   char* dds_string_alloc_and_copy(const std::string& str);
 

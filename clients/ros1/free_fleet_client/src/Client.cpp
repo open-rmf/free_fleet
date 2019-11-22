@@ -32,7 +32,8 @@ std::shared_ptr<Client> Client::make(const ClientConfig& _config)
 
 Client::Client(const ClientConfig& _config)
 : client_config(_config),
-  tf2_listener(tf2_buffer)
+  tf2_listener(tf2_buffer),
+  move_base_client(_config.move_base_action_name, true)
 {
   ready = false;
 
@@ -53,8 +54,40 @@ Client::Client(const ClientConfig& _config)
       robot_state_pub))
     return;
 
+  if (!make_subscribe_handler(
+      &FreeFleetData_Location_desc,
+      client_config.fleet_name + "/location_command",
+      location_command_sub))
+    return;
+
+  location_command_samples[0] = FreeFleetData_Location__alloc();
+
   // more publishers and subscribers to come
-  
+
+  /// setting up the move base action client, wait for server
+  ros::Time t_0(ros::Time::now());
+  ros::Time t_now(ros::Time::now());
+  bool action_client_done = false;
+  while ((t_now - t_0).toSec() < 10.0)
+  {
+    action_client_done = move_base_client.waitForServer(ros::Duration(0.5));
+    if (action_client_done)
+      break;
+
+    ROS_WARN("waiting for connection with move base action server: %s",
+        client_config.move_base_action_name.c_str());
+
+    t_now = ros::Time::now();
+    ros::Duration(1.0).sleep(); 
+  }
+  if (!action_client_done)
+  {
+    ROS_ERROR("timed out waiting for action server: %s",
+        client_config.move_base_action_name.c_str());
+    ready = false;
+    return;
+  }
+
   ready = true;
 }
 
@@ -82,28 +115,52 @@ Client::~Client()
 bool Client::make_publish_handler(
     const dds_topic_descriptor_t* _descriptor,
     const std::string& _topic_name,
-    DDSPublishHandler& publish_handler)
+    DDSPublishHandler& _publish_handler)
 {
-  publish_handler.topic = dds_create_topic(
+  _publish_handler.topic = dds_create_topic(
       participant, _descriptor, _topic_name.c_str(), NULL, NULL);
-  if (publish_handler.topic < 0)
+  if (_publish_handler.topic < 0)
   {
     ROS_FATAL("couldn't create DDS topic: %s", 
-        dds_strretcode(-publish_handler.topic));
+        dds_strretcode(-_publish_handler.topic));
     return false;
   }
 
-  publish_handler.writer = dds_create_writer(
-      participant, publish_handler.topic, qos, NULL);
-
-  dds_return_t rc = 
-      dds_set_status_mask(
-          publish_handler.writer, DDS_PUBLICATION_MATCHED_STATUS);
-  if (rc != DDS_RETCODE_OK)
+  _publish_handler.writer = dds_create_writer(
+      participant, _publish_handler.topic, qos, NULL);
+  if (_publish_handler.writer < 0)
   {
-    DDS_FATAL("dds_set_status_mask: %s\n", dds_strretcode(-rc));
+    ROS_FATAL("couldn't create DDS writer: %s\n", 
+        dds_strretcode(-_publish_handler.writer));
     return false;
   }
+
+  return true;
+}
+
+bool Client::make_subscribe_handler(
+    const dds_topic_descriptor_t* _descriptor,
+    const std::string& _topic_name,
+    DDSSubscribeHandler& _subscribe_handler)
+{
+  _subscribe_handler.topic = dds_create_topic(
+      participant, _descriptor, _topic_name.c_str(), NULL, NULL);
+  if (_subscribe_handler.topic < 0)
+  {
+    ROS_FATAL("couldn't create DDS topic: %s",
+        dds_strretcode(-_subscribe_handler.topic));
+    return false;
+  }
+
+  _subscribe_handler.reader = dds_create_reader(
+      participant, _subscribe_handler.topic, qos, NULL);
+  if (_subscribe_handler.reader < 0)
+  {
+    ROS_FATAL("couldn't create DDS reader: %s", 
+        dds_strretcode(-_subscribe_handler.reader));
+    return false;
+  }
+  
   return true;
 }
 
@@ -241,6 +298,29 @@ bool Client::publish_robot_state()
   return true;
 }
 
+bool Client::read_commands()
+{
+  return_code = dds_read(
+      location_command_sub.reader, location_command_samples, infos, 1, 1);
+  if (return_code < 0)
+  {
+    ROS_FATAL("dds_read: %s", dds_strretcode(-return_code));
+    return false;
+  }
+
+  if ((return_code > 0) && (infos[0].valid_data))
+  {
+    // TODO: probably make an action or service call here
+    return true;
+  }
+  return false;
+}
+
+bool Client::send_commands()
+{
+  return false;
+}
+
 float Client::get_yaw_from_transform(
     const geometry_msgs::TransformStamped& _transform_stamped) const
 {
@@ -268,7 +348,8 @@ void Client::run_thread_fn()
     if (!get_robot_transform() || !publish_robot_state())
       continue;
 
-    // TODO: getting commands
+    if (!read_commands() || !send_commands())
+      continue;
   }
 }
 

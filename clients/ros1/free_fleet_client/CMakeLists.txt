@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   tf2_geometry_msgs
   free_fleet_msgs
+  actionlib
+  move_base_msgs
 )
 
 set(CYCLONE_INSTALL_PATH ${CMAKE_BINARY_DIR}/cyclonedds)
