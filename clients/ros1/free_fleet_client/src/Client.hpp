@@ -30,6 +30,10 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 
+#include <free_fleet_msgs/RobotMode.h>
+#include <free_fleet_msgs/Location.h>
+#include <free_fleet_msgs/PathSequence.h>
+
 #include <dds/dds.h>
 
 #include "FreeFleet.h"
@@ -42,14 +46,20 @@ struct ClientConfig
 {
   std::string fleet_name;
   std::string robot_name;
-  std::string map_frame = "/map";
-  std::string target_frame = "/base_footprint";
+  std::string robot_model;
+
+  std::string mode_topic = "/robot_mode";
   std::string battery_state_topic = "/battery_state";
   std::string level_name_topic = "/level_name";
   std::string path_topic = "/path";
+
+  std::string map_frame = "map";
+  std::string target_frame = "base_footprint";
   
+  std::string dds_state_topic = "robot_state";
+  std::string dds_command_topic = "robot_command";
   using Duration = std::chrono::steady_clock::duration;
-  Duration publish_frequency = std::chrono::milliseconds(500);
+  Duration publish_frequency = std::chrono::milliseconds(1000);
 };
 
 class Client
@@ -73,17 +83,16 @@ public:
   ///
   bool is_ready();
 
-  /// Starts the Client with a starting state, most importantly the robot name,
-  /// robot model, level name
-  ///
-  void start(FreeFleetData_RobotMode start_mode);
+  /// Starts the subscriptions to all the different topics and starts 
+  /// publishing the state over DDS to the server
+  void start();
 
   /// Updates the Client with the newest RobotState, in order to be passed to
   /// the server.
   ///
   void update_robot_state(const FreeFleetData_RobotState& state);
   
-  struct PublishHandler
+  struct DDSPublishHandler
   {
     dds_entity_t topic;
     dds_entity_t writer;
@@ -92,9 +101,9 @@ public:
   };
 
 private:
-  std::string fleet_name;
-  std::string robot_name;
-  Duration publish_frequency;
+
+  ClientConfig client_config;
+
   std::atomic<bool> ready;
 
   dds_return_t return_code;
@@ -107,9 +116,6 @@ private:
   // --------------------------------------------------------------------------
   // Everything needed for sending out robot states
 
-  // will need a better way to keep track of the level
-  ClientConfig client_config;
-
   tf2_ros::Buffer tf2_buffer;
   tf2_ros::TransformListener tf2_listener;
   geometry_msgs::TransformStamped robot_transform_stamped;
@@ -117,20 +123,20 @@ private:
   // create other subscribers here for updates
   ros::Subscriber mode_sub;
   ros::Subscriber battery_percent_sub;
-  ros::Subscriber path_sub;
   ros::Subscriber level_name_sub;
+  ros::Subscriber path_sub;
 
   std::mutex robot_state_mutex;
-  bool mode_received;
-  bool battery_received;
-  bool path_received;
-  bool level_name_received;
   FreeFleetData_RobotState robot_state;
 
-  PublishHandler robot_state_pub;
+  DDSPublishHandler robot_state_pub;
 
   // --------------------------------------------------------------------------
   // Everything needed for receiving commands and passing it down
+
+  FreeFleetData_RobotState_path_seq path_command;
+
+  FreeFleetData_Location location_command;
 
   // --------------------------------------------------------------------------
 
@@ -141,13 +147,17 @@ private:
   bool make_publish_handler(
       const dds_topic_descriptor_t* descriptor,
       const std::string& topic_name,
-      PublishHandler& publisher);
+      DDSPublishHandler& publisher);
 
   bool get_robot_transform();
+
+  void mode_callback_fn(const free_fleet_msgs::RobotMode& msg);
 
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
 
   void level_name_callback_fn(const std_msgs::String& msg);
+
+  void path_callback_fn(const free_fleet_msgs::PathSequence& msg);
 
   bool publish_robot_state();
 
@@ -155,6 +165,11 @@ private:
       const geometry_msgs::TransformStamped& transform_stamped) const; 
 
   void run_thread_fn();
+
+  // --------------------------------------------------------------------------
+  // malloc and free related stuff here, maybe?
+
+  char* dds_string_alloc_and_copy(const std::string& str);
 
 };
 

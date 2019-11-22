@@ -32,11 +32,7 @@ std::shared_ptr<Client> Client::make(const ClientConfig& _config)
 
 Client::Client(const ClientConfig& _config)
 : client_config(_config),
-  tf2_listener(tf2_buffer),
-  mode_received(false),
-  battery_received(false),
-  path_received(false),
-  level_name_received(false)
+  tf2_listener(tf2_buffer)
 {
   ready = false;
 
@@ -66,8 +62,8 @@ Client::~Client()
 {
   if (run_thread.joinable())
   {
-    ROS_INFO("run_thread(): joined.");
     run_thread.join();
+    ROS_INFO("Client: run_thread joined.");
   }
 
   dds_delete_qos(qos);
@@ -76,12 +72,20 @@ Client::~Client()
   {
     ROS_FATAL("dds_delete: %s", dds_strretcode(-return_code));
   }
+
+  dds_string_free(robot_state.name);
+  dds_string_free(robot_state.model);
+  for (size_t i = 0; i < robot_state.path._length; ++i)
+  {
+    dds_string_free(robot_state.path._buffer[i].level_name);
+  }
+  dds_free(robot_state.path._buffer);
 }
 
 bool Client::make_publish_handler(
     const dds_topic_descriptor_t* _descriptor,
     const std::string& _topic_name,
-    PublishHandler& publish_handler)
+    DDSPublishHandler& publish_handler)
 {
   publish_handler.topic = dds_create_topic(
       participant, _descriptor, _topic_name.c_str(), NULL, NULL);
@@ -108,11 +112,14 @@ bool Client::make_publish_handler(
 
 bool Client::is_ready()
 {
-  // return ready && robot_state_pub.is_ok();
   return ready;
+
+  /// The call below also checks if the subscriber is connected, 
+  /// ignore for now, just blast UDP.
+  // return ready && robot_state_pub.is_ok();
 }
 
-void Client::start(FreeFleetData_RobotMode _start_mode)
+void Client::start()
 {
   if (!is_ready())
   {
@@ -123,6 +130,10 @@ void Client::start(FreeFleetData_RobotMode _start_mode)
   node.reset(new ros::NodeHandle(client_config.robot_name + "_node"));
   rate.reset(new ros::Rate(1.0));
 
+  mode_sub = node->subscribe(
+      client_config.mode_topic, 1,
+      &Client::mode_callback_fn, this);
+
   battery_percent_sub = node->subscribe(
       client_config.battery_state_topic, 1,
       &Client::battery_state_callback_fn, this);
@@ -131,16 +142,31 @@ void Client::start(FreeFleetData_RobotMode _start_mode)
       client_config.level_name_topic, 1, 
       &Client::level_name_callback_fn, this);
 
+  path_sub = node->subscribe(
+      client_config.path_topic, 1, 
+      &Client::path_callback_fn, this);
+
+  FreeFleetData_RobotMode starting_mode
+      {FreeFleetData_RobotMode_Constants_MODE_IDLE};
   {
     WriteLock robot_state_lock(robot_state_mutex);
-    robot_state.mode = _start_mode;
+    
+    dds_string_free(robot_state.name);
+    robot_state.name = dds_string_alloc_and_copy(client_config.robot_name);
+
+    dds_string_free(robot_state.model);
+    robot_state.model = dds_string_alloc_and_copy(client_config.robot_model);
+
+    robot_state.mode = starting_mode;
   }
 
   ROS_INFO("Client: starting run thread.");
   run_thread = std::thread(std::bind(&Client::run_thread_fn, this));
 }
 
-// bool Client::PublishHandler::is_ok()
+/// This function calls to check if the DDS subscriber is ready, 
+/// ignoring this for now, maybe next time.
+// bool Client::DDSPublishHandler::is_ok()
 // {
 //   uint32_t status;
 //   dds_return_t rc = dds_get_status_changes(writer, &status);
@@ -177,6 +203,14 @@ bool Client::get_robot_transform()
   return true;
 }
 
+void Client::mode_callback_fn(const free_fleet_msgs::RobotMode& _msg)
+{
+  FreeFleetData_RobotMode mode{_msg.mode};
+
+  WriteLock robot_state_lock(robot_state_mutex);
+  robot_state.mode = mode;
+}
+
 void Client::battery_state_callback_fn(const sensor_msgs::BatteryState& _msg)
 {
   WriteLock robot_state_lock(robot_state_mutex);
@@ -185,22 +219,38 @@ void Client::battery_state_callback_fn(const sensor_msgs::BatteryState& _msg)
 
 void Client::level_name_callback_fn(const std_msgs::String& _msg)
 {
-  std::string prev_level_name;
-
-  {
-    ReadLock robot_state_lock(robot_state_mutex);
-    prev_level_name = robot_state.location.level_name;
-  }
-
-  // if its the same level, or a new transform hasn't come in, we ignore
-  if (_msg.data == prev_level_name || !get_robot_transform())
-    return;
-
   WriteLock robot_state_lock(robot_state_mutex);
-  std::copy(
-      _msg.data.begin(), 
-      _msg.data.end(), 
-      robot_state.location.level_name);
+  dds_string_free(robot_state.location.level_name);
+  robot_state.location.level_name = dds_string_alloc_and_copy(_msg.data);
+}
+
+void Client::path_callback_fn(const free_fleet_msgs::PathSequence& _msg)
+{
+  WriteLock robot_state_lock(robot_state_mutex);
+
+  // free everything!
+  for (size_t i = 0; i < robot_state.path._length; ++i)
+  {
+    dds_string_free(robot_state.path._buffer[i].level_name);
+  }
+  dds_free(robot_state.path._buffer);
+
+  size_t path_size = _msg.path.size();
+  robot_state.path._maximum = static_cast<uint32_t>(path_size);
+  robot_state.path._length = static_cast<uint32_t>(path_size);
+  robot_state.path._buffer = (FreeFleetData_Location*)dds_alloc(path_size);
+  robot_state.path._release = false;
+
+  for (size_t i = 0; i < path_size; ++i)
+  {
+    robot_state.path._buffer[i].sec = _msg.path[i].time.sec;
+    robot_state.path._buffer[i].nanosec = _msg.path[i].time.nsec;
+    robot_state.path._buffer[i].x = _msg.path[i].x;
+    robot_state.path._buffer[i].y = _msg.path[i].y;
+    robot_state.path._buffer[i].yaw = _msg.path[i].yaw;
+    robot_state.path._buffer[i].level_name = 
+        dds_string_alloc_and_copy(_msg.path[i].level_name);
+  }
 }
 
 bool Client::publish_robot_state()
@@ -225,6 +275,7 @@ float Client::get_yaw_from_transform(
   fromMsg(_transform_stamped.transform.rotation, tf2_quat);
   tf2::Matrix3x3 tf2_mat(tf2_quat);
 
+  // ignores pitch and roll, but the api call is so nice though
   double yaw;
   double pitch;
   double roll;
@@ -234,23 +285,28 @@ float Client::get_yaw_from_transform(
 
 void Client::run_thread_fn()
 {
-  ROS_INFO("run_thread(): started.");
   while (node->ok())
   {
+    rate->sleep();
     ros::spinOnce();
 
-    // Update the robot's current known pose
-    if (!get_robot_transform())
-      continue;
-    
-    // Publish the updated robot state
-    if (!publish_robot_state())
+    /// Update the robot's current known pose and tries to publish the state
+    /// over DDS
+    if (!get_robot_transform() || !publish_robot_state())
       continue;
 
     // TODO: getting commands
-
-    rate->sleep();
   }
+}
+
+char* Client::dds_string_alloc_and_copy(const std::string& _str)
+{
+  char* ptr = dds_string_alloc(_str.length());
+  for (size_t i = 0; i < _str.length(); ++i)
+  {
+    ptr[i] = _str[i];
+  }
+  return ptr;
 }
 
 } // namespace free_fleet
