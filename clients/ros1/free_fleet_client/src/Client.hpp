@@ -28,6 +28,7 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/BatteryState.h>
 #include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
 
 #include <move_base_msgs/MoveBaseGoal.h>
@@ -148,7 +149,7 @@ private:
   void* location_command_samples[1];
   dds_sample_info_t infos[1];
 
-  FreeFleetData_Location location_command;
+  move_base_msgs::MoveBaseGoal location_command_goal;
 
   using MoveBaseClient = 
       actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
@@ -190,6 +191,8 @@ private:
 
   float get_yaw_from_transform(
       const geometry_msgs::TransformStamped& transform_stamped) const; 
+
+  geometry_msgs::Quaternion get_quat_from_yaw(float yaw) const;
 
   void run_thread_fn();
 

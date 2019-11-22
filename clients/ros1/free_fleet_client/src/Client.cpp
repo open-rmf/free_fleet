@@ -110,6 +110,8 @@ Client::~Client()
   dds_string_free(robot_state.name);
   dds_string_free(robot_state.model);
   FreeFleetData_Location_free(robot_state.path._buffer, DDS_FREE_ALL);
+
+  FreeFleetData_Location_free(location_command_samples[0], DDS_FREE_ALL);
 }
 
 bool Client::make_publish_handler(
@@ -310,15 +312,31 @@ bool Client::read_commands()
 
   if ((return_code > 0) && (infos[0].valid_data))
   {
-    // TODO: probably make an action or service call here
-    return true;
+    FreeFleetData_Location* msg;
+    msg = (FreeFleetData_Location*)location_command_samples[0];
+
+    location_command_goal.target_pose.header.frame_id = 
+        client_config.map_frame;
+    location_command_goal.target_pose.header.stamp.sec = msg->sec;
+    location_command_goal.target_pose.header.stamp.nsec = msg->nanosec;
+    location_command_goal.target_pose.pose.position.x = msg->x;
+    location_command_goal.target_pose.pose.position.y = msg->y;
+    location_command_goal.target_pose.pose.position.z = 0.0;
+    location_command_goal.target_pose.pose.orientation = 
+        get_quat_from_yaw(msg->yaw);
+
+    return send_commands();
   }
   return false;
 }
 
 bool Client::send_commands()
 {
-  return false;
+  if (!move_base_client.isServerConnected())
+    return false;
+
+  move_base_client.sendGoal(location_command_goal);
+  return true;
 }
 
 float Client::get_yaw_from_transform(
@@ -334,6 +352,16 @@ float Client::get_yaw_from_transform(
   double roll;
   tf2_mat.getEulerYPR(yaw, pitch, roll);
   return yaw;
+}
+
+geometry_msgs::Quaternion Client::get_quat_from_yaw(float _yaw) const
+{
+  tf2::Quaternion quat_tf;
+  quat_tf.setRPY(0.0, 0.0, _yaw);
+  quat_tf.normalize();
+
+  geometry_msgs::Quaternion quat = tf2::toMsg(quat_tf);
+  return quat;
 }
 
 void Client::run_thread_fn()

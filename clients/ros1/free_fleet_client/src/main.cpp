@@ -31,11 +31,15 @@
 /// * location comes from listening to transforms
 /// * battery from listening to a std_msgs/Float32
 /// * mode will be using free_fleet_msgs/RobotMode
-/// * path ???, will be ignored for now
+/// * path will be using free_fleet_msgs/PathSequence
 /// * level name will be a std_msgs/String
-///
-/// TODO: need to sync up the level topic with the transform of the robot, one
+/// * calling robot commands using move_base_msgs/MoveBaseAction
+/// 
+/// TODO: 
+/// * need to sync up the level topic with the transform of the robot, one
 /// might be published after the other, the server might catch fire then
+/// * handle losing connection with action server
+///
 
 int main(int argc, char** argv)
 {
