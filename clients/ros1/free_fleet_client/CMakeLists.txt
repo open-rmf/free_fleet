@@ -46,6 +46,24 @@ target_include_directories(free_fleet_client
 
 # -----------------------------------------------------------------------------
 
-install(TARGETS free_fleet_client
+add_executable(test_server
+  src/test_server.cpp
+  src/FreeFleet.c
+)
+target_link_libraries(test_server
+  ddsc
+  crypto
+  ssl
+  ${catkin_LIBRARIES}
+)
+target_include_directories(test_server
+  PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${CYCLONE_INSTALL_PATH}/include
+)
+
+# -----------------------------------------------------------------------------
+
+install(TARGETS free_fleet_client test_server
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

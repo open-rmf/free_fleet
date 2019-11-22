@@ -56,6 +56,7 @@ struct ClientConfig
   std::string map_frame = "map";
   std::string target_frame = "base_footprint";
   
+  dds_domainid_t dds_domain = DDS_DOMAIN_DEFAULT;
   std::string dds_state_topic = "robot_state";
   std::string dds_command_topic = "robot_command";
   using Duration = std::chrono::steady_clock::duration;
@@ -96,9 +97,13 @@ public:
   {
     dds_entity_t topic;
     dds_entity_t writer;
-
-    // bool is_ok();
   };
+
+  struct DDSSubscriberHandler
+  {
+    dds_entity_t topic;
+    dds_entity_t reader;
+  }
 
 private:
 

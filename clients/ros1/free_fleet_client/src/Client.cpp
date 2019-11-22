@@ -36,7 +36,7 @@ Client::Client(const ClientConfig& _config)
 {
   ready = false;
 
-  participant = dds_create_participant(0, NULL, NULL);
+  participant = dds_create_participant(client_config.dds_domain, NULL, NULL);
   if (participant < 0)
   {
     ROS_FATAL("couldn't create DDS participate: %s", 
@@ -73,13 +73,10 @@ Client::~Client()
     ROS_FATAL("dds_delete: %s", dds_strretcode(-return_code));
   }
 
+  WriteLock robot_state_lock(robot_state_mutex);
   dds_string_free(robot_state.name);
   dds_string_free(robot_state.model);
-  for (size_t i = 0; i < robot_state.path._length; ++i)
-  {
-    dds_string_free(robot_state.path._buffer[i].level_name);
-  }
-  dds_free(robot_state.path._buffer);
+  FreeFleetData_Location_free(robot_state.path._buffer, DDS_FREE_ALL);
 }
 
 bool Client::make_publish_handler(
@@ -113,10 +110,6 @@ bool Client::make_publish_handler(
 bool Client::is_ready()
 {
   return ready;
-
-  /// The call below also checks if the subscriber is connected, 
-  /// ignore for now, just blast UDP.
-  // return ready && robot_state_pub.is_ok();
 }
 
 void Client::start()
@@ -163,23 +156,6 @@ void Client::start()
   ROS_INFO("Client: starting run thread.");
   run_thread = std::thread(std::bind(&Client::run_thread_fn, this));
 }
-
-/// This function calls to check if the DDS subscriber is ready, 
-/// ignoring this for now, maybe next time.
-// bool Client::DDSPublishHandler::is_ok()
-// {
-//   uint32_t status;
-//   dds_return_t rc = dds_get_status_changes(writer, &status);
-//   if (rc != DDS_RETCODE_OK)
-//   {
-//     ROS_FATAL("dds_get_status_changes: %s\n", dds_strretcode(-rc));
-//     return false;
-//   }
-
-//   if (!(status & DDS_PUBLICATION_MATCHED_STATUS))
-//     return false;
-//   return true;
-// }
 
 bool Client::get_robot_transform()
 {
@@ -228,16 +204,13 @@ void Client::path_callback_fn(const free_fleet_msgs::PathSequence& _msg)
 {
   WriteLock robot_state_lock(robot_state_mutex);
 
-  // free everything!
-  for (size_t i = 0; i < robot_state.path._length; ++i)
-  {
-    dds_string_free(robot_state.path._buffer[i].level_name);
-  }
-  dds_free(robot_state.path._buffer);
+  FreeFleetData_Location_free(robot_state.path._buffer, DDS_FREE_ALL);
 
   size_t path_size = _msg.path.size();
   robot_state.path._maximum = static_cast<uint32_t>(path_size);
   robot_state.path._length = static_cast<uint32_t>(path_size);
+  robot_state.path._buffer = 
+      FreeFleetData_RobotState_path_seq_allocbuf(path_size);
   robot_state.path._buffer = (FreeFleetData_Location*)dds_alloc(path_size);
   robot_state.path._release = false;
 

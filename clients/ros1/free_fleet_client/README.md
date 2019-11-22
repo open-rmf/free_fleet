@@ -37,5 +37,6 @@ rosrun free_fleet_client free_fleet_client
 To check that the messages are really sent over DDS,
 
 ```
-TODO
+# Terminal D
+rosrun free_fleet_client test_server
 ```
