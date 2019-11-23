@@ -137,6 +137,7 @@ bool Client::make_publish_handler(
     return false;
   }
 
+  ROS_INFO("created a DDS writer with topic: %s", _topic_name.c_str());
   return true;
 }
 
@@ -162,7 +163,8 @@ bool Client::make_subscribe_handler(
         dds_strretcode(-_subscribe_handler.reader));
     return false;
   }
-  
+
+  ROS_INFO("created a DDS reader with topic: %s", _topic_name.c_str());
   return true;
 }
 
@@ -310,6 +312,12 @@ bool Client::read_commands()
     return false;
   }
 
+  if (return_code > 0)
+    ROS_INFO("return code > 0");
+
+  if (infos[0].valid_data) 
+    ROS_INFO("incoming message data is valid");
+
   if ((return_code > 0) && (infos[0].valid_data))
   {
     FreeFleetData_Location* msg;
@@ -324,6 +332,8 @@ bool Client::read_commands()
     location_command_goal.target_pose.pose.position.z = 0.0;
     location_command_goal.target_pose.pose.orientation = 
         get_quat_from_yaw(msg->yaw);
+
+    ROS_INFO("received something");
 
     return send_commands();
   }
@@ -373,11 +383,13 @@ void Client::run_thread_fn()
 
     /// Update the robot's current known pose and tries to publish the state
     /// over DDS
-    if (!get_robot_transform() || !publish_robot_state())
-      continue;
+    // if (get_robot_transform())
+    //   if (!publish_robot_state())
+    //     ROS_WARN("had issues publishing robot state over DDS");
 
-    if (!read_commands() || !send_commands())
-      continue;
+    if (read_commands())
+      if (!send_commands())
+        ROS_WARN("had issues calling the move base action server");
   }
 }
 

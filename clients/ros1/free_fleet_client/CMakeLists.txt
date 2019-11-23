@@ -32,7 +32,7 @@ link_directories(${CYCLONE_INSTALL_PATH}/lib)
 add_executable(free_fleet_client
   src/main.cpp
   src/Client.cpp
-  src/FreeFleet.c
+  src/free_fleet/FreeFleet.c
 )
 target_link_libraries(free_fleet_client
   ddsc
@@ -48,17 +48,17 @@ target_include_directories(free_fleet_client
 
 # -----------------------------------------------------------------------------
 
-add_executable(test_server
-  src/test_server.cpp
-  src/FreeFleet.c
+add_executable(test_sub_server
+  src/tests/test_sub_server.cpp
+  src/free_fleet/FreeFleet.c
 )
-target_link_libraries(test_server
+target_link_libraries(test_sub_server
   ddsc
   crypto
   ssl
   ${catkin_LIBRARIES}
 )
-target_include_directories(test_server
+target_include_directories(test_sub_server
   PRIVATE
     ${catkin_INCLUDE_DIRS}
     ${CYCLONE_INSTALL_PATH}/include
@@ -66,6 +66,37 @@ target_include_directories(test_server
 
 # -----------------------------------------------------------------------------
 
-install(TARGETS free_fleet_client test_server
+add_executable(test_action_server
+  src/tests/test_action_server.cpp
+)
+target_link_libraries(test_action_server
+  ${catkin_LIBRARIES}
+)
+target_include_directories(test_action_server
+  PRIVATE
+    ${catkin_INCLUDE_DIRS}
+)
+
+# -----------------------------------------------------------------------------
+
+add_executable(test_pub_location_command
+  src/tests/test_pub_location_command.cpp
+  src/free_fleet/FreeFleet.c
+)
+target_link_libraries(test_pub_location_command
+  ddsc
+  crypto
+  ssl
+  ${catkin_LIBRARIES}
+)
+target_include_directories(test_pub_location_command
+  PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${CYCLONE_INSTALL_PATH}/include
+)
+
+# -----------------------------------------------------------------------------
+
+install(TARGETS free_fleet_client test_sub_server test_action_server
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

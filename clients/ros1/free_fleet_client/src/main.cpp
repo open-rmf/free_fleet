@@ -18,7 +18,7 @@
 #include <iostream>
 
 #include "Client.hpp"
-#include "FreeFleet.h"
+#include "free_fleet/FreeFleet.h"
 
 /// We should expect no loss in communications between the robot stack and this
 /// node, as they would normally be running on the same computer.
