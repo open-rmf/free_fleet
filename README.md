@@ -14,34 +14,6 @@ uses DDS implementations packaged as part of the ROS 2 project.
 The build scripts assume that ROS 2 Dashing is installed to the canonical
 location in `/opt/ros/dashing`
 
-# Building the ROS1 Client
+# Documentation and notes
 
-We clone the repository,
-
-```
-cd
-git clone https://github.com/osrf/free_fleet.git
-```
-
-Assuming we use a regular catkin workspace, we create symlinks to the various ROS 1 packages,
-
-```
-mkdir -p ~/client_ws/src
-cd ~/client_ws/src
-ln -s ~/free_fleet/clients/ros1/free_fleet_client free_fleet_client
-```
-
-We can then proceed to build the project, 
-
-```
-cd ~/client_ws
-source /opt/ros/melodic/setup.bash
-catkin build
-```
-
-To check that everything is good to go, we can run an example,
-
-```
-source devel/setup.bash
-rosrun free_fleet_client test_client
-```
+* [Building the ROS 1 Client](clients/ros1/README.md)
