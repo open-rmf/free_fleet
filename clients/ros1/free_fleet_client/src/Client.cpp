@@ -45,19 +45,44 @@ Client::Client(const ClientConfig& _config)
     return;
   }
 
+  /// -------------------------------------------------------------------------
+  /// create all the dds stuff needed for sending out the robot states
+
+  // std::string state_dds_topic_name = 
+  //     client_config.fleet_name + "/"+ client_config.dds_state_topic;
+  // state_topic = dds_create_topic(
+  //     participant, &FreeFleetData_RobotState_desc, 
+  //     state_dds_topic_name.c_str(), NULL, NULL);
+  // if (state_topic < 0)
+  // {
+  //   ROS_FATAL("dds_create_topic: %s\n", dds_strretcode(-state_topic));
+  //   return;
+  // }
+
+  // dds_qos_t* state_qos = dds_create_qos();
+  // dds_qset_reliability(state_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
+  // state_writer = dds_create_writer(
+  //     participant, state_topic, state_qos, NULL);
+  // if (state_writer < 0)
+  // {
+  //   ROS_FATAL("dds_create_writer: %s\n", dds_strretcode(-state_writer));
+  //   return;
+  // }
+  // dds_delete_qos(state_qos);
+
+  /// -------------------------------------------------------------------------
+  /// create all the dds stuff needed for getting commands
+
+  std::string command_dds_topic_name = 
+      client_config.fleet_name + "/" + client_config.dds_command_topic;
   command_topic = dds_create_topic(
-      participant, &FreeFleetData_Location_desc, "test_command", NULL, NULL);
+      participant, &FreeFleetData_Location_desc, 
+      "test_command", NULL, NULL);
   if (command_topic < 0)
   {
     ROS_FATAL("dds_create_topic: %s\n", dds_strretcode(-command_topic));
     return;
   }
-
-  /// -------------------------------------------------------------------------
-  /// create all the dds stuff needed for sending out the robot states
-
-  /// -------------------------------------------------------------------------
-  /// create all the dds stuff needed for getting commands
 
   dds_qos_t* command_qos = dds_create_qos();
   dds_qset_reliability(command_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
@@ -114,77 +139,13 @@ Client::~Client()
     ROS_FATAL("dds_delete: %s", dds_strretcode(-return_code));
   }
 
-  // WriteLock robot_state_lock(robot_state_mutex);
-  // dds_string_free(robot_state.name);
-  // dds_string_free(robot_state.model);
-  // FreeFleetData_Location_free(robot_state.path._buffer, DDS_FREE_ALL);
+  WriteLock robot_state_lock(robot_state_mutex);
+  dds_string_free(robot_state.name);
+  dds_string_free(robot_state.model);
+  FreeFleetData_Location_free(robot_state.path._buffer, DDS_FREE_ALL);
 
   FreeFleetData_Location_free(command_samples[0], DDS_FREE_ALL);
 }
-
-// bool Client::make_publish_handler(
-//     const dds_topic_descriptor_t* _descriptor,
-//     const std::string& _topic_name,
-//     DDSPublishHandler& _publish_handler)
-// {
-//   _publish_handler.topic = dds_create_topic(
-//       participant, _descriptor, _topic_name.c_str(), NULL, NULL);
-//   if (_publish_handler.topic < 0)
-//   {
-//     ROS_FATAL("couldn't create DDS topic: %s", 
-//         dds_strretcode(-_publish_handler.topic));
-//     return false;
-//   }
-
-//   dds_qos_t* qos;
-//   qos = dds_create_qos();
-//   dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-//   _publish_handler.writer = dds_create_writer(
-//       participant, _publish_handler.topic, qos, NULL);
-//   dds_delete_qos(qos);
-
-//   if (_publish_handler.writer < 0)
-//   {
-//     ROS_FATAL("couldn't create DDS writer: %s\n", 
-//         dds_strretcode(-_publish_handler.writer));
-//     return false;
-//   }
-
-//   ROS_INFO("created a DDS writer with topic: %s", _topic_name.c_str());
-//   return true;
-// }
-
-// bool Client::make_subscribe_handler(
-//     const dds_topic_descriptor_t* _descriptor,
-//     const std::string& _topic_name,
-//     DDSSubscribeHandler& _subscribe_handler)
-// {
-//   _subscribe_handler.topic = dds_create_topic(
-//       participant, _descriptor, _topic_name.c_str(), NULL, NULL);
-//   if (_subscribe_handler.topic < 0)
-//   {
-//     ROS_FATAL("couldn't create DDS topic: %s",
-//         dds_strretcode(-_subscribe_handler.topic));
-//     return false;
-//   }
-
-//   dds_qos_t* qos;
-//   qos = dds_create_qos();
-//   dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-//   _subscribe_handler.reader = dds_create_reader(
-//       participant, _subscribe_handler.topic, qos, NULL);
-//   dds_delete_qos(qos);
-
-//   if (_subscribe_handler.reader < 0)
-//   {
-//     ROS_FATAL("couldn't create DDS reader: %s", 
-//         dds_strretcode(-_subscribe_handler.reader));
-//     return false;
-//   }
-
-//   ROS_INFO("created a DDS reader with topic: %s", _topic_name.c_str());
-//   return true;
-// }
 
 bool Client::is_ready()
 {
@@ -309,31 +270,29 @@ bool Client::get_robot_transform()
 void Client::publish_robot_state()
 {
   ReadLock robot_state_lock(robot_state_mutex);
-  return_code = dds_write(robot_state_pub.writer, &robot_state);
+  return_code = dds_write(state_writer, &robot_state);
 
   ROS_INFO("dds publishing: msg sec %d", robot_state.location.sec);
 
   if (return_code != DDS_RETCODE_OK)
-  {
     ROS_ERROR("dds write failed: %s", dds_strretcode(-return_code));
-    return false;
-  }
-  return true;
 }
 
 bool Client::read_commands()
 {
+  ROS_INFO("read_commands(): called.");
+
   return_code = dds_take(
       command_reader, command_samples, command_infos, 1, 1);
   if (return_code < 0)
   {
-    ROS_WARN("dds_read: %s\n", dds_strretcode(-return_code));
+    ROS_WARN("dds_take: %s\n", dds_strretcode(-return_code));
     return false;
   }
 
   if ((return_code > 0) && (command_infos[0].valid_data))
   {
-    command_msg = (FreeFleetData_Location*) command_samples[0];
+    command_msg = (FreeFleetData_Location*)command_samples[0];
 
     location_command_goal.target_pose.header.frame_id = 
         client_config.map_frame;
@@ -397,8 +356,8 @@ void Client::run_thread_fn()
 
     /// Update the robot's current known pose and tries to publish the state
     /// over DDS
-    if (get_robot_transform())
-      publish_robot_state();
+    // if (get_robot_transform())
+    //   publish_robot_state();
 
     /// Tries to accept any commands over DDS, and sends out robot commands
     /// using MoveBaseAction

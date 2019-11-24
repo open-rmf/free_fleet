@@ -43,8 +43,8 @@ int main(int argc, char** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &FreeFleetData_Location_desc, "test_location", 
-    NULL, NULL);
+    participant, &FreeFleetData_Location_desc, 
+    "test_sub", NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
 
