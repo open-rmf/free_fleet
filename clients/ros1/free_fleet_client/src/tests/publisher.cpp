@@ -22,7 +22,8 @@ int main (int argc, char ** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &FreeFleetData_Location_desc, "test_command", NULL, NULL);
+    participant, &FreeFleetData_Location_desc, "fake_fleet/robot_command", 
+    NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
 
@@ -36,6 +37,20 @@ int main (int argc, char ** argv)
 
   printf("=== [Publisher]  Waiting for a reader to be discovered ...\n");
   fflush (stdout);
+
+  rc = dds_set_status_mask(writer, DDS_PUBLICATION_MATCHED_STATUS);
+  if (rc != DDS_RETCODE_OK)
+    DDS_FATAL("dds_set_status_mask: %s\n", dds_strretcode(-rc));
+
+  while(!(status & DDS_PUBLICATION_MATCHED_STATUS))
+  {
+    rc = dds_get_status_changes (writer, &status);
+    if (rc != DDS_RETCODE_OK)
+      DDS_FATAL("dds_get_status_changes: %s\n", dds_strretcode(-rc));
+
+    /* Polling sleep. */
+    dds_sleepfor (DDS_MSECS (20));
+  }
 
   /* Create a message to write. */
   msg.sec = 123;

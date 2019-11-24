@@ -48,36 +48,36 @@ Client::Client(const ClientConfig& _config)
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for sending out the robot states
 
-  // std::string state_dds_topic_name = 
-  //     client_config.fleet_name + "/"+ client_config.dds_state_topic;
-  // state_topic = dds_create_topic(
-  //     participant, &FreeFleetData_RobotState_desc, 
-  //     state_dds_topic_name.c_str(), NULL, NULL);
-  // if (state_topic < 0)
-  // {
-  //   ROS_FATAL("dds_create_topic: %s\n", dds_strretcode(-state_topic));
-  //   return;
-  // }
+  std::string state_dds_topic_name = 
+      client_config.fleet_name + "/"+ client_config.dds_state_topic;
+  state_topic = dds_create_topic(
+      participant, &FreeFleetData_RobotState_desc, 
+      state_dds_topic_name.c_str(), NULL, NULL);
+  if (state_topic < 0)
+  {
+    ROS_FATAL("dds_create_topic: %s\n", dds_strretcode(-state_topic));
+    return;
+  }
 
-  // dds_qos_t* state_qos = dds_create_qos();
-  // dds_qset_reliability(state_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-  // state_writer = dds_create_writer(
-  //     participant, state_topic, state_qos, NULL);
-  // if (state_writer < 0)
-  // {
-  //   ROS_FATAL("dds_create_writer: %s\n", dds_strretcode(-state_writer));
-  //   return;
-  // }
-  // dds_delete_qos(state_qos);
+  dds_qos_t* state_qos = dds_create_qos();
+  dds_qset_reliability(state_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
+  state_writer = dds_create_writer(
+      participant, state_topic, state_qos, NULL);
+  if (state_writer < 0)
+  {
+    ROS_FATAL("dds_create_writer: %s\n", dds_strretcode(-state_writer));
+    return;
+  }
+  dds_delete_qos(state_qos);
 
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting commands
 
-  std::string command_dds_topic_name = 
+  std::string command_topic_name = 
       client_config.fleet_name + "/" + client_config.dds_command_topic;
   command_topic = dds_create_topic(
       participant, &FreeFleetData_Location_desc, 
-      "test_command", NULL, NULL);
+      command_topic_name.c_str(), NULL, NULL);
   if (command_topic < 0)
   {
     ROS_FATAL("dds_create_topic: %s\n", dds_strretcode(-command_topic));
@@ -266,7 +266,6 @@ bool Client::get_robot_transform()
   return true;
 }
 
-// do something here
 void Client::publish_robot_state()
 {
   ReadLock robot_state_lock(robot_state_mutex);
@@ -280,19 +279,17 @@ void Client::publish_robot_state()
 
 bool Client::read_commands()
 {
-  ROS_INFO("read_commands(): called.");
-
   return_code = dds_take(
       command_reader, command_samples, command_infos, 1, 1);
   if (return_code < 0)
   {
-    ROS_WARN("dds_take: %s\n", dds_strretcode(-return_code));
+    ROS_WARN("dds_read: %s\n", dds_strretcode(-return_code));
     return false;
   }
 
   if ((return_code > 0) && (command_infos[0].valid_data))
   {
-    command_msg = (FreeFleetData_Location*)command_samples[0];
+    command_msg = (FreeFleetData_Location*) command_samples[0];
 
     location_command_goal.target_pose.header.frame_id = 
         client_config.map_frame;
@@ -356,8 +353,8 @@ void Client::run_thread_fn()
 
     /// Update the robot's current known pose and tries to publish the state
     /// over DDS
-    // if (get_robot_transform())
-    //   publish_robot_state();
+    if (get_robot_transform())
+      publish_robot_state();
 
     /// Tries to accept any commands over DDS, and sends out robot commands
     /// using MoveBaseAction
