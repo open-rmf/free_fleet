@@ -19,6 +19,38 @@ re-create it, use the `dds_idlc` generator that is built with CycloneDDS:
 
 * level name will be a std_msgs/String
 
+
+# ROS 1 building instructions
+
+Clone the repository somewhere,
+
+```
+cd
+git clone https://github.com/osrf/free_fleet
+```
+
+Start a new ROS 1 workspace while symbolically linking the client in,
+
+```
+mkdir -p ~/client_ws/src
+cd ~/client_ws/src
+ln -s ~/free_fleet/clients/ros1 free_fleet_ros1
+```
+
+Source ROS 1 and build!
+
+```
+cd ~/client_ws
+source /opt/ros/melodic/setup.bash
+catkin build
+```
+
+At this point the build will fail due to the project failing to find the necessary headers in the CycloneDDS `ExternalProject`, this can currently be solved by simply invoking build again.
+
+```
+catkin build
+```
+
 # Client tests
 
 To emulate a running robot and also a running free fleet server,
