@@ -16,4 +16,4 @@ location in `/opt/ros/dashing`
 
 # Documentation and notes
 
-* [Building the ROS 1 Client](clients/ros1/README.md)
+* [Building the ROS 1 Client](clients/README.md)
