@@ -99,18 +99,6 @@ public:
   /// the server.
   ///
   void update_robot_state(const FreeFleetData_RobotState& state);
-  
-  struct DDSPublishHandler
-  {
-    dds_entity_t topic;
-    dds_entity_t writer;
-  };
-
-  struct DDSSubscribeHandler
-  {
-    dds_entity_t topic;
-    dds_entity_t reader;
-  };
 
 private:
 
@@ -120,13 +108,15 @@ private:
 
   dds_return_t return_code;
   dds_entity_t participant;
-  dds_qos_t* qos;
 
   std::unique_ptr<ros::NodeHandle> node;
   std::unique_ptr<ros::Rate> rate;
 
   // --------------------------------------------------------------------------
   // Everything needed for sending out robot states
+
+  dds_entity_t state_topic;
+  dds_entity_t state_writer;
 
   tf2_ros::Buffer tf2_buffer;
   tf2_ros::TransformListener tf2_listener;
@@ -141,13 +131,14 @@ private:
   std::mutex robot_state_mutex;
   FreeFleetData_RobotState robot_state;
 
-  DDSPublishHandler robot_state_pub;
-
   // --------------------------------------------------------------------------
   // Everything needed for receiving commands and passing it down
   
-  void* location_command_samples[1];
-  dds_sample_info_t infos[1];
+  dds_entity_t command_topic;
+  dds_entity_t command_reader;
+  FreeFleetData_Location *command_msg;
+  void *command_samples[1];
+  dds_sample_info_t command_infos[1];
 
   move_base_msgs::MoveBaseGoal location_command_goal;
 
@@ -155,25 +146,12 @@ private:
       actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
   MoveBaseClient move_base_client;
 
-  DDSSubscribeHandler location_command_sub;
-
   // --------------------------------------------------------------------------
 
   std::thread run_thread;
 
   Client(const ClientConfig& config);
 
-  bool make_publish_handler(
-      const dds_topic_descriptor_t* descriptor,
-      const std::string& topic_name,
-      DDSPublishHandler& publish_handler);
-
-  bool make_subscribe_handler(
-      const dds_topic_descriptor_t* descriptor,
-      const std::string& topic_name,
-      DDSSubscribeHandler& subscriber_handler);
-
-  bool get_robot_transform();
 
   void mode_callback_fn(const free_fleet_msgs::RobotMode& msg);
 
@@ -183,18 +161,23 @@ private:
 
   void path_callback_fn(const free_fleet_msgs::PathSequence& msg);
 
-  bool publish_robot_state();
+  bool get_robot_transform();
+
+  void publish_robot_state();
 
   bool read_commands();
 
-  bool send_commands();
+  void send_commands();
+
+  void run_thread_fn();
+
+  // --------------------------------------------------------------------------
+  // Some math related utilities
 
   float get_yaw_from_transform(
       const geometry_msgs::TransformStamped& transform_stamped) const; 
 
   geometry_msgs::Quaternion get_quat_from_yaw(float yaw) const;
-
-  void run_thread_fn();
 
   // --------------------------------------------------------------------------
   // some C memory related stuff

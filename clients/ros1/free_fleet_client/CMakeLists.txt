@@ -97,6 +97,42 @@ target_include_directories(test_pub_location_command
 
 # -----------------------------------------------------------------------------
 
-install(TARGETS free_fleet_client test_sub_server test_action_server
+add_executable(sub
+  src/tests/subscriber.cpp
+  src/free_fleet/FreeFleet.c
+)
+target_link_libraries(sub
+  ddsc
+  crypto
+  ssl
+  ${catkin_LIBRARIES}
+)
+target_include_directories(sub
+  PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${CYCLONE_INSTALL_PATH}/include
+)
+
+# -----------------------------------------------------------------------------
+
+add_executable(pub
+  src/tests/publisher.cpp
+  src/free_fleet/FreeFleet.c
+)
+target_link_libraries(pub
+  ddsc
+  crypto
+  ssl
+  ${catkin_LIBRARIES}
+)
+target_include_directories(pub
+  PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${CYCLONE_INSTALL_PATH}/include
+)
+
+# -----------------------------------------------------------------------------
+
+install(TARGETS free_fleet_client test_sub_server test_action_server sub pub
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
