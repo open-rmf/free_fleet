@@ -48,17 +48,30 @@ target_include_directories(free_fleet_client
 
 # -----------------------------------------------------------------------------
 
-add_executable(test_sub_server
-  src/tests/test_sub_server.cpp
+add_executable(fake_action_server
+  src/tests/fake_action_server.cpp
+)
+target_link_libraries(fake_action_server
+  ${catkin_LIBRARIES}
+)
+target_include_directories(fake_action_server
+  PRIVATE
+    ${catkin_INCLUDE_DIRS}
+)
+
+# -----------------------------------------------------------------------------
+
+add_executable(test_dds_sub_state
+  src/tests/test_dds_sub_state.cpp
   src/free_fleet/FreeFleet.c
 )
-target_link_libraries(test_sub_server
+target_link_libraries(test_dds_sub_state
   ddsc
   crypto
   ssl
   ${catkin_LIBRARIES}
 )
-target_include_directories(test_sub_server
+target_include_directories(test_dds_sub_state
   PRIVATE
     ${catkin_INCLUDE_DIRS}
     ${CYCLONE_INSTALL_PATH}/include
@@ -66,30 +79,17 @@ target_include_directories(test_sub_server
 
 # -----------------------------------------------------------------------------
 
-add_executable(test_action_server
-  src/tests/test_action_server.cpp
-)
-target_link_libraries(test_action_server
-  ${catkin_LIBRARIES}
-)
-target_include_directories(test_action_server
-  PRIVATE
-    ${catkin_INCLUDE_DIRS}
-)
-
-# -----------------------------------------------------------------------------
-
-add_executable(test_pub_location_command
-  src/tests/test_pub_location_command.cpp
+add_executable(test_dds_pub_command
+  src/tests/test_dds_pub_command.cpp
   src/free_fleet/FreeFleet.c
 )
-target_link_libraries(test_pub_location_command
+target_link_libraries(test_dds_pub_command
   ddsc
   crypto
   ssl
   ${catkin_LIBRARIES}
 )
-target_include_directories(test_pub_location_command
+target_include_directories(test_dds_pub_command
   PRIVATE
     ${catkin_INCLUDE_DIRS}
     ${CYCLONE_INSTALL_PATH}/include
@@ -97,42 +97,11 @@ target_include_directories(test_pub_location_command
 
 # -----------------------------------------------------------------------------
 
-add_executable(sub
-  src/tests/subscriber.cpp
-  src/free_fleet/FreeFleet.c
-)
-target_link_libraries(sub
-  ddsc
-  crypto
-  ssl
-  ${catkin_LIBRARIES}
-)
-target_include_directories(sub
-  PRIVATE
-    ${catkin_INCLUDE_DIRS}
-    ${CYCLONE_INSTALL_PATH}/include
-)
-
-# -----------------------------------------------------------------------------
-
-add_executable(pub
-  src/tests/publisher.cpp
-  src/free_fleet/FreeFleet.c
-)
-target_link_libraries(pub
-  ddsc
-  crypto
-  ssl
-  ${catkin_LIBRARIES}
-)
-target_include_directories(pub
-  PRIVATE
-    ${catkin_INCLUDE_DIRS}
-    ${CYCLONE_INSTALL_PATH}/include
-)
-
-# -----------------------------------------------------------------------------
-
-install(TARGETS free_fleet_client test_sub_server test_action_server sub pub
+install(
+  TARGETS 
+    free_fleet_client 
+    fake_action_server 
+    test_dds_sub_state
+    test_dds_pub_command
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
