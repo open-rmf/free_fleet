@@ -58,9 +58,9 @@ int main (int argc, char ** argv)
   /* Create a message to write. */
   msg.sec = 123;
   msg.nanosec = 123;
-  msg.x = 123.123;
-  msg.y = 123.123;
-  msg.yaw = 123.123;
+  msg.x = 6.4166097641;
+  msg.y = 1.48983263969;
+  msg.yaw = 0.0;
   msg.level_name = "B1";
 
   printf ("=== [Publisher]  Writing : ");
