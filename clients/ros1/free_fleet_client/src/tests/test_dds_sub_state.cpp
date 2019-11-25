@@ -45,7 +45,7 @@ int main(int argc, char** argv)
   /* Create a Topic. */
   topic = dds_create_topic (
     participant, &FreeFleetData_RobotState_desc, 
-    "fake_fleet/robot_state", NULL, NULL);
+    "robot_state", NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
 

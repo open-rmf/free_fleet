@@ -42,6 +42,7 @@ target_link_libraries(free_fleet_client
 )
 target_include_directories(free_fleet_client
   PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
     ${catkin_INCLUDE_DIRS}
     ${CYCLONE_INSTALL_PATH}/include
 )

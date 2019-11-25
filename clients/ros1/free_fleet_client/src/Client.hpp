@@ -23,6 +23,7 @@
 #include <chrono>
 #include <memory>
 #include <thread>
+#include <limits>
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -59,15 +60,17 @@ struct ClientConfig
   std::string path_topic = "/path";
 
   std::string map_frame = "map";
-  std::string target_frame = "base_footprint";
+  std::string robot_frame = "base_footprint";
   
-  std::string move_base_action_name = "move_base";
+  std::string move_base_server_name = "move_base";
 
-  dds_domainid_t dds_domain = DDS_DOMAIN_DEFAULT;
+  uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
   std::string dds_state_topic = "robot_state";
-  std::string dds_command_topic = "robot_command";
-  using Duration = std::chrono::steady_clock::duration;
-  Duration publish_frequency = std::chrono::milliseconds(1000);
+  std::string dds_mode_command_topic = "robot_mode";
+  std::string dds_path_command_topic = "robot_path";
+  std::string dds_location_command_topic = "robot_command";
+
+  float publish_frequency = 1.0;
 };
 
 class Client
