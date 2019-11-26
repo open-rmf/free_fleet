@@ -2,6 +2,7 @@
 #include "../free_fleet/FreeFleet.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits>
 
 int main (int argc, char ** argv)
 {
@@ -16,13 +17,15 @@ int main (int argc, char ** argv)
   (void)argv;
 
   /* Create a Participant. */
-  participant = dds_create_participant (DDS_DOMAIN_DEFAULT, NULL, NULL);
+  uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
+  participant = dds_create_participant(
+      static_cast<dds_domainid_t>(dds_domain), NULL, NULL);
   if (participant < 0)
     DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-participant));
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &FreeFleetData_Location_desc, "fake_fleet/robot_command", 
+    participant, &FreeFleetData_Location_desc, "robot_command", 
     NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
@@ -55,9 +58,9 @@ int main (int argc, char ** argv)
   /* Create a message to write. */
   msg.sec = 123;
   msg.nanosec = 123;
-  msg.x = 123.123;
-  msg.y = 123.123;
-  msg.yaw = 123.123;
+  msg.x = 6.4166097641;
+  msg.y = 1.48983263969;
+  msg.yaw = 0.0;
   msg.level_name = "B1";
 
   printf ("=== [Publisher]  Writing : ");

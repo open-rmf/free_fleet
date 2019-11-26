@@ -66,7 +66,7 @@ rosrun free_fleet_client free_fleet_client
 rosrun free_fleet_client test_action_server
 
 # Terminal D, the fake static transform
-rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 1.0 baseootprint map 200
+rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 1.0 base_footprint map 200
 ```
 
 The client will then start subscribing to all the necessary topics, and start publishing robot states over DDS to the server. To demonstrate this behaviour,

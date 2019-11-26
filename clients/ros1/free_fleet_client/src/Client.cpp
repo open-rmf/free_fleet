@@ -33,11 +33,12 @@ std::shared_ptr<Client> Client::make(const ClientConfig& _config)
 Client::Client(const ClientConfig& _config)
 : client_config(_config),
   tf2_listener(tf2_buffer),
-  move_base_client(_config.move_base_action_name, true)
+  move_base_client(_config.move_base_server_name, true)
 {
   ready = false;
 
-  participant = dds_create_participant(client_config.dds_domain, NULL, NULL);
+  participant = dds_create_participant(
+      static_cast<dds_domainid_t>(client_config.dds_domain), NULL, NULL);
   if (participant < 0)
   {
     ROS_FATAL("couldn't create DDS participate: %s", 
@@ -48,8 +49,7 @@ Client::Client(const ClientConfig& _config)
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for sending out the robot states
 
-  std::string state_dds_topic_name = 
-      client_config.fleet_name + "/"+ client_config.dds_state_topic;
+  std::string state_dds_topic_name = client_config.dds_state_topic;
   state_topic = dds_create_topic(
       participant, &FreeFleetData_RobotState_desc, 
       state_dds_topic_name.c_str(), NULL, NULL);
@@ -73,8 +73,7 @@ Client::Client(const ClientConfig& _config)
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting commands
 
-  std::string command_topic_name = 
-      client_config.fleet_name + "/" + client_config.dds_command_topic;
+  std::string command_topic_name = client_config.dds_location_command_topic;
   command_topic = dds_create_topic(
       participant, &FreeFleetData_Location_desc, 
       command_topic_name.c_str(), NULL, NULL);
@@ -109,7 +108,7 @@ Client::Client(const ClientConfig& _config)
       break;
 
     ROS_WARN("waiting for connection with move base action server: %s",
-        client_config.move_base_action_name.c_str());
+        client_config.move_base_server_name.c_str());
 
     t_now = ros::Time::now();
     ros::Duration(1.0).sleep(); 
@@ -117,7 +116,7 @@ Client::Client(const ClientConfig& _config)
   if (!action_client_done)
   {
     ROS_ERROR("timed out waiting for action server: %s",
-        client_config.move_base_action_name.c_str());
+        client_config.move_base_server_name.c_str());
     ready = false;
     return;
   }
@@ -161,7 +160,7 @@ void Client::start()
   }
 
   node.reset(new ros::NodeHandle(client_config.robot_name + "_node"));
-  rate.reset(new ros::Rate(1.0));
+  rate.reset(new ros::Rate(client_config.publish_frequency));
 
   mode_sub = node->subscribe(
       client_config.mode_topic, 1,
@@ -248,7 +247,7 @@ bool Client::get_robot_transform()
 {
   try {
     robot_transform_stamped = tf2_buffer.lookupTransform(
-        client_config.target_frame, 
+        client_config.robot_frame, 
         client_config.map_frame, 
         ros::Time(0));
   }
