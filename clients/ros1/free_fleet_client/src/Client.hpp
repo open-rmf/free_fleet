@@ -24,6 +24,7 @@
 #include <memory>
 #include <thread>
 #include <limits>
+#include <vector>
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -54,10 +55,11 @@ struct ClientConfig
   std::string robot_name;
   std::string robot_model;
 
-  std::string mode_topic = "/robot_mode";
   std::string battery_state_topic = "/battery_state";
   std::string level_name_topic = "/level_name";
   std::string path_topic = "/path";
+  // path is questionable, maybe the client should derive the path on its own
+  // based on the path commands
 
   std::string map_frame = "map";
   std::string robot_frame = "base_footprint";
@@ -66,11 +68,12 @@ struct ClientConfig
 
   uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
   std::string dds_state_topic = "robot_state";
-  std::string dds_mode_command_topic = "robot_mode";
-  std::string dds_path_command_topic = "robot_path";
-  std::string dds_location_command_topic = "robot_command";
+  std::string dds_mode_command_topic = "robot_mode_command";
+  std::string dds_path_command_topic = "robot_path_command";
+  std::string dds_location_command_topic = "robot_location_command";
 
-  float publish_frequency = 1.0;
+  float state_publish_frequency = 1.0;
+  float operate_frequency = 0.1;
 };
 
 class Client
@@ -98,10 +101,23 @@ public:
   /// publishing the state over DDS to the server
   void start();
 
-  /// Updates the Client with the newest RobotState, in order to be passed to
-  /// the server.
+  /// Holds all artifacts needed to subscribe over DDS
   ///
-  void update_robot_state(const FreeFleetData_RobotState& state);
+  struct DDSSubscribeHandler
+  {
+    using SharedPtr = std::shared_ptr<DDSSubscribeHandler>;
+
+    dds_entity_t topic;
+    dds_entity_t reader;
+    void* samples[1];
+    dds_sample_info_t infos[1];
+
+    bool read();
+  };
+
+  DDSSubscribeHandler::SharedPtr make_dds_subscribe_handler(
+      dds_topic_descriptor_t* topic_desc, const std::string& topic_name,
+      size_t alloc_size);
 
 private:
 
@@ -118,12 +134,15 @@ private:
   // --------------------------------------------------------------------------
   // Everything needed for sending out robot states
 
+  ros::Time last_write_time;
+
   dds_entity_t state_topic;
   dds_entity_t state_writer;
 
   tf2_ros::Buffer tf2_buffer;
   tf2_ros::TransformListener tf2_listener;
   geometry_msgs::TransformStamped robot_transform_stamped;
+  geometry_msgs::TransformStamped prev_robot_transform_stamped;
 
   // create other subscribers here for updates
   ros::Subscriber mode_sub;
@@ -134,29 +153,8 @@ private:
   std::mutex robot_state_mutex;
   FreeFleetData_RobotState robot_state;
 
-  // --------------------------------------------------------------------------
-  // Everything needed for receiving commands and passing it down
-  
-  dds_entity_t command_topic;
-  dds_entity_t command_reader;
-  FreeFleetData_Location *command_msg;
-  void *command_samples[1];
-  dds_sample_info_t command_infos[1];
-
-  move_base_msgs::MoveBaseGoal location_command_goal;
-
-  using MoveBaseClient = 
-      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
-  MoveBaseClient move_base_client;
-
-  // --------------------------------------------------------------------------
-
-  std::thread run_thread;
-
-  Client(const ClientConfig& config);
-
-
-  void mode_callback_fn(const free_fleet_msgs::RobotMode& msg);
+  std::mutex battery_state_mutex;
+  sensor_msgs::BatteryState battery_state;
 
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
 
@@ -166,11 +164,58 @@ private:
 
   bool get_robot_transform();
 
+  void get_robot_mode();
+
   void publish_robot_state();
 
-  bool read_commands();
+  // --------------------------------------------------------------------------
+  // Everything needed for receiving and handling mode commands
 
-  void send_commands();
+  dds_entity_t mode_command_topic;
+  dds_entity_t mode_command_reader;
+  FreeFleetData_RobotMode* mode_command_msg;
+  void* mode_command_samples[1];
+  dds_sample_info_t mode_command_infos[1];
+
+  bool read_mode_commands();
+
+  // --------------------------------------------------------------------------
+  // Everything needed for receiving and handling location commands
+
+  dds_entity_t location_command_topic;
+  dds_entity_t location_command_reader;
+  FreeFleetData_Location* location_command_msg;
+  void* location_command_samples[1];
+  dds_sample_info_t location_command_infos[1];
+
+  bool read_location_commands();
+
+  // --------------------------------------------------------------------------
+  // Everythign needed for receiving and handling path commands
+
+  dds_entity_t path_command_topic;
+  dds_entity_t path_command_reader;
+  FreeFleetData_RobotState_path_seq* path_command_msg;
+  void* path_command_samples[1];
+  dds_sample_info_t path_command_infos[1];
+
+  bool read_path_commands();
+
+  // --------------------------------------------------------------------------
+
+  move_base_msgs::MoveBaseGoal location_command_goal;
+
+  std::vector<move_base_msgs::MoveBaseGoal> goal_path;
+
+  using MoveBaseClient = 
+      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
+  MoveBaseClient move_base_client;
+
+  std::thread run_thread;
+
+  Client(const ClientConfig& config);
+
+  void handle_commands();
 
   void run_thread_fn();
 
@@ -181,6 +226,12 @@ private:
       const geometry_msgs::TransformStamped& transform_stamped) const; 
 
   geometry_msgs::Quaternion get_quat_from_yaw(float yaw) const;
+
+  bool is_close(double x, double y, double min = 0.05) const;
+
+  bool is_transform_close(
+      const geometry_msgs::TransformStamped& transform_1,
+      const geometry_msgs::TransformStamped& transform_2) const;
 
   // --------------------------------------------------------------------------
   // some C memory related stuff

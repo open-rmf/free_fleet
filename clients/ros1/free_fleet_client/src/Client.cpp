@@ -71,29 +71,62 @@ Client::Client(const ClientConfig& _config)
   dds_delete_qos(state_qos);
 
   /// -------------------------------------------------------------------------
-  /// create all the dds stuff needed for getting commands
+  /// create all the dds stuff needed for getting mode commands
 
-  std::string command_topic_name = client_config.dds_location_command_topic;
-  command_topic = dds_create_topic(
+  std::string mode_command_topic_name = client_config.dds_mode_command_topic;
+  mode_command_topic = dds_create_topic(
+      participant, &FreeFleetData_RobotMode_desc,
+      mode_command_topic_name.c_str(), NULL, NULL);
+  if (mode_command_topic < 0)
+  {
+    ROS_FATAL(
+        "dds_create_topic: %s\n", dds_strretcode(-mode_command_topic));
+    return;
+  }
+
+  dds_qos_t* mode_command_qos = dds_create_qos();
+  dds_qset_reliability(mode_command_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
+  mode_command_reader = dds_create_reader(
+      participant, mode_command_topic, mode_command_qos, NULL);
+  if (mode_command_reader < 0)
+  {
+    ROS_FATAL(
+        "dds_create_reader: %s\n", dds_strretcode(-mode_command_reader));
+    return;
+  }
+  dds_delete_qos(mode_command_qos);
+  mode_command_samples[0] = FreeFleetData_RobotMode__alloc();
+
+  /// -------------------------------------------------------------------------
+  /// create all the dds stuff needed for getting location commands
+
+  std::string location_command_topic_name = 
+      client_config.dds_location_command_topic;
+  location_command_topic = dds_create_topic(
       participant, &FreeFleetData_Location_desc, 
-      command_topic_name.c_str(), NULL, NULL);
-  if (command_topic < 0)
+      location_command_topic_name.c_str(), NULL, NULL);
+  if (location_command_topic < 0)
   {
-    ROS_FATAL("dds_create_topic: %s\n", dds_strretcode(-command_topic));
+    ROS_FATAL(
+        "dds_create_topic: %s\n", dds_strretcode(-location_command_topic));
     return;
   }
 
-  dds_qos_t* command_qos = dds_create_qos();
-  dds_qset_reliability(command_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-  command_reader = dds_create_reader(
-      participant, command_topic, command_qos, NULL);
-  if (command_reader < 0)
+  dds_qos_t* location_command_qos = dds_create_qos();
+  dds_qset_reliability(location_command_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
+  location_command_reader = dds_create_reader(
+      participant, location_command_topic, location_command_qos, NULL);
+  if (location_command_reader < 0)
   {
-    ROS_FATAL("dds_create_reader: %s\n", dds_strretcode(-command_reader));
+    ROS_FATAL(
+        "dds_create_reader: %s\n", dds_strretcode(-location_command_reader));
     return;
   }
-  dds_delete_qos(command_qos);
-  command_samples[0] = FreeFleetData_Location__alloc();
+  dds_delete_qos(location_command_qos);
+  location_command_samples[0] = FreeFleetData_Location__alloc();
+
+  /// -------------------------------------------------------------------------
+  /// create all the dds stuff needed for getting path commands
 
   /// -------------------------------------------------------------------------
   /// setting up the move base action client, wait for server
@@ -121,6 +154,8 @@ Client::Client(const ClientConfig& _config)
     return;
   }
 
+  goal_path.clear();
+
   ready = true;
 }
 
@@ -143,7 +178,8 @@ Client::~Client()
   dds_string_free(robot_state.model);
   FreeFleetData_Location_free(robot_state.path._buffer, DDS_FREE_ALL);
 
-  FreeFleetData_Location_free(command_samples[0], DDS_FREE_ALL);
+  FreeFleetData_RobotMode_free(mode_command_samples[0], DDS_FREE_ALL);
+  FreeFleetData_Location_free(location_command_samples[0], DDS_FREE_ALL);
 }
 
 bool Client::is_ready()
@@ -160,11 +196,7 @@ void Client::start()
   }
 
   node.reset(new ros::NodeHandle(client_config.robot_name + "_node"));
-  rate.reset(new ros::Rate(client_config.publish_frequency));
-
-  mode_sub = node->subscribe(
-      client_config.mode_topic, 1,
-      &Client::mode_callback_fn, this);
+  rate.reset(new ros::Rate(client_config.operate_frequency));
 
   battery_percent_sub = node->subscribe(
       client_config.battery_state_topic, 1,
@@ -192,20 +224,30 @@ void Client::start()
     robot_state.mode = starting_mode;
   }
 
+  last_write_time = ros::Time::now();
+
   ROS_INFO("Client: starting run thread.");
   run_thread = std::thread(std::bind(&Client::run_thread_fn, this));
 }
 
-void Client::mode_callback_fn(const free_fleet_msgs::RobotMode& _msg)
+bool Client::DDSSubscribeHandler::read()
 {
-  FreeFleetData_RobotMode mode{_msg.mode};
+  return false;
+}
 
-  WriteLock robot_state_lock(robot_state_mutex);
-  robot_state.mode = mode;
+Client::DDSSubscribeHandler::SharedPtr Client::make_dds_subscribe_handler(
+    dds_topic_descriptor_t* topic_desc, const std::string& topic_name,
+    size_t alloc_size)
+{
+  return nullptr;
 }
 
 void Client::battery_state_callback_fn(const sensor_msgs::BatteryState& _msg)
 {
+  {
+    WriteLock battery_state_lock(battery_state_mutex);
+    battery_state = _msg;
+  }
   WriteLock robot_state_lock(robot_state_mutex);
   robot_state.battery_percent = _msg.percentage;
 }
@@ -246,10 +288,13 @@ void Client::path_callback_fn(const free_fleet_msgs::PathSequence& _msg)
 bool Client::get_robot_transform()
 {
   try {
-    robot_transform_stamped = tf2_buffer.lookupTransform(
-        client_config.robot_frame, 
-        client_config.map_frame, 
-        ros::Time(0));
+    geometry_msgs::TransformStamped tmp_transform_stamped = 
+        tf2_buffer.lookupTransform(
+            client_config.robot_frame, 
+            client_config.map_frame, 
+            ros::Time(0));
+    prev_robot_transform_stamped = robot_transform_stamped;
+    robot_transform_stamped = tmp_transform_stamped;
   }
   catch (tf2::TransformException &ex) {
     ROS_WARN("%s", ex.what());
@@ -265,8 +310,42 @@ bool Client::get_robot_transform()
   return true;
 }
 
+void Client::get_robot_mode()
+{
+  FreeFleetData_RobotMode robot_mode;
+
+  /// Checks if the robot is charging
+  ReadLock battery_state_lock(battery_state_mutex);
+  if (battery_state.power_supply_status == 
+      battery_state.POWER_SUPPLY_STATUS_CHARGING)
+    robot_mode.mode = FreeFleetData_RobotMode_Constants_MODE_CHARGING;
+  
+  /// Checks if the robot is moving
+  else if(!is_transform_close(
+      robot_transform_stamped, prev_robot_transform_stamped))
+    robot_mode.mode = FreeFleetData_RobotMode_Constants_MODE_MOVING;
+  
+  /// Otherwise, robot is neither charging nor moving,
+  else
+  {
+    /// Checks if the robot has tasks, and is just paused
+    if (!goal_path.empty())
+      robot_mode.mode = FreeFleetData_RobotMode_Constants_MODE_PAUSED;
+
+    /// Otherwise, robot has queued tasks, it is paused or waiting,
+    /// default to use pausing for now
+    else 
+      robot_mode.mode = FreeFleetData_RobotMode_Constants_MODE_IDLE;
+  }
+
+  WriteLock robot_state_lock(robot_state_mutex);
+  robot_state.mode = robot_mode;
+}
+
 void Client::publish_robot_state()
 {
+  get_robot_mode();
+
   ReadLock robot_state_lock(robot_state_mutex);
   return_code = dds_write(state_writer, &robot_state);
 
@@ -276,39 +355,52 @@ void Client::publish_robot_state()
     ROS_ERROR("dds write failed: %s", dds_strretcode(-return_code));
 }
 
-bool Client::read_commands()
+bool Client::read_mode_commands()
+{
+  return false;
+}
+
+bool Client::read_location_commands()
 {
   return_code = dds_take(
-      command_reader, command_samples, command_infos, 1, 1);
+      location_command_reader, location_command_samples, 
+      location_command_infos, 1, 1);
   if (return_code < 0)
   {
     ROS_WARN("dds_read: %s\n", dds_strretcode(-return_code));
     return false;
   }
 
-  if ((return_code > 0) && (command_infos[0].valid_data))
+  if ((return_code > 0) && (location_command_infos[0].valid_data))
   {
-    command_msg = (FreeFleetData_Location*) command_samples[0];
+    location_command_msg = (FreeFleetData_Location*)location_command_samples[0];
 
-    location_command_goal.target_pose.header.frame_id = 
-        client_config.map_frame;
-    location_command_goal.target_pose.header.stamp.sec = command_msg->sec;
-    location_command_goal.target_pose.header.stamp.nsec = command_msg->nanosec;
-    location_command_goal.target_pose.pose.position.x = command_msg->x;
-    location_command_goal.target_pose.pose.position.y = command_msg->y;
-    location_command_goal.target_pose.pose.position.z = 0.0;
-    location_command_goal.target_pose.pose.orientation = 
-        get_quat_from_yaw(command_msg->yaw);
+    move_base_msgs::MoveBaseGoal curr_location_goal;
+    curr_location_goal.target_pose.header.frame_id = client_config.map_frame;
+    curr_location_goal.target_pose.header.stamp.sec = 
+        location_command_msg->sec;
+    curr_location_goal.target_pose.header.stamp.nsec = 
+        location_command_msg->nanosec;
+    curr_location_goal.target_pose.pose.position.x = location_command_msg->x;
+    curr_location_goal.target_pose.pose.position.y = location_command_msg->y;
+    curr_location_goal.target_pose.pose.position.z = 0.0;
+    curr_location_goal.target_pose.pose.orientation = 
+        get_quat_from_yaw(location_command_msg->yaw);
 
     ROS_INFO(
         "received command: %d sec %d nanosec", 
-        command_msg->sec, command_msg->nanosec);
+        location_command_msg->sec, location_command_msg->nanosec);
     return true;
   }
   return false;
 }
 
-void Client::send_commands()
+bool Client::read_path_commands()
+{
+  return false;
+}
+
+void Client::handle_commands()
 {
   if (!move_base_client.isServerConnected())
   {
@@ -343,6 +435,30 @@ geometry_msgs::Quaternion Client::get_quat_from_yaw(float _yaw) const
   return quat;
 }
 
+bool Client::is_close(double x, double y, double min) const
+{
+  if (abs(x - y) > min)
+    return false;
+  return true;
+} 
+
+bool Client::is_transform_close(
+    const geometry_msgs::TransformStamped& _t1,
+    const geometry_msgs::TransformStamped& _t2) const
+{
+  if (_t1.header.frame_id == _t2.header.frame_id && 
+      _t1.child_frame_id == _t2.child_frame_id &&
+      is_close(_t1.transform.translation.x, _t2.transform.translation.x) &&
+      is_close(_t1.transform.translation.y, _t2.transform.translation.y) &&
+      is_close(_t1.transform.translation.z, _t2.transform.translation.z) &&
+      is_close(_t1.transform.rotation.x, _t2.transform.rotation.x) &&
+      is_close(_t1.transform.rotation.y, _t2.transform.rotation.y) &&
+      is_close(_t1.transform.rotation.z, _t2.transform.rotation.z) &&
+      is_close(_t1.transform.rotation.w, _t2.transform.rotation.w))
+    return true;
+  return false;      
+}
+
 void Client::run_thread_fn()
 {
   while (node->ok())
@@ -352,13 +468,16 @@ void Client::run_thread_fn()
 
     /// Update the robot's current known pose and tries to publish the state
     /// over DDS
-    if (get_robot_transform())
+    double elapsed_write_seconds = 
+        ros::Time::now().toSec() - last_write_time.toSec();
+    if (elapsed_write_seconds > client_config.state_publish_frequency &&
+        get_robot_transform())
       publish_robot_state();
 
     /// Tries to accept any commands over DDS, and sends out robot commands
     /// using MoveBaseAction
-    if (read_commands())
-      send_commands();
+    if (read_location_commands())
+      handle_commands();
   }
 }
 

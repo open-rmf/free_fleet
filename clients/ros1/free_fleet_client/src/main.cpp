@@ -35,7 +35,7 @@
 /// * the time of the state will be tied to the transform
 /// * location comes from listening to transforms
 /// * battery from listening to a std_msgs/Float32
-/// * mode will be using free_fleet_msgs/RobotMode
+/// * mode is derived from all other sources of information
 /// * path will be using free_fleet_msgs/PathSequence
 /// * level name will be a std_msgs/String
 /// * calling robot commands using move_base_msgs/MoveBaseAction
@@ -59,9 +59,6 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       ("f,fleet-name", "fleet name", cxxopts::value<std::string>())
       ("r,robot-name", "robot name", cxxopts::value<std::string>())
       ("m,robot-model", "robot model", cxxopts::value<std::string>())
-      ("robot-mode-topic", "robot mode topic over ROS 1",
-          cxxopts::value<std::string>()->default_value(
-              default_config.mode_topic))
       ("battery-state-topic", "battery state topic over ROS 1",
           cxxopts::value<std::string>()->default_value(
               default_config.battery_state_topic))
@@ -95,9 +92,12 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       ("dds-location-topic", "name DDS topic for location commands",
           cxxopts::value<std::string>()->default_value(
               default_config.dds_location_command_topic))
-      ("frequency", "frequency at which the client operates and publishes at",
+      ("state-pub-frequency", "frequency at which the client publishes at",
           cxxopts::value<float>()->default_value(
-              std::to_string(default_config.publish_frequency)))
+              std::to_string(default_config.state_publish_frequency)))
+      ("operate-frequency", "frequency at which the client operates at",
+          cxxopts::value<float>()->default_value(
+              std::to_string(default_config.operate_frequency)))
       ("help", "Prints help")
     ;
       
@@ -132,7 +132,6 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       results["fleet-name"].as<std::string>(),
       results["robot-name"].as<std::string>(),
       results["robot-model"].as<std::string>(),
-      results["robot-mode-topic"].as<std::string>(),
       results["battery-state-topic"].as<std::string>(),
       results["level-name-topic"].as<std::string>(),
       results["path-topic"].as<std::string>(),
@@ -161,8 +160,6 @@ int main(int argc, char** argv)
   std::cout << "Fleet name: " << config.fleet_name << std::endl;
   std::cout << "Robot name: " << config.robot_name << std::endl;
   std::cout << "Robot model: " << config.robot_model << std::endl;
-  std::cout << "ROS 1 - robot mode topic:    " << config.mode_topic 
-      << std::endl;
   std::cout << "ROS 1 - battery state topic: " << config.battery_state_topic 
       << std::endl;
   std::cout << "ROS 1 - level name topic:    " << config.level_name_topic
