@@ -143,7 +143,8 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       results["dds-mode-topic"].as<std::string>(),
       results["dds-path-topic"].as<std::string>(),
       results["dds-location-topic"].as<std::string>(),
-      results["frequency"].as<float>()
+      results["state-pub-frequency"].as<float>(),
+      results["operate-frequency"].as<float>()
     };
   }
   catch (const cxxopts::OptionException& e)

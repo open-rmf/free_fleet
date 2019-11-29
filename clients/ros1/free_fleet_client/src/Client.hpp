@@ -44,6 +44,7 @@
 #include <dds/dds.h>
 
 #include "free_fleet/FreeFleet.h"
+#include "dds_utils/DDSSubscribeHandler.hpp"
 
 
 namespace free_fleet
@@ -73,7 +74,7 @@ struct ClientConfig
   std::string dds_location_command_topic = "robot_location_command";
 
   float state_publish_frequency = 1.0;
-  float operate_frequency = 0.1;
+  float operate_frequency = 10.0;
 };
 
 class Client
@@ -115,9 +116,27 @@ public:
     bool read();
   };
 
+  /// Creates a DDS subscriber/reader instance
+  ///
   DDSSubscribeHandler::SharedPtr make_dds_subscribe_handler(
       dds_topic_descriptor_t* topic_desc, const std::string& topic_name,
       size_t alloc_size);
+
+  /// Holds all the artifacts needed to publish over DDS
+  ///
+  struct DDSPublishHandler
+  {
+    using SharedPtr = std::shared_ptr<DDSSubscribeHandler>;
+
+    dds_entity_t topic;
+    dds_entity_t writer;
+  };
+
+  /// Creates a DDS publisher/writer instance
+  ///
+  DDSPublishHandler::SharedPtr make_dds_publishe_handler(
+    dds_topic_descriptor_t* topic_desc, const std::string& topic_name,
+    size_t alloc_size);
 
 private:
 
@@ -171,22 +190,16 @@ private:
   // --------------------------------------------------------------------------
   // Everything needed for receiving and handling mode commands
 
-  dds_entity_t mode_command_topic;
-  dds_entity_t mode_command_reader;
-  FreeFleetData_RobotMode* mode_command_msg;
-  void* mode_command_samples[1];
-  dds_sample_info_t mode_command_infos[1];
+  dds::DDSSubscribeHandler<FreeFleetData_RobotMode>::SharedPtr 
+      mode_command_sub;
 
   bool read_mode_commands();
 
   // --------------------------------------------------------------------------
   // Everything needed for receiving and handling location commands
 
-  dds_entity_t location_command_topic;
-  dds_entity_t location_command_reader;
-  FreeFleetData_Location* location_command_msg;
-  void* location_command_samples[1];
-  dds_sample_info_t location_command_infos[1];
+  dds::DDSSubscribeHandler<FreeFleetData_Location>::SharedPtr
+      location_command_sub;
 
   bool read_location_commands();
 

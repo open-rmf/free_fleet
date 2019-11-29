@@ -31,4 +31,8 @@ module FreeFleetData
     Location location;
     sequence<Location> path;
   };
+  struct Path
+  {
+    sequence<Location> path;
+  };
 };

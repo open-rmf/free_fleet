@@ -73,57 +73,22 @@ Client::Client(const ClientConfig& _config)
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting mode commands
 
-  std::string mode_command_topic_name = client_config.dds_mode_command_topic;
-  mode_command_topic = dds_create_topic(
-      participant, &FreeFleetData_RobotMode_desc,
-      mode_command_topic_name.c_str(), NULL, NULL);
-  if (mode_command_topic < 0)
-  {
-    ROS_FATAL(
-        "dds_create_topic: %s\n", dds_strretcode(-mode_command_topic));
+  mode_command_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_RobotMode>(
+          participant, &FreeFleetData_RobotMode_desc, 
+          client_config.dds_mode_command_topic));
+  if (!mode_command_sub->is_ready())
     return;
-  }
-
-  dds_qos_t* mode_command_qos = dds_create_qos();
-  dds_qset_reliability(mode_command_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-  mode_command_reader = dds_create_reader(
-      participant, mode_command_topic, mode_command_qos, NULL);
-  if (mode_command_reader < 0)
-  {
-    ROS_FATAL(
-        "dds_create_reader: %s\n", dds_strretcode(-mode_command_reader));
-    return;
-  }
-  dds_delete_qos(mode_command_qos);
-  mode_command_samples[0] = FreeFleetData_RobotMode__alloc();
-
+  
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting location commands
 
-  std::string location_command_topic_name = 
-      client_config.dds_location_command_topic;
-  location_command_topic = dds_create_topic(
-      participant, &FreeFleetData_Location_desc, 
-      location_command_topic_name.c_str(), NULL, NULL);
-  if (location_command_topic < 0)
-  {
-    ROS_FATAL(
-        "dds_create_topic: %s\n", dds_strretcode(-location_command_topic));
+  location_command_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_Location>(
+          participant, &FreeFleetData_Location_desc, 
+          client_config.dds_location_command_topic));
+  if (!location_command_sub->is_ready())
     return;
-  }
-
-  dds_qos_t* location_command_qos = dds_create_qos();
-  dds_qset_reliability(location_command_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-  location_command_reader = dds_create_reader(
-      participant, location_command_topic, location_command_qos, NULL);
-  if (location_command_reader < 0)
-  {
-    ROS_FATAL(
-        "dds_create_reader: %s\n", dds_strretcode(-location_command_reader));
-    return;
-  }
-  dds_delete_qos(location_command_qos);
-  location_command_samples[0] = FreeFleetData_Location__alloc();
 
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting path commands
@@ -178,8 +143,7 @@ Client::~Client()
   dds_string_free(robot_state.model);
   FreeFleetData_Location_free(robot_state.path._buffer, DDS_FREE_ALL);
 
-  FreeFleetData_RobotMode_free(mode_command_samples[0], DDS_FREE_ALL);
-  FreeFleetData_Location_free(location_command_samples[0], DDS_FREE_ALL);
+  // FreeFleetData_Location_free(location_command_samples[0], DDS_FREE_ALL);
 }
 
 bool Client::is_ready()
@@ -362,37 +326,22 @@ bool Client::read_mode_commands()
 
 bool Client::read_location_commands()
 {
-  return_code = dds_take(
-      location_command_reader, location_command_samples, 
-      location_command_infos, 1, 1);
-  if (return_code < 0)
-  {
-    ROS_WARN("dds_read: %s\n", dds_strretcode(-return_code));
+  auto msg = location_command_sub->read();
+  if (msg == nullptr)
     return false;
-  }
 
-  if ((return_code > 0) && (location_command_infos[0].valid_data))
-  {
-    location_command_msg = (FreeFleetData_Location*)location_command_samples[0];
-
-    move_base_msgs::MoveBaseGoal curr_location_goal;
-    curr_location_goal.target_pose.header.frame_id = client_config.map_frame;
-    curr_location_goal.target_pose.header.stamp.sec = 
-        location_command_msg->sec;
-    curr_location_goal.target_pose.header.stamp.nsec = 
-        location_command_msg->nanosec;
-    curr_location_goal.target_pose.pose.position.x = location_command_msg->x;
-    curr_location_goal.target_pose.pose.position.y = location_command_msg->y;
-    curr_location_goal.target_pose.pose.position.z = 0.0;
-    curr_location_goal.target_pose.pose.orientation = 
-        get_quat_from_yaw(location_command_msg->yaw);
-
-    ROS_INFO(
-        "received command: %d sec %d nanosec", 
-        location_command_msg->sec, location_command_msg->nanosec);
-    return true;
-  }
-  return false;
+  location_command_goal.target_pose.header.frame_id = client_config.map_frame;
+  location_command_goal.target_pose.header.stamp.sec = msg->sec;
+  location_command_goal.target_pose.header.stamp.nsec = msg->nanosec;
+  location_command_goal.target_pose.pose.position.x = msg->x;
+  location_command_goal.target_pose.pose.position.y = msg->y;
+  location_command_goal.target_pose.pose.position.z = 0.0;
+  location_command_goal.target_pose.pose.orientation = 
+      get_quat_from_yaw(msg->yaw);
+  
+  ROS_INFO(
+      "received command: %d sec %d nanosec", msg->sec, msg->nanosec);
+  return true;
 }
 
 bool Client::read_path_commands()
@@ -472,7 +421,10 @@ void Client::run_thread_fn()
         ros::Time::now().toSec() - last_write_time.toSec();
     if (elapsed_write_seconds > client_config.state_publish_frequency &&
         get_robot_transform())
+    {
       publish_robot_state();
+      last_write_time = ros::Time::now();
+    }
 
     /// Tries to accept any commands over DDS, and sends out robot commands
     /// using MoveBaseAction
