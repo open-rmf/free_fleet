@@ -93,6 +93,13 @@ Client::Client(const ClientConfig& _config)
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting path commands
 
+  path_command_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_Path>(
+          participant, &FreeFleetData_Path_desc,
+          client_config.dds_path_command_topic));
+  if (!path_command_sub->is_ready())
+    return;
+
   /// -------------------------------------------------------------------------
   /// setting up the move base action client, wait for server
 
@@ -192,18 +199,6 @@ void Client::start()
 
   ROS_INFO("Client: starting run thread.");
   run_thread = std::thread(std::bind(&Client::run_thread_fn, this));
-}
-
-bool Client::DDSSubscribeHandler::read()
-{
-  return false;
-}
-
-Client::DDSSubscribeHandler::SharedPtr Client::make_dds_subscribe_handler(
-    dds_topic_descriptor_t* topic_desc, const std::string& topic_name,
-    size_t alloc_size)
-{
-  return nullptr;
 }
 
 void Client::battery_state_callback_fn(const sensor_msgs::BatteryState& _msg)

@@ -61,7 +61,9 @@ int main (int argc, char ** argv)
   msg.x = 6.4166097641;
   msg.y = 1.48983263969;
   msg.yaw = 0.0;
-  msg.level_name = "B1";
+  msg.level_name = dds_string_alloc(2);
+  msg.level_name[0] = 'B';
+  msg.level_name[1] = '1';
 
   printf ("=== [Publisher]  Writing : ");
   printf ("Message: level_name %s\n", msg.level_name);

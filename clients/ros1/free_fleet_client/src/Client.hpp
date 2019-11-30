@@ -102,42 +102,6 @@ public:
   /// publishing the state over DDS to the server
   void start();
 
-  /// Holds all artifacts needed to subscribe over DDS
-  ///
-  struct DDSSubscribeHandler
-  {
-    using SharedPtr = std::shared_ptr<DDSSubscribeHandler>;
-
-    dds_entity_t topic;
-    dds_entity_t reader;
-    void* samples[1];
-    dds_sample_info_t infos[1];
-
-    bool read();
-  };
-
-  /// Creates a DDS subscriber/reader instance
-  ///
-  DDSSubscribeHandler::SharedPtr make_dds_subscribe_handler(
-      dds_topic_descriptor_t* topic_desc, const std::string& topic_name,
-      size_t alloc_size);
-
-  /// Holds all the artifacts needed to publish over DDS
-  ///
-  struct DDSPublishHandler
-  {
-    using SharedPtr = std::shared_ptr<DDSSubscribeHandler>;
-
-    dds_entity_t topic;
-    dds_entity_t writer;
-  };
-
-  /// Creates a DDS publisher/writer instance
-  ///
-  DDSPublishHandler::SharedPtr make_dds_publishe_handler(
-    dds_topic_descriptor_t* topic_desc, const std::string& topic_name,
-    size_t alloc_size);
-
 private:
 
   ClientConfig client_config;
@@ -206,11 +170,8 @@ private:
   // --------------------------------------------------------------------------
   // Everythign needed for receiving and handling path commands
 
-  dds_entity_t path_command_topic;
-  dds_entity_t path_command_reader;
-  FreeFleetData_RobotState_path_seq* path_command_msg;
-  void* path_command_samples[1];
-  dds_sample_info_t path_command_infos[1];
+  dds::DDSSubscribeHandler<FreeFleetData_Path>::SharedPtr 
+      path_command_sub;
 
   bool read_path_commands();
 
