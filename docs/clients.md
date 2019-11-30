@@ -1,24 +1,14 @@
-# generating the CycloneDDS message types
-For convenience, the generation of FreeFleet.idl has been done offline. To
-re-create it, use the `dds_idlc` generator that is built with CycloneDDS:
-```
-./dds_idlc -allstructs FreeFleet.idl
-```
-
-# Client notes
+# Free Fleet Client notes
 
 * the time of the state will be tied to the transform, if no transform is found no state will be published over DDS
 
-* location comes from listening to transforms
+* robot location is derived from transforms
 
-* battery from listening to a std_msgs/Float32
+* battery percentages is derived from `sensor_msgs/BatteryState`
 
-* mode will be using free_fleet_msgs/RobotMode
+* robot mode is derived from a combination of battery states and robot motion
 
-* path will be using free_fleet_msgs/PathSequence
-
-* level name will be a std_msgs/String
-
+* level name is currently derived from a simple `std_msgs/String`
 
 # ROS 1 building instructions
 
