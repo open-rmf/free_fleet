@@ -18,6 +18,7 @@
 #ifndef FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
 #define FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
 
+#include <deque>
 #include <mutex>
 #include <atomic>
 #include <chrono>
@@ -134,7 +135,7 @@ private:
   ros::Subscriber path_sub;
 
   std::mutex robot_state_mutex;
-  FreeFleetData_RobotState robot_state;
+  FreeFleetData_RobotState current_robot_state;
 
   std::mutex battery_state_mutex;
   sensor_msgs::BatteryState battery_state;
@@ -152,46 +153,49 @@ private:
   void publish_robot_state();
 
   // --------------------------------------------------------------------------
-  // Everything needed for receiving and handling mode commands
+  // Receiving and handling commands in the form of location, mode and path.
 
   dds::DDSSubscribeHandler<FreeFleetData_RobotMode>::SharedPtr 
       mode_command_sub;
 
-  bool read_mode_commands();
-
-  // --------------------------------------------------------------------------
-  // Everything needed for receiving and handling location commands
-
   dds::DDSSubscribeHandler<FreeFleetData_Location>::SharedPtr
       location_command_sub;
-
-  bool read_location_commands();
-
-  // --------------------------------------------------------------------------
-  // Everythign needed for receiving and handling path commands
 
   dds::DDSSubscribeHandler<FreeFleetData_Path>::SharedPtr 
       path_command_sub;
 
-  bool read_path_commands();
+  move_base_msgs::MoveBaseGoal location_to_goal(
+      std::shared_ptr<const FreeFleetData_Location> location) const;
+
+  move_base_msgs::MoveBaseGoal location_to_goal(
+      const FreeFleetData_Location& location) const;
+
+  /// In the event that within one single cycle, the client receives commands
+  /// from all 3 sources, the priority is mode > path > location.
+  ///
+  bool read_commands();
+
+  /// Handling of commands will have a similar priority, with mode > goal
+  ///
+  void handle_commands();
 
   // --------------------------------------------------------------------------
 
-  move_base_msgs::MoveBaseGoal location_command_goal;
+  FreeFleetData_RobotMode desired_mode;
 
-  std::vector<move_base_msgs::MoveBaseGoal> goal_path;
+  std::deque<move_base_msgs::MoveBaseGoal> goal_path;
 
   using MoveBaseClient = 
       actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
+  using GoalState = actionlib::SimpleClientGoalState;
+
   MoveBaseClient move_base_client;
 
   std::thread run_thread;
 
-  Client(const ClientConfig& config);
-
-  void handle_commands();
-
   void run_thread_fn();
+
+  Client(const ClientConfig& config);
 
   // --------------------------------------------------------------------------
   // Some math related utilities

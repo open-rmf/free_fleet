@@ -33,8 +33,6 @@ class DDSSubscribeHandler
 public:
 
   using SharedPtr = std::shared_ptr<DDSSubscribeHandler>;
-  using MessageSharedPtr = std::shared_ptr<Message>;
-  using MessageConstSharedPtr = std::shared_ptr<const Message>;
 
 private:
 
@@ -46,7 +44,7 @@ private:
   
   dds_entity_t reader;
   
-  MessageSharedPtr shared_msg;
+  std::shared_ptr<Message> shared_msg;
 
   void* samples[1];
 
@@ -85,7 +83,8 @@ public:
     }
     dds_delete_qos(qos);
 
-    shared_msg = MessageSharedPtr((Message*)dds_alloc(sizeof(Message)));
+    shared_msg = 
+        std::shared_ptr<Message>((Message*)dds_alloc(sizeof(Message)));
     samples[0] = (void*)shared_msg.get();
 
     ready = true;
@@ -103,7 +102,7 @@ public:
   }
 
   ///
-  MessageConstSharedPtr read()
+  std::shared_ptr<const Message> read()
   {
     if (!is_ready())
       return nullptr;
@@ -117,7 +116,7 @@ public:
 
     if ((return_code > 0) && (infos[0].valid_data))
     {
-      return MessageConstSharedPtr(shared_msg);
+      return std::shared_ptr<const Message>(shared_msg);
     }
     return nullptr;
   }
