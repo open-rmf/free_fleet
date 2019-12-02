@@ -177,11 +177,8 @@ void Client::start()
       client_config.level_name_topic, 1, 
       &Client::level_name_callback_fn, this);
 
-  {
-    WriteLock robot_mode_lock(robot_mode_mutex);
-    current_robot_mode.mode = FreeFleetData_RobotMode_Constants_MODE_IDLE;
-    desired_robot_mode.mode = FreeFleetData_RobotMode_Constants_MODE_IDLE;
-  }
+  emergency = false;
+  paused = false;
 
   last_write_time = ros::Time::now();
 
@@ -225,22 +222,27 @@ bool Client::get_robot_transform()
 
 uint32_t Client::get_robot_mode()
 {
-  ReadLock battery_state_lock(battery_state_mutex);
-  ReadLock robot_transform_lock(robot_transform_mutex);
+  if (emergency)
+    return FreeFleetData_RobotMode_Constants_MODE_EMERGENCY;
 
-  /// Checks if the robot is charging
-  if (current_battery_state.power_supply_status == 
-      current_battery_state.POWER_SUPPLY_STATUS_CHARGING)
-    return FreeFleetData_RobotMode_Constants_MODE_CHARGING;
-  
-  /// Checks if the robot is moving
-  else if(!is_transform_close(
-      current_robot_transform, previous_robot_transform))
-    return FreeFleetData_RobotMode_Constants_MODE_MOVING;
+  {
+    ReadLock battery_state_lock(battery_state_mutex);
+    ReadLock robot_transform_lock(robot_transform_mutex);
+
+    /// Checks if the robot is charging
+    if (current_battery_state.power_supply_status == 
+        current_battery_state.POWER_SUPPLY_STATUS_CHARGING)
+      return FreeFleetData_RobotMode_Constants_MODE_CHARGING;
+    
+    /// Checks if the robot is moving
+    else if(!is_transform_close(
+        current_robot_transform, previous_robot_transform))
+      return FreeFleetData_RobotMode_Constants_MODE_MOVING;
+  }
   
   /// Otherwise, robot is neither charging nor moving,
-  /// Checks if the robot has tasks, and is just paused
-  if (!goal_path.empty())
+  /// Checks if the robot is paused
+  if (paused)
     return FreeFleetData_RobotMode_Constants_MODE_PAUSED;
 
   /// Otherwise, robot has queued tasks, it is paused or waiting,
@@ -262,10 +264,7 @@ void Client::publish_robot_state()
   current_robot_state->model = 
       dds_string_alloc_and_copy(client_config.robot_model);
 
-  {
-    ReadLock robot_mode_lock(robot_mode_mutex);
-    current_robot_state->mode.mode = current_robot_mode.mode;
-  }
+  current_robot_state->mode.mode = get_robot_mode();
   
   {
     ReadLock battery_state_lock(battery_state_mutex);
@@ -354,22 +353,35 @@ move_base_msgs::MoveBaseGoal Client::location_to_goal(
   return goal;
 }
 
+void Client::pause_robot()
+{
+  if (paused)
+    return;
+
+  move_base_client.cancelAllGoals();
+  WriteLock goal_path_lock(goal_path_mutex);
+  if (!goal_path.empty())
+    goal_path[0].sent = false;
+  
+  paused = true;
+}
+
+void Client::resume_robot()
+{
+  if (!paused)
+    return;
+  paused = false;
+}
+
 void Client::read_commands()
 {
   auto mode_msg = mode_command_sub->read();
   if (mode_msg)
   {
-    if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_PAUSED ||
-        mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_MOVING)
-    {
-      WriteLock robot_mode_lock(robot_mode_mutex);
-      desired_robot_mode.mode = mode_msg->mode;
-      
-      if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_PAUSED)
-        ROS_INFO("received a PAUSE mode command.");
-      else
-        ROS_INFO("received a MOVE mode command.");
-    }
+    if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_PAUSED)
+      pause_robot();
+    else if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_MOVING)
+      resume_robot();
     return;
   }
 
@@ -419,28 +431,9 @@ void Client::handle_commands()
     return;
   }
 
-  // if the current mode is not the desired mode, do stuff
-  {
-    ReadLock robot_mode_lock(robot_mode_mutex);
-    if (current_robot_mode.mode != desired_robot_mode.mode)
-    {
-      if (desired_robot_mode.mode == 
-          FreeFleetData_RobotMode_Constants_MODE_PAUSED)
-      {
-        // TODO, for now just change
-        current_robot_mode.mode = desired_robot_mode.mode;
-        return;
-      }
-      else if (
-          desired_robot_mode.mode == 
-              FreeFleetData_RobotMode_Constants_MODE_MOVING)
-      {
-        // TODO, for now just change
-        current_robot_mode.mode = desired_robot_mode.mode;
-        return;
-      }
-    }
-  }
+  // if there is an emergency or the robot is paused
+  if (emergency || paused)
+    return;
 
   // ooohh we have goals!
   WriteLock goal_path_lock(goal_path_mutex);
@@ -476,6 +469,7 @@ void Client::handle_commands()
       ROS_INFO(
           "current goal state: %s", current_goal_state.toString().c_str());
       ROS_INFO("Client: no idea what to do now, doh!");
+      // emergency = true;
     }
   }
 

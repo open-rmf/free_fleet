@@ -137,16 +137,14 @@ private:
   std::mutex level_name_mutex;
   std_msgs::String current_level_name;
 
-  std::mutex robot_mode_mutex;
-  FreeFleetData_RobotMode desired_robot_mode;
-  FreeFleetData_RobotMode current_robot_mode;
-
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
 
   void level_name_callback_fn(const std_msgs::String& msg);
 
   bool get_robot_transform();
 
+  /// TODO: figure out the conditions of waiting
+  ///
   uint32_t get_robot_mode();
 
   void publish_robot_state();
@@ -169,6 +167,10 @@ private:
   move_base_msgs::MoveBaseGoal location_to_goal(
       const FreeFleetData_Location& location) const;
 
+  void pause_robot();
+
+  void resume_robot();
+
   /// In the event that within one single cycle, the client receives commands
   /// from all 3 sources, the priority is mode > path > location.
   ///
@@ -187,6 +189,9 @@ private:
     bool sent = false;
   };
 
+  std::atomic<bool> emergency;
+
+  std::atomic<bool> paused;
 
   std::mutex goal_path_mutex;
   std::deque<Goal> goal_path;
