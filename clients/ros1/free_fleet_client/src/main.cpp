@@ -36,7 +36,6 @@
 /// * location comes from listening to transforms
 /// * battery from listening to a std_msgs/Float32
 /// * mode is derived from all other sources of information
-/// * path will be using free_fleet_msgs/PathSequence
 /// * level name will be a std_msgs/String
 /// * calling robot commands using move_base_msgs/MoveBaseAction
 /// 
@@ -65,9 +64,6 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       ("level-name-topic", "level name topic over ROS 1",
           cxxopts::value<std::string>()->default_value(
               default_config.level_name_topic))
-      ("path-topic", "path sequence topic over ROS 1",
-          cxxopts::value<std::string>()->default_value(
-              default_config.path_topic))
       ("map-frame", "name of map frame for the robot",
           cxxopts::value<std::string>()->default_value(
               default_config.map_frame))
@@ -92,12 +88,13 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       ("dds-location-topic", "name DDS topic for location commands",
           cxxopts::value<std::string>()->default_value(
               default_config.dds_location_command_topic))
-      ("state-pub-frequency", "frequency at which the client publishes at",
+      ("update-frequency", 
+          "frequency at which the client updates all the states and commands",
           cxxopts::value<float>()->default_value(
-              std::to_string(default_config.state_publish_frequency)))
-      ("operate-frequency", "frequency at which the client operates at",
+              std::to_string(default_config.update_frequency)))
+      ("publish-frequency", "frequency at which the client publishes states",
           cxxopts::value<float>()->default_value(
-              std::to_string(default_config.operate_frequency)))
+              std::to_string(default_config.publish_frequency)))
       ("help", "Prints help")
     ;
       
@@ -134,7 +131,6 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       results["robot-model"].as<std::string>(),
       results["battery-state-topic"].as<std::string>(),
       results["level-name-topic"].as<std::string>(),
-      results["path-topic"].as<std::string>(),
       results["map-frame"].as<std::string>(),
       results["robot-frame"].as<std::string>(),
       results["move-base"].as<std::string>(),
@@ -143,8 +139,8 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       results["dds-mode-topic"].as<std::string>(),
       results["dds-path-topic"].as<std::string>(),
       results["dds-location-topic"].as<std::string>(),
-      results["state-pub-frequency"].as<float>(),
-      results["operate-frequency"].as<float>()
+      results["update-frequency"].as<float>(),
+      results["publish-frequency"].as<float>()
     };
   }
   catch (const cxxopts::OptionException& e)
@@ -165,8 +161,6 @@ int main(int argc, char** argv)
       << std::endl;
   std::cout << "ROS 1 - level name topic:    " << config.level_name_topic
       << std::endl;
-  std::cout << "ROS 1 - path sequence topic: " << config.path_topic
-      << std::endl;
   std::cout << "ROS 1 - map frame:           " << config.map_frame 
       << std::endl;
   std::cout << "ROS 1 - robot frame:         " << config.robot_frame
@@ -183,6 +177,10 @@ int main(int argc, char** argv)
       << config.dds_path_command_topic << std::endl;
   std::cout << "DDS - robot location command topic: "
       << config.dds_location_command_topic << std::endl;
+  std::cout << "Client - update frequency: " << config.update_frequency
+      << " Hz" << std::endl;
+  std::cout << "Client - publish frequency: " << config.publish_frequency
+      << " Hz" << std::endl;
 
   // Initialize all the ROS 1 items
   ros::init(argc, argv, "free_fleet_client");

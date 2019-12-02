@@ -30,7 +30,7 @@ void execute(
     const move_base_msgs::MoveBaseGoalConstPtr& _goal, 
     MoveBaseServer* _server)
 {
-  std::cout << "got a action service call." << std::endl;
+  ROS_INFO("got an action service call, setting it to SUCCEED now");
   // do lots of awesome groundbreaking robot stuff here
   _server->setSucceeded();
 }

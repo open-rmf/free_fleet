@@ -59,9 +59,6 @@ struct ClientConfig
 
   std::string battery_state_topic = "/battery_state";
   std::string level_name_topic = "/level_name";
-  std::string path_topic = "/path";
-  // path is questionable, maybe the client should derive the path on its own
-  // based on the path commands
 
   std::string map_frame = "map";
   std::string robot_frame = "base_footprint";
@@ -74,8 +71,8 @@ struct ClientConfig
   std::string dds_path_command_topic = "robot_path_command";
   std::string dds_location_command_topic = "robot_location_command";
 
-  float state_publish_frequency = 1.0;
-  float operate_frequency = 10.0;
+  float update_frequency = 10.0;
+  float publish_frequency = 1.0;
 };
 
 class Client
@@ -113,7 +110,8 @@ private:
   dds_entity_t participant;
 
   std::unique_ptr<ros::NodeHandle> node;
-  std::unique_ptr<ros::Rate> rate;
+  std::unique_ptr<ros::Rate> update_rate;
+  std::unique_ptr<ros::Rate> publish_rate;
 
   // --------------------------------------------------------------------------
   // Everything needed for sending out robot states
@@ -125,30 +123,31 @@ private:
 
   tf2_ros::Buffer tf2_buffer;
   tf2_ros::TransformListener tf2_listener;
-  geometry_msgs::TransformStamped robot_transform_stamped;
-  geometry_msgs::TransformStamped prev_robot_transform_stamped;
+  std::mutex robot_transform_mutex;
+  geometry_msgs::TransformStamped current_robot_transform;
+  geometry_msgs::TransformStamped previous_robot_transform;
 
   // create other subscribers here for updates
-  ros::Subscriber mode_sub;
   ros::Subscriber battery_percent_sub;
   ros::Subscriber level_name_sub;
-  ros::Subscriber path_sub;
-
-  std::mutex robot_state_mutex;
-  FreeFleetData_RobotState current_robot_state;
 
   std::mutex battery_state_mutex;
-  sensor_msgs::BatteryState battery_state;
+  sensor_msgs::BatteryState current_battery_state;
+
+  std::mutex level_name_mutex;
+  std_msgs::String current_level_name;
+
+  std::mutex robot_mode_mutex;
+  FreeFleetData_RobotMode desired_robot_mode;
+  FreeFleetData_RobotMode current_robot_mode;
 
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
 
   void level_name_callback_fn(const std_msgs::String& msg);
 
-  void path_callback_fn(const free_fleet_msgs::PathSequence& msg);
-
   bool get_robot_transform();
 
-  void get_robot_mode();
+  uint32_t get_robot_mode();
 
   void publish_robot_state();
 
@@ -173,7 +172,7 @@ private:
   /// In the event that within one single cycle, the client receives commands
   /// from all 3 sources, the priority is mode > path > location.
   ///
-  bool read_commands();
+  void read_commands();
 
   /// Handling of commands will have a similar priority, with mode > goal
   ///
@@ -181,9 +180,16 @@ private:
 
   // --------------------------------------------------------------------------
 
-  FreeFleetData_RobotMode desired_mode;
+  struct Goal
+  {
+    std::string level_name;
+    move_base_msgs::MoveBaseGoal goal;
+    bool sent = false;
+  };
 
-  std::deque<move_base_msgs::MoveBaseGoal> goal_path;
+
+  std::mutex goal_path_mutex;
+  std::deque<Goal> goal_path;
 
   using MoveBaseClient = 
       actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
@@ -191,14 +197,20 @@ private:
 
   MoveBaseClient move_base_client;
 
-  std::thread run_thread;
+  std::thread update_thread;
 
-  void run_thread_fn();
+  std::thread publish_thread;
+
+  void update_thread_fn();
+
+  void publish_thread_fn();
 
   Client(const ClientConfig& config);
 
   // --------------------------------------------------------------------------
   // Some math related utilities
+
+  float get_yaw_from_quat(const geometry_msgs::Quaternion& quat) const;
 
   float get_yaw_from_transform(
       const geometry_msgs::TransformStamped& transform_stamped) const; 
