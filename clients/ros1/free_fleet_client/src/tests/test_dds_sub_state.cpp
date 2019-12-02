@@ -84,6 +84,22 @@ int main(int argc, char** argv)
       std::cout << "battery: " << msg->battery_percent << std::endl;
       std::cout << "sec:  " << msg->location.sec << std::endl;
       std::cout << "nsec: " << msg->location.nanosec << std::endl;
+      std::cout << "mode: ";
+      if (msg->mode.mode == FreeFleetData_RobotMode_Constants_MODE_IDLE)
+        std::cout << "IDLE" << std::endl;
+      else if (
+          msg->mode.mode == FreeFleetData_RobotMode_Constants_MODE_CHARGING)
+        std::cout << "CHARGING" << std::endl;
+      else if (msg->mode.mode == FreeFleetData_RobotMode_Constants_MODE_MOVING)
+        std::cout << "MOVING" << std::endl;
+      else if (msg->mode.mode == FreeFleetData_RobotMode_Constants_MODE_PAUSED)
+        std::cout << "PAUSED" << std::endl;
+      else if (
+          msg->mode.mode == FreeFleetData_RobotMode_Constants_MODE_WAITING)
+        std::cout << "WAITING" << std::endl;
+      else if (
+          msg->mode.mode == FreeFleetData_RobotMode_Constants_MODE_EMERGENCY)
+        std::cout << "EMERGENCY" << std::endl;
       break;
     }
     else

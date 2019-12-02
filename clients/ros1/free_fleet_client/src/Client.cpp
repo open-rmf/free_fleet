@@ -379,16 +379,28 @@ void Client::read_commands()
   if (mode_msg)
   {
     if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_PAUSED)
+    {
+      ROS_INFO("received a PAUSE command.");
       pause_robot();
+    }
     else if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_MOVING)
+    {
+      ROS_INFO("received a RESUME command.");
       resume_robot();
+    }
+    else if (
+        mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_EMERGENCY)
+    {
+      ROS_INFO("received an EMERGENCY command.");
+      paused = false;
+      emergency = true;
+    }
     return;
   }
 
   auto path_msg = path_command_sub->read();
   if (path_msg)
   {
-    // TODO: make this info more verbose
     ROS_INFO("received a Path command.");
 
     WriteLock goal_path_lock(goal_path_mutex);
@@ -408,7 +420,6 @@ void Client::read_commands()
   auto location_msg = location_command_sub->read();
   if (location_msg)
   {
-    // TODO: make this info more verbose
     ROS_INFO("received a Location command.");
 
     WriteLock goal_path_lock(goal_path_mutex);
