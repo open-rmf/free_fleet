@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2019 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "dds/dds.h"
 #include "../free_fleet/FreeFleet.h"
 #include <stdio.h>
@@ -11,7 +28,8 @@ int main (int argc, char ** argv)
   dds_entity_t writer;
   dds_return_t rc;
   dds_qos_t *qos;
-  FreeFleetData_Location msg;
+  FreeFleetData_Path* msg;
+  msg = FreeFleetData_Path__alloc();
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -25,7 +43,7 @@ int main (int argc, char ** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &FreeFleetData_Location_desc, "robot_command", 
+    participant, &FreeFleetData_Path_desc, "robot_path_command", 
     NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
@@ -56,18 +74,28 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  msg.sec = 123;
-  msg.nanosec = 123;
-  msg.x = 6.4166097641;
-  msg.y = 1.48983263969;
-  msg.yaw = 0.0;
-  msg.level_name = "B1";
+  msg->path._maximum = 50;
+  msg->path._length = 50;
+  msg->path._buffer = FreeFleetData_Path_path_seq_allocbuf(10);
+  msg->path._release = false;
+
+  for (int i = 0; i < 50; ++i)
+  {
+    msg->path._buffer[i].sec = 123 + i;
+    msg->path._buffer[i].nanosec = 123 + i;
+    msg->path._buffer[i].x = 6.4166097641 + i;
+    msg->path._buffer[i].y = 1.489 + i;
+    msg->path._buffer[i].yaw = 0.0;
+    msg->path._buffer[i].level_name = dds_string_alloc(2);
+    msg->path._buffer[i].level_name[0] = 'B';
+    msg->path._buffer[i].level_name[1] = '1';
+  }
 
   printf ("=== [Publisher]  Writing : ");
-  printf ("Message: level_name %s\n", msg.level_name);
+  printf ("Message: path length %u\n", msg->path._length);
   fflush (stdout);
 
-  rc = dds_write (writer, &msg);
+  rc = dds_write (writer, msg);
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 
@@ -76,5 +104,6 @@ int main (int argc, char ** argv)
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
 
+  FreeFleetData_Path_free(msg, DDS_FREE_ALL);
   return EXIT_SUCCESS;
 }

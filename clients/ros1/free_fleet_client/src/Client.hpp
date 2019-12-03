@@ -18,12 +18,14 @@
 #ifndef FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
 #define FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
 
+#include <deque>
 #include <mutex>
 #include <atomic>
 #include <chrono>
 #include <memory>
 #include <thread>
 #include <limits>
+#include <vector>
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -36,13 +38,11 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 
-#include <free_fleet_msgs/RobotMode.h>
-#include <free_fleet_msgs/Location.h>
-#include <free_fleet_msgs/PathSequence.h>
-
 #include <dds/dds.h>
 
 #include "free_fleet/FreeFleet.h"
+#include "dds_utils/DDSPublishHandler.hpp"
+#include "dds_utils/DDSSubscribeHandler.hpp"
 
 
 namespace free_fleet
@@ -54,10 +54,8 @@ struct ClientConfig
   std::string robot_name;
   std::string robot_model;
 
-  std::string mode_topic = "/robot_mode";
   std::string battery_state_topic = "/battery_state";
   std::string level_name_topic = "/level_name";
-  std::string path_topic = "/path";
 
   std::string map_frame = "map";
   std::string robot_frame = "base_footprint";
@@ -66,10 +64,11 @@ struct ClientConfig
 
   uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
   std::string dds_state_topic = "robot_state";
-  std::string dds_mode_command_topic = "robot_mode";
-  std::string dds_path_command_topic = "robot_path";
-  std::string dds_location_command_topic = "robot_command";
+  std::string dds_mode_command_topic = "robot_mode_command";
+  std::string dds_path_command_topic = "robot_path_command";
+  std::string dds_location_command_topic = "robot_location_command";
 
+  float update_frequency = 10.0;
   float publish_frequency = 1.0;
 };
 
@@ -98,11 +97,6 @@ public:
   /// publishing the state over DDS to the server
   void start();
 
-  /// Updates the Client with the newest RobotState, in order to be passed to
-  /// the server.
-  ///
-  void update_robot_state(const FreeFleetData_RobotState& state);
-
 private:
 
   ClientConfig client_config;
@@ -113,74 +107,119 @@ private:
   dds_entity_t participant;
 
   std::unique_ptr<ros::NodeHandle> node;
-  std::unique_ptr<ros::Rate> rate;
+  std::unique_ptr<ros::Rate> update_rate;
+  std::unique_ptr<ros::Rate> publish_rate;
 
   // --------------------------------------------------------------------------
   // Everything needed for sending out robot states
 
-  dds_entity_t state_topic;
-  dds_entity_t state_writer;
+  dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
+      state_pub;
 
   tf2_ros::Buffer tf2_buffer;
   tf2_ros::TransformListener tf2_listener;
-  geometry_msgs::TransformStamped robot_transform_stamped;
+  std::mutex robot_transform_mutex;
+  geometry_msgs::TransformStamped current_robot_transform;
+  geometry_msgs::TransformStamped previous_robot_transform;
 
   // create other subscribers here for updates
-  ros::Subscriber mode_sub;
   ros::Subscriber battery_percent_sub;
   ros::Subscriber level_name_sub;
-  ros::Subscriber path_sub;
 
-  std::mutex robot_state_mutex;
-  FreeFleetData_RobotState robot_state;
+  std::mutex battery_state_mutex;
+  sensor_msgs::BatteryState current_battery_state;
 
-  // --------------------------------------------------------------------------
-  // Everything needed for receiving commands and passing it down
-  
-  dds_entity_t command_topic;
-  dds_entity_t command_reader;
-  FreeFleetData_Location *command_msg;
-  void *command_samples[1];
-  dds_sample_info_t command_infos[1];
-
-  move_base_msgs::MoveBaseGoal location_command_goal;
-
-  using MoveBaseClient = 
-      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
-  MoveBaseClient move_base_client;
-
-  // --------------------------------------------------------------------------
-
-  std::thread run_thread;
-
-  Client(const ClientConfig& config);
-
-
-  void mode_callback_fn(const free_fleet_msgs::RobotMode& msg);
+  std::mutex level_name_mutex;
+  std_msgs::String current_level_name;
 
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
 
   void level_name_callback_fn(const std_msgs::String& msg);
 
-  void path_callback_fn(const free_fleet_msgs::PathSequence& msg);
-
   bool get_robot_transform();
+
+  /// TODO: figure out the conditions of waiting
+  ///
+  uint32_t get_robot_mode();
 
   void publish_robot_state();
 
-  bool read_commands();
+  // --------------------------------------------------------------------------
+  // Receiving and handling commands in the form of location, mode and path.
 
-  void send_commands();
+  dds::DDSSubscribeHandler<FreeFleetData_RobotMode>::SharedPtr 
+      mode_command_sub;
 
-  void run_thread_fn();
+  dds::DDSSubscribeHandler<FreeFleetData_Location>::SharedPtr
+      location_command_sub;
+
+  dds::DDSSubscribeHandler<FreeFleetData_Path>::SharedPtr 
+      path_command_sub;
+
+  move_base_msgs::MoveBaseGoal location_to_goal(
+      std::shared_ptr<const FreeFleetData_Location> location) const;
+
+  move_base_msgs::MoveBaseGoal location_to_goal(
+      const FreeFleetData_Location& location) const;
+
+  void pause_robot();
+
+  void resume_robot();
+
+  /// In the event that within one single cycle, the client receives commands
+  /// from all 3 sources, the priority is mode > path > location.
+  ///
+  void read_commands();
+
+  /// Handling of commands will have a similar priority, with mode > goal
+  ///
+  void handle_commands();
+
+  // --------------------------------------------------------------------------
+
+  struct Goal
+  {
+    std::string level_name;
+    move_base_msgs::MoveBaseGoal goal;
+    bool sent = false;
+  };
+
+  std::atomic<bool> emergency;
+
+  std::atomic<bool> paused;
+
+  std::mutex goal_path_mutex;
+  std::deque<Goal> goal_path;
+
+  using MoveBaseClient = 
+      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
+  using GoalState = actionlib::SimpleClientGoalState;
+
+  MoveBaseClient move_base_client;
+
+  std::thread update_thread;
+
+  std::thread publish_thread;
+
+  void update_thread_fn();
+
+  void publish_thread_fn();
+
+  Client(const ClientConfig& config);
 
   // --------------------------------------------------------------------------
   // Some math related utilities
 
-  float get_yaw_from_transform(
+  double get_yaw_from_quat(const geometry_msgs::Quaternion& quat) const;
+
+  double get_yaw_from_transform(
       const geometry_msgs::TransformStamped& transform_stamped) const; 
 
-  geometry_msgs::Quaternion get_quat_from_yaw(float yaw) const;
+  geometry_msgs::Quaternion get_quat_from_yaw(double yaw) const;
+
+  bool is_transform_close(
+      const geometry_msgs::TransformStamped& transform_1,
+      const geometry_msgs::TransformStamped& transform_2) const;
 
   // --------------------------------------------------------------------------
   // some C memory related stuff

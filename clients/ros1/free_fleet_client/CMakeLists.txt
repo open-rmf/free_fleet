@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   tf2_geometry_msgs
-  free_fleet_msgs
   actionlib
   move_base_msgs
 )
@@ -49,60 +48,38 @@ target_include_directories(free_fleet_client
 
 # -----------------------------------------------------------------------------
 
-add_executable(fake_action_server
-  src/tests/fake_action_server.cpp
-)
-target_link_libraries(fake_action_server
-  ${catkin_LIBRARIES}
-)
-target_include_directories(fake_action_server
-  PRIVATE
-    ${catkin_INCLUDE_DIRS}
+set(testing_targets
+  fake_action_server
+  test_dds_sub_state
+  test_dds_pub_mode_command
+  test_dds_pub_path_command
+  test_dds_pub_sim_path_command
+  test_dds_pub_location_command
 )
 
-# -----------------------------------------------------------------------------
-
-add_executable(test_dds_sub_state
-  src/tests/test_dds_sub_state.cpp
-  src/free_fleet/FreeFleet.c
-)
-target_link_libraries(test_dds_sub_state
-  ddsc
-  crypto
-  ssl
-  ${catkin_LIBRARIES}
-)
-target_include_directories(test_dds_sub_state
-  PRIVATE
-    ${catkin_INCLUDE_DIRS}
-    ${CYCLONE_INSTALL_PATH}/include
-)
-
-# -----------------------------------------------------------------------------
-
-add_executable(test_dds_pub_command
-  src/tests/test_dds_pub_command.cpp
-  src/free_fleet/FreeFleet.c
-)
-target_link_libraries(test_dds_pub_command
-  ddsc
-  crypto
-  ssl
-  ${catkin_LIBRARIES}
-)
-target_include_directories(test_dds_pub_command
-  PRIVATE
-    ${catkin_INCLUDE_DIRS}
-    ${CYCLONE_INSTALL_PATH}/include
-)
+foreach(target ${testing_targets})
+  add_executable(${target}
+    src/tests/${target}.cpp
+    src/free_fleet/FreeFleet.c
+  )
+  target_link_libraries(${target}
+    ddsc
+    crypto
+    ssl
+    ${catkin_LIBRARIES}
+  )
+  target_include_directories(${target}
+    PRIVATE
+      ${catkin_INCLUDE_DIRS}
+      ${CYCLONE_INSTALL_PATH}/include
+  )
+endforeach()
 
 # -----------------------------------------------------------------------------
 
 install(
   TARGETS 
     free_fleet_client 
-    fake_action_server 
-    test_dds_sub_state
-    test_dds_pub_command
+    ${testing_targets}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
