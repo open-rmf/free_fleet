@@ -14,23 +14,38 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(rmf_fleet_msgs REQUIRED)
 find_package(cyclonedds_cmake_module REQUIRED)
-find_package(rmw_cyclonedds_cpp REQUIRED)
+find_package(CycloneDDS QUIET CONFIG)
+if(NOT CycloneDDS_FOUND)
+  message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
+  ament_package()
+  return()
+endif()
 
 # -----------------------------------------------------------------------------
 
 add_executable(free_fleet_server 
-  free_fleet_server.cpp
+  src/Server.cpp
+  src/free_fleet/FreeFleet.c
 )
 ament_target_dependencies(free_fleet_server
-  rmw_cyclonedds_cpp
+  rclcpp
+  rmf_fleet_msgs
+)
+target_link_libraries(free_fleet_server
+  CycloneDDS::ddsc
 )
 
 # -----------------------------------------------------------------------------
 
-install(TARGETS free_fleet_server
-  RUNTIME DESTINATION bin
+install(
+  TARGETS free_fleet_server
+  EXPORT
+  RUNTIME DESTINATION lib/free_fleet_server
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
 )
 
 ament_package()
