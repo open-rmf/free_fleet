@@ -19,3 +19,5 @@ location in `/opt/ros/dashing`
 * [Generating the CycloneDDS message types](docs/msgs.md)
 
 * [Building the ROS 1 Client](docs/clients.md)
+
+* [Running tests on the ROS 1 Client](docs/clients_test.md)
