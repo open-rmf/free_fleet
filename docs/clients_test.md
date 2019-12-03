@@ -41,6 +41,8 @@ rosrun free_fleet_client test_dds_pub_mode_command ressume
 
 # Client simulation test
 
+![](media/free_fleet_client.gif)
+
 To simulate working with a live ROS 1 navigation stack, we will use the Turtlebot3 navigation examples given [here](http://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/).
 
 Follow the examples and proceed to launch the simulation, mapping, saving the map, and launching the navigation stack with the saved map. For convenience we have also included sample maps, generated using `gmapping` just like the examples [here](../clients/ros1/free_fleet_client/test_maps).
