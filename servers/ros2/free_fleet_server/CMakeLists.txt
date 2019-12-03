@@ -16,18 +16,18 @@ find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rmf_fleet_msgs REQUIRED)
 find_package(cyclonedds_cmake_module REQUIRED)
-find_package(CycloneDDS REQUIRED)
-message(${cyclonedds_cmake_module_FOUND})
+find_package(rmw_cyclonedds_cpp REQUIRED)
 
-add_executable(free_fleet_server free_fleet_server.cpp)
+# -----------------------------------------------------------------------------
 
-message(hello)
-message(cyclonedds paths: ${CycloneDDS_INCLUDE_DIR}) 
-
-target_include_directories(free_fleet_server
-  PUBLIC
-  ${CycloneDDS_INCLUDE_DIR}
+add_executable(free_fleet_server 
+  free_fleet_server.cpp
 )
+ament_target_dependencies(free_fleet_server
+  rmw_cyclonedds_cpp
+)
+
+# -----------------------------------------------------------------------------
 
 install(TARGETS free_fleet_server
   RUNTIME DESTINATION bin
