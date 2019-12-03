@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
-#define FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
+#ifndef FREEFLEETCLIENT__SRC__CLIENT_HPP
+#define FREEFLEETCLIENT__SRC__CLIENT_HPP
 
 #include <deque>
 #include <mutex>
@@ -230,4 +230,4 @@ private:
 
 } // namespace free_fleet
 
-#endif // FREEFLEETCLIENT__SRC__FREEFLEETCLIENT_HPP
+#endif // FREEFLEETCLIENT__SRC__CLIENT_HPP

@@ -27,6 +27,7 @@ endif()
 # -----------------------------------------------------------------------------
 
 add_executable(free_fleet_server 
+  src/main.cpp
   src/Server.cpp
   src/free_fleet/FreeFleet.c
 )
