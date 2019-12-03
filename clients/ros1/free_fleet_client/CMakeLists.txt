@@ -54,6 +54,7 @@ set(testing_targets
   test_dds_sub_state
   test_dds_pub_mode_command
   test_dds_pub_path_command
+  test_dds_pub_sim_path_command
   test_dds_pub_location_command
 )
 

@@ -215,14 +215,12 @@ private:
   // --------------------------------------------------------------------------
   // Some math related utilities
 
-  float get_yaw_from_quat(const geometry_msgs::Quaternion& quat) const;
+  double get_yaw_from_quat(const geometry_msgs::Quaternion& quat) const;
 
-  float get_yaw_from_transform(
+  double get_yaw_from_transform(
       const geometry_msgs::TransformStamped& transform_stamped) const; 
 
-  geometry_msgs::Quaternion get_quat_from_yaw(float yaw) const;
-
-  bool is_close(double x, double y, double min = 0.05) const;
+  geometry_msgs::Quaternion get_quat_from_yaw(double yaw) const;
 
   bool is_transform_close(
       const geometry_msgs::TransformStamped& transform_1,

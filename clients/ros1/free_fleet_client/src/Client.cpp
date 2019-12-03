@@ -450,9 +450,6 @@ void Client::handle_commands()
   WriteLock goal_path_lock(goal_path_mutex);
   if (!goal_path.empty())
   {
-    ROS_INFO("we still have %u goals in goal_path", 
-        static_cast<uint32_t>(goal_path.size()));
-
     // Goals must have been updated since last handling, execute them now
     if (!goal_path.front().sent)
     {
@@ -470,9 +467,8 @@ void Client::handle_commands()
       goal_path.pop_front();
       return;
     }
-    else if (current_goal_state == GoalState::PENDING)
+    else if (current_goal_state == GoalState::ACTIVE)
     {
-      ROS_INFO("current goal state: PENDING.");
       return;
     }
     else
@@ -487,11 +483,11 @@ void Client::handle_commands()
   // otherwise, mode is correct, nothing in queue, nothing else to do then
 }
 
-float Client::get_yaw_from_quat(
+double Client::get_yaw_from_quat(
     const geometry_msgs::Quaternion& _quat) const
 {
   tf2::Quaternion tf2_quat;
-  fromMsg(_quat, tf2_quat);
+  tf2::fromMsg(_quat, tf2_quat);
   tf2::Matrix3x3 tf2_mat(tf2_quat);
   
   // ignores pitch and roll, but the api call is so nice though
@@ -502,13 +498,13 @@ float Client::get_yaw_from_quat(
   return yaw;
 }
 
-float Client::get_yaw_from_transform(
+double Client::get_yaw_from_transform(
     const geometry_msgs::TransformStamped& _transform_stamped) const
 {
   return get_yaw_from_quat(_transform_stamped.transform.rotation);
 }
 
-geometry_msgs::Quaternion Client::get_quat_from_yaw(float _yaw) const
+geometry_msgs::Quaternion Client::get_quat_from_yaw(double _yaw) const
 {
   tf2::Quaternion quat_tf;
   quat_tf.setRPY(0.0, 0.0, _yaw);
@@ -518,28 +514,31 @@ geometry_msgs::Quaternion Client::get_quat_from_yaw(float _yaw) const
   return quat;
 }
 
-bool Client::is_close(double x, double y, double min) const
-{
-  if (abs(x - y) > min)
-    return false;
-  return true;
-} 
-
 bool Client::is_transform_close(
-    const geometry_msgs::TransformStamped& _t1,
-    const geometry_msgs::TransformStamped& _t2) const
+    const geometry_msgs::TransformStamped& _first,
+    const geometry_msgs::TransformStamped& _second) const
 {
-  if (_t1.header.frame_id == _t2.header.frame_id && 
-      _t1.child_frame_id == _t2.child_frame_id &&
-      is_close(_t1.transform.translation.x, _t2.transform.translation.x) &&
-      is_close(_t1.transform.translation.y, _t2.transform.translation.y) &&
-      is_close(_t1.transform.translation.z, _t2.transform.translation.z) &&
-      is_close(_t1.transform.rotation.x, _t2.transform.rotation.x) &&
-      is_close(_t1.transform.rotation.y, _t2.transform.rotation.y) &&
-      is_close(_t1.transform.rotation.z, _t2.transform.rotation.z) &&
-      is_close(_t1.transform.rotation.w, _t2.transform.rotation.w))
-    return true;
-  return false;      
+  if (_first.header.frame_id != _second.header.frame_id || 
+      _first.child_frame_id != _second.child_frame_id)
+    return false;
+
+  double elapsed_sec = (_second.header.stamp - _first.header.stamp).toSec();
+  tf2::Vector3 first_pos;
+  tf2::Vector3 second_pos;
+  tf2::fromMsg(_first.transform.translation, first_pos);
+  tf2::fromMsg(_second.transform.translation, second_pos);
+  double distance = second_pos.distance(first_pos);
+  double speed = abs(distance / elapsed_sec);
+  if (speed > 0.01)
+    return false;
+
+  double first_yaw = get_yaw_from_transform(_first);
+  double second_yaw = get_yaw_from_transform(_second);
+  double turning_speed = abs((second_yaw - first_yaw) / elapsed_sec);
+  if (turning_speed > 0.01)
+    return false;
+
+  return true;
 }
 
 void Client::update_thread_fn()
