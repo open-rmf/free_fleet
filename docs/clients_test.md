@@ -47,7 +47,7 @@ To simulate working with a live ROS 1 navigation stack, we will use the Turtlebo
 
 Follow the examples and proceed to launch the simulation, mapping, saving the map, and launching the navigation stack with the saved map. For convenience we have also included sample maps, generated using `gmapping` just like the examples [here](../clients/ros1/free_fleet_client/test_maps).
 
-In a separate terminal, source the workspace where `free_fleet_client` and `free_fleet_msgs` was built, and launch the client with fleet name, robot name and robot model as mandatory arguments,
+In a separate terminal, source the workspace where `free_fleet_client` was built, and launch the client with fleet name, robot name and robot model as mandatory arguments,
 
 ```bash
 source ~/client_ws/devel/setup.bash
