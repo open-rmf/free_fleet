@@ -14,14 +14,14 @@
 
 Clone the repository somewhere,
 
-```
+```bash
 cd
 git clone https://github.com/osrf/free_fleet
 ```
 
 Start a new ROS 1 workspace while symbolically linking the client in,
 
-```
+```bash
 mkdir -p ~/client_ws/src
 cd ~/client_ws/src
 ln -s ~/free_fleet/clients/ros1 free_fleet_ros1
@@ -29,7 +29,7 @@ ln -s ~/free_fleet/clients/ros1 free_fleet_ros1
 
 Source ROS 1 and build!
 
-```
+```bash
 cd ~/client_ws
 source /opt/ros/melodic/setup.bash
 catkin build
@@ -37,36 +37,10 @@ catkin build
 
 At this point the build will fail due to the project failing to find the necessary headers in the CycloneDDS `ExternalProject`, this can currently be solved by simply invoking build again.
 
-```
+```bash
 catkin build
 ```
 
-# Client tests
+# Testing
 
-To emulate a running robot and also a running free fleet server,
-
-```
-# Terminal A
-roscore
-
-# Terminal B, at this point it will be asking for the move base action server, which will timeout after 10 seconds
-rosrun free_fleet_client free_fleet_client
-
-# Terminal C, the fake move base action server, the client will then be listening for transform frames
-rosrun free_fleet_client test_action_server
-
-# Terminal D, the fake static transform
-rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 1.0 base_footprint map 200
-```
-
-The client will then start subscribing to all the necessary topics, and start publishing robot states over DDS to the server. To demonstrate this behaviour,
-
-```
-rosrun free_fleet_client test_dds_sub_state
-```
-
-The client will also be listening for commands over DDS, which will trigger action server calls for `MoveBase`. To demonstrate this behaviour
-
-```
-rosrun free_fleet_client test_dds_pub_command
-```
+Move onto testing the free fleet client [here](clients_test.md)
