@@ -49,26 +49,12 @@ Client::Client(const ClientConfig& _config)
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for sending out the robot states
 
-  std::string state_dds_topic_name = client_config.dds_state_topic;
-  state_topic = dds_create_topic(
-      participant, &FreeFleetData_RobotState_desc, 
-      state_dds_topic_name.c_str(), NULL, NULL);
-  if (state_topic < 0)
-  {
-    ROS_FATAL("dds_create_topic: %s\n", dds_strretcode(-state_topic));
+  state_pub.reset(
+      new dds::DDSPublishHandler<FreeFleetData_RobotState>(
+          participant, &FreeFleetData_RobotState_desc,
+          client_config.dds_state_topic));
+  if (!state_pub->is_ready())
     return;
-  }
-
-  dds_qos_t* state_qos = dds_create_qos();
-  dds_qset_reliability(state_qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-  state_writer = dds_create_writer(
-      participant, state_topic, state_qos, NULL);
-  if (state_writer < 0)
-  {
-    ROS_FATAL("dds_create_writer: %s\n", dds_strretcode(-state_writer));
-    return;
-  }
-  dds_delete_qos(state_qos);
 
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting mode commands
@@ -179,8 +165,6 @@ void Client::start()
 
   emergency = false;
   paused = false;
-
-  last_write_time = ros::Time::now();
 
   ROS_INFO("Client: starting update thread.");
   update_thread = std::thread(std::bind(&Client::update_thread_fn, this));
@@ -316,10 +300,8 @@ void Client::publish_robot_state()
     }
   }
 
-  return_code = dds_write(state_writer, current_robot_state);
-  ROS_INFO("dds publishing: msg sec %u", current_robot_state->location.sec);
-  if (return_code != DDS_RETCODE_OK)
-    ROS_ERROR("dds write failed: %s", dds_strretcode(-return_code));
+  if (state_pub->write(current_robot_state))
+    ROS_INFO("dds publishing: msg sec %u", current_robot_state->location.sec);
 
   FreeFleetData_RobotState_free(current_robot_state, DDS_FREE_ALL);
 }

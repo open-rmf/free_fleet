@@ -45,6 +45,7 @@
 #include <dds/dds.h>
 
 #include "free_fleet/FreeFleet.h"
+#include "dds_utils/DDSPublishHandler.hpp"
 #include "dds_utils/DDSSubscribeHandler.hpp"
 
 
@@ -116,10 +117,8 @@ private:
   // --------------------------------------------------------------------------
   // Everything needed for sending out robot states
 
-  ros::Time last_write_time;
-
-  dds_entity_t state_topic;
-  dds_entity_t state_writer;
+  dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
+      state_pub;
 
   tf2_ros::Buffer tf2_buffer;
   tf2_ros::TransformListener tf2_listener;

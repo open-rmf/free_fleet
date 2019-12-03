@@ -33,8 +33,6 @@ class DDSPublishHandler
 public:
 
   using SharedPtr = std::shared_ptr<DDSPublishHandler>;
-  using MessageSharedPtr = std::shared_ptr<Message>;
-  using MessageConstSharedPtr = std::shared_ptr<const Message>;
 
 private:
 
@@ -92,9 +90,15 @@ public:
   }
 
   ///
-  bool write()
+  bool write(Message* msg)
   {
-    return false;
+    return_code = dds_write(writer, msg);
+    if (return_code != DDS_RETCODE_OK)
+    {
+      DDS_FATAL("dds_write failed: %s", dds_strretcode(-return_code));
+      return false;
+    }
+    return true;
   }
 
 };
