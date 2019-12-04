@@ -34,7 +34,7 @@ module FreeFleetData
   };
   struct ModeRequest
   {
-    Location location;
+    RobotMode mode;
     string task_id;
   };
   struct PathRequest

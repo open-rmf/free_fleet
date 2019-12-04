@@ -147,14 +147,14 @@ private:
   // --------------------------------------------------------------------------
   // Receiving and handling commands in the form of location, mode and path.
 
-  dds::DDSSubscribeHandler<FreeFleetData_RobotMode>::SharedPtr 
-      mode_command_sub;
+  dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
+      mode_request_sub;
 
-  dds::DDSSubscribeHandler<FreeFleetData_Location>::SharedPtr
-      location_command_sub;
+  dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
+      path_request_sub;
 
-  dds::DDSSubscribeHandler<FreeFleetData_Path>::SharedPtr 
-      path_command_sub;
+  dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
+      destination_request_sub;
 
   move_base_msgs::MoveBaseGoal location_to_goal(
       std::shared_ptr<const FreeFleetData_Location> location) const;
