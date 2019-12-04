@@ -31,6 +31,8 @@ link_directories(${CYCLONE_INSTALL_PATH}/lib)
 add_executable(free_fleet_client
   src/main.cpp
   src/Client.cpp
+  src/dds_utils/math.cpp
+  src/dds_utils/common.cpp
   src/free_fleet/FreeFleet.c
 )
 target_link_libraries(free_fleet_client
