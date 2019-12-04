@@ -94,7 +94,7 @@ dds_sample_free ((d), &FreeFleetData_RobotState_desc, (o))
 
 typedef struct FreeFleetData_ModeRequest
 {
-  FreeFleetData_Location location;
+  FreeFleetData_RobotMode mode;
   char * task_id;
 } FreeFleetData_ModeRequest;
 

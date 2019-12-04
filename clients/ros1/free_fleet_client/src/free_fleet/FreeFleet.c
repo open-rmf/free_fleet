@@ -95,12 +95,7 @@ const dds_topic_descriptor_t FreeFleetData_RobotState_desc =
 
 static const uint32_t FreeFleetData_ModeRequest_ops [] =
 {
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_ModeRequest, location.sec),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_ModeRequest, location.nanosec),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_ModeRequest, location.x),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_ModeRequest, location.y),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_ModeRequest, location.yaw),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_ModeRequest, location.level_name),
+  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_ModeRequest, mode.mode),
   DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_ModeRequest, task_id),
   DDS_OP_RTS
 };
@@ -113,9 +108,9 @@ const dds_topic_descriptor_t FreeFleetData_ModeRequest_desc =
   0u,
   "FreeFleetData::ModeRequest",
   NULL,
-  8,
+  3,
   FreeFleetData_ModeRequest_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"FreeFleetData\"><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Float/></Member><Member name=\"y\"><Float/></Member><Member name=\"yaw\"><Float/></Member><Member name=\"level_name\"><String/></Member></Struct><Struct name=\"ModeRequest\"><Member name=\"location\"><Type name=\"Location\"/></Member><Member name=\"task_id\"><String/></Member></Struct></Module></MetaData>"
+  "<MetaData version=\"1.0.0\"><Module name=\"FreeFleetData\"><Struct name=\"RobotMode\"><Member name=\"mode\"><ULong/></Member></Struct><Struct name=\"ModeRequest\"><Member name=\"mode\"><Type name=\"RobotMode\"/></Member><Member name=\"task_id\"><String/></Member></Struct></Module></MetaData>"
 };
 
 
