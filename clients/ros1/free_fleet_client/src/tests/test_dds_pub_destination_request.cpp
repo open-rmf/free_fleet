@@ -28,8 +28,7 @@ int main (int argc, char ** argv)
   dds_entity_t writer;
   dds_return_t rc;
   dds_qos_t *qos;
-  FreeFleetData_Path* msg;
-  msg = FreeFleetData_Path__alloc();
+  FreeFleetData_DestinationRequest msg;
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -43,7 +42,7 @@ int main (int argc, char ** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &FreeFleetData_Path_desc, "robot_path_command", 
+    participant, &FreeFleetData_DestinationRequest_desc, "destination_request", 
     NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
@@ -74,52 +73,20 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  msg->path._maximum = 4;
-  msg->path._length = 4;
-  msg->path._buffer = FreeFleetData_Path_path_seq_allocbuf(10);
-  msg->path._release = false;
-
-  msg->path._buffer[0].sec = 123;
-  msg->path._buffer[0].nanosec = 123;
-  msg->path._buffer[0].x = 0.735785007477;
-  msg->path._buffer[0].y = -1.78202533722;
-  msg->path._buffer[0].yaw = 0.0;
-  msg->path._buffer[0].level_name = dds_string_alloc(2);
-  msg->path._buffer[0].level_name[0] = 'B';
-  msg->path._buffer[0].level_name[1] = '1';
-  
-  msg->path._buffer[1].sec = 133;
-  msg->path._buffer[1].nanosec = 133;
-  msg->path._buffer[1].x = 1.09616982937;
-  msg->path._buffer[1].y = 1.89214968681;
-  msg->path._buffer[1].yaw = 0.0;
-  msg->path._buffer[1].level_name = dds_string_alloc(2);
-  msg->path._buffer[1].level_name[0] = 'B';
-  msg->path._buffer[1].level_name[1] = '1';
-
-  msg->path._buffer[2].sec = 143;
-  msg->path._buffer[2].nanosec = 143;
-  msg->path._buffer[2].x = -1.93706703186;
-  msg->path._buffer[2].y = 0.680773854256;
-  msg->path._buffer[2].yaw = 0.0;
-  msg->path._buffer[2].level_name = dds_string_alloc(2);
-  msg->path._buffer[2].level_name[0] = 'B';
-  msg->path._buffer[2].level_name[1] = '1';
-
-  msg->path._buffer[3].sec = 153;
-  msg->path._buffer[3].nanosec = 153;
-  msg->path._buffer[3].x = -1.98976910114;
-  msg->path._buffer[3].y = -0.43612909317;
-  msg->path._buffer[3].yaw = 0.0;
-  msg->path._buffer[3].level_name = dds_string_alloc(2);
-  msg->path._buffer[3].level_name[0] = 'B';
-  msg->path._buffer[3].level_name[1] = '1';
+  msg.location.sec = 123;
+  msg.location.nanosec = 123;
+  msg.location.x = 0.735785007477;
+  msg.location.y = -1.78202533722;
+  msg.location.yaw = 0.0;
+  msg.location.level_name = dds_string_alloc(2);
+  msg.location.level_name[0] = 'B';
+  msg.location.level_name[1] = '1';
 
   printf ("=== [Publisher]  Writing : ");
-  printf ("Message: path length %u\n", msg->path._length);
+  printf ("Message: level_name %s\n", msg.location.level_name);
   fflush (stdout);
 
-  rc = dds_write (writer, msg);
+  rc = dds_write (writer, &msg);
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 
@@ -128,6 +95,6 @@ int main (int argc, char ** argv)
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
 
-  FreeFleetData_Path_free(msg, DDS_FREE_ALL);
+  dds_string_free(msg.location.level_name);
   return EXIT_SUCCESS;
 }

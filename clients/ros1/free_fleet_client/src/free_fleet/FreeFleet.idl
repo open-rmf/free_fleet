@@ -26,13 +26,25 @@ module FreeFleetData
   {
     string name;
     string model;
+    string task_id;
     RobotMode mode;
     float battery_percent;
     Location location;
     sequence<Location> path;
   };
-  struct Path
+  struct ModeRequest
+  {
+    RobotMode mode;
+    string task_id;
+  };
+  struct PathRequest
   {
     sequence<Location> path;
+    string task_id;
+  };
+  struct DestinationRequest
+  {
+    Location location;
+    string task_id;
   };
 };

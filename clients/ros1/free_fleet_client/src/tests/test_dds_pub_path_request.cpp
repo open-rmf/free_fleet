@@ -28,7 +28,8 @@ int main (int argc, char ** argv)
   dds_entity_t writer;
   dds_return_t rc;
   dds_qos_t *qos;
-  FreeFleetData_Location msg;
+  FreeFleetData_PathRequest* msg;
+  msg = FreeFleetData_PathRequest__alloc();
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -42,7 +43,7 @@ int main (int argc, char ** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &FreeFleetData_Location_desc, "robot_location_command", 
+    participant, &FreeFleetData_PathRequest_desc, "path_request", 
     NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
@@ -73,20 +74,28 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  msg.sec = 123;
-  msg.nanosec = 123;
-  msg.x = 0.735785007477;
-  msg.y = -1.78202533722;
-  msg.yaw = 0.0;
-  msg.level_name = dds_string_alloc(2);
-  msg.level_name[0] = 'B';
-  msg.level_name[1] = '1';
+  msg->path._maximum = 50;
+  msg->path._length = 50;
+  msg->path._buffer = FreeFleetData_PathRequest_path_seq_allocbuf(10);
+  msg->path._release = false;
+
+  for (int i = 0; i < 50; ++i)
+  {
+    msg->path._buffer[i].sec = 123 + i;
+    msg->path._buffer[i].nanosec = 123 + i;
+    msg->path._buffer[i].x = 6.4166097641 + i;
+    msg->path._buffer[i].y = 1.489 + i;
+    msg->path._buffer[i].yaw = 0.0;
+    msg->path._buffer[i].level_name = dds_string_alloc(2);
+    msg->path._buffer[i].level_name[0] = 'B';
+    msg->path._buffer[i].level_name[1] = '1';
+  }
 
   printf ("=== [Publisher]  Writing : ");
-  printf ("Message: level_name %s\n", msg.level_name);
+  printf ("Message: path length %u\n", msg->path._length);
   fflush (stdout);
 
-  rc = dds_write (writer, &msg);
+  rc = dds_write (writer, msg);
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 
@@ -95,6 +104,6 @@ int main (int argc, char ** argv)
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
 
-  dds_string_free(msg.level_name);
+  FreeFleetData_PathRequest_free(msg, DDS_FREE_ALL);
   return EXIT_SUCCESS;
 }
