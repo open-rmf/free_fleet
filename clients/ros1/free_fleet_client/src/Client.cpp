@@ -16,10 +16,8 @@
  */
 
 #include "Client.hpp"
-
-#include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-
+#include "dds_utils/math.hpp"
+#include "dds_utils/common.hpp"
 
 namespace free_fleet
 {
@@ -222,7 +220,7 @@ uint32_t Client::get_robot_mode()
       return FreeFleetData_RobotMode_Constants_MODE_CHARGING;
     
     /// Checks if the robot is moving
-    else if(!is_transform_close(
+    else if(!math::is_transform_close(
         current_robot_transform, previous_robot_transform))
       return FreeFleetData_RobotMode_Constants_MODE_MOVING;
   }
@@ -245,11 +243,11 @@ void Client::publish_robot_state()
 
   dds_string_free(current_robot_state->name);
   current_robot_state->name = 
-      dds_string_alloc_and_copy(client_config.robot_name);
+      common::dds_string_alloc_and_copy(client_config.robot_name);
 
   dds_string_free(current_robot_state->model);
   current_robot_state->model = 
-      dds_string_alloc_and_copy(client_config.robot_model);
+      common::dds_string_alloc_and_copy(client_config.robot_model);
 
   current_robot_state->mode.mode = get_robot_mode();
   
@@ -268,12 +266,12 @@ void Client::publish_robot_state()
     current_robot_state->location.y = 
         current_robot_transform.transform.translation.y;
     current_robot_state->location.yaw = 
-        get_yaw_from_transform(current_robot_transform);
+        math::get_yaw_from_transform(current_robot_transform);
     
     ReadLock level_name_lock(level_name_mutex);
     dds_string_free(current_robot_state->location.level_name);
     current_robot_state->location.level_name = 
-        dds_string_alloc_and_copy(current_level_name.data);
+        common::dds_string_alloc_and_copy(current_level_name.data);
   }
 
   {
@@ -297,9 +295,9 @@ void Client::publish_robot_state()
       current_robot_state->path._buffer[i].y =
           goal_path[i].goal.target_pose.pose.position.y;
       current_robot_state->path._buffer[i].yaw =
-          get_yaw_from_quat(goal_path[i].goal.target_pose.pose.orientation);
+          math::get_yaw_from_quat(goal_path[i].goal.target_pose.pose.orientation);
       current_robot_state->path._buffer[i].level_name =
-          dds_string_alloc_and_copy(goal_path[i].level_name);
+          common::dds_string_alloc_and_copy(goal_path[i].level_name);
     }
   }
 
@@ -319,7 +317,7 @@ move_base_msgs::MoveBaseGoal Client::location_to_goal(
   goal.target_pose.pose.position.x = _location->x;
   goal.target_pose.pose.position.y = _location->y;
   goal.target_pose.pose.position.z = 0.0;
-  goal.target_pose.pose.orientation = get_quat_from_yaw(_location->yaw);
+  goal.target_pose.pose.orientation = math::get_quat_from_yaw(_location->yaw);
   return goal;
 }
 
@@ -333,7 +331,7 @@ move_base_msgs::MoveBaseGoal Client::location_to_goal(
   goal.target_pose.pose.position.x = _location.x;
   goal.target_pose.pose.position.y = _location.y;
   goal.target_pose.pose.position.z = 0.0;
-  goal.target_pose.pose.orientation = get_quat_from_yaw(_location.yaw);
+  goal.target_pose.pose.orientation = math::get_quat_from_yaw(_location.yaw);
   return goal;
 }
 
@@ -472,64 +470,6 @@ void Client::handle_requests()
   // otherwise, mode is correct, nothing in queue, nothing else to do then
 }
 
-double Client::get_yaw_from_quat(
-    const geometry_msgs::Quaternion& _quat) const
-{
-  tf2::Quaternion tf2_quat;
-  tf2::fromMsg(_quat, tf2_quat);
-  tf2::Matrix3x3 tf2_mat(tf2_quat);
-  
-  // ignores pitch and roll, but the api call is so nice though
-  double yaw;
-  double pitch;
-  double roll;
-  tf2_mat.getEulerYPR(yaw, pitch, roll);
-  return yaw;
-}
-
-double Client::get_yaw_from_transform(
-    const geometry_msgs::TransformStamped& _transform_stamped) const
-{
-  return get_yaw_from_quat(_transform_stamped.transform.rotation);
-}
-
-geometry_msgs::Quaternion Client::get_quat_from_yaw(double _yaw) const
-{
-  tf2::Quaternion quat_tf;
-  quat_tf.setRPY(0.0, 0.0, _yaw);
-  quat_tf.normalize();
-
-  geometry_msgs::Quaternion quat = tf2::toMsg(quat_tf);
-  return quat;
-}
-
-bool Client::is_transform_close(
-    const geometry_msgs::TransformStamped& _first,
-    const geometry_msgs::TransformStamped& _second) const
-{
-  if (_first.header.frame_id != _second.header.frame_id || 
-      _first.child_frame_id != _second.child_frame_id)
-    return false;
-
-  double elapsed_sec = (_second.header.stamp - _first.header.stamp).toSec();
-  tf2::Vector3 first_pos;
-  tf2::Vector3 second_pos;
-  tf2::fromMsg(_first.transform.translation, first_pos);
-  tf2::fromMsg(_second.transform.translation, second_pos);
-  double distance = second_pos.distance(first_pos);
-  double speed = abs(distance / elapsed_sec);
-  if (speed > 0.01)
-    return false;
-
-  double first_yaw = get_yaw_from_transform(_first);
-  double second_yaw = get_yaw_from_transform(_second);
-  double turning_speed = abs((second_yaw - first_yaw) / elapsed_sec);
-  if (turning_speed > 0.01)
-    return false;
-
-  return true;
-}
-
 void Client::update_thread_fn()
 {
   while (node->ok())
@@ -554,16 +494,6 @@ void Client::publish_thread_fn()
     publish_rate->sleep();
     publish_robot_state();
   }
-}
-
-char* Client::dds_string_alloc_and_copy(const std::string& _str)
-{
-  char* ptr = dds_string_alloc(_str.length());
-  for (size_t i = 0; i < _str.length(); ++i)
-  {
-    ptr[i] = _str[i];
-  }
-  return ptr;
 }
 
 } // namespace free_fleet

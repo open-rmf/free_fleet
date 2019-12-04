@@ -31,7 +31,6 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/BatteryState.h>
 #include <tf2_ros/transform_listener.h>
-#include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
 
 #include <move_base_msgs/MoveBaseGoal.h>
@@ -206,20 +205,6 @@ private:
   void publish_thread_fn();
 
   Client(const ClientConfig& config);
-
-  // --------------------------------------------------------------------------
-  // Some math related utilities
-
-  double get_yaw_from_quat(const geometry_msgs::Quaternion& quat) const;
-
-  double get_yaw_from_transform(
-      const geometry_msgs::TransformStamped& transform_stamped) const; 
-
-  geometry_msgs::Quaternion get_quat_from_yaw(double yaw) const;
-
-  bool is_transform_close(
-      const geometry_msgs::TransformStamped& transform_1,
-      const geometry_msgs::TransformStamped& transform_2) const;
 
 };
 
