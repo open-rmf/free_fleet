@@ -221,11 +221,6 @@ private:
       const geometry_msgs::TransformStamped& transform_1,
       const geometry_msgs::TransformStamped& transform_2) const;
 
-  // --------------------------------------------------------------------------
-  // some C memory related stuff
-
-  char* dds_string_alloc_and_copy(const std::string& str);
-
 };
 
 } // namespace free_fleet
