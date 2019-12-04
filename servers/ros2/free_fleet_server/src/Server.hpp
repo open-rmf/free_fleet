@@ -23,17 +23,23 @@
 #include <memory>
 #include <limits>
 #include <iostream>
+#include <unordered_map>
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <rmf_fleet_msgs/msg/robot_state.hpp>
 #include <rmf_fleet_msgs/msg/fleet_state.hpp>
+#include <rmf_fleet_msgs/msg/mode_request.hpp>
+#include <rmf_fleet_msgs/msg/path_request.hpp>
+#include <rmf_fleet_msgs/msg/destination_request.hpp>
 
 #include "free_fleet/FreeFleet.h"
 
 #include "dds/dds.h"
 #include "dds_utils/DDSPublishHandler.hpp"
 #include "dds_utils/DDSSubscribeHandler.hpp"
+
+#include "RobotInfo.hpp"
 
 namespace free_fleet
 {
@@ -42,8 +48,17 @@ struct ServerConfig
 {
   std::string fleet_name;
 
+  std::string fleet_state_topic = "fleet_state";
+  std::string mode_command_topic = "mode_command";
+  std::string path_command_topic = "path_command";
+  std::string destination_command_topic = "destination_command";
+
   uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
   std::string dds_robot_state_topic = "robot_state";
+
+  double update_state_frequency = 10.0;
+  double publish_state_frequency = 1.0;
+  uint32_t max_samples_per_update = 10;
 };
 
 class Server : public rclcpp::Node
@@ -51,9 +66,6 @@ class Server : public rclcpp::Node
 public:
 
   using SharedPtr = std::shared_ptr<Server>;
-
-  using ReadLock = std::unique_lock<std::mutex>;
-  using WriteLock = std::unique_lock<std::mutex>;
 
   static SharedPtr make(const ServerConfig& _config);
 
@@ -65,22 +77,59 @@ public:
 
 private:
 
-  std::atomic<bool> ready;
+  ServerConfig server_config;
 
-  rclcpp::TimerBase::SharedPtr update_timer;
+  std::atomic<bool> ready;
 
   dds_return_t return_code;
 
   dds_entity_t participant;
 
-  ServerConfig server_config;
+  using ReadLock = std::unique_lock<std::mutex>;
+  using WriteLock = std::unique_lock<std::mutex>;
 
-  dds::DDSSubscribeHandler<FreeFleetData_RobotState>::SharedPtr 
-      robot_state_sub;
+  // --------------------------------------------------------------------------
+
+  rclcpp::TimerBase::SharedPtr update_state_timer;
+
+  using DDSRobotStateSub = dds::DDSSubscribeHandler<FreeFleetData_RobotState>;
+  DDSRobotStateSub::SharedPtr dds_robot_state_sub;
+
+  using FleetState = rmf_fleet_msgs::msg::FleetState;
+  using FleetStatePub = rclcpp::Publisher<FleetState>;
+  FleetStatePub::SharedPtr fleet_state_pub;
+
+  std::unordered_map<std::string, RobotInfo> robot_infos;
+
+  void update_state_callback();
+
+  // --------------------------------------------------------------------------
+
+  using ModeRequest = rmf_fleet_msgs::msg::ModeRequest;
+  using ModeRequestSub = rclcpp::Subscription<ModeRequest>;
+  ModeRequestSub::SharedPtr mode_request_sub;
+
+  void mode_request_callback(ModeRequest::UniquePtr msg);
+
+  // --------------------------------------------------------------------------
+
+  using PathRequest = rmf_fleet_msgs::msg::PathRequest;
+  using PathRequestSub = rclcpp::Subscription<DestinationRequest>;
+  PathRequestSub::SharedPtr destination_request_sub;
+
+  void path_request_callback(PathRequest::UniquePtr msg);
+
+  // --------------------------------------------------------------------------
+
+  using DestinationRequest = rmf_fleet_msgs::msg::DestinationRequest;
+  using DestinationRequestSub = rclcpp::Subscription<PathRequest>;
+  DestinationRequestSub::SharedPtr path_request_sub;
+
+  void destination_request_callback(DestinationRequest::UniquePtr msg);
+
+  // --------------------------------------------------------------------------
 
   Server(const ServerConfig& _config);
-
-  void update_callback();
 
 };
 

@@ -18,6 +18,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "Server.hpp"
+#include "../third_party/cxxopts/cxxopts.hpp"
 
 int main(int argc, char **argv)
 {

@@ -38,6 +38,10 @@ ament_target_dependencies(free_fleet_server
 target_link_libraries(free_fleet_server
   CycloneDDS::ddsc
 )
+target_include_directories(free_fleet_server
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+)
 
 # -----------------------------------------------------------------------------
 

@@ -20,7 +20,7 @@
 namespace free_fleet
 {
 
-static SharedPtr make(const ServerConfig& _config)
+Server::SharedPtr Server::make(const ServerConfig& _config)
 {
   SharedPtr server(new Server(_config));
   if (!server->is_ready())
@@ -29,15 +29,15 @@ static SharedPtr make(const ServerConfig& _config)
   return server;
 }
 
-~Server()
+Server::~Server()
 {}
 
-bool is_ready()
+bool Server::is_ready()
 {
   return ready;
 }
 
-void start()
+void Server::start()
 {
   if (!is_ready())
   {
@@ -51,89 +51,33 @@ void start()
       100ms, std::bind(&Server::update_callback, this));
 }
 
-class Server : public rclcpp::Node
+Server::Server(const ServerConfig& _config) :
+  Node(_config.fleet_name + "_free_fleet_server"),
+  server_config(_config)
 {
-public:
+  ready = false;
 
-  using SharedPtr = std::shared_ptr<Server>;
+  participant = dds_create_participant(
+    static_cast<dds_domainid_t>(server_config.dds_domain), NULL, NULL);
 
-  using ReadLock = std::unique_lock<std::mutex>;
-  using WriteLock = std::unique_lock<std::mutex>;
+  robot_state_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_RobotState>(
+          participant, &FreeFleetData_RobotState_desc,
+          server_config.dds_robot_state_topic));
+  if (!robot_state_sub->is_ready())
+    return;
 
-  static SharedPtr make(const ServerConfig& _config)
-  {
-    SharedPtr server(new Server(_config));
-    if (!server->is_ready())
-      return nullptr;
+  ready = true;
+}
 
-    return server;
-  }
+void Server::update_state_callback()
+{
+  auto new_robot_state = robot_state_sub->read();
 
-  ~Server()
-  {}
-
-  bool is_ready()
-  {
-    return ready;
-  }
-
-  void start()
-  {
-    if (!is_ready())
-    {
-      RCLCPP_ERROR(get_logger(), "Server: is not ready, can't start");
-      return;
-    }
-
-    using namespace std::chrono_literals;
-
-    update_timer = create_wall_timer(
-        100ms, std::bind(&Server::update_callback, this));
-  }
-
-private:
-
-  std::atomic<bool> ready;
-
-  rclcpp::TimerBase::SharedPtr update_timer;
-
-  dds_return_t return_code;
-
-  dds_entity_t participant;
-
-  ServerConfig server_config;
-
-  dds::DDSSubscribeHandler<FreeFleetData_RobotState>::SharedPtr robot_state_sub;
-
-  Server(const ServerConfig& _config) :
-    Node(_config.fleet_name + "_free_fleet_server"),
-    server_config(_config)
-  {
-    ready = false;
-
-    participant = dds_create_participant(
-      static_cast<dds_domainid_t>(server_config.dds_domain), NULL, NULL);
-
-    robot_state_sub.reset(
-        new dds::DDSSubscribeHandler<FreeFleetData_RobotState>(
-            participant, &FreeFleetData_RobotState_desc,
-            server_config.dds_robot_state_topic));
-    if (!robot_state_sub->is_ready())
-      return;
-
-    ready = true;
-  }
-
-  void update_callback()
-  {
-    auto new_robot_state = robot_state_sub->read();
-
-    if (!new_robot_state)
-      RCLCPP_INFO(get_logger(), "getting nothing yet.");
-    else
-      RCLCPP_INFO(get_logger(), "got a state through dds!");
-  }
-
-};
+  if (!new_robot_state)
+    RCLCPP_INFO(get_logger(), "getting nothing yet.");
+  else
+    RCLCPP_INFO(get_logger(), "got a state through dds!");
+}
 
 } // namespace free_fleet
