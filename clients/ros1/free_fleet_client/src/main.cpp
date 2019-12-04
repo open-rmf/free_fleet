@@ -79,17 +79,18 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       ("dds-state-topic", "name DDS topic for robot states",
           cxxopts::value<std::string>()->default_value(
               default_config.dds_state_topic))
-      ("dds-mode-topic", "name DDS topic for robot mode commands",
+      ("dds-mode-request-topic", "name DDS topic for robot mode requests",
           cxxopts::value<std::string>()->default_value(
-              default_config.dds_mode_command_topic))
-      ("dds-path-topic", "name DDS topic for robot path commands",
+              default_config.dds_mode_request_topic))
+      ("dds-path-request-topic", "name DDS topic for robot path requests",
           cxxopts::value<std::string>()->default_value(
-              default_config.dds_path_command_topic))
-      ("dds-location-topic", "name DDS topic for location commands",
+              default_config.dds_path_request_topic))
+      ("dds-destination-request-topic", 
+          "name DDS topic for destination requests",
           cxxopts::value<std::string>()->default_value(
-              default_config.dds_location_command_topic))
+              default_config.dds_destination_request_topic))
       ("update-frequency", 
-          "frequency at which the client updates all the states and commands",
+          "frequency at which the client updates all the states and requests",
           cxxopts::value<float>()->default_value(
               std::to_string(default_config.update_frequency)))
       ("publish-frequency", "frequency at which the client publishes states",
@@ -136,9 +137,9 @@ free_fleet::ClientConfig parse(int argc, char** argv)
       results["move-base"].as<std::string>(),
       results["dds-domain"].as<uint32_t>(),
       results["dds-state-topic"].as<std::string>(),
-      results["dds-mode-topic"].as<std::string>(),
-      results["dds-path-topic"].as<std::string>(),
-      results["dds-location-topic"].as<std::string>(),
+      results["dds-mode-request-topic"].as<std::string>(),
+      results["dds-path-request-topic"].as<std::string>(),
+      results["dds-destination-request-topic"].as<std::string>(),
       results["update-frequency"].as<float>(),
       results["publish-frequency"].as<float>()
     };
@@ -171,12 +172,12 @@ int main(int argc, char** argv)
       << config.dds_domain << std::endl;
   std::cout << "DDS - robot state topic:            " 
       << config.dds_state_topic << std::endl;
-  std::cout << "DDS - robot mode command topic:     " 
-      << config.dds_mode_command_topic << std::endl;
-  std::cout << "DDS - robot path command topic:     "
-      << config.dds_path_command_topic << std::endl;
-  std::cout << "DDS - robot location command topic: "
-      << config.dds_location_command_topic << std::endl;
+  std::cout << "DDS - robot mode request topic:     " 
+      << config.dds_mode_request_topic << std::endl;
+  std::cout << "DDS - robot path request topic:     "
+      << config.dds_path_request_topic << std::endl;
+  std::cout << "DDS - robot location request topic: "
+      << config.dds_destination_request_topic << std::endl;
   std::cout << "Client - update frequency: " << config.update_frequency
       << " Hz" << std::endl;
   std::cout << "Client - publish frequency: " << config.publish_frequency
@@ -190,7 +191,7 @@ int main(int argc, char** argv)
   auto client = free_fleet::Client::make(config);
 
   // Checks if the DDS client was created and is ready to roll
-  if (!client->is_ready())
+  if (!client)
   {
     ROS_ERROR("Client: unable to initialize.");
     return 1;

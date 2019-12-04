@@ -27,6 +27,9 @@ namespace free_fleet
 std::shared_ptr<Client> Client::make(const ClientConfig& _config)
 {
   std::shared_ptr<Client> client(new Client(_config));
+  if (!client->is_ready())
+    return nullptr;
+
   return client;
 }
 
@@ -59,31 +62,31 @@ Client::Client(const ClientConfig& _config)
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting mode commands
 
-  mode_command_sub.reset(
-      new dds::DDSSubscribeHandler<FreeFleetData_RobotMode>(
-          participant, &FreeFleetData_RobotMode_desc, 
-          client_config.dds_mode_command_topic));
-  if (!mode_command_sub->is_ready())
-    return;
-  
-  /// -------------------------------------------------------------------------
-  /// create all the dds stuff needed for getting location commands
-
-  location_command_sub.reset(
-      new dds::DDSSubscribeHandler<FreeFleetData_Location>(
-          participant, &FreeFleetData_Location_desc, 
-          client_config.dds_location_command_topic));
-  if (!location_command_sub->is_ready())
+  mode_request_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>(
+          participant, &FreeFleetData_ModeRequest_desc, 
+          client_config.dds_mode_request_topic));
+  if (!mode_request_sub->is_ready())
     return;
 
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting path commands
 
-  path_command_sub.reset(
-      new dds::DDSSubscribeHandler<FreeFleetData_Path>(
-          participant, &FreeFleetData_Path_desc,
-          client_config.dds_path_command_topic));
-  if (!path_command_sub->is_ready())
+  path_request_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_PathRequest>(
+          participant, &FreeFleetData_PathRequest_desc,
+          client_config.dds_path_request_topic));
+  if (!path_request_sub->is_ready())
+    return;
+  
+  /// -------------------------------------------------------------------------
+  /// create all the dds stuff needed for getting location commands
+
+  destination_request_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>(
+          participant, &FreeFleetData_DestinationRequest_desc, 
+          client_config.dds_destination_request_topic));
+  if (!destination_request_sub->is_ready())
     return;
 
   /// -------------------------------------------------------------------------
@@ -306,7 +309,6 @@ void Client::publish_robot_state()
   FreeFleetData_RobotState_free(current_robot_state, DDS_FREE_ALL);
 }
 
-
 move_base_msgs::MoveBaseGoal Client::location_to_goal(
     std::shared_ptr<const FreeFleetData_Location> _location) const
 {
@@ -355,23 +357,28 @@ void Client::resume_robot()
   paused = false;
 }
 
-void Client::read_commands()
+void Client::read_requests()
 {
-  auto mode_msg = mode_command_sub->read();
-  if (mode_msg)
+  auto mode_request = mode_request_sub->read();
+  if (mode_request)
   {
-    if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_PAUSED)
+    if (
+        mode_request->mode.mode == 
+            FreeFleetData_RobotMode_Constants_MODE_PAUSED)
     {
       ROS_INFO("received a PAUSE command.");
       pause_robot();
     }
-    else if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_MOVING)
+    else if (
+        mode_request->mode.mode == 
+            FreeFleetData_RobotMode_Constants_MODE_MOVING)
     {
       ROS_INFO("received a RESUME command.");
       resume_robot();
     }
     else if (
-        mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_EMERGENCY)
+        mode_request->mode.mode == 
+            FreeFleetData_RobotMode_Constants_MODE_EMERGENCY)
     {
       ROS_INFO("received an EMERGENCY command.");
       paused = false;
@@ -380,18 +387,18 @@ void Client::read_commands()
     return;
   }
 
-  auto path_msg = path_command_sub->read();
-  if (path_msg)
+  auto path_request = path_request_sub->read();
+  if (path_request)
   {
     ROS_INFO("received a Path command.");
 
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
-    for (int i = 0; i < path_msg->path._length; ++i)
+    for (int i = 0; i < path_request->path._length; ++i)
     {
       Goal new_goal { 
-        std::string(path_msg->path._buffer[i].level_name),
-        location_to_goal(path_msg->path._buffer[i]),
+        std::string(path_request->path._buffer[i].level_name),
+        location_to_goal(path_request->path._buffer[i]),
         false
       };
       goal_path.push_back(new_goal);
@@ -399,23 +406,23 @@ void Client::read_commands()
     return;
   }
 
-  auto location_msg = location_command_sub->read();
-  if (location_msg)
+  auto destination_request = destination_request_sub->read();
+  if (destination_request)
   {
     ROS_INFO("received a Location command.");
 
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
     Goal new_goal {
-      std::string(location_msg->level_name),
-      location_to_goal(location_msg),
+      std::string(destination_request->location.level_name),
+      location_to_goal(destination_request->location),
       false
     };
     goal_path.push_back(new_goal);
   }
 }
 
-void Client::handle_commands()
+void Client::handle_requests()
 {
   // nothing works if the move_base_client is not connected!
   if (!move_base_client.isServerConnected())
@@ -535,8 +542,8 @@ void Client::update_thread_fn()
 
     /// Tries to accept any commands over DDS, figures out the priority of the
     /// incoming commands and executes them.
-    read_commands();
-    handle_commands();
+    read_requests();
+    handle_requests();
   }
 }
 

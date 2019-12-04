@@ -22,21 +22,21 @@ The client will then start subscribing to all the necessary topics, and start pu
 rosrun free_fleet_client test_dds_sub_state
 ```
 
-The client will also be listening for commands over DDS, which will trigger action server calls for `MoveBase`. To demonstrate this behaviour
+The client will also be listening for requests over DDS, which will trigger action server calls for `MoveBase`. To demonstrate this behaviour
 
 ```bash
-# sends out a single location command to the robot over DDS
-rosrun free_fleet_client test_dds_pub_location_command
+# sends out a single destination request to the robot over DDS
+rosrun free_fleet_client test_dds_pub_destination_request
 
-# sends out a path command, basically a sequence of location commands to the robot over DDS
-rosrun free_fleet_client test_dds_pub_path_command
+# sends out a path request, basically a sequence of destination requests to the robot over DDS
+rosrun free_fleet_client test_dds_pub_path_request
 
-# sends out a path command with locations corresponding to real map locations
-rosrun free_fleet_client test_dds_pub_sim_location_command
+# sends out a path request with locations corresponding to real map locations
+rosrun free_fleet_client test_dds_pub_sim_path_request
 
-# sends out a mode command, to pause and resume what it is doing
-rosrun free_fleet_client test_dds_pub_mode_command pause
-rosrun free_fleet_client test_dds_pub_mode_command ressume
+# sends out a mode request, to pause and resume what it is doing
+rosrun free_fleet_client test_dds_pub_mode_request pause
+rosrun free_fleet_client test_dds_pub_mode_request ressume
 ```
 
 # Client simulation test
@@ -59,11 +59,11 @@ Use the flag `-h` for more information about the default values of all optional 
 Similar to the section above, the built test executables can now be run to control and monitor the robot. We recommend using the `map.yaml` map, which corresponds to `turtlebot3_world` in the ROBOTIS examples.
 
 ```bash
-# location command
-rosrun free_fleet_client test_dds_pub_location_command
+# destination request
+rosrun free_fleet_client test_dds_pub_destination_request
 
-# path command
-rosrun free_fleet_client test_dds_sim_path_command
+# path request
+rosrun free_fleet_client test_dds_pub_sim_path_request
 ```
 
 While the simulation is running, the robot's state can be observed by calling the DDS subscribing executable,

@@ -17,19 +17,35 @@
 
 #include "dds/dds.h"
 #include "../free_fleet/FreeFleet.h"
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits>
 
 int main (int argc, char ** argv)
 {
+  if (argc < 2)
+  {
+    std::cout << "Please select the robot mode command that you wish to send: "
+      << "pause, resume or emergency" << std::endl;
+    return 1;
+  }
+  std::string mode_command(argv[1]);
+  if (mode_command != "pause" && 
+      mode_command != "resume" &&
+      mode_command != "emergency")
+  {
+    std::cout << "Please select the robot mode command that you wish to send: "
+      << "pause, resume or emergency" << std::endl;
+    return 1;
+  }
+
   dds_entity_t participant;
   dds_entity_t topic;
   dds_entity_t writer;
   dds_return_t rc;
   dds_qos_t *qos;
-  FreeFleetData_Path* msg;
-  msg = FreeFleetData_Path__alloc();
+  FreeFleetData_ModeRequest msg;
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -43,7 +59,7 @@ int main (int argc, char ** argv)
 
   /* Create a Topic. */
   topic = dds_create_topic (
-    participant, &FreeFleetData_Path_desc, "robot_path_command", 
+    participant, &FreeFleetData_ModeRequest_desc, "mode_request", 
     NULL, NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
@@ -74,28 +90,18 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  msg->path._maximum = 50;
-  msg->path._length = 50;
-  msg->path._buffer = FreeFleetData_Path_path_seq_allocbuf(10);
-  msg->path._release = false;
-
-  for (int i = 0; i < 50; ++i)
-  {
-    msg->path._buffer[i].sec = 123 + i;
-    msg->path._buffer[i].nanosec = 123 + i;
-    msg->path._buffer[i].x = 6.4166097641 + i;
-    msg->path._buffer[i].y = 1.489 + i;
-    msg->path._buffer[i].yaw = 0.0;
-    msg->path._buffer[i].level_name = dds_string_alloc(2);
-    msg->path._buffer[i].level_name[0] = 'B';
-    msg->path._buffer[i].level_name[1] = '1';
-  }
-
+  if (mode_command == "pause")
+    msg.mode.mode = FreeFleetData_RobotMode_Constants_MODE_PAUSED;
+  else if (mode_command == "resume")
+    msg.mode.mode = FreeFleetData_RobotMode_Constants_MODE_MOVING;
+  else if (mode_command == "emergency")
+    msg.mode.mode = FreeFleetData_RobotMode_Constants_MODE_EMERGENCY;
+  
   printf ("=== [Publisher]  Writing : ");
-  printf ("Message: path length %u\n", msg->path._length);
+  printf ("Message: mode_command %s\n", mode_command.c_str());
   fflush (stdout);
 
-  rc = dds_write (writer, msg);
+  rc = dds_write (writer, &msg);
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 
@@ -104,6 +110,5 @@ int main (int argc, char ** argv)
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
 
-  FreeFleetData_Path_free(msg, DDS_FREE_ALL);
   return EXIT_SUCCESS;
 }
