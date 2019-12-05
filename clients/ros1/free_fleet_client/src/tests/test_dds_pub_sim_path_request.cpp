@@ -15,11 +15,14 @@
  *
  */
 
-#include "dds/dds.h"
-#include "../free_fleet/FreeFleet.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits>
+
+#include <dds/dds.h>
+
+#include "../free_fleet/FreeFleet.h"
+#include "../dds_utils/common.hpp"
 
 int main (int argc, char ** argv)
 {
@@ -74,6 +77,11 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
+  std::string task_id = "SPACE_FORCE";
+  std::string level_name = "B1";
+
+  msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
+
   msg->path._maximum = 4;
   msg->path._length = 4;
   msg->path._buffer = FreeFleetData_PathRequest_path_seq_allocbuf(10);
@@ -84,36 +92,28 @@ int main (int argc, char ** argv)
   msg->path._buffer[0].x = 0.735785007477;
   msg->path._buffer[0].y = -1.78202533722;
   msg->path._buffer[0].yaw = 0.0;
-  msg->path._buffer[0].level_name = dds_string_alloc(2);
-  msg->path._buffer[0].level_name[0] = 'B';
-  msg->path._buffer[0].level_name[1] = '1';
+  msg->path._buffer[0].level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
   
   msg->path._buffer[1].sec = 133;
   msg->path._buffer[1].nanosec = 133;
   msg->path._buffer[1].x = 1.09616982937;
   msg->path._buffer[1].y = 1.89214968681;
   msg->path._buffer[1].yaw = 0.0;
-  msg->path._buffer[1].level_name = dds_string_alloc(2);
-  msg->path._buffer[1].level_name[0] = 'B';
-  msg->path._buffer[1].level_name[1] = '1';
+  msg->path._buffer[1].level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
 
   msg->path._buffer[2].sec = 143;
   msg->path._buffer[2].nanosec = 143;
   msg->path._buffer[2].x = -1.93706703186;
   msg->path._buffer[2].y = 0.680773854256;
   msg->path._buffer[2].yaw = 0.0;
-  msg->path._buffer[2].level_name = dds_string_alloc(2);
-  msg->path._buffer[2].level_name[0] = 'B';
-  msg->path._buffer[2].level_name[1] = '1';
+  msg->path._buffer[2].level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
 
   msg->path._buffer[3].sec = 153;
   msg->path._buffer[3].nanosec = 153;
   msg->path._buffer[3].x = -1.98976910114;
   msg->path._buffer[3].y = -0.43612909317;
   msg->path._buffer[3].yaw = 0.0;
-  msg->path._buffer[3].level_name = dds_string_alloc(2);
-  msg->path._buffer[3].level_name[0] = 'B';
-  msg->path._buffer[3].level_name[1] = '1';
+  msg->path._buffer[3].level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
 
   printf ("=== [Publisher]  Writing : ");
   printf ("Message: path length %u\n", msg->path._length);

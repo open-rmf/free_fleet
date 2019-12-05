@@ -15,11 +15,14 @@
  *
  */
 
-#include "dds/dds.h"
-#include "../free_fleet/FreeFleet.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits>
+
+#include <dds/dds.h>
+
+#include "../free_fleet/FreeFleet.h"
+#include "../dds_utils/common.hpp"
 
 int main (int argc, char ** argv)
 {
@@ -74,6 +77,11 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
+  std::string task_id = "STONE_COLD_STUNNER";
+  std::string level_name = "B1";
+
+  msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
+
   msg->path._maximum = 50;
   msg->path._length = 50;
   msg->path._buffer = FreeFleetData_PathRequest_path_seq_allocbuf(10);
@@ -86,9 +94,7 @@ int main (int argc, char ** argv)
     msg->path._buffer[i].x = 6.4166097641 + i;
     msg->path._buffer[i].y = 1.489 + i;
     msg->path._buffer[i].yaw = 0.0;
-    msg->path._buffer[i].level_name = dds_string_alloc(2);
-    msg->path._buffer[i].level_name[0] = 'B';
-    msg->path._buffer[i].level_name[1] = '1';
+    msg->path._buffer[i].level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
   }
 
   printf ("=== [Publisher]  Writing : ");

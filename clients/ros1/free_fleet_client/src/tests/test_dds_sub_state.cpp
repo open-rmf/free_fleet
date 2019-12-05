@@ -81,6 +81,8 @@ int main(int argc, char** argv)
       std::cout << "=== [Subscriber] Received : " << std::endl;
       std::cout << "name:    " << msg->name << std::endl;
       std::cout << "model:   " << msg->model << std::endl;
+      std::string task_id(msg->task_id);
+      std::cout << "task_id: " << task_id << std::endl;
       std::cout << "battery: " << msg->battery_percent << std::endl;
       std::cout << "sec:  " << msg->location.sec << std::endl;
       std::cout << "nsec: " << msg->location.nanosec << std::endl;
