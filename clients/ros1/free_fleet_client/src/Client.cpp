@@ -160,11 +160,12 @@ void Client::start()
   publish_rate.reset(new ros::Rate(client_config.publish_frequency));
 
   // override the robot name if it's set as a ros param called robot_name
+  ros::NodeHandle node_private_namespace("~");
   std::string robot_name_param;
-  if (node.getParam("~robot_name", robot_name_param))
+  if (node_private_namespace.getParam("robot_name", robot_name_param))
   {
     ROS_INFO("Found robot_name param on the parameter server. "
-             "Setting robot_name to [%s]\n",
+             "Setting robot_name to [%s]",
         robot_name_param.c_str());
     client_config.robot_name = robot_name_param;
   }
