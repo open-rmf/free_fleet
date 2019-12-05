@@ -15,11 +15,14 @@
  *
  */
 
-#include "dds/dds.h"
-#include "../free_fleet/FreeFleet.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits>
+
+#include <dds/dds.h>
+
+#include "../free_fleet/FreeFleet.h"
+#include "../dds_utils/common.hpp"
 
 int main (int argc, char ** argv)
 {
@@ -28,7 +31,8 @@ int main (int argc, char ** argv)
   dds_entity_t writer;
   dds_return_t rc;
   dds_qos_t *qos;
-  FreeFleetData_DestinationRequest msg;
+  FreeFleetData_DestinationRequest* msg;
+  msg = FreeFleetData_DestinationRequest__alloc();
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -73,17 +77,20 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  msg.location.sec = 123;
-  msg.location.nanosec = 123;
-  msg.location.x = 0.735785007477;
-  msg.location.y = -1.78202533722;
-  msg.location.yaw = 0.0;
-  msg.location.level_name = dds_string_alloc(2);
-  msg.location.level_name[0] = 'B';
-  msg.location.level_name[1] = '1';
+  std::string task_id = "SWEET_CHIN_MUSIC";
+  std::string level_name = "B1";
+  
+  msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
+
+  msg->location.sec = 123;
+  msg->location.nanosec = 123;
+  msg->location.x = 0.735785007477;
+  msg->location.y = -1.78202533722;
+  msg->location.yaw = 0.0;
+  msg->location.level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
 
   printf ("=== [Publisher]  Writing : ");
-  printf ("Message: level_name %s\n", msg.location.level_name);
+  printf ("Message: level_name %s\n", msg->location.level_name);
   fflush (stdout);
 
   rc = dds_write (writer, &msg);
@@ -95,6 +102,6 @@ int main (int argc, char ** argv)
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
 
-  dds_string_free(msg.location.level_name);
+  FreeFleetData_DestinationRequest_free(msg, DDS_FREE_ALL);
   return EXIT_SUCCESS;
 }

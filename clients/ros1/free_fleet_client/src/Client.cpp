@@ -38,6 +38,9 @@ Client::Client(const ClientConfig& _config)
 {
   ready = false;
 
+  WriteLock current_task_id_lock(task_id_mutex);
+  current_task_id = "";
+
   participant = dds_create_participant(
       static_cast<dds_domainid_t>(client_config.dds_domain), NULL, NULL);
   if (participant < 0)
@@ -249,6 +252,11 @@ void Client::publish_robot_state()
   current_robot_state->model = 
       common::dds_string_alloc_and_copy(client_config.robot_model);
 
+  {
+    ReadLock task_id_lock(task_id_mutex);
+    current_robot_state->task_id = common::dds_string_alloc_and_copy(current_task_id);
+  }
+
   current_robot_state->mode.mode = get_robot_mode();
   
   {
@@ -360,6 +368,13 @@ void Client::read_requests()
   auto mode_request = mode_request_sub->read();
   if (mode_request)
   {
+    std::string incoming_task_id(mode_request->task_id);
+    {
+      ReadLock task_id_lock(task_id_mutex);
+      if (current_task_id == incoming_task_id)
+        return;
+    }
+
     if (
         mode_request->mode.mode == 
             FreeFleetData_RobotMode_Constants_MODE_PAUSED)
@@ -382,12 +397,22 @@ void Client::read_requests()
       paused = false;
       emergency = true;
     }
+    
+    WriteLock task_id_lock(task_id_mutex);
+    current_task_id = incoming_task_id;
     return;
   }
 
   auto path_request = path_request_sub->read();
   if (path_request)
   {
+    std::string incoming_task_id(path_request->task_id);
+    {
+      ReadLock task_id_lock(task_id_mutex);
+      if (current_task_id == incoming_task_id)
+        return;
+    }
+
     ROS_INFO("received a Path command.");
 
     WriteLock goal_path_lock(goal_path_mutex);
@@ -401,12 +426,22 @@ void Client::read_requests()
       };
       goal_path.push_back(new_goal);
     }
+
+    WriteLock task_id_lock(task_id_mutex);
+    current_task_id = std::string(path_request->task_id);
     return;
   }
 
   auto destination_request = destination_request_sub->read();
   if (destination_request)
   {
+    std::string incoming_task_id(destination_request->task_id);
+    {
+      ReadLock task_id_lock(task_id_mutex);
+      if (current_task_id == incoming_task_id)
+        return;
+    }
+
     ROS_INFO("received a Location command.");
 
     WriteLock goal_path_lock(goal_path_mutex);
@@ -417,6 +452,9 @@ void Client::read_requests()
       false
     };
     goal_path.push_back(new_goal);
+
+    WriteLock task_id_lock(task_id_mutex);
+    current_task_id = std::string(destination_request->task_id);
   }
 }
 

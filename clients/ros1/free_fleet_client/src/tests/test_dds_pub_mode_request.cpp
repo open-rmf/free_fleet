@@ -14,13 +14,15 @@
  * limitations under the License.
  *
  */
-
-#include "dds/dds.h"
-#include "../free_fleet/FreeFleet.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits>
+
+#include <dds/dds.h>
+
+#include "../free_fleet/FreeFleet.h"
+#include "../dds_utils/common.hpp"
 
 int main (int argc, char ** argv)
 {
@@ -45,7 +47,8 @@ int main (int argc, char ** argv)
   dds_entity_t writer;
   dds_return_t rc;
   dds_qos_t *qos;
-  FreeFleetData_ModeRequest msg;
+  FreeFleetData_ModeRequest* msg;
+  msg = FreeFleetData_ModeRequest__alloc();
   uint32_t status = 0;
   (void)argc;
   (void)argv;
@@ -90,18 +93,21 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
+  std::string task_id = "PEOPLES_ELBOW";
+  msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
+
   if (mode_command == "pause")
-    msg.mode.mode = FreeFleetData_RobotMode_Constants_MODE_PAUSED;
+    msg->mode.mode = FreeFleetData_RobotMode_Constants_MODE_PAUSED;
   else if (mode_command == "resume")
-    msg.mode.mode = FreeFleetData_RobotMode_Constants_MODE_MOVING;
+    msg->mode.mode = FreeFleetData_RobotMode_Constants_MODE_MOVING;
   else if (mode_command == "emergency")
-    msg.mode.mode = FreeFleetData_RobotMode_Constants_MODE_EMERGENCY;
+    msg->mode.mode = FreeFleetData_RobotMode_Constants_MODE_EMERGENCY;
   
   printf ("=== [Publisher]  Writing : ");
   printf ("Message: mode_command %s\n", mode_command.c_str());
   fflush (stdout);
 
-  rc = dds_write (writer, &msg);
+  rc = dds_write (writer, msg);
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 
@@ -109,6 +115,8 @@ int main (int argc, char ** argv)
   rc = dds_delete (participant);
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
+
+  FreeFleetData_ModeRequest_free(msg, DDS_FREE_ALL);
 
   return EXIT_SUCCESS;
 }

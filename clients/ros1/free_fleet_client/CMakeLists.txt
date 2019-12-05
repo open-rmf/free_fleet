@@ -62,6 +62,7 @@ set(testing_targets
 foreach(target ${testing_targets})
   add_executable(${target}
     src/tests/${target}.cpp
+    src/dds_utils/common.cpp
     src/free_fleet/FreeFleet.c
   )
   target_link_libraries(${target}

@@ -131,6 +131,9 @@ private:
   std::mutex level_name_mutex;
   std_msgs::String current_level_name;
 
+  std::mutex task_id_mutex;
+  std::string current_task_id;
+
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
 
   void level_name_callback_fn(const std_msgs::String& msg);
