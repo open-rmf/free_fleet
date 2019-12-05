@@ -27,6 +27,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <rmf_fleet_msgs/msg/location.hpp>
 #include <rmf_fleet_msgs/msg/robot_state.hpp>
 #include <rmf_fleet_msgs/msg/fleet_state.hpp>
 #include <rmf_fleet_msgs/msg/mode_request.hpp>
@@ -99,11 +100,26 @@ private:
   using FleetStatePub = rclcpp::Publisher<FleetState>;
   FleetStatePub::SharedPtr fleet_state_pub;
 
+  using Location = rmf_fleet_msgs::msg::Location;
   using RobotState = rmf_fleet_msgs::msg::RobotState;
 
+  std::mutex robot_states_mutex;
   std::unordered_map<std::string, RobotState> robot_states;
 
+  void dds_to_ros_location(const FreeFleetData_Location& dds_location, Location& ros_location)
+      const;
+
+  void dds_to_ros_robot_state(
+      const std::shared_ptr<const FreeFleetData_RobotState>& dds_robot_state,
+      RobotState& ros_robot_state) const;
+
+  void get_fleet_state(FleetState& fleet_state);
+
   void update_state_callback();
+
+  // TODO: clean up very very old states of stagnant or dead robots
+
+  bool is_request_valid(const std::string& fleet_name, const std::string& robot_name);
 
   // --------------------------------------------------------------------------
 

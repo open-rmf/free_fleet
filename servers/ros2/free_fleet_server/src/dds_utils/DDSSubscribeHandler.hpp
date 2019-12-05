@@ -105,17 +105,18 @@ public:
   }
 
   ///
-  void read(std::vector<std::shared_ptr<const Message>>& msgs)
+  std::vector<std::shared_ptr<const Message>> read()
   {
+    std::vector<std::shared_ptr<const Message>> msgs;
     if (!is_ready())
-      return;
+      return msgs;
 
-    msgs.clear();
     return_code = dds_take(reader, samples, infos, MaxSamplesNum, MaxSamplesNum);
     if (return_code < 0)
     {
       DDS_FATAL("dds_take: %s\n", dds_strretcode(-return_code));
-      return;
+      msgs.clear();
+      return msgs;
     }
     
     if (return_code > 0)
@@ -125,28 +126,11 @@ public:
         if (infos[i].valid_data)
           msgs.push_back(std::shared_ptr<const Message>(shared_msgs[i]));
       }
+      return msgs;
     }
+    msgs.clear();
+    return msgs;
   }
-
-  ///
-  // std::shared_ptr<const Message> read()
-  // {
-  //   if (!is_ready())
-  //     return nullptr;
-    
-  //   return_code = dds_take(reader, samples, infos, MaxSamplesNum, MaxSamplesNum);
-  //   if (return_code < 0)
-  //   {
-  //     DDS_FATAL("dds_take: %s\n", dds_strretcode(-return_code));
-  //     return nullptr;
-  //   }
-
-  //   if ((return_code > 0) && (infos[0].valid_data))
-  //   {
-  //     return std::shared_ptr<const Message>(shared_msg);
-  //   }
-  //   return nullptr;
-  // }
 
 };
 
