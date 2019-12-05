@@ -16,10 +16,8 @@
  */
 
 #include "Client.hpp"
-
-#include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-
+#include "dds_utils/math.hpp"
+#include "dds_utils/common.hpp"
 
 namespace free_fleet
 {
@@ -27,6 +25,9 @@ namespace free_fleet
 std::shared_ptr<Client> Client::make(const ClientConfig& _config)
 {
   std::shared_ptr<Client> client(new Client(_config));
+  if (!client->is_ready())
+    return nullptr;
+
   return client;
 }
 
@@ -36,6 +37,9 @@ Client::Client(const ClientConfig& _config)
   move_base_client(_config.move_base_server_name, true)
 {
   ready = false;
+
+  WriteLock current_task_id_lock(task_id_mutex);
+  current_task_id = "";
 
   participant = dds_create_participant(
       static_cast<dds_domainid_t>(client_config.dds_domain), NULL, NULL);
@@ -59,31 +63,31 @@ Client::Client(const ClientConfig& _config)
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting mode commands
 
-  mode_command_sub.reset(
-      new dds::DDSSubscribeHandler<FreeFleetData_RobotMode>(
-          participant, &FreeFleetData_RobotMode_desc, 
-          client_config.dds_mode_command_topic));
-  if (!mode_command_sub->is_ready())
-    return;
-  
-  /// -------------------------------------------------------------------------
-  /// create all the dds stuff needed for getting location commands
-
-  location_command_sub.reset(
-      new dds::DDSSubscribeHandler<FreeFleetData_Location>(
-          participant, &FreeFleetData_Location_desc, 
-          client_config.dds_location_command_topic));
-  if (!location_command_sub->is_ready())
+  mode_request_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>(
+          participant, &FreeFleetData_ModeRequest_desc, 
+          client_config.dds_mode_request_topic));
+  if (!mode_request_sub->is_ready())
     return;
 
   /// -------------------------------------------------------------------------
   /// create all the dds stuff needed for getting path commands
 
-  path_command_sub.reset(
-      new dds::DDSSubscribeHandler<FreeFleetData_Path>(
-          participant, &FreeFleetData_Path_desc,
-          client_config.dds_path_command_topic));
-  if (!path_command_sub->is_ready())
+  path_request_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_PathRequest>(
+          participant, &FreeFleetData_PathRequest_desc,
+          client_config.dds_path_request_topic));
+  if (!path_request_sub->is_ready())
+    return;
+  
+  /// -------------------------------------------------------------------------
+  /// create all the dds stuff needed for getting location commands
+
+  destination_request_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>(
+          participant, &FreeFleetData_DestinationRequest_desc, 
+          client_config.dds_destination_request_topic));
+  if (!destination_request_sub->is_ready())
     return;
 
   /// -------------------------------------------------------------------------
@@ -219,7 +223,7 @@ uint32_t Client::get_robot_mode()
       return FreeFleetData_RobotMode_Constants_MODE_CHARGING;
     
     /// Checks if the robot is moving
-    else if(!is_transform_close(
+    else if(!math::is_transform_close(
         current_robot_transform, previous_robot_transform))
       return FreeFleetData_RobotMode_Constants_MODE_MOVING;
   }
@@ -242,11 +246,16 @@ void Client::publish_robot_state()
 
   dds_string_free(current_robot_state->name);
   current_robot_state->name = 
-      dds_string_alloc_and_copy(client_config.robot_name);
+      common::dds_string_alloc_and_copy(client_config.robot_name);
 
   dds_string_free(current_robot_state->model);
   current_robot_state->model = 
-      dds_string_alloc_and_copy(client_config.robot_model);
+      common::dds_string_alloc_and_copy(client_config.robot_model);
+
+  {
+    ReadLock task_id_lock(task_id_mutex);
+    current_robot_state->task_id = common::dds_string_alloc_and_copy(current_task_id);
+  }
 
   current_robot_state->mode.mode = get_robot_mode();
   
@@ -265,12 +274,12 @@ void Client::publish_robot_state()
     current_robot_state->location.y = 
         current_robot_transform.transform.translation.y;
     current_robot_state->location.yaw = 
-        get_yaw_from_transform(current_robot_transform);
+        math::get_yaw_from_transform(current_robot_transform);
     
     ReadLock level_name_lock(level_name_mutex);
     dds_string_free(current_robot_state->location.level_name);
     current_robot_state->location.level_name = 
-        dds_string_alloc_and_copy(current_level_name.data);
+        common::dds_string_alloc_and_copy(current_level_name.data);
   }
 
   {
@@ -294,9 +303,9 @@ void Client::publish_robot_state()
       current_robot_state->path._buffer[i].y =
           goal_path[i].goal.target_pose.pose.position.y;
       current_robot_state->path._buffer[i].yaw =
-          get_yaw_from_quat(goal_path[i].goal.target_pose.pose.orientation);
+          math::get_yaw_from_quat(goal_path[i].goal.target_pose.pose.orientation);
       current_robot_state->path._buffer[i].level_name =
-          dds_string_alloc_and_copy(goal_path[i].level_name);
+          common::dds_string_alloc_and_copy(goal_path[i].level_name);
     }
   }
 
@@ -305,7 +314,6 @@ void Client::publish_robot_state()
 
   FreeFleetData_RobotState_free(current_robot_state, DDS_FREE_ALL);
 }
-
 
 move_base_msgs::MoveBaseGoal Client::location_to_goal(
     std::shared_ptr<const FreeFleetData_Location> _location) const
@@ -317,7 +325,7 @@ move_base_msgs::MoveBaseGoal Client::location_to_goal(
   goal.target_pose.pose.position.x = _location->x;
   goal.target_pose.pose.position.y = _location->y;
   goal.target_pose.pose.position.z = 0.0;
-  goal.target_pose.pose.orientation = get_quat_from_yaw(_location->yaw);
+  goal.target_pose.pose.orientation = math::get_quat_from_yaw(_location->yaw);
   return goal;
 }
 
@@ -331,7 +339,7 @@ move_base_msgs::MoveBaseGoal Client::location_to_goal(
   goal.target_pose.pose.position.x = _location.x;
   goal.target_pose.pose.position.y = _location.y;
   goal.target_pose.pose.position.z = 0.0;
-  goal.target_pose.pose.orientation = get_quat_from_yaw(_location.yaw);
+  goal.target_pose.pose.orientation = math::get_quat_from_yaw(_location.yaw);
   return goal;
 }
 
@@ -355,67 +363,102 @@ void Client::resume_robot()
   paused = false;
 }
 
-void Client::read_commands()
+void Client::read_requests()
 {
-  auto mode_msg = mode_command_sub->read();
-  if (mode_msg)
+  auto mode_request = mode_request_sub->read();
+  if (mode_request)
   {
-    if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_PAUSED)
+    std::string incoming_task_id(mode_request->task_id);
+    {
+      ReadLock task_id_lock(task_id_mutex);
+      if (current_task_id == incoming_task_id)
+        return;
+    }
+
+    if (
+        mode_request->mode.mode == 
+            FreeFleetData_RobotMode_Constants_MODE_PAUSED)
     {
       ROS_INFO("received a PAUSE command.");
       pause_robot();
     }
-    else if (mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_MOVING)
+    else if (
+        mode_request->mode.mode == 
+            FreeFleetData_RobotMode_Constants_MODE_MOVING)
     {
       ROS_INFO("received a RESUME command.");
       resume_robot();
     }
     else if (
-        mode_msg->mode == FreeFleetData_RobotMode_Constants_MODE_EMERGENCY)
+        mode_request->mode.mode == 
+            FreeFleetData_RobotMode_Constants_MODE_EMERGENCY)
     {
       ROS_INFO("received an EMERGENCY command.");
       paused = false;
       emergency = true;
     }
+    
+    WriteLock task_id_lock(task_id_mutex);
+    current_task_id = incoming_task_id;
     return;
   }
 
-  auto path_msg = path_command_sub->read();
-  if (path_msg)
+  auto path_request = path_request_sub->read();
+  if (path_request)
   {
+    std::string incoming_task_id(path_request->task_id);
+    {
+      ReadLock task_id_lock(task_id_mutex);
+      if (current_task_id == incoming_task_id)
+        return;
+    }
+
     ROS_INFO("received a Path command.");
 
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
-    for (int i = 0; i < path_msg->path._length; ++i)
+    for (int i = 0; i < path_request->path._length; ++i)
     {
       Goal new_goal { 
-        std::string(path_msg->path._buffer[i].level_name),
-        location_to_goal(path_msg->path._buffer[i]),
+        std::string(path_request->path._buffer[i].level_name),
+        location_to_goal(path_request->path._buffer[i]),
         false
       };
       goal_path.push_back(new_goal);
     }
+
+    WriteLock task_id_lock(task_id_mutex);
+    current_task_id = std::string(path_request->task_id);
     return;
   }
 
-  auto location_msg = location_command_sub->read();
-  if (location_msg)
+  auto destination_request = destination_request_sub->read();
+  if (destination_request)
   {
+    std::string incoming_task_id(destination_request->task_id);
+    {
+      ReadLock task_id_lock(task_id_mutex);
+      if (current_task_id == incoming_task_id)
+        return;
+    }
+
     ROS_INFO("received a Location command.");
 
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
     Goal new_goal {
-      std::string(location_msg->level_name),
-      location_to_goal(location_msg),
+      std::string(destination_request->location.level_name),
+      location_to_goal(destination_request->location),
       false
     };
     goal_path.push_back(new_goal);
+
+    WriteLock task_id_lock(task_id_mutex);
+    current_task_id = std::string(destination_request->task_id);
   }
 }
 
-void Client::handle_commands()
+void Client::handle_requests()
 {
   // nothing works if the move_base_client is not connected!
   if (!move_base_client.isServerConnected())
@@ -430,7 +473,12 @@ void Client::handle_commands()
 
   // ooohh we have goals!
   WriteLock goal_path_lock(goal_path_mutex);
-  if (!goal_path.empty())
+  if (goal_path.empty())
+  {
+    WriteLock task_id_lock(task_id_mutex);
+    current_task_id = "";
+  }
+  else
   {
     // Goals must have been updated since last handling, execute them now
     if (!goal_path.front().sent)
@@ -465,64 +513,6 @@ void Client::handle_commands()
   // otherwise, mode is correct, nothing in queue, nothing else to do then
 }
 
-double Client::get_yaw_from_quat(
-    const geometry_msgs::Quaternion& _quat) const
-{
-  tf2::Quaternion tf2_quat;
-  tf2::fromMsg(_quat, tf2_quat);
-  tf2::Matrix3x3 tf2_mat(tf2_quat);
-  
-  // ignores pitch and roll, but the api call is so nice though
-  double yaw;
-  double pitch;
-  double roll;
-  tf2_mat.getEulerYPR(yaw, pitch, roll);
-  return yaw;
-}
-
-double Client::get_yaw_from_transform(
-    const geometry_msgs::TransformStamped& _transform_stamped) const
-{
-  return get_yaw_from_quat(_transform_stamped.transform.rotation);
-}
-
-geometry_msgs::Quaternion Client::get_quat_from_yaw(double _yaw) const
-{
-  tf2::Quaternion quat_tf;
-  quat_tf.setRPY(0.0, 0.0, _yaw);
-  quat_tf.normalize();
-
-  geometry_msgs::Quaternion quat = tf2::toMsg(quat_tf);
-  return quat;
-}
-
-bool Client::is_transform_close(
-    const geometry_msgs::TransformStamped& _first,
-    const geometry_msgs::TransformStamped& _second) const
-{
-  if (_first.header.frame_id != _second.header.frame_id || 
-      _first.child_frame_id != _second.child_frame_id)
-    return false;
-
-  double elapsed_sec = (_second.header.stamp - _first.header.stamp).toSec();
-  tf2::Vector3 first_pos;
-  tf2::Vector3 second_pos;
-  tf2::fromMsg(_first.transform.translation, first_pos);
-  tf2::fromMsg(_second.transform.translation, second_pos);
-  double distance = second_pos.distance(first_pos);
-  double speed = abs(distance / elapsed_sec);
-  if (speed > 0.01)
-    return false;
-
-  double first_yaw = get_yaw_from_transform(_first);
-  double second_yaw = get_yaw_from_transform(_second);
-  double turning_speed = abs((second_yaw - first_yaw) / elapsed_sec);
-  if (turning_speed > 0.01)
-    return false;
-
-  return true;
-}
-
 void Client::update_thread_fn()
 {
   while (node->ok())
@@ -535,8 +525,8 @@ void Client::update_thread_fn()
 
     /// Tries to accept any commands over DDS, figures out the priority of the
     /// incoming commands and executes them.
-    read_commands();
-    handle_commands();
+    read_requests();
+    handle_requests();
   }
 }
 
@@ -547,16 +537,6 @@ void Client::publish_thread_fn()
     publish_rate->sleep();
     publish_robot_state();
   }
-}
-
-char* Client::dds_string_alloc_and_copy(const std::string& _str)
-{
-  char* ptr = dds_string_alloc(_str.length());
-  for (size_t i = 0; i < _str.length(); ++i)
-  {
-    ptr[i] = _str[i];
-  }
-  return ptr;
 }
 
 } // namespace free_fleet

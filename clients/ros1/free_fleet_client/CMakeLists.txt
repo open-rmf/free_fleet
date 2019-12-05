@@ -31,6 +31,8 @@ link_directories(${CYCLONE_INSTALL_PATH}/lib)
 add_executable(free_fleet_client
   src/main.cpp
   src/Client.cpp
+  src/dds_utils/math.cpp
+  src/dds_utils/common.cpp
   src/free_fleet/FreeFleet.c
 )
 target_link_libraries(free_fleet_client
@@ -51,15 +53,16 @@ target_include_directories(free_fleet_client
 set(testing_targets
   fake_action_server
   test_dds_sub_state
-  test_dds_pub_mode_command
-  test_dds_pub_path_command
-  test_dds_pub_sim_path_command
-  test_dds_pub_location_command
+  test_dds_pub_mode_request
+  test_dds_pub_path_request
+  test_dds_pub_sim_path_request
+  test_dds_pub_destination_request
 )
 
 foreach(target ${testing_targets})
   add_executable(${target}
     src/tests/${target}.cpp
+    src/dds_utils/common.cpp
     src/free_fleet/FreeFleet.c
   )
   target_link_libraries(${target}

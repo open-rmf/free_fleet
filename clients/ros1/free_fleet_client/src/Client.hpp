@@ -31,7 +31,6 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/BatteryState.h>
 #include <tf2_ros/transform_listener.h>
-#include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
 
 #include <move_base_msgs/MoveBaseGoal.h>
@@ -64,9 +63,9 @@ struct ClientConfig
 
   uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
   std::string dds_state_topic = "robot_state";
-  std::string dds_mode_command_topic = "robot_mode_command";
-  std::string dds_path_command_topic = "robot_path_command";
-  std::string dds_location_command_topic = "robot_location_command";
+  std::string dds_mode_request_topic = "mode_request";
+  std::string dds_path_request_topic = "path_request";
+  std::string dds_destination_request_topic = "destination_request";
 
   float update_frequency = 10.0;
   float publish_frequency = 1.0;
@@ -132,6 +131,9 @@ private:
   std::mutex level_name_mutex;
   std_msgs::String current_level_name;
 
+  std::mutex task_id_mutex;
+  std::string current_task_id;
+
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
 
   void level_name_callback_fn(const std_msgs::String& msg);
@@ -145,16 +147,16 @@ private:
   void publish_robot_state();
 
   // --------------------------------------------------------------------------
-  // Receiving and handling commands in the form of location, mode and path.
+  // Receiving and handling requests in the form of location, mode and path.
 
-  dds::DDSSubscribeHandler<FreeFleetData_RobotMode>::SharedPtr 
-      mode_command_sub;
+  dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
+      mode_request_sub;
 
-  dds::DDSSubscribeHandler<FreeFleetData_Location>::SharedPtr
-      location_command_sub;
+  dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
+      path_request_sub;
 
-  dds::DDSSubscribeHandler<FreeFleetData_Path>::SharedPtr 
-      path_command_sub;
+  dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
+      destination_request_sub;
 
   move_base_msgs::MoveBaseGoal location_to_goal(
       std::shared_ptr<const FreeFleetData_Location> location) const;
@@ -166,14 +168,14 @@ private:
 
   void resume_robot();
 
-  /// In the event that within one single cycle, the client receives commands
+  /// In the event that within one single cycle, the client receives requests
   /// from all 3 sources, the priority is mode > path > location.
   ///
-  void read_commands();
+  void read_requests();
 
-  /// Handling of commands will have a similar priority, with mode > goal
+  /// Handling of requests will have a similar priority, with mode > goal
   ///
-  void handle_commands();
+  void handle_requests();
 
   // --------------------------------------------------------------------------
 
@@ -206,25 +208,6 @@ private:
   void publish_thread_fn();
 
   Client(const ClientConfig& config);
-
-  // --------------------------------------------------------------------------
-  // Some math related utilities
-
-  double get_yaw_from_quat(const geometry_msgs::Quaternion& quat) const;
-
-  double get_yaw_from_transform(
-      const geometry_msgs::TransformStamped& transform_stamped) const; 
-
-  geometry_msgs::Quaternion get_quat_from_yaw(double yaw) const;
-
-  bool is_transform_close(
-      const geometry_msgs::TransformStamped& transform_1,
-      const geometry_msgs::TransformStamped& transform_2) const;
-
-  // --------------------------------------------------------------------------
-  // some C memory related stuff
-
-  char* dds_string_alloc_and_copy(const std::string& str);
 
 };
 
