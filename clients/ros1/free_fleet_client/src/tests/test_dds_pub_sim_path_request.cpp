@@ -26,6 +26,13 @@
 
 int main (int argc, char ** argv)
 {
+  if (argc < 2)
+  {
+    std::cout << "Please provide a task ID." << std::endl;
+    return 1;
+  }
+  std::string task_id(argv[1]);
+
   dds_entity_t participant;
   dds_entity_t topic;
   dds_entity_t writer;
@@ -77,7 +84,6 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  std::string task_id = "SPACE_FORCE";
   std::string level_name = "B1";
 
   msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
