@@ -49,9 +49,9 @@ namespace free_fleet
 
 struct ClientConfig
 {
-  std::string fleet_name;
-  std::string robot_name;
-  std::string robot_model;
+  std::string fleet_name = "fleet_name";
+  std::string robot_name = "robot_name";
+  std::string robot_model = "robot_model";
 
   std::string battery_state_topic = "/battery_state";
   std::string level_name_topic = "/level_name";
