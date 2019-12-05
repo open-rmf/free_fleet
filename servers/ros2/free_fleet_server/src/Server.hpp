@@ -58,7 +58,6 @@ struct ServerConfig
 
   double update_state_frequency = 10.0;
   double publish_state_frequency = 1.0;
-  uint32_t max_samples_per_update = 10;
 };
 
 class Server : public rclcpp::Node
@@ -92,7 +91,7 @@ private:
 
   rclcpp::TimerBase::SharedPtr update_state_timer;
 
-  using DDSRobotStateSub = dds::DDSSubscribeHandler<FreeFleetData_RobotState>;
+  using DDSRobotStateSub = dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>;
   DDSRobotStateSub::SharedPtr dds_robot_state_sub;
 
   using FleetState = rmf_fleet_msgs::msg::FleetState;
