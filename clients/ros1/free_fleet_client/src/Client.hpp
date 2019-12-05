@@ -168,6 +168,13 @@ private:
 
   void resume_robot();
 
+  /// Checks that the incoming request is valid, for this robot, or if the task is valid.
+  ///
+  bool is_valid_request(
+    const std::string& request_fleet_name,
+    const std::string& request_robot_name,
+    const std::string& request_task_id);
+
   /// In the event that within one single cycle, the client receives requests
   /// from all 3 sources, the priority is mode > path > location.
   ///
