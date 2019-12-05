@@ -46,11 +46,11 @@ Server::Server(const ServerConfig& _config) :
   participant = dds_create_participant(
     static_cast<dds_domainid_t>(server_config.dds_domain), NULL, NULL);
 
-  robot_state_sub.reset(
-      new dds::DDSSubscribeHandler<FreeFleetData_RobotState>(
+  dds_robot_state_sub.reset(
+      new dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>(
           participant, &FreeFleetData_RobotState_desc,
           server_config.dds_robot_state_topic));
-  if (!robot_state_sub->is_ready())
+  if (!dds_robot_state_sub->is_ready())
     return;
 
   ready = true;
@@ -65,19 +65,49 @@ void Server::start()
   }
 
   using namespace std::chrono_literals;
+  
+  update_state_timer = create_wall_timer(
+      100ms, std::bind(&Server::update_state_callback, this));
 
-  update_timer = create_wall_timer(
-      100ms, std::bind(&Server::update_callback, this));
+  using std::placeholders::_1;
+  
+  mode_request_sub = create_subscription<ModeRequest>(
+      server_config.mode_request_topic, 10, std::bind(&Server::mode_request_callback, this, _1));
+  
+  path_request_sub = create_subscription<PathRequest>(
+      server_config.path_request_topic, 10, std::bind(&Server::path_request_callback, this, _1));
+
+  destination_request_sub = create_subscription<DestinationRequest>(
+      server_config.destination_request_topic, 10, 
+      std::bind(&Server::destination_request_callback, this, _1));
 }
 
 void Server::update_state_callback()
 {
-  auto new_robot_state = robot_state_sub->read();
+  std::vector<std::shared_ptr<const FreeFleetData_RobotState>> incoming_states;
+  dds_robot_state_sub->read(incoming_states);
 
-  if (!new_robot_state)
-    RCLCPP_INFO(get_logger(), "getting nothing yet.");
-  else
-    RCLCPP_INFO(get_logger(), "got a state through dds!");
+  RCLCPP_INFO(get_logger(), "got %u states!", incoming_states.size());
+
+  // for (auto new_robot_state : incoming_states)
+  // {
+
+  // }
+}
+
+void Server::mode_request_callback(ModeRequest::UniquePtr _msg)
+{
+
+}
+
+void Server::path_request_callback(PathRequest::UniquePtr _msg)
+{
+
+}
+
+void Server::destination_request_callback(DestinationRequest::UniquePtr _msg)
+{
+
 }
 
 } // namespace free_fleet

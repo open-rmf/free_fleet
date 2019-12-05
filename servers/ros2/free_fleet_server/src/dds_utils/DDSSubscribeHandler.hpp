@@ -19,6 +19,7 @@
 #define FREEFLEETCLIENT__SRC__DDSSUBSCRIBEHANDLER_HPP
 
 #include <memory>
+#include <vector>
 
 #include <dds/dds.h>
 
@@ -85,7 +86,7 @@ public:
 
     for (size_t i = 0; i < shared_msgs.size(); ++i)
     {
-      shared_msgs[i] = std::shared_msgs<Message>((Message*)dds_alloc(sizeof(Message)));
+      shared_msgs[i] = std::shared_ptr<Message>((Message*)dds_alloc(sizeof(Message)));
       samples[i] = (void*)shared_msgs[i].get();
     }
 
@@ -104,24 +105,48 @@ public:
   }
 
   ///
-  std::shared_ptr<const Message> read()
+  void read(std::vector<std::shared_ptr<const Message>>& msgs)
   {
     if (!is_ready())
-      return nullptr;
-    
+      return;
+
+    msgs.clear();
     return_code = dds_take(reader, samples, infos, MaxSamplesNum, MaxSamplesNum);
     if (return_code < 0)
     {
       DDS_FATAL("dds_take: %s\n", dds_strretcode(-return_code));
-      return nullptr;
+      return;
     }
-
-    if ((return_code > 0) && (infos[0].valid_data))
+    
+    if (return_code > 0)
     {
-      return std::shared_ptr<const Message>(shared_msg);
+      for (size_t i = 0; i < MaxSamplesNum; ++i)
+      {
+        if (infos[i].valid_data)
+          msgs.push_back(std::shared_ptr<const Message>(shared_msgs[i]));
+      }
     }
-    return nullptr;
   }
+
+  ///
+  // std::shared_ptr<const Message> read()
+  // {
+  //   if (!is_ready())
+  //     return nullptr;
+    
+  //   return_code = dds_take(reader, samples, infos, MaxSamplesNum, MaxSamplesNum);
+  //   if (return_code < 0)
+  //   {
+  //     DDS_FATAL("dds_take: %s\n", dds_strretcode(-return_code));
+  //     return nullptr;
+  //   }
+
+  //   if ((return_code > 0) && (infos[0].valid_data))
+  //   {
+  //     return std::shared_ptr<const Message>(shared_msg);
+  //   }
+  //   return nullptr;
+  // }
 
 };
 
