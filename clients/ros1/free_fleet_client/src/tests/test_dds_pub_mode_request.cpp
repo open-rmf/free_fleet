@@ -39,7 +39,7 @@ int main (int argc, char ** argv)
       mode_command != "emergency")
   {
     std::cout << "Please select the robot mode command that you wish to send: "
-      << "pause, resume or emergency" << std::endl;
+      << "pause, resume or emergency, then <task_id>" << std::endl;
     return 1;
   }
 
