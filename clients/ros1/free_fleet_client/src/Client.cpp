@@ -159,6 +159,16 @@ void Client::start()
   update_rate.reset(new ros::Rate(client_config.update_frequency));
   publish_rate.reset(new ros::Rate(client_config.publish_frequency));
 
+  // override the robot name if it's set as a ros param called robot_name
+  std::string robot_name_param;
+  if (node.getParam("~robot_name", robot_name_param))
+  {
+    ROS_INFO("Found robot_name param on the parameter server. "
+             "Setting robot_name to [%s]\n",
+        robot_name_param.c_str());
+    client_config.robot_name = robot_name_param;
+  }
+
   battery_percent_sub = node->subscribe(
       client_config.battery_state_topic, 1,
       &Client::battery_state_callback_fn, this);
