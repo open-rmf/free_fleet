@@ -69,7 +69,7 @@ int main(int argc, char** argv)
   {
     /* Do the actual read.
      * The return value contains the number of read samples. */
-    rc = dds_read (reader, samples, infos, 1, 1);
+    rc = dds_take(reader, samples, infos, 1, 1);
     if (rc < 0)
       DDS_FATAL("dds_read: %s\n", dds_strretcode(-rc));
 
@@ -84,6 +84,9 @@ int main(int argc, char** argv)
       std::cout << "battery: " << msg->battery_percent << std::endl;
       std::cout << "sec:  " << msg->location.sec << std::endl;
       std::cout << "nsec: " << msg->location.nanosec << std::endl;
+      std::cout << "x: " << msg->location.x << std::endl;
+      std::cout << "y: " << msg->location.y << std::endl;
+      std::cout << "yaw: " << msg->location.yaw << std::endl;
       std::cout << "mode: ";
       if (msg->mode.mode == FreeFleetData_RobotMode_Constants_MODE_IDLE)
         std::cout << "IDLE" << std::endl;
@@ -100,7 +103,7 @@ int main(int argc, char** argv)
       else if (
           msg->mode.mode == FreeFleetData_RobotMode_Constants_MODE_EMERGENCY)
         std::cout << "EMERGENCY" << std::endl;
-      break;
+      //break;
     }
     else
     {
