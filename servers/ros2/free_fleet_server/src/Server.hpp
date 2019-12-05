@@ -89,16 +89,17 @@ private:
   using ReadLock = std::unique_lock<std::mutex>;
   using WriteLock = std::unique_lock<std::mutex>;
 
+  rclcpp::callback_group::CallbackGroup::SharedPtr update_callback_group;
+
+  rclcpp::callback_group::CallbackGroup::SharedPtr fleet_callback_group;
+
   // --------------------------------------------------------------------------
 
   rclcpp::TimerBase::SharedPtr update_state_timer;
 
-  using DDSRobotStateSub = dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>;
+  using DDSRobotStateSub = 
+      dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>;
   DDSRobotStateSub::SharedPtr dds_robot_state_sub;
-
-  using FleetState = rmf_fleet_msgs::msg::FleetState;
-  using FleetStatePub = rclcpp::Publisher<FleetState>;
-  FleetStatePub::SharedPtr fleet_state_pub;
 
   using Location = rmf_fleet_msgs::msg::Location;
   using RobotState = rmf_fleet_msgs::msg::RobotState;
@@ -106,22 +107,33 @@ private:
   std::mutex robot_states_mutex;
   std::unordered_map<std::string, RobotState> robot_states;
 
-  void dds_to_ros_location(const FreeFleetData_Location& dds_location, Location& ros_location)
-      const;
+  void dds_to_ros_location(
+      const FreeFleetData_Location& dds_location, Location& ros_location) const;
 
   void dds_to_ros_robot_state(
       const std::shared_ptr<const FreeFleetData_RobotState>& dds_robot_state,
       RobotState& ros_robot_state) const;
 
-  void get_fleet_state(FleetState& fleet_state);
-
   void update_state_callback();
 
   // TODO: clean up very very old states of stagnant or dead robots
 
-  bool is_request_valid(const std::string& fleet_name, const std::string& robot_name);
+  bool is_request_valid(
+      const std::string& fleet_name, const std::string& robot_name);
 
-  // --------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  
+  rclcpp::TimerBase::SharedPtr fleet_state_pub_timer;
+
+  using FleetState = rmf_fleet_msgs::msg::FleetState;
+  using FleetStatePub = rclcpp::Publisher<FleetState>;
+  FleetStatePub::SharedPtr fleet_state_pub;
+
+  void get_fleet_state(FleetState& fleet_state);
+
+  void publish_fleet_state();
+
+  // ---------------------------------------------------------------------------
 
   using ModeRequest = rmf_fleet_msgs::msg::ModeRequest;
   using ModeRequestSub = rclcpp::Subscription<ModeRequest>;
@@ -149,7 +161,8 @@ private:
   using DestinationRequestSub = rclcpp::Subscription<DestinationRequest>;
   DestinationRequestSub::SharedPtr destination_request_sub;
 
-  using DDSDestinationRequestPub = dds::DDSPublishHandler<FreeFleetData_DestinationRequest>;
+  using DDSDestinationRequestPub = 
+      dds::DDSPublishHandler<FreeFleetData_DestinationRequest>;
   DDSDestinationRequestPub::SharedPtr dds_destination_request_pub;
 
   void destination_request_callback(DestinationRequest::UniquePtr msg);

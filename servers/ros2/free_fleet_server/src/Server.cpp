@@ -65,24 +65,60 @@ void Server::start()
     RCLCPP_ERROR(get_logger(), "Server: is not ready, can't start");
     return;
   }
+  
+  update_callback_group = create_callback_group(
+      rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
+
+  fleet_callback_group = create_callback_group(
+      rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
 
   using namespace std::chrono_literals;
   
   robot_states.clear();
+
   update_state_timer = create_wall_timer(
-      100ms, std::bind(&Server::update_state_callback, this));
+      100ms, std::bind(&Server::update_state_callback, this), 
+      update_callback_group);
 
-  using std::placeholders::_1;
-  
+  fleet_state_pub_timer = create_wall_timer(
+      1s, std::bind(&Server::publish_fleet_state, this),
+      fleet_callback_group);
+
+  fleet_state_pub = 
+      create_publisher<FleetState>(server_config.fleet_state_topic, 10);
+
+  auto mode_request_sub_opt = rclcpp::SubscriptionOptions();
+  mode_request_sub_opt.callback_group = fleet_callback_group;
   mode_request_sub = create_subscription<ModeRequest>(
-      server_config.mode_request_topic, 10, std::bind(&Server::mode_request_callback, this, _1));
+      server_config.mode_request_topic, 
+      rclcpp::QoS(10),
+      [&](ModeRequest::UniquePtr msg)
+      {
+        mode_request_callback(std::move(msg));
+      },
+      mode_request_sub_opt);
   
+  auto path_request_sub_opt = rclcpp::SubscriptionOptions();
+  path_request_sub_opt.callback_group = fleet_callback_group;
   path_request_sub = create_subscription<PathRequest>(
-      server_config.path_request_topic, 10, std::bind(&Server::path_request_callback, this, _1));
+      server_config.path_request_topic, 
+      rclcpp::QoS(10), 
+      [&](PathRequest::UniquePtr msg)
+      {
+        path_request_callback(std::move(msg)); 
+      },
+      path_request_sub_opt);
 
+  auto destination_request_sub_opt = rclcpp::SubscriptionOptions();
+  destination_request_sub_opt.callback_group = fleet_callback_group;
   destination_request_sub = create_subscription<DestinationRequest>(
-      server_config.destination_request_topic, 10, 
-      std::bind(&Server::destination_request_callback, this, _1));
+      server_config.destination_request_topic, 
+      rclcpp::QoS(10),
+      [&](DestinationRequest::UniquePtr msg)
+      {
+        destination_request_callback(std::move(msg));
+      },
+      destination_request_sub_opt);
 }
 
 void Server::dds_to_ros_location(
@@ -155,6 +191,14 @@ bool Server::is_request_valid(const std::string& _fleet_name, const std::string&
   if (it == robot_states.end())
     return false;
   return true;
+}
+
+void Server::publish_fleet_state()
+{
+  FleetState new_fleet_state;
+  get_fleet_state(new_fleet_state);
+
+  fleet_state_pub->publish(new_fleet_state);
 }
 
 void Server::mode_request_callback(ModeRequest::UniquePtr _msg)

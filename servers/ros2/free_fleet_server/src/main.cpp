@@ -23,14 +23,18 @@
 int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
+  rclcpp::executors::MultiThreadedExecutor executor;
 
   free_fleet::ServerConfig config {"fake_fleet"};
   auto server = free_fleet::Server::make(config);
   if (server->is_ready())
   {
     server->start();
-    rclcpp::spin(server);
+    
+    executor.add_node(server);
+    executor.spin();
   }
+
   rclcpp::shutdown();
   std::cout << "all done!" << std::endl;
   return 0;
