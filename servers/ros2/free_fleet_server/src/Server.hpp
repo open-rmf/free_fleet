@@ -108,7 +108,21 @@ private:
   using ModeRequestSub = rclcpp::Subscription<ModeRequest>;
   ModeRequestSub::SharedPtr mode_request_sub;
 
+  using DDSRobotModePub = dds::DDSPublishHandler<FreeFleetData_RobotMode>;
+  DDSRobotModePub::SharedPtr dds_mode_request_pub;
+
   void mode_request_callback(ModeRequest::UniquePtr msg);
+
+  // --------------------------------------------------------------------------
+
+  using DestinationRequest = rmf_fleet_msgs::msg::DestinationRequest;
+  using DestinationRequestSub = rclcpp::Subscription<PathRequest>;
+  DestinationRequestSub::SharedPtr path_request_sub;
+
+  using DDSPathPub = dds::DDSPublishHandler<FreeFleetData_Path>;
+  DDSPathPub::SharedPtr dds_path_request_pub;
+
+  void path_request_callback(PathRequest::UniquePtr msg);
 
   // --------------------------------------------------------------------------
 
@@ -116,13 +130,8 @@ private:
   using PathRequestSub = rclcpp::Subscription<DestinationRequest>;
   PathRequestSub::SharedPtr destination_request_sub;
 
-  void path_request_callback(PathRequest::UniquePtr msg);
-
-  // --------------------------------------------------------------------------
-
-  using DestinationRequest = rmf_fleet_msgs::msg::DestinationRequest;
-  using DestinationRequestSub = rclcpp::Subscription<PathRequest>;
-  DestinationRequestSub::SharedPtr path_request_sub;
+  using DDSLocationPub = dds::DDSPublishHandler<FreeFleetData_Location>;
+  DDSLocationPub::SharedPtr dds_destination_request_pub;
 
   void destination_request_callback(DestinationRequest::UniquePtr msg);
 
