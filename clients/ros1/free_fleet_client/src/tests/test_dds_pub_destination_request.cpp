@@ -30,7 +30,7 @@ int main (int argc, char ** argv)
   {
     std::cout << "Please select the destination coordinates and task ID for the request after the "
         << "executable, " << std::endl;
-    std::cout << "For example, <exec> 0.0 0.0 0.0" << std::endl;
+    std::cout << "For example, <exec> 0.0 0.0 0.0 <task_id>" << std::endl;
     return 1;
   }
 
