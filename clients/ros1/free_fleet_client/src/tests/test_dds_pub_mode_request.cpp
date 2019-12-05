@@ -27,10 +27,10 @@
 
 int main (int argc, char ** argv)
 {
-  if (argc < 2)
+  if (argc < 3)
   {
-    std::cout << "Please select the robot mode command that you wish to send: "
-      << "pause, resume or emergency" << std::endl;
+    std::cout << "Please select the robot mode command and task ID that you wish to send: "
+      << "pause, resume or emergency, then <task_id>" << std::endl;
     return 1;
   }
   std::string mode_command(argv[1]);
@@ -42,6 +42,8 @@ int main (int argc, char ** argv)
       << "pause, resume or emergency" << std::endl;
     return 1;
   }
+
+  std::string task_id(argv[2]);
 
   dds_entity_t participant;
   dds_entity_t topic;
@@ -94,7 +96,6 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  std::string task_id = "PEOPLES_ELBOW";
   msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
 
   if (mode_command == "pause")

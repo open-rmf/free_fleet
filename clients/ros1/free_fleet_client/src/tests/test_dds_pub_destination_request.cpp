@@ -26,16 +26,18 @@
 
 int main (int argc, char ** argv)
 {
-  if (argc < 4)
+  if (argc < 5)
   {
-    std::cout << "Please select the destination coordinates for the request after the executable, ";
-    std::cout << std::endl << "For example, <exec> 0.0 0.0 0.0" << std::endl;
+    std::cout << "Please select the destination coordinates and task ID for the request after the "
+        << "executable, " << std::endl;
+    std::cout << "For example, <exec> 0.0 0.0 0.0" << std::endl;
     return 1;
   }
 
   double x = strtod(argv[1], NULL);
   double y = strtod(argv[2], NULL);
   double yaw = strtod(argv[3], NULL);
+  std::string task_id(argv[4]); 
 
   dds_entity_t participant;
   dds_entity_t topic;
@@ -88,7 +90,6 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  std::string task_id = "SWEET_CHIN_MUSIC";
   std::string level_name = "B1";
   
   msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
