@@ -46,7 +46,7 @@ namespace free_fleet
 
 struct ServerConfig
 {
-  std::string fleet_name;
+  std::string fleet_name = "fleet_name";
 
   std::string fleet_state_topic = "fleet_state";
   std::string mode_command_topic = "mode_command";

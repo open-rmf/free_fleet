@@ -37,20 +37,6 @@ bool Server::is_ready()
   return ready;
 }
 
-void Server::start()
-{
-  if (!is_ready())
-  {
-    RCLCPP_ERROR(get_logger(), "Server: is not ready, can't start");
-    return;
-  }
-
-  using namespace std::chrono_literals;
-
-  update_timer = create_wall_timer(
-      100ms, std::bind(&Server::update_callback, this));
-}
-
 Server::Server(const ServerConfig& _config) :
   Node(_config.fleet_name + "_free_fleet_server"),
   server_config(_config)
@@ -68,6 +54,20 @@ Server::Server(const ServerConfig& _config) :
     return;
 
   ready = true;
+}
+
+void Server::start()
+{
+  if (!is_ready())
+  {
+    RCLCPP_ERROR(get_logger(), "Server: is not ready, can't start");
+    return;
+  }
+
+  using namespace std::chrono_literals;
+
+  update_timer = create_wall_timer(
+      100ms, std::bind(&Server::update_callback, this));
 }
 
 void Server::update_state_callback()

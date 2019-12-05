@@ -29,6 +29,8 @@ endif()
 add_executable(free_fleet_server 
   src/main.cpp
   src/Server.cpp
+  src/dds_utils/math.cpp
+  src/dds_utils/common.cpp
   src/free_fleet/FreeFleet.c
 )
 ament_target_dependencies(free_fleet_server

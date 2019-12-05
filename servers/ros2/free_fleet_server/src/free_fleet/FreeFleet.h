@@ -76,6 +76,7 @@ typedef struct FreeFleetData_RobotState
 {
   char * name;
   char * model;
+  char * task_id;
   FreeFleetData_RobotMode mode;
   float battery_percent;
   FreeFleetData_Location location;
@@ -90,33 +91,64 @@ extern const dds_topic_descriptor_t FreeFleetData_RobotState_desc;
 #define FreeFleetData_RobotState_free(d,o) \
 dds_sample_free ((d), &FreeFleetData_RobotState_desc, (o))
 
-typedef struct FreeFleetData_Path_path_seq
+
+typedef struct FreeFleetData_ModeRequest
+{
+  FreeFleetData_RobotMode mode;
+  char * task_id;
+} FreeFleetData_ModeRequest;
+
+extern const dds_topic_descriptor_t FreeFleetData_ModeRequest_desc;
+
+#define FreeFleetData_ModeRequest__alloc() \
+((FreeFleetData_ModeRequest*) dds_alloc (sizeof (FreeFleetData_ModeRequest)));
+
+#define FreeFleetData_ModeRequest_free(d,o) \
+dds_sample_free ((d), &FreeFleetData_ModeRequest_desc, (o))
+
+typedef struct FreeFleetData_PathRequest_path_seq
 {
   uint32_t _maximum;
   uint32_t _length;
   FreeFleetData_Location *_buffer;
   bool _release;
-} FreeFleetData_Path_path_seq;
+} FreeFleetData_PathRequest_path_seq;
 
-#define FreeFleetData_Path_path_seq__alloc() \
-((FreeFleetData_Path_path_seq*) dds_alloc (sizeof (FreeFleetData_Path_path_seq)));
+#define FreeFleetData_PathRequest_path_seq__alloc() \
+((FreeFleetData_PathRequest_path_seq*) dds_alloc (sizeof (FreeFleetData_PathRequest_path_seq)));
 
-#define FreeFleetData_Path_path_seq_allocbuf(l) \
+#define FreeFleetData_PathRequest_path_seq_allocbuf(l) \
 ((FreeFleetData_Location *) dds_alloc ((l) * sizeof (FreeFleetData_Location)))
 
 
-typedef struct FreeFleetData_Path
+typedef struct FreeFleetData_PathRequest
 {
-  FreeFleetData_Path_path_seq path;
-} FreeFleetData_Path;
+  FreeFleetData_PathRequest_path_seq path;
+  char * task_id;
+} FreeFleetData_PathRequest;
 
-extern const dds_topic_descriptor_t FreeFleetData_Path_desc;
+extern const dds_topic_descriptor_t FreeFleetData_PathRequest_desc;
 
-#define FreeFleetData_Path__alloc() \
-((FreeFleetData_Path*) dds_alloc (sizeof (FreeFleetData_Path)));
+#define FreeFleetData_PathRequest__alloc() \
+((FreeFleetData_PathRequest*) dds_alloc (sizeof (FreeFleetData_PathRequest)));
 
-#define FreeFleetData_Path_free(d,o) \
-dds_sample_free ((d), &FreeFleetData_Path_desc, (o))
+#define FreeFleetData_PathRequest_free(d,o) \
+dds_sample_free ((d), &FreeFleetData_PathRequest_desc, (o))
+
+
+typedef struct FreeFleetData_DestinationRequest
+{
+  FreeFleetData_Location location;
+  char * task_id;
+} FreeFleetData_DestinationRequest;
+
+extern const dds_topic_descriptor_t FreeFleetData_DestinationRequest_desc;
+
+#define FreeFleetData_DestinationRequest__alloc() \
+((FreeFleetData_DestinationRequest*) dds_alloc (sizeof (FreeFleetData_DestinationRequest)));
+
+#define FreeFleetData_DestinationRequest_free(d,o) \
+dds_sample_free ((d), &FreeFleetData_DestinationRequest_desc, (o))
 
 #ifdef __cplusplus
 }
