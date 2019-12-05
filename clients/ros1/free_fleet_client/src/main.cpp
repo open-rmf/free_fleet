@@ -55,9 +55,15 @@ free_fleet::ClientConfig parse(int argc, char** argv)
     free_fleet::ClientConfig default_config;
 
     options.add_options()
-      ("f,fleet-name", "fleet name", cxxopts::value<std::string>())
-      ("r,robot-name", "robot name", cxxopts::value<std::string>())
-      ("m,robot-model", "robot model", cxxopts::value<std::string>())
+      ("f,fleet-name", "fleet name",
+          cxxopts::value<std::string>()->default_value(
+              default_config.fleet_name))
+      ("r,robot-name", "robot name",
+          cxxopts::value<std::string>()->default_value(
+              default_config.robot_name))
+      ("m,robot-model", "robot model",
+          cxxopts::value<std::string>()->default_value(
+              default_config.robot_model))
       ("battery-state-topic", "battery state topic over ROS 1",
           cxxopts::value<std::string>()->default_value(
               default_config.battery_state_topic))
@@ -104,26 +110,6 @@ free_fleet::ClientConfig parse(int argc, char** argv)
     {
       std::cout << options.help({""}) << std::endl;
       exit(0);
-    }
-
-    // handle mandatory arguments
-    if (!results.count("f") || !results.count("fleet-name"))
-    {
-      std::cout << "FreeFleetClient: fleet name must be specified" 
-          << std::endl;
-      exit(1);
-    }
-    if (!results.count("r") || !results.count("robot-name"))
-    {
-      std::cout << "FreeFleetClient: robot name must be specified" 
-          << std::endl;
-      exit(1);
-    }
-    if (!results.count("m") || !results.count("robot-model"))
-    {
-      std::cout << "FreeFleetClient: robot model must be specified"
-          << std::endl;
-      exit(1);
     }
 
     return free_fleet::ClientConfig {
