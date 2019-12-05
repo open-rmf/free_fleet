@@ -478,8 +478,7 @@ void Client::handle_requests()
     WriteLock task_id_lock(task_id_mutex);
     current_task_id = "";
   }
-
-  if (!goal_path.empty())
+  else
   {
     // Goals must have been updated since last handling, execute them now
     if (!goal_path.front().sent)
