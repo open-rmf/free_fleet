@@ -94,6 +94,8 @@ dds_sample_free ((d), &FreeFleetData_RobotState_desc, (o))
 
 typedef struct FreeFleetData_ModeRequest
 {
+  char * fleet_name;
+  char * robot_name;
   FreeFleetData_RobotMode mode;
   char * task_id;
 } FreeFleetData_ModeRequest;
@@ -123,6 +125,8 @@ typedef struct FreeFleetData_PathRequest_path_seq
 
 typedef struct FreeFleetData_PathRequest
 {
+  char * fleet_name;
+  char * robot_name;
   FreeFleetData_PathRequest_path_seq path;
   char * task_id;
 } FreeFleetData_PathRequest;
@@ -138,6 +142,8 @@ dds_sample_free ((d), &FreeFleetData_PathRequest_desc, (o))
 
 typedef struct FreeFleetData_DestinationRequest
 {
+  char * fleet_name;
+  char * robot_name;
   FreeFleetData_Location location;
   char * task_id;
 } FreeFleetData_DestinationRequest;
