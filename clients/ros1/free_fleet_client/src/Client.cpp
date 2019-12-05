@@ -473,6 +473,12 @@ void Client::handle_requests()
 
   // ooohh we have goals!
   WriteLock goal_path_lock(goal_path_mutex);
+  if (goal_path.empty())
+  {
+    WriteLock task_id_lock(task_id_mutex);
+    current_task_id = "";
+  }
+
   if (!goal_path.empty())
   {
     // Goals must have been updated since last handling, execute them now
