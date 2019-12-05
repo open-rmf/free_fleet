@@ -27,23 +27,25 @@
 
 int main (int argc, char ** argv)
 {
-  if (argc < 3)
+  if (argc < 4)
   {
-    std::cout << "Please select the robot mode command and task ID that you wish to send: "
-      << "pause, resume or emergency, then <task_id>" << std::endl;
-    return 1;
-  }
-  std::string mode_command(argv[1]);
-  if (mode_command != "pause" && 
-      mode_command != "resume" &&
-      mode_command != "emergency")
-  {
-    std::cout << "Please select the robot mode command that you wish to send: "
-      << "pause, resume or emergency, then <task_id>" << std::endl;
+    std::cout << "Please request using the following format," << std::endl;
+    std::cout << "<Executable> <Fleet name> <Robot Name> <Task ID> <Mode>" << std::endl;
     return 1;
   }
 
-  std::string task_id(argv[2]);
+  std::string fleet_name(argv[1]);
+  std::string robot_name(argv[2]);
+  std::string task_id(argv[3]);
+  std::string mode_request(argv[4]);
+
+  if (mode_request != "pause" && 
+      mode_request != "resume" &&
+      mode_request != "emergency")
+  {
+    std::cout << "Supported modes are pause, resume and emergency." << std::endl;
+    return 1;
+  }
 
   dds_entity_t participant;
   dds_entity_t topic;
@@ -96,17 +98,19 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
+  msg->fleet_name = free_fleet::common::dds_string_alloc_and_copy(fleet_name);
+  msg->robot_name = free_fleet::common::dds_string_alloc_and_copy(robot_name);
   msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
 
-  if (mode_command == "pause")
+  if (mode_request == "pause")
     msg->mode.mode = FreeFleetData_RobotMode_Constants_MODE_PAUSED;
-  else if (mode_command == "resume")
+  else if (mode_request == "resume")
     msg->mode.mode = FreeFleetData_RobotMode_Constants_MODE_MOVING;
-  else if (mode_command == "emergency")
+  else if (mode_request == "emergency")
     msg->mode.mode = FreeFleetData_RobotMode_Constants_MODE_EMERGENCY;
   
   printf ("=== [Publisher]  Writing : ");
-  printf ("Message: mode_command %s\n", mode_command.c_str());
+  printf ("Message: mode_request %s\n", mode_request.c_str());
   fflush (stdout);
 
   rc = dds_write (writer, msg);

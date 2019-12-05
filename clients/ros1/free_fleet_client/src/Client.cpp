@@ -374,17 +374,29 @@ void Client::resume_robot()
   paused = false;
 }
 
+bool Client::is_valid_request(
+    const std::string& _request_fleet_name,
+    const std::string& _request_robot_name,
+    const std::string& _request_task_id)
+{
+  ReadLock task_id_lock(task_id_mutex);
+  if (current_task_id == _request_task_id ||
+      client_config.robot_name != _request_robot_name ||
+      client_config.fleet_name != _request_fleet_name)
+    return false;
+  return true;
+}
+
 void Client::read_requests()
 {
   auto mode_request = mode_request_sub->read();
   if (mode_request)
   {
-    std::string incoming_task_id(mode_request->task_id);
-    {
-      ReadLock task_id_lock(task_id_mutex);
-      if (current_task_id == incoming_task_id)
-        return;
-    }
+    std::string request_fleet_name(mode_request->fleet_name);
+    std::string request_robot_name(mode_request->robot_name);
+    std::string request_task_id(mode_request->task_id);
+    if (!is_valid_request(request_fleet_name, request_robot_name, request_task_id))
+      return;
 
     if (
         mode_request->mode.mode == 
@@ -410,19 +422,18 @@ void Client::read_requests()
     }
     
     WriteLock task_id_lock(task_id_mutex);
-    current_task_id = incoming_task_id;
+    current_task_id = request_task_id;
     return;
   }
 
   auto path_request = path_request_sub->read();
   if (path_request)
   {
-    std::string incoming_task_id(path_request->task_id);
-    {
-      ReadLock task_id_lock(task_id_mutex);
-      if (current_task_id == incoming_task_id)
-        return;
-    }
+    std::string request_fleet_name(path_request->fleet_name);
+    std::string request_robot_name(path_request->robot_name);
+    std::string request_task_id(path_request->task_id);
+    if (!is_valid_request(request_fleet_name, request_robot_name, request_task_id))
+      return;
 
     ROS_INFO("received a Path command.");
 
@@ -439,19 +450,18 @@ void Client::read_requests()
     }
 
     WriteLock task_id_lock(task_id_mutex);
-    current_task_id = std::string(path_request->task_id);
+    current_task_id = request_task_id;
     return;
   }
 
   auto destination_request = destination_request_sub->read();
   if (destination_request)
   {
-    std::string incoming_task_id(destination_request->task_id);
-    {
-      ReadLock task_id_lock(task_id_mutex);
-      if (current_task_id == incoming_task_id)
-        return;
-    }
+    std::string request_fleet_name(destination_request->fleet_name);
+    std::string request_robot_name(destination_request->robot_name);
+    std::string request_task_id(destination_request->task_id);
+    if (!is_valid_request(request_fleet_name, request_robot_name, request_task_id))
+      return;
 
     ROS_INFO("received a Location command.");
 
@@ -465,7 +475,7 @@ void Client::read_requests()
     goal_path.push_back(new_goal);
 
     WriteLock task_id_lock(task_id_mutex);
-    current_task_id = std::string(destination_request->task_id);
+    current_task_id = request_task_id;
   }
 }
 
