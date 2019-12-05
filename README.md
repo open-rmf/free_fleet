@@ -8,11 +8,11 @@ Sometimes it is called the "Fun Free Fleet For Friends" (F5).
 
 # Requirements
 
-ROS 1 Melodic and ROS 2 Dashing need to be installed, since the ROS 1 client
+ROS 1 Melodic and ROS 2 Eloquent need to be installed, since the ROS 1 client
 uses DDS implementations packaged as part of the ROS 2 project.
 
-The build scripts assume that ROS 2 Dashing is installed to the canonical
-location in `/opt/ros/dashing`
+The build scripts assume that ROS 2 Eloquent is installed to the canonical
+location in `/opt/ros/eloquent`
 
 # Documentation and notes
 
