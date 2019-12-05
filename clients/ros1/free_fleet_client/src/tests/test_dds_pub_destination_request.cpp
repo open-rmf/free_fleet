@@ -26,6 +26,17 @@
 
 int main (int argc, char ** argv)
 {
+  if (argc < 4)
+  {
+    std::cout << "Please select the destination coordinates for the request after the executable, ";
+    std::cout << std::endl << "For example, <exec> 0.0 0.0 0.0" << std::endl;
+    return 1;
+  }
+
+  double x = strtod(argv[1], NULL);
+  double y = strtod(argv[2], NULL);
+  double yaw = strtod(argv[3], NULL);
+
   dds_entity_t participant;
   dds_entity_t topic;
   dds_entity_t writer;
@@ -82,18 +93,19 @@ int main (int argc, char ** argv)
   
   msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
 
+  // time is weird for now
   msg->location.sec = 123;
   msg->location.nanosec = 123;
-  msg->location.x = 0.735785007477;
-  msg->location.y = -1.78202533722;
-  msg->location.yaw = 0.0;
+  msg->location.x = x;
+  msg->location.y = y;
+  msg->location.yaw = yaw;
   msg->location.level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
 
   printf ("=== [Publisher]  Writing : ");
   printf ("Message: level_name %s\n", msg->location.level_name);
   fflush (stdout);
 
-  rc = dds_write (writer, &msg);
+  rc = dds_write (writer, msg);
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_write: %s\n", dds_strretcode(-rc));
 
