@@ -34,16 +34,22 @@ module FreeFleetData
   };
   struct ModeRequest
   {
+    string fleet_name;
+    string robot_name;
     RobotMode mode;
     string task_id;
   };
   struct PathRequest
   {
+    string fleet_name;
+    string robot_name;
     sequence<Location> path;
     string task_id;
   };
   struct DestinationRequest
   {
+    string fleet_name;
+    string robot_name;
     Location location;
     string task_id;
   };
