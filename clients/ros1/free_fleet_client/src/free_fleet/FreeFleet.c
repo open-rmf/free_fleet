@@ -95,6 +95,8 @@ const dds_topic_descriptor_t FreeFleetData_RobotState_desc =
 
 static const uint32_t FreeFleetData_ModeRequest_ops [] =
 {
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_ModeRequest, fleet_name),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_ModeRequest, robot_name),
   DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_ModeRequest, mode.mode),
   DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_ModeRequest, task_id),
   DDS_OP_RTS
@@ -108,14 +110,16 @@ const dds_topic_descriptor_t FreeFleetData_ModeRequest_desc =
   0u,
   "FreeFleetData::ModeRequest",
   NULL,
-  3,
+  5,
   FreeFleetData_ModeRequest_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"FreeFleetData\"><Struct name=\"RobotMode\"><Member name=\"mode\"><ULong/></Member></Struct><Struct name=\"ModeRequest\"><Member name=\"mode\"><Type name=\"RobotMode\"/></Member><Member name=\"task_id\"><String/></Member></Struct></Module></MetaData>"
+  "<MetaData version=\"1.0.0\"><Module name=\"FreeFleetData\"><Struct name=\"RobotMode\"><Member name=\"mode\"><ULong/></Member></Struct><Struct name=\"ModeRequest\"><Member name=\"fleet_name\"><String/></Member><Member name=\"robot_name\"><String/></Member><Member name=\"mode\"><Type name=\"RobotMode\"/></Member><Member name=\"task_id\"><String/></Member></Struct></Module></MetaData>"
 };
 
 
 static const uint32_t FreeFleetData_PathRequest_ops [] =
 {
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_PathRequest, fleet_name),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_PathRequest, robot_name),
   DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_STU, offsetof (FreeFleetData_PathRequest, path),
   sizeof (FreeFleetData_Location), (17u << 16u) + 4u,
   DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_Location, sec),
@@ -137,14 +141,16 @@ const dds_topic_descriptor_t FreeFleetData_PathRequest_desc =
   0u,
   "FreeFleetData::PathRequest",
   NULL,
-  11,
+  13,
   FreeFleetData_PathRequest_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"FreeFleetData\"><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Float/></Member><Member name=\"y\"><Float/></Member><Member name=\"yaw\"><Float/></Member><Member name=\"level_name\"><String/></Member></Struct><Struct name=\"PathRequest\"><Member name=\"path\"><Sequence><Type name=\"Location\"/></Sequence></Member><Member name=\"task_id\"><String/></Member></Struct></Module></MetaData>"
+  "<MetaData version=\"1.0.0\"><Module name=\"FreeFleetData\"><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Float/></Member><Member name=\"y\"><Float/></Member><Member name=\"yaw\"><Float/></Member><Member name=\"level_name\"><String/></Member></Struct><Struct name=\"PathRequest\"><Member name=\"fleet_name\"><String/></Member><Member name=\"robot_name\"><String/></Member><Member name=\"path\"><Sequence><Type name=\"Location\"/></Sequence></Member><Member name=\"task_id\"><String/></Member></Struct></Module></MetaData>"
 };
 
 
 static const uint32_t FreeFleetData_DestinationRequest_ops [] =
 {
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_DestinationRequest, fleet_name),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (FreeFleetData_DestinationRequest, robot_name),
   DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_DestinationRequest, location.sec),
   DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_DestinationRequest, location.nanosec),
   DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (FreeFleetData_DestinationRequest, location.x),
@@ -163,7 +169,7 @@ const dds_topic_descriptor_t FreeFleetData_DestinationRequest_desc =
   0u,
   "FreeFleetData::DestinationRequest",
   NULL,
-  8,
+  10,
   FreeFleetData_DestinationRequest_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"FreeFleetData\"><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Float/></Member><Member name=\"y\"><Float/></Member><Member name=\"yaw\"><Float/></Member><Member name=\"level_name\"><String/></Member></Struct><Struct name=\"DestinationRequest\"><Member name=\"location\"><Type name=\"Location\"/></Member><Member name=\"task_id\"><String/></Member></Struct></Module></MetaData>"
+  "<MetaData version=\"1.0.0\"><Module name=\"FreeFleetData\"><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Float/></Member><Member name=\"y\"><Float/></Member><Member name=\"yaw\"><Float/></Member><Member name=\"level_name\"><String/></Member></Struct><Struct name=\"DestinationRequest\"><Member name=\"fleet_name\"><String/></Member><Member name=\"robot_name\"><String/></Member><Member name=\"location\"><Type name=\"Location\"/></Member><Member name=\"task_id\"><String/></Member></Struct></Module></MetaData>"
 };

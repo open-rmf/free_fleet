@@ -28,16 +28,18 @@ int main (int argc, char ** argv)
 {
   if (argc < 5)
   {
-    std::cout << "Please select the destination coordinates and task ID for the request after the "
-        << "executable, " << std::endl;
-    std::cout << "For example, <exec> 0.0 0.0 0.0 <task_id>" << std::endl;
+    std::cout << "Please request using the following format," << std::endl;
+    std::cout << "<Executable> <Fleet name> <Robot Name> <Task ID> <X> <Y> <Yaw>" << std::endl;
     return 1;
   }
 
-  double x = strtod(argv[1], NULL);
-  double y = strtod(argv[2], NULL);
-  double yaw = strtod(argv[3], NULL);
-  std::string task_id(argv[4]); 
+  std::string fleet_name(argv[1]);
+  std::string robot_name(argv[2]);
+  std::string task_id(argv[3]);
+  double x = strtod(argv[4], NULL);
+  double y = strtod(argv[5], NULL);
+  double yaw = strtod(argv[6], NULL);
+  std::string level_name = "B1";
 
   dds_entity_t participant;
   dds_entity_t topic;
@@ -90,8 +92,8 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  std::string level_name = "B1";
-  
+  msg->fleet_name = free_fleet::common::dds_string_alloc_and_copy(fleet_name);
+  msg->robot_name = free_fleet::common::dds_string_alloc_and_copy(robot_name);
   msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
 
   // time is weird for now

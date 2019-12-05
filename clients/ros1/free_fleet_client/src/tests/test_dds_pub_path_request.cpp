@@ -26,12 +26,17 @@
 
 int main (int argc, char ** argv)
 {
-  if (argc < 2)
+  if (argc < 3)
   {
-    std::cout << "Please provide a task ID." << std::endl;
+    std::cout << "Please request using the following format," << std::endl;
+    std::cout << "<Executable> <Fleet name> <Robot Name> <Task ID>" << std::endl;
     return 1;
   }
-  std::string task_id(argv[1]);
+
+  std::string fleet_name(argv[1]);
+  std::string robot_name(argv[2]);
+  std::string task_id(argv[3]);
+  std::string level_name = "B1";
 
   dds_entity_t participant;
   dds_entity_t topic;
@@ -84,8 +89,8 @@ int main (int argc, char ** argv)
   }
 
   /* Create a message to write. */
-  std::string level_name = "B1";
-
+  msg->fleet_name = free_fleet::common::dds_string_alloc_and_copy(fleet_name);
+  msg->robot_name = free_fleet::common::dds_string_alloc_and_copy(robot_name);
   msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
 
   msg->path._maximum = 50;
