@@ -55,6 +55,23 @@ Server::Server(const ServerConfig& _config) :
   if (!dds_robot_state_sub->is_ready())
     return;
 
+  dds_mode_request_pub.reset(
+      new dds::DDSPublishHandler<FreeFleetData_ModeRequest>(
+          participant, &FreeFleetData_ModeRequest_desc,
+          server_config.dds_mode_request_topic));
+  dds_path_request_pub.reset(
+      new dds::DDSPublishHandler<FreeFleetData_PathRequest>(
+          participant, &FreeFleetData_PathRequest_desc,
+          server_config.dds_path_request_topic));
+  dds_destination_request_pub.reset(
+      new dds::DDSPublishHandler<FreeFleetData_DestinationRequest>(
+          participant, &FreeFleetData_DestinationRequest_desc,
+          server_config.dds_destination_request_topic));
+  if (!dds_mode_request_pub->is_ready() ||
+      !dds_path_request_pub->is_ready() ||
+      !dds_destination_request_pub->is_ready())
+    return;
+
   ready = true;
 }
 
