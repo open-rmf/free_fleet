@@ -50,7 +50,7 @@ module FreeFleetData
   {
     string fleet_name;
     string robot_name;
-    Location location;
+    Location destination;
     string task_id;
   };
 };
