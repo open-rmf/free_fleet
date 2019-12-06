@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor executor;
 
-  free_fleet::ServerConfig config {"fake_fleet"};
+  free_fleet::ServerConfig config {"magni"};
   auto server = free_fleet::Server::make(config);
   if (server->is_ready())
   {

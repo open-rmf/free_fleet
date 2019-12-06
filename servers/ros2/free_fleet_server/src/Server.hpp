@@ -52,7 +52,7 @@ struct ServerConfig
   std::string path_request_topic = "path_request";
   std::string destination_request_topic = "destination_request";
 
-  uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
+  uint32_t dds_domain = 42;
   std::string dds_robot_state_topic = "robot_state";
   std::string dds_mode_request_topic = "mode_request";
   std::string dds_path_request_topic = "path_request";
