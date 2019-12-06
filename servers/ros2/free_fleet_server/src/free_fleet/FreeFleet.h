@@ -23,6 +23,7 @@ extern "C" {
 #define FreeFleetData_RobotMode_Constants_MODE_PAUSED 3
 #define FreeFleetData_RobotMode_Constants_MODE_WAITING 4
 #define FreeFleetData_RobotMode_Constants_MODE_EMERGENCY 5
+#define FreeFleetData_RobotMode_Constants_MODE_GOING_HOME 6
 
 
 typedef struct FreeFleetData_RobotMode
