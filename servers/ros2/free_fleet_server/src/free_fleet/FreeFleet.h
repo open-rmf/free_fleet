@@ -144,7 +144,7 @@ typedef struct FreeFleetData_DestinationRequest
 {
   char * fleet_name;
   char * robot_name;
-  FreeFleetData_Location location;
+  FreeFleetData_Location destination;
   char * task_id;
 } FreeFleetData_DestinationRequest;
 
