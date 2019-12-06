@@ -175,13 +175,16 @@ void Server::update_state_callback()
     WriteLock robot_states_lock(robot_states_mutex);
     auto it = robot_states.find(ros_robot_state.name);
     if (it == robot_states.end())
-      RCLCPP_INFO(get_logger(), "registered a new robot, name: " + ros_robot_state.name);
+      RCLCPP_INFO(
+          get_logger(), 
+          "registered a new robot, name: " + ros_robot_state.name);
 
     robot_states[ros_robot_state.name] = ros_robot_state;
   }
 }
 
-bool Server::is_request_valid(const std::string& _fleet_name, const std::string& _robot_name)
+bool Server::is_request_valid(
+    const std::string& _fleet_name, const std::string& _robot_name)
 {
   if (_fleet_name != server_config.fleet_name)
     return false;
@@ -233,7 +236,8 @@ void Server::path_request_callback(PathRequest::UniquePtr _msg)
   uint32_t num_locations = static_cast<uint32_t>(_msg->path.size());
   dds_msg->path._maximum = num_locations;
   dds_msg->path._length = num_locations;
-  dds_msg->path._buffer = FreeFleetData_PathRequest_path_seq_allocbuf(num_locations);
+  dds_msg->path._buffer = 
+      FreeFleetData_PathRequest_path_seq_allocbuf(num_locations);
   for (uint32_t i = 0; i < num_locations; ++i)
   {
     dds_msg->path._buffer[i].sec = _msg->path[i].t.sec;
@@ -261,12 +265,13 @@ void Server::destination_request_callback(DestinationRequest::UniquePtr _msg)
   dds_msg = FreeFleetData_DestinationRequest__alloc();
   dds_msg->fleet_name = common::dds_string_alloc_and_copy(_msg->fleet_name);
   dds_msg->robot_name = common::dds_string_alloc_and_copy(_msg->robot_name);
-  dds_msg->location.sec = _msg->destination.t.sec;
-  dds_msg->location.nanosec = _msg->destination.t.nanosec;
-  dds_msg->location.x = _msg->destination.x;
-  dds_msg->location.y = _msg->destination.y;
-  dds_msg->location.yaw = _msg->destination.yaw;
-  dds_msg->location.level_name = common::dds_string_alloc_and_copy(_msg->destination.level_name);
+  dds_msg->destination.sec = _msg->destination.t.sec;
+  dds_msg->destination.nanosec = _msg->destination.t.nanosec;
+  dds_msg->destination.x = _msg->destination.x;
+  dds_msg->destination.y = _msg->destination.y;
+  dds_msg->destination.yaw = _msg->destination.yaw;
+  dds_msg->destination.level_name = 
+      common::dds_string_alloc_and_copy(_msg->destination.level_name);
   dds_msg->task_id = common::dds_string_alloc_and_copy(_msg->task_id);
 
   if (dds_destination_request_pub->write(dds_msg))
