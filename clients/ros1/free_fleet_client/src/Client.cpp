@@ -468,8 +468,8 @@ void Client::read_requests()
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
     Goal new_goal {
-      std::string(destination_request->location.level_name),
-      location_to_goal(destination_request->location),
+      std::string(destination_request->destination.level_name),
+      location_to_goal(destination_request->destination),
       false
     };
     goal_path.push_back(new_goal);

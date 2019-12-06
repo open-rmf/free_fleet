@@ -53,9 +53,7 @@ int main (int argc, char ** argv)
   (void)argv;
 
   /* Create a Participant. */
-  uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
-  participant = dds_create_participant(
-      static_cast<dds_domainid_t>(dds_domain), NULL, NULL);
+  participant = dds_create_participant(42, NULL, NULL);
   if (participant < 0)
     DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-participant));
 
@@ -97,15 +95,15 @@ int main (int argc, char ** argv)
   msg->task_id = free_fleet::common::dds_string_alloc_and_copy(task_id);
 
   // time is weird for now
-  msg->location.sec = 123;
-  msg->location.nanosec = 123;
-  msg->location.x = x;
-  msg->location.y = y;
-  msg->location.yaw = yaw;
-  msg->location.level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
+  msg->destination.sec = 123;
+  msg->destination.nanosec = 123;
+  msg->destination.x = x;
+  msg->destination.y = y;
+  msg->destination.yaw = yaw;
+  msg->destination.level_name = free_fleet::common::dds_string_alloc_and_copy(level_name);
 
   printf ("=== [Publisher]  Writing : ");
-  printf ("Message: level_name %s\n", msg->location.level_name);
+  printf ("Message: level_name %s\n", msg->destination.level_name);
   fflush (stdout);
 
   rc = dds_write (writer, msg);

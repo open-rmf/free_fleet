@@ -59,9 +59,7 @@ int main (int argc, char ** argv)
   (void)argv;
 
   /* Create a Participant. */
-  uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
-  participant = dds_create_participant(
-      static_cast<dds_domainid_t>(dds_domain), NULL, NULL);
+  participant = dds_create_participant(42, NULL, NULL);
   if (participant < 0)
     DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-participant));
 
