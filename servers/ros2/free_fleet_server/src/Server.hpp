@@ -60,6 +60,16 @@ struct ServerConfig
 
   double update_state_frequency = 10.0;
   double publish_state_frequency = 1.0;
+
+  /// This transformation is applied to convert the fleet's frame to the RMF
+  /// frame.
+  ///
+  double transformation[9] = 
+  {
+    1.0, 0.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 0.0, 1.0
+  };
 };
 
 class Server : public rclcpp::Node

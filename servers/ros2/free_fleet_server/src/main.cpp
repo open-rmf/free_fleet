@@ -17,8 +17,67 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 #include "Server.hpp"
+#include "dds_utils/common.hpp"
 #include "../third_party/cxxopts/cxxopts.hpp"
+
+
+free_fleet::ServerConfig parse_config(const cxxopts::ParseResult& _results)
+{
+  free_fleet::ServerConfig server_config;
+
+  std::string config_file_path = _results["config"].as<std::string>();
+  if (config_file_path == "")
+    return server_config;
+
+  const YAML::Node yaml_config = YAML::LoadFile(config_file_path);
+  if (!yaml_config)
+    return server_config;
+
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["fleet_name"], server_config.fleet_name);
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["fleet_state_topic"], server_config.fleet_state_topic);
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["mode_request_topic"], server_config.mode_request_topic);
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["path_request_topic"], server_config.path_request_topic);
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["destination_request_topic"], 
+      server_config.destination_request_topic);
+  free_fleet::common::get_param_if_available<uint32_t>(
+      yaml_config["dds_domain"], server_config.dds_domain);
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["dds_robot_state_topic"], 
+      server_config.dds_robot_state_topic);
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["dds_mode_request_topic"], 
+      server_config.dds_mode_request_topic);
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["dds_path_request_topic"], 
+      server_config.dds_path_request_topic);
+  free_fleet::common::get_param_if_available<std::string>(
+      yaml_config["dds_destination_request_topic"], 
+      server_config.dds_destination_request_topic);
+  free_fleet::common::get_param_if_available<double>(
+      yaml_config["update_state_frequency"], 
+      server_config.update_state_frequency);
+  free_fleet::common::get_param_if_available<double>(
+      yaml_config["publish_state_frequency"], 
+      server_config.publish_state_frequency);
+
+  const YAML::Node transformation_node = yaml_config["transformation"];
+  if (transformation_node && 
+      transformation_node.Type() == YAML::NodeType::Sequence &&
+      transformation_node.size() == 9)
+  {
+    for (size_t i = 0; i < 9; ++i)
+      server_config.transformation[i] = transformation_node[i].as<double>();
+  }
+  return server_config;
+}
 
 free_fleet::ServerConfig parse(int argc, char** argv)
 {
@@ -30,68 +89,18 @@ free_fleet::ServerConfig parse(int argc, char** argv)
     free_fleet::ServerConfig default_config;
 
     options.add_options()
-      ("f,fleet-name", "fleet name",
-          cxxopts::value<std::string>()->default_value(
-              default_config.fleet_name))
-      ("fleet-state-topic", "ROS 2 fleet state topic",
-          cxxopts::value<std::string>()->default_value(
-              default_config.fleet_state_topic))
-      ("mode-request-topic", "ROS 2 mode request topic",
-          cxxopts::value<std::string>()->default_value(
-              default_config.mode_request_topic))
-      ("path-request-topic", "ROS 2 path request topic",
-          cxxopts::value<std::string>()->default_value(
-              default_config.path_request_topic))
-      ("destination-request-topic", "ROS 2 destination request topic",
-          cxxopts::value<std::string>()->default_value(
-              default_config.destination_request_topic))
-      ("dds-domain", "domain ID for DDS communication",
-          cxxopts::value<uint32_t>()->default_value(
-              std::to_string(default_config.dds_domain)))
-      ("dds-robot-state-topic", "DDS robot state topic",
-          cxxopts::value<std::string>()->default_value(
-              default_config.dds_robot_state_topic))
-      ("dds-mode-request-topic", "DDS mode request topic",
-          cxxopts::value<std::string>()->default_value(
-              default_config.dds_mode_request_topic))
-      ("dds-path-request-topic", "DDS path request topic",
-          cxxopts::value<std::string>()->default_value(
-              default_config.dds_path_request_topic))
-      ("dds-destination-request-topic", "DDS destination request topic",
-          cxxopts::value<std::string>()->default_value(
-              default_config.dds_destination_request_topic))
-      ("update-state-frequency", 
-          "frequency at which the server updates all the states and requests",
-          cxxopts::value<double>()->default_value(
-              std::to_string(default_config.update_state_frequency)))
-      ("publish-state-frequency", 
-          "frequency at which the server publishes fleet states",
-          cxxopts::value<double>()->default_value(
-              std::to_string(default_config.publish_state_frequency)))
+      ("c,config", "config file",
+          cxxopts::value<std::string>()->default_value(""))
       ("help", "Prints help")
     ;
 
-    auto results = options.parse(argc, argv);
+    cxxopts::ParseResult results = options.parse(argc, argv);
     if (results.count("help"))
     {
       std::cout << options.help({""}) << std::endl;
       exit(0);
     }
-
-    return free_fleet::ServerConfig {
-      results["fleet-name"].as<std::string>(),
-      results["fleet-state-topic"].as<std::string>(),
-      results["mode-request-topic"].as<std::string>(),
-      results["path-request-topic"].as<std::string>(),
-      results["destination-request-topic"].as<std::string>(),
-      results["dds-domain"].as<uint32_t>(),
-      results["dds-robot-state-topic"].as<std::string>(),
-      results["dds-mode-request-topic"].as<std::string>(),
-      results["dds-path-request-topic"].as<std::string>(),
-      results["dds-destination-request-topic"].as<std::string>(),
-      results["update-state-frequency"].as<double>(),
-      results["publish-state-frequency"].as<double>()
-    };
+    return parse_config(results);
   }
   catch (const cxxopts::OptionException& e)
   {
@@ -126,6 +135,14 @@ int main(int argc, char **argv)
       << config.update_state_frequency << std::endl;
   std::cout << "Server - publish state frequency: "
       << config.publish_state_frequency << std::endl;
+  std::cout << "Map - transformation to RMF frame: " << std::endl;
+  std::cout << config.transformation[0] << " " << config.transformation[1]
+      << " " << config.transformation[2] << std::endl;
+  std::cout << config.transformation[3] << " " << config.transformation[4]
+      << " " << config.transformation[5] << std::endl;
+  std::cout << config.transformation[6] << " " << config.transformation[7]
+      << " " << config.transformation[8] << std::endl;
+  std::cout << std::endl;
 
   rclcpp::init(argc, argv);
   std::cout << "Greetings from free_fleet_server." << std::endl;

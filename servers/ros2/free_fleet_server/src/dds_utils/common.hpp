@@ -20,12 +20,22 @@
 
 #include <iostream>
 
+#include <yaml-cpp/yaml.h>
+
 namespace free_fleet
 {
 namespace common
 {
 
 char* dds_string_alloc_and_copy(const std::string& str);
+
+template <typename T>
+void get_param_if_available(const YAML::Node& node, T& out_param)
+{
+  if (!node)
+    return;
+  out_param = node.as<T>();
+} 
 
 } // namespace common
 } // namespace free_fleet
