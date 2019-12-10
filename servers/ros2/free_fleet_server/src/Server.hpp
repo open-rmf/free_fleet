@@ -68,7 +68,7 @@ public:
 
   using SharedPtr = std::shared_ptr<Server>;
 
-  static SharedPtr make(const ServerConfig& _config);
+  static SharedPtr make();
 
   ~Server();
 
@@ -169,7 +169,11 @@ private:
 
   // --------------------------------------------------------------------------
 
-  Server(const ServerConfig& _config);
+  Server();
+
+  bool setup_config();
+
+  bool setup_dds();
 
 };
 

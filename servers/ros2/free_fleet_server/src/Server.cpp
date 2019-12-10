@@ -22,9 +22,9 @@
 namespace free_fleet
 {
 
-Server::SharedPtr Server::make(const ServerConfig& _config)
+Server::SharedPtr Server::make()
 {
-  SharedPtr server(new Server(_config));
+  SharedPtr server(new Server());
   if (!server->is_ready())
     return nullptr;
 
@@ -40,11 +40,49 @@ bool Server::is_ready()
 }
 
 Server::Server(const ServerConfig& _config) :
-  Node(_config.fleet_name + "_free_fleet_server"),
-  server_config(_config)
+  Node(_config.fleet_name + "_free_fleet_server")
 {
   ready = false;
 
+  /// Setup config using ROS 2 parameters and setup DDS items
+  if (!setup_config() || !setup_dds())
+    return;
+
+  ready = true;
+}
+
+bool Server::setup_config()
+{
+  rclcpp::Parameter param;
+  if (get_paraamter("fleet_name", param))
+    server_config.fleet_name = param.as_string();
+  if (get_parameter("fleet_state_topic", param))
+    server_config.fleet_state_topic = param.as_string();
+  if (get_parameter("mode_request_topic", param))
+    server_config.mode_request_topic = param.as_string();
+  if (get_parameter("path_request_topic", param))
+    server_config.path_request_topic = param.as_string();
+  if (get_parameter("destination_request_topic", param))
+    server_config.destination_request_topic = param.as_string();
+  if (get_parameter("dds_domain", param))
+    server_config.dds_domain = param.as_integer();
+  if (get_parameter("dds_robot_state_topic", param))
+    server_config.dds_robot_state_topic = param.as_string();
+  if (get_parameter("dds_mode_request_topic", param))
+    server_config.dds_mode_request_topic = param.as_string();
+  if (get_parameter("dds_path_request_topic", param))
+    server_config.dds_path_request_topic = param.as_string();
+  if (get_parameter("dds_destination_request_topic", param))
+    server_config.dds_destination_request_topic = param.as_string();
+  if (get_parameter("update_state_frequency", param))
+    server_config.update_state_frequency = param.as_double();
+  if (get_parameter("publish_state_frequency", param))
+    server_config.publish_state_frequency = param.as_double();
+  return true;
+}
+
+bool Server::setup_dds()
+{
   participant = dds_create_participant(
     static_cast<dds_domainid_t>(server_config.dds_domain), NULL, NULL);
 
@@ -53,7 +91,7 @@ Server::Server(const ServerConfig& _config) :
           participant, &FreeFleetData_RobotState_desc,
           server_config.dds_robot_state_topic));
   if (!dds_robot_state_sub->is_ready())
-    return;
+    return false;
 
   dds_mode_request_pub.reset(
       new dds::DDSPublishHandler<FreeFleetData_ModeRequest>(
@@ -70,9 +108,9 @@ Server::Server(const ServerConfig& _config) :
   if (!dds_mode_request_pub->is_ready() ||
       !dds_path_request_pub->is_ready() ||
       !dds_destination_request_pub->is_ready())
-    return;
+    return false;
 
-  ready = true;
+  return true;
 }
 
 void Server::start()
