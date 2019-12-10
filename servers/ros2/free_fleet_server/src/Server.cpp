@@ -22,9 +22,9 @@
 namespace free_fleet
 {
 
-Server::SharedPtr Server::make()
+Server::SharedPtr Server::make(const std::string& _node_name)
 {
-  SharedPtr server(new Server());
+  SharedPtr server(new Server(_node_name));
   if (!server->is_ready())
     return nullptr;
 
@@ -39,8 +39,8 @@ bool Server::is_ready()
   return ready;
 }
 
-Server::Server(const ServerConfig& _config) :
-  Node(_config.fleet_name + "_free_fleet_server")
+Server::Server(const std::string& _node_name) :
+  Node(_node_name)
 {
   ready = false;
 
@@ -54,7 +54,7 @@ Server::Server(const ServerConfig& _config) :
 bool Server::setup_config()
 {
   rclcpp::Parameter param;
-  if (get_paraamter("fleet_name", param))
+  if (get_parameter("fleet_name", param))
     server_config.fleet_name = param.as_string();
   if (get_parameter("fleet_state_topic", param))
     server_config.fleet_state_topic = param.as_string();
@@ -65,7 +65,7 @@ bool Server::setup_config()
   if (get_parameter("destination_request_topic", param))
     server_config.destination_request_topic = param.as_string();
   if (get_parameter("dds_domain", param))
-    server_config.dds_domain = param.as_integer();
+    server_config.dds_domain = param.as_int();
   if (get_parameter("dds_robot_state_topic", param))
     server_config.dds_robot_state_topic = param.as_string();
   if (get_parameter("dds_mode_request_topic", param))
@@ -78,6 +78,31 @@ bool Server::setup_config()
     server_config.update_state_frequency = param.as_double();
   if (get_parameter("publish_state_frequency", param))
     server_config.publish_state_frequency = param.as_double();
+
+  std::cout << "Setting up Free Fleet Server with configuration: " << std::endl;
+  std::cout << "Fleet name: " << server_config.fleet_name << std::endl;
+  std::cout << "ROS 2 - fleet state topic: " << server_config.fleet_state_topic 
+      << std::endl;
+  std::cout << "ROS 2 - mode request topic: " 
+      << server_config.mode_request_topic << std::endl;
+  std::cout << "ROS 2 - path request topic: " 
+      << server_config.path_request_topic << std::endl;
+  std::cout << "ROS 2 - destination request topic: " 
+      << server_config.destination_request_topic << std::endl;
+  std::cout << "DDS - domain: " << server_config.dds_domain << std::endl;
+  std::cout << "DDS - robot state topic: " 
+      << server_config.dds_robot_state_topic << std::endl;
+  std::cout << "DDS - mode request topic: " 
+      << server_config.dds_mode_request_topic << std::endl;
+  std::cout << "DDS - path request topic: " 
+      << server_config.dds_path_request_topic << std::endl;
+  std::cout << "DDS - destination request topic: " 
+      << server_config.dds_destination_request_topic << std::endl;
+  std::cout << "Server - update state frequency: "
+      << server_config.update_state_frequency << std::endl;
+  std::cout << "Server - publish state frequency: "
+      << server_config.publish_state_frequency << std::endl;
+
   return true;
 }
 

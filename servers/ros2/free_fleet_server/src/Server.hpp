@@ -68,7 +68,7 @@ public:
 
   using SharedPtr = std::shared_ptr<Server>;
 
-  static SharedPtr make();
+  static SharedPtr make(const std::string& node_name = "free_fleet_server");
 
   ~Server();
 
@@ -169,7 +169,7 @@ private:
 
   // --------------------------------------------------------------------------
 
-  Server();
+  Server(const std::string& node_name);
 
   bool setup_config();
 
