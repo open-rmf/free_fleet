@@ -78,6 +78,15 @@ bool Server::setup_config()
     server_config.update_state_frequency = param.as_double();
   if (get_parameter("publish_state_frequency", param))
     server_config.publish_state_frequency = param.as_double();
+  if (get_parameter("transformation", param))
+  {
+    std::vector<double> transformation_param = param.as_double_array();
+    if (transformation_param.size() != 9)
+      RCLCPP_INFO(get_logger(), "invalid transformation over parameter server");
+
+    for (size_t i = 0; i < 9; ++i)
+      server_config.transformation[i] = transformation_param[i];
+  }
 
   std::cout << "Setting up Free Fleet Server with configuration: " << std::endl;
   std::cout << "Fleet name: " << server_config.fleet_name << std::endl;
@@ -102,7 +111,16 @@ bool Server::setup_config()
       << server_config.update_state_frequency << std::endl;
   std::cout << "Server - publish state frequency: "
       << server_config.publish_state_frequency << std::endl;
-
+  std::cout << "Map - transformation to RMF frame: " << std::endl;
+  std::cout << server_config.transformation[0] << " " 
+      << server_config.transformation[1] << " " 
+      << server_config.transformation[2] << std::endl;
+  std::cout << server_config.transformation[3] << " " 
+      << server_config.transformation[4] << " " 
+      << server_config.transformation[5] << std::endl;
+  std::cout << server_config.transformation[6] << " " 
+      << server_config.transformation[7] << " " 
+      << server_config.transformation[8] << std::endl;
   return true;
 }
 
