@@ -35,6 +35,7 @@ add_executable(free_fleet_client
   src/dds_utils/common.cpp
   src/free_fleet/FreeFleet.c
 )
+add_dependencies(free_fleet_client cyclonedds)
 target_link_libraries(free_fleet_client
   ddsc
   crypto
@@ -65,6 +66,7 @@ foreach(target ${testing_targets})
     src/dds_utils/common.cpp
     src/free_fleet/FreeFleet.c
   )
+  add_dependencies(${target} cyclonedds)
   target_link_libraries(${target}
     ddsc
     crypto
