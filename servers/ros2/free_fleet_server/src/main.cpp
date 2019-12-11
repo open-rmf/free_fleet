@@ -15,6 +15,9 @@
  *
  */
 
+#include <chrono>
+#include <thread>
+
 #include <rclcpp/rclcpp.hpp>
 
 #include "Server.hpp"
@@ -24,14 +27,12 @@ int main(int argc, char **argv)
   rclcpp::init(argc, argv);
   std::cout << "Greetings from free_fleet_server." << std::endl;
 
-  rclcpp::executors::MultiThreadedExecutor executor;
   auto server = free_fleet::Server::make();
   if (!server)
-  {  
-    std::cout << "Server: unable to initialize." << std::endl;
     return 1;
-  }
 
+  rclcpp::executors::MultiThreadedExecutor executor {
+      rclcpp::executor::ExecutorArgs(), 2};
   executor.add_node(server);
   executor.spin();
 
@@ -39,4 +40,3 @@ int main(int argc, char **argv)
   std::cout << "all done!" << std::endl;
   return 0;
 }
-

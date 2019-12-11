@@ -28,6 +28,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node_options.hpp>
 
+#include <rcl_interfaces/msg/parameter_event.hpp>
+
 #include <rmf_fleet_msgs/msg/location.hpp>
 #include <rmf_fleet_msgs/msg/robot_state.hpp>
 #include <rmf_fleet_msgs/msg/fleet_state.hpp>
@@ -35,6 +37,7 @@
 #include <rmf_fleet_msgs/msg/path_request.hpp>
 #include <rmf_fleet_msgs/msg/destination_request.hpp>
 
+#include "ServerConfig.hpp"
 #include "free_fleet/FreeFleet.h"
 
 #include "dds/dds.h"
@@ -43,32 +46,6 @@
 
 namespace free_fleet
 {
-
-struct ServerConfig
-{
-  std::string fleet_name = "";
-
-  std::string fleet_state_topic = "fleet_state";
-  std::string mode_request_topic = "mode_request";
-  std::string path_request_topic = "path_request";
-  std::string destination_request_topic = "destination_request";
-
-  int dds_domain = 42;
-  std::string dds_robot_state_topic = "robot_state";
-  std::string dds_mode_request_topic = "mode_request";
-  std::string dds_path_request_topic = "path_request";
-  std::string dds_destination_request_topic = "destination_request";
-
-  double update_state_frequency = 10.0;
-  double publish_state_frequency = 1.0;
-
-  double transformation[9] =
-  {
-    1.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 0.0, 1.0
-  };
-};
 
 class Server : public rclcpp::Node
 {
@@ -80,7 +57,11 @@ public:
 
   ~Server();
 
-  bool try_start();
+  bool is_ready();
+
+  void start();
+
+  void print_config();
 
 private:
 
@@ -175,7 +156,11 @@ private:
 
   Server(const std::string& node_name);
 
-  void declare_parameters();
+  rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr
+      parameter_event_sub;
+
+  void parameter_event_callback(
+      const rcl_interfaces::msg::ParameterEvent::SharedPtr event);
 
   bool setup_config();
 
