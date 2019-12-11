@@ -17,6 +17,8 @@
 
 #include "Server.hpp"
 
+# include <rcl_interfaces/msg/parameter_event.hpp>
+
 #include "dds_utils/common.hpp"
 
 namespace free_fleet
@@ -45,10 +47,51 @@ Server::Server(const std::string& _node_name) :
   ready = false;
 
   /// Setup config using ROS 2 parameters and setup DDS items
-  if (!setup_config() || !setup_dds())
+  if (!declare_parameters() || !setup_config() || !setup_dds())
     return;
 
   ready = true;
+}
+
+bool Server::declare_parameters()
+{
+  declare_parameter(
+      "fleet_name", rclcpp::ParameterValue(server_config.fleet_name));
+  declare_parameter(
+      "fleet_state_topic", 
+      rclcpp::ParameterValue(server_config.fleet_state_topic));
+  declare_parameter(
+      "mode_request_topic",
+      rclcpp::ParameterValue(server_config.mode_request_topic));
+  declare_parameter(
+      "path_request_topic",
+      rclcpp::ParameterValue(server_config.path_request_topic));
+  declare_parameter(
+      "destination_request_topic",
+      rclcpp::ParameterValue(server_config.destination_request_topic));
+  declare_parameter(
+      "dds_domain", rclcpp::ParameterValue(server_config.dds_domain));
+  declare_parameter(
+      "dds_robot_state_topic",
+      rclcpp::ParameterValue(server_config.dds_robot_state_topic));
+  declare_parameter(
+      "dds_mode_request_topic",
+      rclcpp::ParameterValue(server_config.dds_mode_request_topic));
+  declare_parameter(
+      "dds_path_request_topic",
+      rclcpp::ParameterValue(server_config.dds_path_request_topic));
+  declare_parameter(
+      "dds_destination_request_topic",
+      rclcpp::ParameterValue(server_config.dds_destination_request_topic));
+  declare_parameter(
+      "update_state_frequency",
+      rclcpp::ParameterValue(server_config.update_state_frequency));
+  declare_parameter(
+      "publish_state_frequency",
+      rclcpp::ParameterValue(server_config.publish_state_frequency));
+  declare_parameter(
+      "transformation", rclcpp::ParameterValue(server_config.transformation));
+  return true;
 }
 
 bool Server::setup_config()
@@ -82,7 +125,10 @@ bool Server::setup_config()
   {
     std::vector<double> transformation_param = param.as_double_array();
     if (transformation_param.size() != 9)
+    {
       RCLCPP_INFO(get_logger(), "invalid transformation over parameter server");
+      return false;
+    }
 
     for (size_t i = 0; i < 9; ++i)
       server_config.transformation[i] = transformation_param[i];

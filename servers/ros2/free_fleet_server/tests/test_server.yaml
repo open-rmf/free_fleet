@@ -1,27 +1,29 @@
-# Fleet config
-fleet_name: "test_config_fleet_name"
+/**:
+  ros__parameters:
+  
+    # Fleet config
+    fleet_name: "test_config_fleet_name"
 
-# ROS 2 topics
-fleet_state_topic: "test_config_fleet_state"
-mode_request_topic: "test_config_mode_request"
-path_request_topic: "test_config_path_request"
-destination_request_topic: "test_config_destination_topic"
+    # ROS 2 topics
+    fleet_state_topic: "test_config_fleet_state"
+    mode_request_topic: "test_config_mode_request"
+    path_request_topic: "test_config_path_request"
+    destination_request_topic: "test_config_destination_topic"
 
-# DDS domain and topics
-dds_domain: 0
-dds_robot_state_topic: "robot_state"
-dds_mode_request_topic: "mode_request"
-dds_path_request_topic: "path_request"
-dds_destination_request_topic: "destination_request"
+    # DDS domain and topics
+    dds_domain: 0
+    dds_robot_state_topic: "robot_state"
+    dds_mode_request_topic: "mode_request"
+    dds_path_request_topic: "path_request"
+    dds_destination_request_topic: "destination_request"
 
-# Server config
-update_state_frequency: 20.0
-publish_state_frequency: 2.0
+    # Server config
+    update_state_frequency: 20.0
+    publish_state_frequency: 2.0
 
-# Map config
-transformation: 
-[
-  2.0, 3.0, 5.0, 
-  -3.0, 2.0, -5.0,
-  0.0, 0.0, 1.0
-]
+    # Map config
+    transformation: [
+      2.0, 3.0, 5.0, 
+      -3.0, 2.0, -5.0,
+      0.0, 0.0, 1.0
+    ]

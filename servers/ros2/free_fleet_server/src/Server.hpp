@@ -26,6 +26,7 @@
 #include <unordered_map>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node_options.hpp>
 
 #include <rmf_fleet_msgs/msg/location.hpp>
 #include <rmf_fleet_msgs/msg/robot_state.hpp>
@@ -52,7 +53,7 @@ struct ServerConfig
   std::string path_request_topic = "path_request";
   std::string destination_request_topic = "destination_request";
 
-  uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
+  int dds_domain = 42;
   std::string dds_robot_state_topic = "robot_state";
   std::string dds_mode_request_topic = "mode_request";
   std::string dds_path_request_topic = "path_request";
@@ -177,6 +178,8 @@ private:
   // --------------------------------------------------------------------------
 
   Server(const std::string& node_name);
+
+  bool declare_parameters();
 
   bool setup_config();
 
