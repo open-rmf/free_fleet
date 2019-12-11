@@ -2,13 +2,13 @@ free_fleet_server:
   ros__parameters:
   
     # Fleet config
-    fleet_name: "test_config_fleet_name"
+    fleet_name: "fake_fleet"
 
     # ROS 2 topics
-    fleet_state_topic: "test_config_fleet_state"
-    mode_request_topic: "test_config_mode_request"
-    path_request_topic: "test_config_path_request"
-    destination_request_topic: "test_config_destination_topic"
+    fleet_state_topic: "fleet_state"
+    mode_request_topic: "mode_request"
+    path_request_topic: "path_request"
+    destination_request_topic: "destination_request"
 
     # DDS domain and topics
     dds_domain: 0

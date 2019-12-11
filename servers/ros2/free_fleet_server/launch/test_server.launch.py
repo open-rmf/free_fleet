@@ -36,5 +36,5 @@ def generate_launch_description():
     return launch.LaunchDescription([
         launch_ros.actions.Node(
             package='free_fleet_server', node_executable='free_fleet_server', 
-            output='screen', arguments=['--ros-args --params-file '+ yaml])
+            output='screen', parameters=[yaml])
         ])
