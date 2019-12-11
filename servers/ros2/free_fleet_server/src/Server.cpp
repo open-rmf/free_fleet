@@ -27,7 +27,9 @@ namespace free_fleet
 Server::SharedPtr Server::make(const std::string& _node_name)
 {
   SharedPtr server(new Server(_node_name));
-  if (!server->is_ready())
+  rclcpp::spin_some(server);
+
+  if (!server->try_start())
     return nullptr;
 
   return server;
@@ -36,27 +38,15 @@ Server::SharedPtr Server::make(const std::string& _node_name)
 Server::~Server()
 {}
 
-bool Server::is_ready()
-{
-  return ready;
-}
-
 Server::Server(const std::string& _node_name) :
   Node(_node_name)
 {
-  ready = false;
-
-  /// Setup config using ROS 2 parameters and setup DDS items
-  if (!declare_parameters() || !setup_config() || !setup_dds())
-    return;
-
-  ready = true;
+  declare_parameters();
 }
 
-bool Server::declare_parameters()
+void Server::declare_parameters()
 {
-  declare_parameter(
-      "fleet_name", rclcpp::ParameterValue(server_config.fleet_name));
+  declare_parameter("fleet_name");
   declare_parameter(
       "fleet_state_topic", 
       rclcpp::ParameterValue(server_config.fleet_state_topic));
@@ -91,48 +81,49 @@ bool Server::declare_parameters()
       rclcpp::ParameterValue(server_config.publish_state_frequency));
   declare_parameter(
       "transformation", rclcpp::ParameterValue(server_config.transformation));
-  return true;
 }
 
 bool Server::setup_config()
 {
-  rclcpp::Parameter param;
-  if (get_parameter("fleet_name", param))
-    server_config.fleet_name = param.as_string();
-  if (get_parameter("fleet_state_topic", param))
-    server_config.fleet_state_topic = param.as_string();
-  if (get_parameter("mode_request_topic", param))
-    server_config.mode_request_topic = param.as_string();
-  if (get_parameter("path_request_topic", param))
-    server_config.path_request_topic = param.as_string();
-  if (get_parameter("destination_request_topic", param))
-    server_config.destination_request_topic = param.as_string();
-  if (get_parameter("dds_domain", param))
-    server_config.dds_domain = param.as_int();
-  if (get_parameter("dds_robot_state_topic", param))
-    server_config.dds_robot_state_topic = param.as_string();
-  if (get_parameter("dds_mode_request_topic", param))
-    server_config.dds_mode_request_topic = param.as_string();
-  if (get_parameter("dds_path_request_topic", param))
-    server_config.dds_path_request_topic = param.as_string();
-  if (get_parameter("dds_destination_request_topic", param))
-    server_config.dds_destination_request_topic = param.as_string();
-  if (get_parameter("update_state_frequency", param))
-    server_config.update_state_frequency = param.as_double();
-  if (get_parameter("publish_state_frequency", param))
-    server_config.publish_state_frequency = param.as_double();
-  if (get_parameter("transformation", param))
-  {
-    std::vector<double> transformation_param = param.as_double_array();
-    if (transformation_param.size() != 9)
-    {
-      RCLCPP_INFO(get_logger(), "invalid transformation over parameter server");
-      return false;
-    }
+  get_parameter("fleet_name", server_config.fleet_name);
 
-    for (size_t i = 0; i < 9; ++i)
-      server_config.transformation[i] = transformation_param[i];
-  }
+  // rclcpp::Parameter param;
+  // if (get_parameter("fleet_name", param))
+  //   server_config.fleet_name = param.as_string();
+  // if (get_parameter("fleet_state_topic", param))
+  //   server_config.fleet_state_topic = param.as_string();
+  // if (get_parameter("mode_request_topic", param))
+  //   server_config.mode_request_topic = param.as_string();
+  // if (get_parameter("path_request_topic", param))
+  //   server_config.path_request_topic = param.as_string();
+  // if (get_parameter("destination_request_topic", param))
+  //   server_config.destination_request_topic = param.as_string();
+  // if (get_parameter("dds_domain", param))
+  //   server_config.dds_domain = param.as_int();
+  // if (get_parameter("dds_robot_state_topic", param))
+  //   server_config.dds_robot_state_topic = param.as_string();
+  // if (get_parameter("dds_mode_request_topic", param))
+  //   server_config.dds_mode_request_topic = param.as_string();
+  // if (get_parameter("dds_path_request_topic", param))
+  //   server_config.dds_path_request_topic = param.as_string();
+  // if (get_parameter("dds_destination_request_topic", param))
+  //   server_config.dds_destination_request_topic = param.as_string();
+  // if (get_parameter("update_state_frequency", param))
+  //   server_config.update_state_frequency = param.as_double();
+  // if (get_parameter("publish_state_frequency", param))
+  //   server_config.publish_state_frequency = param.as_double();
+  // if (get_parameter("transformation", param))
+  // {
+  //   std::vector<double> transformation_param = param.as_double_array();
+  //   if (transformation_param.size() != 9)
+  //   {
+  //     RCLCPP_INFO(get_logger(), "invalid transformation over parameter server");
+  //     return false;
+  //   }
+
+  //   for (size_t i = 0; i < 9; ++i)
+  //     server_config.transformation[i] = transformation_param[i];
+  // }
 
   std::cout << "Setting up Free Fleet Server with configuration: " << std::endl;
   std::cout << "Fleet name: " << server_config.fleet_name << std::endl;
@@ -202,14 +193,11 @@ bool Server::setup_dds()
   return true;
 }
 
-void Server::start()
+bool Server::try_start()
 {
-  if (!is_ready())
-  {
-    RCLCPP_ERROR(get_logger(), "Server: is not ready, can't start");
-    return;
-  }
-  
+  if (!setup_config() || !setup_dds())
+    return false;
+
   update_callback_group = create_callback_group(
       rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
 
@@ -263,6 +251,8 @@ void Server::start()
         destination_request_callback(std::move(msg));
       },
       destination_request_sub_opt);
+
+  return true;
 }
 
 void Server::dds_to_ros_location(

@@ -46,7 +46,7 @@ namespace free_fleet
 
 struct ServerConfig
 {
-  std::string fleet_name = "fleet_name";
+  std::string fleet_name = "";
 
   std::string fleet_state_topic = "fleet_state";
   std::string mode_request_topic = "mode_request";
@@ -80,15 +80,11 @@ public:
 
   ~Server();
 
-  bool is_ready();
-
-  void start();
+  bool try_start();
 
 private:
 
   ServerConfig server_config;
-
-  std::atomic<bool> ready;
 
   dds_return_t return_code;
 
@@ -179,7 +175,7 @@ private:
 
   Server(const std::string& node_name);
 
-  bool declare_parameters();
+  void declare_parameters();
 
   bool setup_config();
 

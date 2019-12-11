@@ -26,13 +26,12 @@ int main(int argc, char **argv)
 
   rclcpp::executors::MultiThreadedExecutor executor;
   auto server = free_fleet::Server::make();
-  if (!server || !server->is_ready())
+  if (!server)
   {  
     std::cout << "Server: unable to initialize." << std::endl;
     return 1;
   }
 
-  server->start();
   executor.add_node(server);
   executor.spin();
 
