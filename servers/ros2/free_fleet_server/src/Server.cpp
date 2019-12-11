@@ -24,9 +24,10 @@
 namespace free_fleet
 {
 
-Server::SharedPtr Server::make(const std::string& _node_name)
+Server::SharedPtr Server::make(
+    const std::string& _node_name, const rclcpp::NodeOptions& _node_options)
 {
-  SharedPtr server(new Server(_node_name));
+  SharedPtr server(new Server(_node_name, _node_options));
 
   /// Wait for at least 10 seconds for the necessary parameters to be registered 
   /// on the parameter server, after declaring it.
@@ -65,8 +66,9 @@ Server::SharedPtr Server::make(const std::string& _node_name)
 Server::~Server()
 {}
 
-Server::Server(const std::string& _node_name) :
-  Node(_node_name)
+Server::Server(
+    const std::string& _node_name, const rclcpp::NodeOptions& _node_options) :
+  Node(_node_name, _node_options)
 {
   declare_parameter("fleet_name");
   declare_parameter(

@@ -53,7 +53,12 @@ public:
 
   using SharedPtr = std::shared_ptr<Server>;
 
-  static SharedPtr make(const std::string& node_name = "free_fleet_server");
+  static SharedPtr make(
+      const std::string& node_name = "free_fleet_server",
+      const rclcpp::NodeOptions& options = 
+          rclcpp::NodeOptions()
+              .allow_undeclared_parameters(true)
+              .automatically_declare_parameters_from_overrides(true));
 
   ~Server();
 
@@ -154,7 +159,7 @@ private:
 
   // --------------------------------------------------------------------------
 
-  Server(const std::string& node_name);
+  Server(const std::string& node_name, const rclcpp::NodeOptions& options);
 
   rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr
       parameter_event_sub;

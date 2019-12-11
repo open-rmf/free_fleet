@@ -44,6 +44,12 @@ target_link_libraries(free_fleet_server
 # -----------------------------------------------------------------------------
 
 install(
+  DIRECTORY
+    launch
+  DESTINATION share/free_fleet_server
+)
+
+install(
   TARGETS free_fleet_server
   EXPORT
   RUNTIME DESTINATION lib/free_fleet_server
