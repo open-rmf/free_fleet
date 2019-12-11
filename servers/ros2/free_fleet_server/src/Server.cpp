@@ -15,6 +15,8 @@
  *
  */
 
+#include <chrono>
+
 #include "Server.hpp"
 
 #include "dds_utils/common.hpp"
@@ -22,29 +24,86 @@
 namespace free_fleet
 {
 
-Server::SharedPtr Server::make(const ServerConfig& _config)
+Server::SharedPtr Server::make(
+    const std::string& _node_name, const rclcpp::NodeOptions& _node_options)
 {
-  SharedPtr server(new Server(_config));
-  if (!server->is_ready())
-    return nullptr;
+  SharedPtr server(new Server(_node_name, _node_options));
 
+  /// Wait for at least 10 seconds for the necessary parameters to be registered 
+  /// on the parameter server, after declaring it.
+  ///
+  auto start_time = std::chrono::steady_clock::now();
+  auto end_time = std::chrono::steady_clock::now();
+  while (
+      std::chrono::duration_cast<std::chrono::seconds>(
+          end_time - start_time).count() < 10)
+  {
+    rclcpp::spin_some(server);
+    server->setup_config();
+    if (server->is_ready())
+      break;
+    RCLCPP_INFO(server->get_logger(), "waiting for configuration parameters.");
+    end_time = std::chrono::steady_clock::now();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  }
+
+  if (!server->is_ready())
+  {
+    RCLCPP_ERROR(server->get_logger(), "unable to initialize parameters.");
+    return nullptr;
+  }
+  server->print_config();
+  
+  if (!server->setup_dds())
+  {
+    RCLCPP_ERROR(server->get_logger(),"unable to setup DDS components");
+    return nullptr;
+  }
+
+  server->start();
   return server;
 }
 
 Server::~Server()
 {}
 
-bool Server::is_ready()
+Server::Server(
+    const std::string& _node_name, const rclcpp::NodeOptions& _node_options) :
+  Node(_node_name, _node_options)
+{}
+
+void Server::setup_config()
 {
-  return ready;
+  get_parameter("fleet_name", server_config.fleet_name);
+  get_parameter("fleet_state_topic", server_config.fleet_state_topic);
+  get_parameter("mode_request_topic", server_config.mode_request_topic);
+  get_parameter("path_request_topic", server_config.path_request_topic);
+  get_parameter(
+      "destination_request_topic", server_config.destination_request_topic);
+  get_parameter("dds_domain", server_config.dds_domain);
+  get_parameter("dds_robot_state_topic", server_config.dds_robot_state_topic);
+  get_parameter("dds_mode_request_topic", server_config.dds_mode_request_topic);
+  get_parameter("dds_path_request_topic", server_config.dds_path_request_topic);
+  get_parameter(
+      "dds_destination_request_topic",
+      server_config.dds_destination_request_topic);
+  get_parameter("update_state_frequency", server_config.update_state_frequency);
+  get_parameter(
+      "publish_state_frequency", server_config.publish_state_frequency);
+
+  std::vector<double> transformation_param;
+  get_parameter("transformation", transformation_param);
+  if (transformation_param.size() != 9)
+    RCLCPP_WARN(
+        get_logger(), 
+        "parameter transformation needs to be a 9-element array.");
+  else
+    for (size_t i = 0; i < 9; ++i)
+      server_config.transformation[i] = transformation_param[i];
 }
 
-Server::Server(const ServerConfig& _config) :
-  Node(_config.fleet_name + "_free_fleet_server"),
-  server_config(_config)
+bool Server::setup_dds()
 {
-  ready = false;
-
   participant = dds_create_participant(
     static_cast<dds_domainid_t>(server_config.dds_domain), NULL, NULL);
 
@@ -53,7 +112,7 @@ Server::Server(const ServerConfig& _config) :
           participant, &FreeFleetData_RobotState_desc,
           server_config.dds_robot_state_topic));
   if (!dds_robot_state_sub->is_ready())
-    return;
+    return false;
 
   dds_mode_request_pub.reset(
       new dds::DDSPublishHandler<FreeFleetData_ModeRequest>(
@@ -70,19 +129,20 @@ Server::Server(const ServerConfig& _config) :
   if (!dds_mode_request_pub->is_ready() ||
       !dds_path_request_pub->is_ready() ||
       !dds_destination_request_pub->is_ready())
-    return;
+    return false;
 
-  ready = true;
+  return true;
+}
+
+bool Server::is_ready()
+{
+  if (server_config.fleet_name == "")
+    return false;
+  return true;
 }
 
 void Server::start()
 {
-  if (!is_ready())
-  {
-    RCLCPP_ERROR(get_logger(), "Server: is not ready, can't start");
-    return;
-  }
-  
   update_callback_group = create_callback_group(
       rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
 
@@ -136,6 +196,11 @@ void Server::start()
         destination_request_callback(std::move(msg));
       },
       destination_request_sub_opt);
+}
+
+void Server::print_config()
+{
+  server_config.print_config();
 }
 
 void Server::dds_to_ros_location(

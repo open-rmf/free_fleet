@@ -29,6 +29,7 @@ endif()
 add_executable(free_fleet_server 
   src/main.cpp
   src/Server.cpp
+  src/ServerConfig.cpp
   src/dds_utils/common.cpp
   src/free_fleet/FreeFleet.c
 )
@@ -39,12 +40,14 @@ ament_target_dependencies(free_fleet_server
 target_link_libraries(free_fleet_server
   CycloneDDS::ddsc
 )
-target_include_directories(free_fleet_server
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
-)
 
 # -----------------------------------------------------------------------------
+
+install(
+  DIRECTORY
+    launch
+  DESTINATION share/free_fleet_server
+)
 
 install(
   TARGETS free_fleet_server

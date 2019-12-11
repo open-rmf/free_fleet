@@ -26,6 +26,9 @@
 #include <unordered_map>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node_options.hpp>
+
+#include <rcl_interfaces/msg/parameter_event.hpp>
 
 #include <rmf_fleet_msgs/msg/location.hpp>
 #include <rmf_fleet_msgs/msg/robot_state.hpp>
@@ -34,6 +37,7 @@
 #include <rmf_fleet_msgs/msg/path_request.hpp>
 #include <rmf_fleet_msgs/msg/destination_request.hpp>
 
+#include "ServerConfig.hpp"
 #include "free_fleet/FreeFleet.h"
 
 #include "dds/dds.h"
@@ -43,32 +47,18 @@
 namespace free_fleet
 {
 
-struct ServerConfig
-{
-  std::string fleet_name = "fleet_name";
-
-  std::string fleet_state_topic = "fleet_state";
-  std::string mode_request_topic = "mode_request";
-  std::string path_request_topic = "path_request";
-  std::string destination_request_topic = "destination_request";
-
-  uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
-  std::string dds_robot_state_topic = "robot_state";
-  std::string dds_mode_request_topic = "mode_request";
-  std::string dds_path_request_topic = "path_request";
-  std::string dds_destination_request_topic = "destination_request";
-
-  double update_state_frequency = 10.0;
-  double publish_state_frequency = 1.0;
-};
-
 class Server : public rclcpp::Node
 {
 public:
 
   using SharedPtr = std::shared_ptr<Server>;
 
-  static SharedPtr make(const ServerConfig& _config);
+  static SharedPtr make(
+      const std::string& node_name = "free_fleet_server",
+      const rclcpp::NodeOptions& options = 
+          rclcpp::NodeOptions()
+              .allow_undeclared_parameters(true)
+              .automatically_declare_parameters_from_overrides(true));
 
   ~Server();
 
@@ -76,11 +66,11 @@ public:
 
   void start();
 
+  void print_config();
+
 private:
 
   ServerConfig server_config;
-
-  std::atomic<bool> ready;
 
   dds_return_t return_code;
 
@@ -169,7 +159,11 @@ private:
 
   // --------------------------------------------------------------------------
 
-  Server(const ServerConfig& _config);
+  Server(const std::string& node_name, const rclcpp::NodeOptions& options);
+
+  void setup_config();
+
+  bool setup_dds();
 
 };
 
