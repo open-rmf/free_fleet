@@ -161,13 +161,7 @@ private:
 
   Server(const std::string& node_name, const rclcpp::NodeOptions& options);
 
-  rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr
-      parameter_event_sub;
-
-  void parameter_event_callback(
-      const rcl_interfaces::msg::ParameterEvent::SharedPtr event);
-
-  bool setup_config();
+  void setup_config();
 
   bool setup_dds();
 

@@ -39,6 +39,7 @@ Server::SharedPtr Server::make(
           end_time - start_time).count() < 10)
   {
     rclcpp::spin_some(server);
+    server->setup_config();
     if (server->is_ready())
       break;
     RCLCPP_INFO(server->get_logger(), "waiting for configuration parameters.");
@@ -69,84 +70,10 @@ Server::~Server()
 Server::Server(
     const std::string& _node_name, const rclcpp::NodeOptions& _node_options) :
   Node(_node_name, _node_options)
+{}
+
+void Server::setup_config()
 {
-  declare_parameter("fleet_name");
-  declare_parameter(
-      "fleet_state_topic", 
-      rclcpp::ParameterValue(server_config.fleet_state_topic));
-  declare_parameter(
-      "mode_request_topic",
-      rclcpp::ParameterValue(server_config.mode_request_topic));
-  declare_parameter(
-      "path_request_topic",
-      rclcpp::ParameterValue(server_config.path_request_topic));
-  declare_parameter(
-      "destination_request_topic",
-      rclcpp::ParameterValue(server_config.destination_request_topic));
-  declare_parameter(
-      "dds_domain", rclcpp::ParameterValue(server_config.dds_domain));
-  declare_parameter(
-      "dds_robot_state_topic",
-      rclcpp::ParameterValue(server_config.dds_robot_state_topic));
-  declare_parameter(
-      "dds_mode_request_topic",
-      rclcpp::ParameterValue(server_config.dds_mode_request_topic));
-  declare_parameter(
-      "dds_path_request_topic",
-      rclcpp::ParameterValue(server_config.dds_path_request_topic));
-  declare_parameter(
-      "dds_destination_request_topic",
-      rclcpp::ParameterValue(server_config.dds_destination_request_topic));
-  declare_parameter(
-      "update_state_frequency",
-      rclcpp::ParameterValue(server_config.update_state_frequency));
-  declare_parameter(
-      "publish_state_frequency",
-      rclcpp::ParameterValue(server_config.publish_state_frequency));
-  declare_parameter(
-      "transformation", rclcpp::ParameterValue(
-          std::vector<double>(
-              server_config.transformation.begin(), 
-              server_config.transformation.end())));
-
-  parameter_event_sub = 
-      create_subscription<rcl_interfaces::msg::ParameterEvent>(
-          "/parameter_events", rclcpp::QoS(10), 
-          std::bind(
-              &Server::parameter_event_callback, this, std::placeholders::_1));
-}
-
-void Server::parameter_event_callback(
-    const rcl_interfaces::msg::ParameterEvent::SharedPtr event)
-{
-  if (is_ready())
-    return;
-
-  RCLCPP_INFO(
-      get_logger(), "received parameter update for node " + event->node);
-  
-  /// Checks for the conditions required for valid configuration 
-  bool configuration_valid = true;
-  for (const auto& param : event->new_parameters)
-  {
-    if (param.name == "fleet_name" && param.value.string_value == "")
-    {
-      RCLCPP_WARN(get_logger(), "parameter fleet_name cannot be left empty.");
-      configuration_valid = false;
-    }
-      
-    if (param.name == "transformation" && 
-        param.value.double_array_value.size() != 9)
-    {
-      RCLCPP_WARN(
-          get_logger(), 
-          "parameter transformation needs to be a 9-element array.");
-      configuration_valid = false;
-    }
-  }
-  if (!configuration_valid)
-    return;
-
   get_parameter("fleet_name", server_config.fleet_name);
   get_parameter("fleet_state_topic", server_config.fleet_state_topic);
   get_parameter("mode_request_topic", server_config.mode_request_topic);
@@ -167,8 +94,12 @@ void Server::parameter_event_callback(
   std::vector<double> transformation_param;
   get_parameter("transformation", transformation_param);
   if (transformation_param.size() != 9)
-  for (size_t i = 0; i < 9; ++i)
-    server_config.transformation[i] = transformation_param[i];
+    RCLCPP_WARN(
+        get_logger(), 
+        "parameter transformation needs to be a 9-element array.");
+  else
+    for (size_t i = 0; i < 9; ++i)
+      server_config.transformation[i] = transformation_param[i];
 }
 
 bool Server::setup_dds()
