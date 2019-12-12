@@ -191,6 +191,7 @@ private:
     std::string level_name;
     move_base_msgs::MoveBaseGoal goal;
     bool sent = false;
+    ros::Time wait_at_goal_time;
   };
 
   std::atomic<bool> emergency;

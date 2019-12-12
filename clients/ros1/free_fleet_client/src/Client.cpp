@@ -444,7 +444,10 @@ void Client::read_requests()
       Goal new_goal { 
         std::string(path_request->path._buffer[i].level_name),
         location_to_goal(path_request->path._buffer[i]),
-        false
+        false,
+        ros::Time(
+            path_request->path._buffer[i].sec,
+            path_request->path._buffer[i].nanosec)
       };
       goal_path.push_back(new_goal);
     }
@@ -515,7 +518,22 @@ void Client::handle_requests()
     if (current_goal_state == GoalState::SUCCEEDED)
     {
       ROS_INFO("current goal state: SUCCEEEDED.");
-      goal_path.pop_front();
+
+      // By some stroke of good fortune, we may have arrived at our goal
+      // earlier than we were scheduled to reach it. If that is the case,
+      // we need to wait here until it's time to proceed.
+      if (ros::Time::now() >= goal_path.front().wait_at_goal_time)
+      {
+        goal_path.pop_front();
+      }
+      else
+      {
+        ros::Duration wait_time_remaining =
+            goal_path.front().wait_at_goal_time - ros::Time::now();
+        ROS_INFO(
+            "we reached our goal early! Waiting %.1f more seconds",
+            wait_time_remaining.toSec());
+      }
       return;
     }
     else if (current_goal_state == GoalState::ACTIVE)
