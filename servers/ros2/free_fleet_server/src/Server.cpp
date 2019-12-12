@@ -19,6 +19,7 @@
 
 #include "Server.hpp"
 
+#include "math/math.hpp"
 #include "dds_utils/common.hpp"
 
 namespace free_fleet
@@ -143,6 +144,9 @@ bool Server::is_ready()
 
 void Server::start()
 {
+  fleet_to_rmf_transform = math::convert(server_config.transformation);
+  rmf_to_fleet_transform = fleet_to_rmf_transform.inverse();
+
   update_callback_group = create_callback_group(
       rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
 

@@ -15,30 +15,19 @@
  *
  */
 
-#ifndef FREEFLEET__SRC__DDS_UTILS__MATH_HPP
-#define FREEFLEET__SRC__DDS_UTILS__MATH_HPP
+#ifndef FREEFLEETSERVER__SRC__MATH__MATH_HPP
+#define FREEFLEETSERVER__SRC__MATH__MATH_HPP
 
-#include <geometry_msgs/Quaternion.h>
-#include <geometry_msgs/TransformStamped.h>
+#include <Eigen/Geometry>
 
 namespace free_fleet
 {
 namespace math
 {
 
-double get_yaw_from_quat(const geometry_msgs::Quaternion& quat);
+Eigen::Matrix3d convert(const std::array<double, 9>& data);
 
-double get_yaw_from_transform(
-    const geometry_msgs::TransformStamped& transform_stamped); 
-
-geometry_msgs::Quaternion get_quat_from_yaw(double yaw);
-
-bool is_transform_close(
-    const geometry_msgs::TransformStamped& transform_1,
-    const geometry_msgs::TransformStamped& transform_2);
-
-
-} // namespace common
+} // namespace math
 } // namespace free_fleet
 
-#endif // FREEFLEET__SRC__DDS_UTILS__MATH_HPP
+#endif // FREEFLEETSERVER__SRC__MATH__MATH_HPP

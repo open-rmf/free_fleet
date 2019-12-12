@@ -25,6 +25,8 @@
 #include <iostream>
 #include <unordered_map>
 
+#include <Eigen/Geometry>
+
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node_options.hpp>
 
@@ -71,6 +73,8 @@ public:
 private:
 
   ServerConfig server_config;
+  Eigen::Matrix3d fleet_to_rmf_transform;
+  Eigen::Matrix3d rmf_to_fleet_transform;
 
   dds_return_t return_code;
 

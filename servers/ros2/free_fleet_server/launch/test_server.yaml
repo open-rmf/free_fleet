@@ -21,5 +21,5 @@ free_fleet_server:
     update_state_frequency: 20.0
     publish_state_frequency: 2.0
 
-    # Map config
-    transformation: [2.0, 3.0, 5.0, -3.0, 2.0, -5.0, 0.0, 0.0, 1.0]
+    # Map config, transformation to RMF frames
+    transformation: [1.077, -0.014, 4.834, 0.014, 1.077, -29.30, 0.0, 0.0, 1.0]
