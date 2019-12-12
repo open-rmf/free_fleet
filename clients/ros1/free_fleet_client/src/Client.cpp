@@ -437,6 +437,31 @@ void Client::read_requests()
 
     ROS_INFO("received a Path command.");
 
+    // Sanity check: the first waypoint of the Path must be within N meters
+    // of our current position. Otherwise, ignore the request.
+    if (path_request->path._length <= 0)
+      return;
+
+    {
+      ReadLock robot_transform_lock(robot_transform_mutex);
+      const double dx =
+          path_request->path._buffer[0].x
+          - current_robot_transform.transform.translation.x;
+      const double dy =
+          path_request->path._buffer[0].y
+          - current_robot_transform.transform.translation.y;
+      const double dist_to_first_waypoint = sqrt(dx*dx + dy*dy);
+      ROS_INFO("distance to first waypoint: %.2f\n", dist_to_first_waypoint);
+      const double max_dist_to_first_waypoint = 1.0;  // parameterize?
+      if (dist_to_first_waypoint > max_dist_to_first_waypoint)
+      {
+        ROS_ERROR(
+            "distance was over threshold of %.2f ! Rejecting path.\n",
+            max_dist_to_first_waypoint);
+        return;
+      }
+    }
+
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
     for (int i = 0; i < path_request->path._length; ++i)
