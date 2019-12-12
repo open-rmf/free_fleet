@@ -20,12 +20,25 @@
 
 #include <Eigen/Geometry>
 
+#include <rmf_fleet_msgs/msg/location.hpp>
+#include <rmf_fleet_msgs/msg/robot_state.hpp>
+
 namespace free_fleet
 {
 namespace math
 {
 
 Eigen::Matrix3d convert(const std::array<double, 9>& data);
+
+void transform_location(
+    const Eigen::Matrix3d& trasform, 
+    double transform_yaw,
+    rmf_fleet_msgs::msg::Location& location);
+
+void transform_robot_state(
+    const Eigen::Matrix3d& transform, 
+    double transform_yaw,
+    rmf_fleet_msgs::msg::RobotState& robot_state);
 
 } // namespace math
 } // namespace free_fleet

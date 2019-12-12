@@ -73,7 +73,9 @@ public:
 private:
 
   ServerConfig server_config;
+
   Eigen::Matrix3d fleet_to_rmf_transform;
+  double fleet_to_rmf_yaw;
   Eigen::Matrix3d rmf_to_fleet_transform;
 
   dds_return_t return_code;

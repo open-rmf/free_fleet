@@ -31,5 +31,26 @@ Eigen::Matrix3d convert(const std::array<double, 9>& _data)
   return mat;
 }
 
+void transform_location(
+    const Eigen::Matrix3d& _transform, 
+    double _yaw_transform,
+    rmf_fleet_msgs::msg::Location& _location)
+{
+  Eigen::Vector3d pos(_location.x, _location.y, 1.0);
+  Eigen::Vector3d transformed_pos = _transform * pos;
+  _location.x = transformed_pos[0] / transformed_pos[2];
+  _location.y = transformed_pos[1] / transformed_pos[2];
+
+  _location.yaw += _yaw_transform;
+}
+
+void transform_robot_state(
+    const Eigen::Matrix3d& _transform,
+    double _yaw_transform, 
+    rmf_fleet_msgs::msg::RobotState& _robot_state)
+{
+  transform_location(_transform, _yaw_transform, _robot_state.location);
+}
+
 } // namespace math
 } // namespace free_fleet

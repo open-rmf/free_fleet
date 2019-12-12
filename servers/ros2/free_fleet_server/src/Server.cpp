@@ -146,6 +146,8 @@ void Server::start()
 {
   fleet_to_rmf_transform = math::convert(server_config.transformation);
   rmf_to_fleet_transform = fleet_to_rmf_transform.inverse();
+  Eigen::Vector3d ea = fleet_to_rmf_transform.eulerAngles(0, 1, 2);
+  fleet_to_rmf_yaw = ea[2];
 
   update_callback_group = create_callback_group(
       rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
@@ -246,7 +248,12 @@ void Server::get_fleet_state(FleetState& _fleet_state)
 
   ReadLock robot_states_lock(robot_states_mutex);
   for (const auto it : robot_states)
-    _fleet_state.robots.push_back(it.second);
+  {
+    RobotState transformed_robot_state = it.second;
+    math::transform_robot_state(
+        fleet_to_rmf_transform, fleet_to_rmf_yaw, transformed_robot_state);
+    _fleet_state.robots.push_back(transformed_robot_state);
+  }
 }
 
 void Server::update_state_callback()
@@ -326,13 +333,17 @@ void Server::path_request_callback(PathRequest::UniquePtr _msg)
       FreeFleetData_PathRequest_path_seq_allocbuf(num_locations);
   for (uint32_t i = 0; i < num_locations; ++i)
   {
-    dds_msg->path._buffer[i].sec = _msg->path[i].t.sec;
-    dds_msg->path._buffer[i].nanosec = _msg->path[i].t.nanosec;
-    dds_msg->path._buffer[i].x = _msg->path[i].x;
-    dds_msg->path._buffer[i].y = _msg->path[i].y;
-    dds_msg->path._buffer[i].yaw = _msg->path[i].yaw;
+    Location transformed_waypoint = _msg->path[i];
+    math::transform_location(
+        rmf_to_fleet_transform, -fleet_to_rmf_yaw, transformed_waypoint);
+
+    dds_msg->path._buffer[i].sec = transformed_waypoint.t.sec;
+    dds_msg->path._buffer[i].nanosec = transformed_waypoint.t.nanosec;
+    dds_msg->path._buffer[i].x = transformed_waypoint.x;
+    dds_msg->path._buffer[i].y = transformed_waypoint.y;
+    dds_msg->path._buffer[i].yaw = transformed_waypoint.yaw;
     dds_msg->path._buffer[i].level_name = 
-        common::dds_string_alloc_and_copy(_msg->path[i].level_name);
+        common::dds_string_alloc_and_copy(transformed_waypoint.level_name);
   }
   dds_msg->path._release = false;
 
@@ -347,17 +358,21 @@ void Server::destination_request_callback(DestinationRequest::UniquePtr _msg)
   if (!is_request_valid(_msg->fleet_name, _msg->robot_name))
     return;
 
+  Location transformed_destination = _msg->destination;
+  math::transform_location(
+      rmf_to_fleet_transform, -fleet_to_rmf_yaw, transformed_destination);
+
   FreeFleetData_DestinationRequest* dds_msg;
   dds_msg = FreeFleetData_DestinationRequest__alloc();
   dds_msg->fleet_name = common::dds_string_alloc_and_copy(_msg->fleet_name);
   dds_msg->robot_name = common::dds_string_alloc_and_copy(_msg->robot_name);
-  dds_msg->destination.sec = _msg->destination.t.sec;
-  dds_msg->destination.nanosec = _msg->destination.t.nanosec;
-  dds_msg->destination.x = _msg->destination.x;
-  dds_msg->destination.y = _msg->destination.y;
-  dds_msg->destination.yaw = _msg->destination.yaw;
+  dds_msg->destination.sec = transformed_destination.t.sec;
+  dds_msg->destination.nanosec = transformed_destination.t.nanosec;
+  dds_msg->destination.x = transformed_destination.x;
+  dds_msg->destination.y = transformed_destination.y;
+  dds_msg->destination.yaw = transformed_destination.yaw;
   dds_msg->destination.level_name = 
-      common::dds_string_alloc_and_copy(_msg->destination.level_name);
+      common::dds_string_alloc_and_copy(transformed_destination.level_name);
   dds_msg->task_id = common::dds_string_alloc_and_copy(_msg->task_id);
 
   if (dds_destination_request_pub->write(dds_msg))
