@@ -40,7 +40,6 @@ void transform_location(
   Eigen::Vector3d transformed_pos = _transform * pos;
   _location.x = transformed_pos[0] / transformed_pos[2];
   _location.y = transformed_pos[1] / transformed_pos[2];
-
   _location.yaw += _yaw_transform;
 }
 
