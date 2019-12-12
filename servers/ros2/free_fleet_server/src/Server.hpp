@@ -74,9 +74,13 @@ private:
 
   ServerConfig server_config;
 
-  Eigen::Matrix3d fleet_to_rmf_transform;
-  double fleet_to_rmf_yaw;
-  Eigen::Matrix3d rmf_to_fleet_transform;
+  void transform_fleet_to_rmf(
+      const rmf_fleet_msgs::msg::Location& fleet_frame_location,
+      rmf_fleet_msgs::msg::Location rmf_frame_location);
+
+  void transform_rmf_to_fleet(
+      const rmf_fleet_msgs::msg::Location& rmf_frame_location,
+      rmf_fleet_msgs::msg::Location fleet_frame_location);
 
   dds_return_t return_code;
 
@@ -124,8 +128,6 @@ private:
   using FleetState = rmf_fleet_msgs::msg::FleetState;
   using FleetStatePub = rclcpp::Publisher<FleetState>;
   FleetStatePub::SharedPtr fleet_state_pub;
-
-  void get_fleet_state(FleetState& fleet_state);
 
   void publish_fleet_state();
 
