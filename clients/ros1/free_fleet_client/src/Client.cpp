@@ -521,8 +521,9 @@ void Client::handle_requests()
   WriteLock goal_path_lock(goal_path_mutex);
   if (goal_path.empty())
   {
-    WriteLock task_id_lock(task_id_mutex);
-    current_task_id = "";
+    // Previously we cleared the task_id here, but actually we
+    // want to keep it so that the free_fleet_server knows we are
+    // still listening to it.
   }
   else
   {
