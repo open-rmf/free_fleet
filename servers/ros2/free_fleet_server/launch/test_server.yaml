@@ -5,10 +5,10 @@ free_fleet_server:
     fleet_name: "magni"
 
     # ROS 2 topics
-    fleet_state_topic: "fleet_state"
-    mode_request_topic: "mode_request"
-    path_request_topic: "path_request"
-    destination_request_topic: "destination_request"
+    fleet_state_topic: "fleet_states"
+    mode_request_topic: "mode_requests"
+    path_request_topic: "path_requests"
+    destination_request_topic: "destination_requests"
 
     # DDS domain and topics
     dds_domain: 24
