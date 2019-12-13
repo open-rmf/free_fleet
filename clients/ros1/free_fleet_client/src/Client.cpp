@@ -205,8 +205,8 @@ bool Client::get_robot_transform()
   try {
     geometry_msgs::TransformStamped tmp_transform_stamped = 
         tf2_buffer.lookupTransform(
-            client_config.robot_frame, 
-            client_config.map_frame, 
+            client_config.map_frame,
+            client_config.robot_frame,
             ros::Time(0));
     WriteLock robot_transform_lock(robot_transform_mutex);
     previous_robot_transform = current_robot_transform;

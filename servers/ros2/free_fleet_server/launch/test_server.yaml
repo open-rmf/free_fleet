@@ -2,7 +2,7 @@ free_fleet_server:
   ros__parameters:
   
     # Fleet config
-    fleet_name: "fake_fleet"
+    fleet_name: "magni"
 
     # ROS 2 topics
     fleet_state_topic: "fleet_state"
@@ -11,7 +11,7 @@ free_fleet_server:
     destination_request_topic: "destination_request"
 
     # DDS domain and topics
-    dds_domain: 0
+    dds_domain: 24
     dds_robot_state_topic: "robot_state"
     dds_mode_request_topic: "mode_request"
     dds_path_request_topic: "path_request"
@@ -24,5 +24,5 @@ free_fleet_server:
     # Map config: transformation from "global" frame to this fleet frame
     translation_x: -4.117
     translation_y: 27.26
-    rotation: 0.013
+    rotation: -0.013
     scale: 0.928

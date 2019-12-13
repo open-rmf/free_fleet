@@ -130,7 +130,6 @@ bool Server::setup_dds()
 
   return true;
 }
-
 bool Server::is_ready()
 {
   if (server_config.fleet_name == "")
@@ -140,7 +139,7 @@ bool Server::is_ready()
 
 void Server::transform_rmf_to_fleet(
     const Location& rmf_frame_location,
-    Location fleet_frame_location)
+    Location& fleet_frame_location)
 {
   // It feels easier to read if each operation is a separate statement.
   // The compiler will be super smart and elide all these operations.
@@ -168,7 +167,7 @@ void Server::transform_rmf_to_fleet(
 
 void Server::transform_fleet_to_rmf(
     const Location& fleet_frame_location,
-    Location rmf_frame_location)
+    Location& rmf_frame_location)
 {
   // It feels easier to read if each operation is a separate statement.
   // The compiler will be super smart and elide all these operations.
@@ -176,11 +175,29 @@ void Server::transform_fleet_to_rmf(
       Vector2d(fleet_frame_location.x, fleet_frame_location.y)
       - Vector2d(server_config.translation_x, server_config.translation_y);
 
+  RCLCPP_INFO(
+      get_logger(),
+      "   translated: (%.3f, %.3f)",
+      translated[0],
+      translated[1]);
+
   const auto rotated =
       Eigen::Rotation2D<double>(-server_config.rotation)
       * translated;
 
+  RCLCPP_INFO(
+      get_logger(),
+      "   rotated: (%.3f, %.3f)",
+      rotated[0],
+      rotated[1]);
+
   const auto scaled = 1.0 / server_config.scale * rotated;
+
+  RCLCPP_INFO(
+      get_logger(),
+      "   scaled: (%.3f, %.3f)",
+      scaled[0],
+      scaled[1]);
 
   rmf_frame_location.x = scaled[0];
   rmf_frame_location.y = scaled[1];
@@ -335,6 +352,16 @@ void Server::publish_fleet_state()
     transform_fleet_to_rmf(
         robot_state_fleet_frame.location,
         robot_state_rmf_frame.location);
+
+    RCLCPP_INFO(
+        get_logger(),
+        "robot location: (%.1f, %.1f, %.1f) -> (%.1f, %.1f, %.1f)",
+        robot_state_fleet_frame.location.x,
+        robot_state_fleet_frame.location.y,
+        robot_state_fleet_frame.location.yaw,
+        robot_state_rmf_frame.location.x,
+        robot_state_rmf_frame.location.y,
+        robot_state_rmf_frame.location.yaw);
 
     robot_state_rmf_frame.name = robot_state_fleet_frame.name;
     robot_state_rmf_frame.model = robot_state_fleet_frame.model;

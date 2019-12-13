@@ -76,11 +76,11 @@ private:
 
   void transform_fleet_to_rmf(
       const rmf_fleet_msgs::msg::Location& fleet_frame_location,
-      rmf_fleet_msgs::msg::Location rmf_frame_location);
+      rmf_fleet_msgs::msg::Location& rmf_frame_location);
 
   void transform_rmf_to_fleet(
       const rmf_fleet_msgs::msg::Location& rmf_frame_location,
-      rmf_fleet_msgs::msg::Location fleet_frame_location);
+      rmf_fleet_msgs::msg::Location& fleet_frame_location);
 
   dds_return_t return_code;
 
