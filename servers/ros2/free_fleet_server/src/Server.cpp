@@ -411,6 +411,9 @@ void Server::path_request_callback(PathRequest::UniquePtr _msg)
   if (!is_request_valid(_msg->fleet_name, _msg->robot_name))
     return;
 
+  RCLCPP_INFO(
+      get_logger(), "got a path request of size %d", _msg->path.size());
+
   FreeFleetData_PathRequest* dds_msg;
   dds_msg = FreeFleetData_PathRequest__alloc();
   dds_msg->fleet_name = common::dds_string_alloc_and_copy(_msg->fleet_name);

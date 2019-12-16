@@ -445,7 +445,7 @@ void Client::read_requests()
     if (!is_valid_request(request_fleet_name, request_robot_name, request_task_id))
       return;
 
-    ROS_INFO("received a Path command.");
+    ROS_INFO("received a Path command of size %d.", path_request->path._length);
 
     // Sanity check: the first waypoint of the Path must be within N meters
     // of our current position. Otherwise, ignore the request.
