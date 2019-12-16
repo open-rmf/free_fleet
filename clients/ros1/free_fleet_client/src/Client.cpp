@@ -488,6 +488,10 @@ void Client::read_requests()
 
     WriteLock task_id_lock(task_id_mutex);
     current_task_id = request_task_id;
+
+    if (paused)
+      resume_robot();
+
     return;
   }
 
@@ -513,6 +517,9 @@ void Client::read_requests()
 
     WriteLock task_id_lock(task_id_mutex);
     current_task_id = request_task_id;
+
+    if (paused)
+      resume_robot();
   }
 }
 
