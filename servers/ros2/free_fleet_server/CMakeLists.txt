@@ -15,6 +15,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(rmf_fleet_msgs REQUIRED)
 find_package(cyclonedds_cmake_module REQUIRED)
 find_package(CycloneDDS QUIET CONFIG)
@@ -39,6 +40,7 @@ ament_target_dependencies(free_fleet_server
 )
 target_link_libraries(free_fleet_server
   CycloneDDS::ddsc
+  Eigen3::Eigen
 )
 
 # -----------------------------------------------------------------------------

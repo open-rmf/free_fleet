@@ -16,43 +16,35 @@
  */
 
 #include "ServerConfig.hpp"
+#include <cstdio>
 
 namespace free_fleet
 {
 
 void ServerConfig::print_config()
 {
-  std::cout << "SERVER CONFIGURATION :" << std::endl;
-  std::cout << "Fleet Name                         : " << fleet_name 
-      << std::endl;
-  std::cout << "ROS 2  - Fleet State Topic         : " << fleet_state_topic 
-      << std::endl;
-  std::cout << "ROS 2  - Mode Request Topic        : " << mode_request_topic 
-      << std::endl;
-  std::cout << "ROS 2  - Path Reqeust Topic        : " << path_request_topic 
-      << std::endl;
-  std::cout << "ROS 2  - Destination Request Topic : " 
-      << destination_request_topic << std::endl;
-  std::cout << "DDS    - DDS Domain                : " << dds_domain 
-      << std::endl;
-  std::cout << "DDS    - Robot State Topic         : " << dds_robot_state_topic 
-      << std::endl;
-  std::cout << "DDS    - Mode Request Topic        : " << dds_mode_request_topic 
-      << std::endl;
-  std::cout << "DDS    - Path Request Topic        : " << dds_path_request_topic 
-      << std::endl;
-  std::cout << "DDS    - Destination Request Topic : " 
-      << dds_destination_request_topic << std::endl;
-
-  std::cout << "Server - Update State Frequency    : " << update_state_frequency 
-      << std::endl;
-  std::cout << "Server - Publish State Frequency   : " 
-      << publish_state_frequency << std::endl;
-
-  std::cout << "Server - Coordinate Transformation : ";
-  for (size_t i = 0; i < 9; ++i)
-    std::cout << transformation[i] << ", ";
-  std::cout << std::endl;
+  printf("ROS 2 SERVER CONFIGURATION\n");
+  printf("  fleet name: %s\n", fleet_name.c_str());
+  printf("  update state frequency: %.1f\n", update_state_frequency);
+  printf("  publish state frequency: %.1f\n", publish_state_frequency);
+  printf("  TOPICS\n");
+  printf("    fleet state: %s\n", fleet_state_topic.c_str());
+  printf("    mode request: %s\n", mode_request_topic.c_str());
+  printf("    path request: %s\n", path_request_topic.c_str());
+  printf("    destination request: %s\n", destination_request_topic.c_str());
+  printf("SERVER-CLIENT DDS CONFIGURATION\n");
+  printf("  dds domain: %d\n", dds_domain);
+  printf("  TOPICS\n");
+  printf("    robot state: %s\n", dds_robot_state_topic.c_str());
+  printf("    mode request: %s\n", dds_mode_request_topic.c_str());
+  printf("    path request: %s\n", dds_path_request_topic.c_str());
+  printf("    destination request: %s\n",
+      dds_destination_request_topic.c_str());
+  printf("COORDINATE TRANSFORMATION\n");
+  printf("  translation x (meters): %.3f\n", translation_x);
+  printf("  translation y (meters): %.3f\n", translation_y);
+  printf("  rotation (radians): %.3f\n", rotation);
+  printf("  scale: %.3f\n", scale);
 }
 
 } // namespace free_fleet

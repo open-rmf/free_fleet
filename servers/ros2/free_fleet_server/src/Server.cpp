@@ -20,6 +20,8 @@
 #include "Server.hpp"
 
 #include "dds_utils/common.hpp"
+using Eigen::Vector2d;
+using rmf_fleet_msgs::msg::Location;
 
 namespace free_fleet
 {
@@ -91,15 +93,10 @@ void Server::setup_config()
   get_parameter(
       "publish_state_frequency", server_config.publish_state_frequency);
 
-  std::vector<double> transformation_param;
-  get_parameter("transformation", transformation_param);
-  if (transformation_param.size() != 9)
-    RCLCPP_WARN(
-        get_logger(), 
-        "parameter transformation needs to be a 9-element array.");
-  else
-    for (size_t i = 0; i < 9; ++i)
-      server_config.transformation[i] = transformation_param[i];
+  get_parameter("translation_x", server_config.translation_x);
+  get_parameter("translation_y", server_config.translation_y);
+  get_parameter("rotation", server_config.rotation);
+  get_parameter("scale", server_config.scale);
 }
 
 bool Server::setup_dds()
@@ -133,12 +130,83 @@ bool Server::setup_dds()
 
   return true;
 }
-
 bool Server::is_ready()
 {
   if (server_config.fleet_name == "")
     return false;
   return true;
+}
+
+void Server::transform_rmf_to_fleet(
+    const Location& rmf_frame_location,
+    Location& fleet_frame_location)
+{
+  // It feels easier to read if each operation is a separate statement.
+  // The compiler will be super smart and elide all these operations.
+  const auto scaled =
+      server_config.scale
+      * Vector2d(rmf_frame_location.x, rmf_frame_location.y);
+
+  const auto rotated =
+      Eigen::Rotation2D<double>(server_config.rotation)
+      * scaled;
+
+  const auto translated =
+      rotated
+      + Vector2d(server_config.translation_x, server_config.translation_y);
+
+  fleet_frame_location.x = translated[0];
+  fleet_frame_location.y = translated[1];
+
+  fleet_frame_location.yaw = rmf_frame_location.yaw + server_config.rotation;
+
+  // time and level_name do not change during this transformation
+  fleet_frame_location.t = rmf_frame_location.t;
+  fleet_frame_location.level_name = rmf_frame_location.level_name;
+}
+
+void Server::transform_fleet_to_rmf(
+    const Location& fleet_frame_location,
+    Location& rmf_frame_location)
+{
+  // It feels easier to read if each operation is a separate statement.
+  // The compiler will be super smart and elide all these operations.
+  const auto translated =
+      Vector2d(fleet_frame_location.x, fleet_frame_location.y)
+      - Vector2d(server_config.translation_x, server_config.translation_y);
+
+  RCLCPP_INFO(
+      get_logger(),
+      "   translated: (%.3f, %.3f)",
+      translated[0],
+      translated[1]);
+
+  const auto rotated =
+      Eigen::Rotation2D<double>(-server_config.rotation)
+      * translated;
+
+  RCLCPP_INFO(
+      get_logger(),
+      "   rotated: (%.3f, %.3f)",
+      rotated[0],
+      rotated[1]);
+
+  const auto scaled = 1.0 / server_config.scale * rotated;
+
+  RCLCPP_INFO(
+      get_logger(),
+      "   scaled: (%.3f, %.3f)",
+      scaled[0],
+      scaled[1]);
+
+  rmf_frame_location.x = scaled[0];
+  rmf_frame_location.y = scaled[1];
+
+  rmf_frame_location.yaw = fleet_frame_location.yaw - server_config.rotation;
+
+  // time and level_name do not change during this transformation
+  rmf_frame_location.t = fleet_frame_location.t;
+  rmf_frame_location.level_name = fleet_frame_location.level_name;
 }
 
 void Server::start()
@@ -229,20 +297,10 @@ void Server::dds_to_ros_robot_state(
   _ros_robot_state.path = {};
   for (uint32_t i = 0; i < _dds_robot_state->path._length; ++i)
   {
-    Location new_point;
-    dds_to_ros_location(_dds_robot_state->path._buffer[i], new_point);
-    _ros_robot_state.path.push_back(new_point);
+    Location location;
+    dds_to_ros_location(_dds_robot_state->path._buffer[i], location);
+    _ros_robot_state.path.push_back(location);
   }
-}
-
-void Server::get_fleet_state(FleetState& _fleet_state)
-{
-  _fleet_state.name = server_config.fleet_name;
-  _fleet_state.robots = {};
-
-  ReadLock robot_states_lock(robot_states_mutex);
-  for (const auto it : robot_states)
-    _fleet_state.robots.push_back(it.second);
 }
 
 void Server::update_state_callback()
@@ -266,7 +324,8 @@ void Server::update_state_callback()
 }
 
 bool Server::is_request_valid(
-    const std::string& _fleet_name, const std::string& _robot_name)
+    const std::string& _fleet_name,
+    const std::string& _robot_name)
 {
   if (_fleet_name != server_config.fleet_name)
     return false;
@@ -280,10 +339,51 @@ bool Server::is_request_valid(
 
 void Server::publish_fleet_state()
 {
-  FleetState new_fleet_state;
-  get_fleet_state(new_fleet_state);
+  FleetState fleet_state;
+  fleet_state.name = server_config.fleet_name;
 
-  fleet_state_pub->publish(new_fleet_state);
+  ReadLock robot_states_lock(robot_states_mutex);
+  for (const auto it : robot_states)
+  {
+    const RobotState robot_state_fleet_frame = it.second;
+    RobotState robot_state_rmf_frame;
+
+    // transform coordinates from fleet frame to rmf "global" frame
+    transform_fleet_to_rmf(
+        robot_state_fleet_frame.location,
+        robot_state_rmf_frame.location);
+
+    RCLCPP_INFO(
+        get_logger(),
+        "robot location: (%.1f, %.1f, %.1f) -> (%.1f, %.1f, %.1f)",
+        robot_state_fleet_frame.location.x,
+        robot_state_fleet_frame.location.y,
+        robot_state_fleet_frame.location.yaw,
+        robot_state_rmf_frame.location.x,
+        robot_state_rmf_frame.location.y,
+        robot_state_rmf_frame.location.yaw);
+
+    robot_state_rmf_frame.name = robot_state_fleet_frame.name;
+    robot_state_rmf_frame.model = robot_state_fleet_frame.model;
+    robot_state_rmf_frame.task_id = robot_state_fleet_frame.task_id;
+    robot_state_rmf_frame.mode = robot_state_fleet_frame.mode;
+    robot_state_rmf_frame.battery_percent =
+        robot_state_fleet_frame.battery_percent;
+
+    for (const auto &path_location_fleet_frame : robot_state_fleet_frame.path)
+    {
+      Location path_location_rmf_frame;
+      transform_fleet_to_rmf(
+          path_location_fleet_frame,
+          path_location_rmf_frame);
+
+      robot_state_rmf_frame.path.push_back(path_location_rmf_frame);
+    }
+
+    fleet_state.robots.push_back(robot_state_rmf_frame);
+  }
+
+  fleet_state_pub->publish(fleet_state);
 }
 
 void Server::mode_request_callback(ModeRequest::UniquePtr _msg)
@@ -298,6 +398,8 @@ void Server::mode_request_callback(ModeRequest::UniquePtr _msg)
   dds_msg->mode.mode = _msg->mode.mode;
   dds_msg->task_id = common::dds_string_alloc_and_copy(_msg->task_id);
 
+  // todo: copy mode parameters if/when FreeFleet clients need them
+
   if (dds_mode_request_pub->write(dds_msg))
     RCLCPP_INFO(get_logger(), "published a ModeRequest over DDS.");
 
@@ -308,6 +410,9 @@ void Server::path_request_callback(PathRequest::UniquePtr _msg)
 {
   if (!is_request_valid(_msg->fleet_name, _msg->robot_name))
     return;
+
+  RCLCPP_INFO(
+      get_logger(), "got a path request of size %d", _msg->path.size());
 
   FreeFleetData_PathRequest* dds_msg;
   dds_msg = FreeFleetData_PathRequest__alloc();
@@ -322,13 +427,16 @@ void Server::path_request_callback(PathRequest::UniquePtr _msg)
       FreeFleetData_PathRequest_path_seq_allocbuf(num_locations);
   for (uint32_t i = 0; i < num_locations; ++i)
   {
-    dds_msg->path._buffer[i].sec = _msg->path[i].t.sec;
-    dds_msg->path._buffer[i].nanosec = _msg->path[i].t.nanosec;
-    dds_msg->path._buffer[i].x = _msg->path[i].x;
-    dds_msg->path._buffer[i].y = _msg->path[i].y;
-    dds_msg->path._buffer[i].yaw = _msg->path[i].yaw;
+    Location fleet_frame_location;
+    transform_rmf_to_fleet(_msg->path[i], fleet_frame_location);
+
+    dds_msg->path._buffer[i].sec = fleet_frame_location.t.sec;
+    dds_msg->path._buffer[i].nanosec = fleet_frame_location.t.nanosec;
+    dds_msg->path._buffer[i].x = fleet_frame_location.x;
+    dds_msg->path._buffer[i].y = fleet_frame_location.y;
+    dds_msg->path._buffer[i].yaw = fleet_frame_location.yaw;
     dds_msg->path._buffer[i].level_name = 
-        common::dds_string_alloc_and_copy(_msg->path[i].level_name);
+        common::dds_string_alloc_and_copy(fleet_frame_location.level_name);
   }
   dds_msg->path._release = false;
 
@@ -343,17 +451,20 @@ void Server::destination_request_callback(DestinationRequest::UniquePtr _msg)
   if (!is_request_valid(_msg->fleet_name, _msg->robot_name))
     return;
 
+  Location fleet_frame_location;
+  transform_rmf_to_fleet(_msg->destination, fleet_frame_location);
+
   FreeFleetData_DestinationRequest* dds_msg;
   dds_msg = FreeFleetData_DestinationRequest__alloc();
   dds_msg->fleet_name = common::dds_string_alloc_and_copy(_msg->fleet_name);
   dds_msg->robot_name = common::dds_string_alloc_and_copy(_msg->robot_name);
-  dds_msg->destination.sec = _msg->destination.t.sec;
-  dds_msg->destination.nanosec = _msg->destination.t.nanosec;
-  dds_msg->destination.x = _msg->destination.x;
-  dds_msg->destination.y = _msg->destination.y;
-  dds_msg->destination.yaw = _msg->destination.yaw;
+  dds_msg->destination.sec = fleet_frame_location.t.sec;
+  dds_msg->destination.nanosec = fleet_frame_location.t.nanosec;
+  dds_msg->destination.x = fleet_frame_location.x;
+  dds_msg->destination.y = fleet_frame_location.y;
+  dds_msg->destination.yaw = fleet_frame_location.yaw;
   dds_msg->destination.level_name = 
-      common::dds_string_alloc_and_copy(_msg->destination.level_name);
+      common::dds_string_alloc_and_copy(fleet_frame_location.level_name);
   dds_msg->task_id = common::dds_string_alloc_and_copy(_msg->task_id);
 
   if (dds_destination_request_pub->write(dds_msg))

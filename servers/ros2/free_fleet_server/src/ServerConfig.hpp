@@ -18,7 +18,6 @@
 #ifndef FREEFLEETSERVER__SRC__SERVERCONFIG_HPP
 #define FREEFLEETSERVER__SRC__SERVERCONFIG_HPP
 
-#include <array>
 #include <iostream>
 
 namespace free_fleet
@@ -42,12 +41,14 @@ struct ServerConfig
   double update_state_frequency = 10.0;
   double publish_state_frequency = 1.0;
 
-  std::array<double, 9> transformation =
-  {
-    1.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 0.0, 1.0
-  };
+  // the transformation order of operations from the server to the client is:
+  // 1) scale
+  // 2) rotate
+  // 3) translate
+  double scale = 1.0;  // unitless
+  double rotation = 0.0;  // radians
+  double translation_x = 0.0;  // meters
+  double translation_y = 0.0;  // meters
 
   void print_config();
 };

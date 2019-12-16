@@ -170,6 +170,16 @@ void Client::start()
     client_config.robot_name = robot_name_param;
   }
 
+  double max_dist_to_first_waypoint_param;
+  if (node_private_namespace.getParam(
+      "max_dist_to_first_waypoint", max_dist_to_first_waypoint_param))
+  {
+    ROS_INFO("Found max_dist_to_first_waypoint on the parameter server."
+             "Setting max_dist_to_first_waypoint to [%.2f]",
+        max_dist_to_first_waypoint_param);
+    client_config.max_dist_to_first_waypoint = max_dist_to_first_waypoint_param;
+  }
+
   battery_percent_sub = node->subscribe(
       client_config.battery_state_topic, 1,
       &Client::battery_state_callback_fn, this);
@@ -205,8 +215,8 @@ bool Client::get_robot_transform()
   try {
     geometry_msgs::TransformStamped tmp_transform_stamped = 
         tf2_buffer.lookupTransform(
-            client_config.robot_frame, 
-            client_config.map_frame, 
+            client_config.map_frame,
+            client_config.robot_frame,
             ros::Time(0));
     WriteLock robot_transform_lock(robot_transform_mutex);
     previous_robot_transform = current_robot_transform;
@@ -435,7 +445,31 @@ void Client::read_requests()
     if (!is_valid_request(request_fleet_name, request_robot_name, request_task_id))
       return;
 
-    ROS_INFO("received a Path command.");
+    ROS_INFO("received a Path command of size %d.", path_request->path._length);
+
+    // Sanity check: the first waypoint of the Path must be within N meters
+    // of our current position. Otherwise, ignore the request.
+    if (path_request->path._length <= 0)
+      return;
+
+    {
+      ReadLock robot_transform_lock(robot_transform_mutex);
+      const double dx =
+          path_request->path._buffer[0].x
+          - current_robot_transform.transform.translation.x;
+      const double dy =
+          path_request->path._buffer[0].y
+          - current_robot_transform.transform.translation.y;
+      const double dist_to_first_waypoint = sqrt(dx*dx + dy*dy);
+      ROS_INFO("distance to first waypoint: %.2f\n", dist_to_first_waypoint);
+      if (dist_to_first_waypoint > client_config.max_dist_to_first_waypoint)
+      {
+        ROS_ERROR(
+            "distance was over threshold of %.2f ! Rejecting path.\n",
+            client_config.max_dist_to_first_waypoint);
+        return;
+      }
+    }
 
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
@@ -499,8 +533,9 @@ void Client::handle_requests()
   WriteLock goal_path_lock(goal_path_mutex);
   if (goal_path.empty())
   {
-    WriteLock task_id_lock(task_id_mutex);
-    current_task_id = "";
+    // Previously we cleared the task_id here, but actually we
+    // want to keep it so that the free_fleet_server knows we are
+    // still listening to it.
   }
   else
   {
