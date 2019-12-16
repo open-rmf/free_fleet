@@ -170,6 +170,16 @@ void Client::start()
     client_config.robot_name = robot_name_param;
   }
 
+  double max_dist_to_first_waypoint_param;
+  if (node_private_namespace.getParam(
+      "max_dist_to_first_waypoint", max_dist_to_first_waypoint_param))
+  {
+    ROS_INFO("Found max_dist_to_first_waypoint on the parameter server."
+             "Setting max_dist_to_first_waypoint to [%.2f]",
+        max_dist_to_first_waypoint_param);
+    client_config.max_dist_to_first_waypoint = max_dist_to_first_waypoint_param;
+  }
+
   battery_percent_sub = node->subscribe(
       client_config.battery_state_topic, 1,
       &Client::battery_state_callback_fn, this);
@@ -452,12 +462,11 @@ void Client::read_requests()
           - current_robot_transform.transform.translation.y;
       const double dist_to_first_waypoint = sqrt(dx*dx + dy*dy);
       ROS_INFO("distance to first waypoint: %.2f\n", dist_to_first_waypoint);
-      const double max_dist_to_first_waypoint = 1.0;  // parameterize?
-      if (dist_to_first_waypoint > max_dist_to_first_waypoint)
+      if (dist_to_first_waypoint > client_config.max_dist_to_first_waypoint)
       {
         ROS_ERROR(
             "distance was over threshold of %.2f ! Rejecting path.\n",
-            max_dist_to_first_waypoint);
+            client_config.max_dist_to_first_waypoint);
         return;
       }
     }

@@ -69,6 +69,8 @@ struct ClientConfig
 
   float update_frequency = 10.0;
   float publish_frequency = 1.0;
+
+  double max_dist_to_first_waypoint = 1.0;
 };
 
 class Client
