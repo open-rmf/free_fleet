@@ -39,6 +39,7 @@
 
 #include <dds/dds.h>
 
+#include "ClientConfig.hpp"
 #include "free_fleet/FreeFleet.h"
 #include "dds_utils/DDSPublishHandler.hpp"
 #include "dds_utils/DDSSubscribeHandler.hpp"
@@ -46,32 +47,6 @@
 
 namespace free_fleet
 {
-
-struct ClientConfig
-{
-  std::string fleet_name = "fleet_name";
-  std::string robot_name = "robot_name";
-  std::string robot_model = "robot_model";
-
-  std::string battery_state_topic = "/battery_state";
-  std::string level_name_topic = "/level_name";
-
-  std::string map_frame = "map";
-  std::string robot_frame = "base_footprint";
-  
-  std::string move_base_server_name = "move_base";
-
-  uint32_t dds_domain = std::numeric_limits<uint32_t>::max();
-  std::string dds_state_topic = "robot_state";
-  std::string dds_mode_request_topic = "mode_request";
-  std::string dds_path_request_topic = "path_request";
-  std::string dds_destination_request_topic = "destination_request";
-
-  float update_frequency = 10.0;
-  float publish_frequency = 1.0;
-
-  double max_dist_to_first_waypoint = 1.0;
-};
 
 class Client
 {
@@ -97,6 +72,8 @@ public:
   /// Starts the subscriptions to all the different topics and starts 
   /// publishing the state over DDS to the server
   void start();
+
+  void print_config();
 
 private:
 

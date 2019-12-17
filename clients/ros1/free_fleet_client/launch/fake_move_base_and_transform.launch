@@ -1,0 +1,4 @@
+<launch>
+  <node name="fake_move_base_server" pkg="free_fleet_client" type="fake_action_server" output="screen" />
+  <node name="fake_transforms" pkg="tf" type="static_transform_publisher" args="0.0 0.0 0.0 0.0 0.0 0.0 1.0 base_footprint map 200" />
+</launch>

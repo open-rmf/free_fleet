@@ -25,6 +25,7 @@ namespace free_fleet
 std::shared_ptr<Client> Client::make(const ClientConfig& _config)
 {
   std::shared_ptr<Client> client(new Client(_config));
+  client->print_config();
   if (!client->is_ready())
     return nullptr;
 
@@ -159,27 +160,6 @@ void Client::start()
   update_rate.reset(new ros::Rate(client_config.update_frequency));
   publish_rate.reset(new ros::Rate(client_config.publish_frequency));
 
-  // override the robot name if it's set as a ros param called robot_name
-  ros::NodeHandle node_private_namespace("~");
-  std::string robot_name_param;
-  if (node_private_namespace.getParam("robot_name", robot_name_param))
-  {
-    ROS_INFO("Found robot_name param on the parameter server. "
-             "Setting robot_name to [%s]",
-        robot_name_param.c_str());
-    client_config.robot_name = robot_name_param;
-  }
-
-  double max_dist_to_first_waypoint_param;
-  if (node_private_namespace.getParam(
-      "max_dist_to_first_waypoint", max_dist_to_first_waypoint_param))
-  {
-    ROS_INFO("Found max_dist_to_first_waypoint on the parameter server."
-             "Setting max_dist_to_first_waypoint to [%.2f]",
-        max_dist_to_first_waypoint_param);
-    client_config.max_dist_to_first_waypoint = max_dist_to_first_waypoint_param;
-  }
-
   battery_percent_sub = node->subscribe(
       client_config.battery_state_topic, 1,
       &Client::battery_state_callback_fn, this);
@@ -196,6 +176,11 @@ void Client::start()
 
   ROS_INFO("Client: starting publish thread.");
   publish_thread = std::thread(std::bind(&Client::publish_thread_fn, this));
+}
+
+void Client::print_config()
+{
+  client_config.print_config();
 }
 
 void Client::battery_state_callback_fn(const sensor_msgs::BatteryState& _msg)
