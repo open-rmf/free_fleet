@@ -147,13 +147,31 @@ void Server::transform_rmf_to_fleet(
       server_config.scale
       * Vector2d(rmf_frame_location.x, rmf_frame_location.y);
 
+  RCLCPP_INFO(
+      get_logger(),
+      "   rmf->fleet scaled: (%.3f, %.3f)",
+      scaled[0],
+      scaled[1]);
+
   const auto rotated =
       Eigen::Rotation2D<double>(server_config.rotation)
       * scaled;
 
+  RCLCPP_INFO(
+      get_logger(),
+      "   rmf->fleet rotated: (%.3f, %.3f)",
+      rotated[0],
+      rotated[1]);
+
   const auto translated =
       rotated
       + Vector2d(server_config.translation_x, server_config.translation_y);
+
+  RCLCPP_INFO(
+      get_logger(),
+      "   rmf->fleet translated: (%.3f, %.3f)",
+      translated[0],
+      translated[1]);
 
   fleet_frame_location.x = translated[0];
   fleet_frame_location.y = translated[1];

@@ -30,6 +30,7 @@ setup(
     tests_require=['pytest'],
     scripts=[
         'free_fleet_server_test/send_mode_request.py',
-        'free_fleet_server_test/send_destination_request.py'],
+        'free_fleet_server_test/send_destination_request.py',
+        'free_fleet_server_test/send_path_request.py'],
     entry_points={},
 )

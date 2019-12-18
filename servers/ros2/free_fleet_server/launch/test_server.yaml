@@ -22,12 +22,7 @@ free_fleet_server:
     publish_state_frequency: 2.0
 
     # Map config: transformation from "global" frame to this fleet frame
-    # translation_x: -4.117
-    # translation_y: 27.26
-    # rotation: -0.013
-    # scale: 0.928
-
-    translation_x: -5.8
-    translation_y: 28.5
-    rotation: 0.025
-    scale: 0.99
+    translation_x: -4.117
+    translation_y: 27.26
+    rotation: -0.013
+    scale: 0.928
