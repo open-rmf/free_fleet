@@ -31,6 +31,7 @@ link_directories(${CYCLONE_INSTALL_PATH}/lib)
 add_executable(free_fleet_client
   src/main.cpp
   src/Client.cpp
+  src/ClientConfig.cpp
   src/dds_utils/math.cpp
   src/dds_utils/common.cpp
   src/free_fleet/FreeFleet.c
@@ -44,7 +45,6 @@ target_link_libraries(free_fleet_client
 )
 target_include_directories(free_fleet_client
   PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
     ${catkin_INCLUDE_DIRS}
     ${CYCLONE_INSTALL_PATH}/include
 )
@@ -81,6 +81,12 @@ foreach(target ${testing_targets})
 endforeach()
 
 # -----------------------------------------------------------------------------
+
+install(
+  DIRECTORY
+    launch
+  DESTINATION share/free_fleet_client
+)
 
 install(
   TARGETS 
