@@ -6,10 +6,10 @@ import rclpy
 from rclpy.node import Node
 
 from rmf_fleet_msgs.msg import Location
-from rmf_fleet_msgs.msg import DestinationRequest
+from rmf_fleet_msgs.msg import PathRequest
 
 
-def send_destination_request(args):
+def send_path_request(args):
     print('fleet_name: {}'.format(args.fleet_name))
     print('robot_name: {}'.format(args.robot_name))
     print('x: {}'.format(args.x))
@@ -19,19 +19,25 @@ def send_destination_request(args):
     print('topic_name: {}'.format(args.topic_name))
 
     rclpy.init()
-    node = rclpy.create_node('send_destination_request_node')
-    pub = node.create_publisher(DestinationRequest, args.topic_name, 10)
+    node = rclpy.create_node('send_path_request_node')
+    pub = node.create_publisher(PathRequest, args.topic_name, 10)
 
-    msg = DestinationRequest()
+    msg = PathRequest()
     msg.fleet_name = args.fleet_name
     msg.robot_name = args.robot_name
     msg.task_id = args.task_id
     # ignore time for now
-    msg.destination.x = float(args.x)
-    msg.destination.y = float(args.y)
-    msg.destination.yaw = float(args.yaw)
+    location = Location()
+    location.x = float(args.x)
+    location.y = float(args.y)
+    location.yaw = float(args.yaw)
+    location.level_name = ""  # todo: param?
+    # todo: set realistic time?
+    location.t.sec = 0
+    location.t.nanosec = 0
+    msg.path.append(location)
 
-    rclpy.spin_once(node, timeout_sec=1.0)
+    rclpy.spin_once(node, timeout_sec=2.0)
     pub.publish(msg)
     rclpy.spin_once(node, timeout_sec=0.5)
     print('all done!')
@@ -45,7 +51,7 @@ if __name__ == '__main__':
     desired_yaw = 0.0
     level_name = 'B1'
     task_id = 'yhuijnesdxunsd'
-    topic_name = 'destination_request'
+    topic_name = 'robot_path_requests'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--fleet-name', default=fleet_name)
@@ -57,4 +63,4 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--topic-name', default=topic_name)
     args = parser.parse_args()
 
-    send_destination_request(args)
+    send_path_request(args)
