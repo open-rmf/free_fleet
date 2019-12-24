@@ -26,5 +26,4 @@ jobs:
     - name: build
       run: |
         cd /home/ff_ws
-        . /ros_entrypoint.sh
         colcon build --packages-up-to free_fleet_server
