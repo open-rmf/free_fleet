@@ -25,5 +25,4 @@ jobs:
     - name: build
       run: |
         cd /home/ff_ws
-        /bin/bash -c 'source /opt/ros/eloquent/setup.bash'
-        colcon build --packages-up-to free_fleet_server
+        /bin/bash -c 'source /opt/ros/eloquent/setup.bash && colcon build --packages-up-to free_fleet_server'
