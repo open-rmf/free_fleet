@@ -17,7 +17,7 @@ jobs:
         git clone https://github.com/osrf/rmf_core
     - name: checkout
       run: |
-        cd free_fleet 
+        cd /home/repos/free_fleet 
         git checkout ${GITHUB_REF##*/}
     - name: workspace
       run: |
