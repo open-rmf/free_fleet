@@ -1,3 +1,5 @@
+![](https://github.com/osrf/free_fleet/workflows/build/badge.svg)
+
 This repository is under active development. Things will be quite unstable
 for a while. Please open an issue ticket on this repo if you have problems.
 Cheers.
