@@ -3,9 +3,10 @@ on: push
 jobs:
   ros2:
     runs-on: ubuntu-18.04
+    container:
+        image: docker://ros:eloquent-ros-base-bionic
     steps:
-    - name: docker
-      uses: docker://ros:eloquent-ros-base-bionic
+    - uses: actions/checkout@v1
     - name: deps
       run: |
         sudo apt update
