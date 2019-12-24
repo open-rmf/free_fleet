@@ -26,5 +26,5 @@ jobs:
     - name: build
       run: |
         cd /home/ff_ws
-        . /opt/ros/eloquent/setup.bash
+        . /ros_entrypoint.sh
         colcon build --packages-up-to free_fleet_server
