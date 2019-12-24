@@ -1,16 +1,10 @@
 name: build
 on: push
 jobs:
-  build:
-    runs-on: ubuntu-18.04
-    
+  ros2:
     steps:
-    - uses: actions/checkout@v1
     - name: docker
-      run: |
-        sudo apt update
-        sudo docker pull ros:eloquent-ros-base-bionic
-        sudo docker run -it ros:eloquent-ros-base-bionic
+      uses: docker://ros:eloquent-ros-base-bionic
     - name: deps
       run: |
         sudo apt update
