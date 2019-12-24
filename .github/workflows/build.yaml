@@ -1,0 +1,34 @@
+name: build
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: docker
+      run: |
+        sudo apt update
+        sudo docker pull ros:eloquent-ros-base-bionic
+        sudo docker run -it ros:eloquent-ros-base-bionic
+    - name: deps
+      run: |
+        sudo apt update
+        sudo apt install ros-eloquent-rmw-cyclonedds-cpp -y
+        cd /home/
+        mkdir repos
+        cd repos/
+        git clone https://github.com/osrf/free_fleet
+        git clone https://github.com/osrf/rmf_core
+    - name: workspace
+      run: |
+        cd /home/
+        mkdir -p ff_ws/src
+        cd ff_ws/src
+        ln -s /home/repos/free_fleet/servers/ros2 free_fleet_server
+        ln -s /home/repos/rmf_core rmf_core
+    - name: build
+      run: |
+        cd /home/ff_ws
+        source /opt/ros/eloquent/setup.bash
+        colcon build --packages-up-to free_fleet_server
