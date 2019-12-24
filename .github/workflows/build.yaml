@@ -6,7 +6,6 @@ jobs:
     container:
         image: docker://ros:eloquent-ros-base-bionic
     steps:
-    - uses: actions/checkout@v1
     - name: deps
       run: |
         sudo apt update
@@ -26,4 +25,5 @@ jobs:
     - name: build
       run: |
         cd /home/ff_ws
+        /bin/bash -c 'source /opt/ros/eloquent/setup.bash'
         colcon build --packages-up-to free_fleet_server
