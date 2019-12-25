@@ -10,7 +10,7 @@ jobs:
     - name: deps
       run: |
         sudo apt update
-        sudo apt install python-catkin-tools ros-melodic-move-base-msgs
+        sudo apt install python-catkin-tools ros-melodic-move-base-msgs -y
         mkdir -p /home/repos
         cd /home/repos/
         git clone https://github.com/osrf/free_fleet
