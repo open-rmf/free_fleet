@@ -20,6 +20,7 @@ jobs:
       run: |
         cd /home/repos/free_fleet
         git checkout ${GITHUB_REF##*/}
+        git merge master
     - name: workspace
       run: |
         mkdir -p /home/ff_ws/src
@@ -50,6 +51,7 @@ jobs:
       run: |
         cd /home/repos/free_fleet 
         git checkout ${GITHUB_REF##*/}
+        git merge master
     - name: workspace
       run: |
         cd /home/
