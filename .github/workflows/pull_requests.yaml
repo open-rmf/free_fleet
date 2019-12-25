@@ -1,5 +1,5 @@
-name: build_ci
-on: push
+name: pull_request_ci
+on: pull_request
 jobs:
 
   ros1:
