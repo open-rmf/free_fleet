@@ -19,6 +19,7 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet
+        echo "checking out to ${GITHUB_REF##*/}"
         git checkout ${GITHUB_REF##*/}
     - name: merge
       run: |
@@ -54,6 +55,7 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet 
+        echo "checking out to ${GITHUB_REF##*/}"
         git checkout ${GITHUB_REF##*/}
     - name: merge
       run: |
