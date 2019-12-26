@@ -50,15 +50,13 @@ jobs:
         cd repos/
         git clone https://github.com/osrf/free_fleet
         git clone https://github.com/osrf/rmf_core
-    - name: checkout
-      run: |
-        cd /home/repos/free_fleet 
-        echo "checking out to ${GITHUB_REF}"
-        git checkout ${GITHUB_REF}
-    - name: merge
+    - name: checkout and merge
+      shell: bash
       run: |
         cd /home/repos/free_fleet
-        git fetch
+        IFS='/' read -ra REF <<< "${GITHUB_REF}"
+        git fetch origin pull/${REF[2]}/head:tmp_pr_branch
+        git checkout tmp_pr_branch
         git merge master
     - name: workspace
       run: |
