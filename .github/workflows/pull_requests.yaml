@@ -19,6 +19,7 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet
+        git status
         echo "GITHUB_REF is ${GITHUB_REF}"
         echo "GITHUB_SHA is ${GITHUB_SHA}"
         git checkout ${GITHUB_REF}
