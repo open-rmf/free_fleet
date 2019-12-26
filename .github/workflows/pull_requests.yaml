@@ -1,5 +1,5 @@
-name: build_ci
-on: push
+name: pull_request_ci
+on: pull_request
 jobs:
 
   ros1:
@@ -16,10 +16,14 @@ jobs:
         mkdir -p /home/repos
         cd /home/repos/
         git clone https://github.com/osrf/free_fleet
-    - name: checkout
+    - name: checkout and merge
+      shell: bash
       run: |
         cd /home/repos/free_fleet
-        git checkout ${GITHUB_REF##*/}
+        IFS='/' read -ra REF <<< "${GITHUB_REF}"
+        git fetch origin pull/${REF[2]}/head:tmp_pr_branch
+        git checkout tmp_pr_branch
+        git merge master
     - name: workspace
       run: |
         mkdir -p /home/ff_ws/src
@@ -46,10 +50,14 @@ jobs:
         cd repos/
         git clone https://github.com/osrf/free_fleet
         git clone https://github.com/osrf/rmf_core
-    - name: checkout
+    - name: checkout and merge
+      shell: bash
       run: |
-        cd /home/repos/free_fleet 
-        git checkout ${GITHUB_REF##*/}
+        cd /home/repos/free_fleet
+        IFS='/' read -ra REF <<< "${GITHUB_REF}"
+        git fetch origin pull/${REF[2]}/head:tmp_pr_branch
+        git checkout tmp_pr_branch
+        git merge master
     - name: workspace
       run: |
         cd /home/
