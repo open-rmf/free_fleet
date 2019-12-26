@@ -19,7 +19,8 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet
-        echo "checking out to ${GITHUB_REF}"
+        echo "GITHUB_REF is ${GITHUB_REF}"
+        echo "GITHUB_SHA is ${GITHUB_SHA}"
         git checkout ${GITHUB_REF}
     - name: merge
       run: |
