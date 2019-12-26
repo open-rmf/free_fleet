@@ -19,6 +19,10 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet
+
+        IFS='/' read -ra REF <<< "${GITHUB_REF}"
+        echo "PR id should be this: ${REF[2]}"
+        
         git status
         echo "GITHUB_REF is ${GITHUB_REF}"
         echo "GITHUB_SHA is ${GITHUB_SHA}"
