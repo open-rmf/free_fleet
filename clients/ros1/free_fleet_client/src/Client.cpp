@@ -16,8 +16,9 @@
  */
 
 #include "Client.hpp"
-#include "dds_utils/math.hpp"
-#include "dds_utils/common.hpp"
+#include "utils/math.hpp"
+
+#include <free_fleet_utils/common.hpp>
 
 namespace free_fleet
 {
@@ -384,31 +385,25 @@ bool Client::is_valid_request(
 
 void Client::read_requests()
 {
-  auto mode_request = mode_request_sub->read();
-  if (mode_request)
+  auto mode_requests = mode_request_sub->read();
+
+  if (!mode_requests.empty())
   {
-    std::string request_fleet_name(mode_request->fleet_name);
-    std::string request_robot_name(mode_request->robot_name);
-    std::string request_task_id(mode_request->task_id);
+    std::string request_fleet_name(mode_requests[0]->fleet_name);
+    std::string request_robot_name(mode_requests[0]->robot_name);
+    std::string request_task_id(mode_requests[0]->task_id);
     if (!is_valid_request(request_fleet_name, request_robot_name, request_task_id))
       return;
 
     if (
-        mode_request->mode.mode == 
+        mode_requests[0]->mode.mode == 
             FreeFleetData_RobotMode_Constants_MODE_PAUSED)
     {
       ROS_INFO("received a PAUSE command.");
       pause_robot();
     }
     else if (
-        mode_request->mode.mode == 
-            FreeFleetData_RobotMode_Constants_MODE_MOVING)
-    {
-      ROS_INFO("received a RESUME command.");
-      resume_robot();
-    }
-    else if (
-        mode_request->mode.mode == 
+        mode_requests[0]->mode.mode == 
             FreeFleetData_RobotMode_Constants_MODE_EMERGENCY)
     {
       ROS_INFO("received an EMERGENCY command.");
@@ -421,29 +416,31 @@ void Client::read_requests()
     return;
   }
 
-  auto path_request = path_request_sub->read();
-  if (path_request)
+  auto path_requests = path_request_sub->read();
+  if (!path_requests.empty())
   {
-    std::string request_fleet_name(path_request->fleet_name);
-    std::string request_robot_name(path_request->robot_name);
-    std::string request_task_id(path_request->task_id);
-    if (!is_valid_request(request_fleet_name, request_robot_name, request_task_id))
+    std::string request_fleet_name(path_requests[0]->fleet_name);
+    std::string request_robot_name(path_requests[0]->robot_name);
+    std::string request_task_id(path_requests[0]->task_id);
+    if (!is_valid_request(
+            request_fleet_name, request_robot_name, request_task_id))
       return;
 
-    ROS_INFO("received a Path command of size %d.", path_request->path._length);
+    ROS_INFO(
+        "received a Path command of size %d.", path_requests[0]->path._length);
 
     // Sanity check: the first waypoint of the Path must be within N meters
     // of our current position. Otherwise, ignore the request.
-    if (path_request->path._length <= 0)
+    if (path_requests[0]->path._length <= 0)
       return;
 
     {
       ReadLock robot_transform_lock(robot_transform_mutex);
       const double dx =
-          path_request->path._buffer[0].x
+          path_requests[0]->path._buffer[0].x
           - current_robot_transform.transform.translation.x;
       const double dy =
-          path_request->path._buffer[0].y
+          path_requests[0]->path._buffer[0].y
           - current_robot_transform.transform.translation.y;
       const double dist_to_first_waypoint = sqrt(dx*dx + dy*dy);
       ROS_INFO("distance to first waypoint: %.2f\n", dist_to_first_waypoint);
@@ -458,15 +455,15 @@ void Client::read_requests()
 
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
-    for (int i = 0; i < path_request->path._length; ++i)
+    for (int i = 0; i < path_requests[0]->path._length; ++i)
     {
       Goal new_goal { 
-        std::string(path_request->path._buffer[i].level_name),
-        location_to_goal(path_request->path._buffer[i]),
+        std::string(path_requests[0]->path._buffer[i].level_name),
+        location_to_goal(path_requests[0]->path._buffer[i]),
         false,
         ros::Time(
-            path_request->path._buffer[i].sec,
-            path_request->path._buffer[i].nanosec)
+            path_requests[0]->path._buffer[i].sec,
+            path_requests[0]->path._buffer[i].nanosec)
       };
       goal_path.push_back(new_goal);
     }
@@ -480,13 +477,14 @@ void Client::read_requests()
     return;
   }
 
-  auto destination_request = destination_request_sub->read();
-  if (destination_request)
+  auto destination_requests = destination_request_sub->read();
+  if (!destination_requests.empty())
   {
-    std::string request_fleet_name(destination_request->fleet_name);
-    std::string request_robot_name(destination_request->robot_name);
-    std::string request_task_id(destination_request->task_id);
-    if (!is_valid_request(request_fleet_name, request_robot_name, request_task_id))
+    std::string request_fleet_name(destination_requests[0]->fleet_name);
+    std::string request_robot_name(destination_requests[0]->robot_name);
+    std::string request_task_id(destination_requests[0]->task_id);
+    if (!is_valid_request(
+            request_fleet_name, request_robot_name, request_task_id))
       return;
 
     ROS_INFO("received a Location command.");
@@ -494,8 +492,8 @@ void Client::read_requests()
     WriteLock goal_path_lock(goal_path_mutex);
     goal_path.clear();
     Goal new_goal {
-      std::string(destination_request->destination.level_name),
-      location_to_goal(destination_request->destination),
+      std::string(destination_requests[0]->destination.level_name),
+      location_to_goal(destination_requests[0]->destination),
       false
     };
     goal_path.push_back(new_goal);

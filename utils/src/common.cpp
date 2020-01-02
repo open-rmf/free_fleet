@@ -15,7 +15,7 @@
  *
  */
 
-#include "common.hpp"
+#include <free_fleet_utils/common.hpp>
 
 #include <dds/dds.h>
 

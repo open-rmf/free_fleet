@@ -21,8 +21,8 @@
 
 #include <dds/dds.h>
 
-#include "../free_fleet/FreeFleet.h"
-#include "../dds_utils/common.hpp"
+#include <free_fleet_utils/FreeFleet.h>
+#include <free_fleet_utils/common.hpp>
 
 int main (int argc, char ** argv)
 {

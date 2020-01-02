@@ -1,14 +1,10 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(free_fleet_client)
 
 if (NOT $ENV{ROS_VERSION} MATCHES "1")
-  message(WARNING "found a ROS 1 package, ignoring...") 
   return()
 endif()
 
-# -----------------------------------------------------------------------------
-
-include(ExternalProject)
+project(free_fleet_client)
 
 find_package(catkin REQUIRED COMPONENTS 
   roscpp 
@@ -20,16 +16,9 @@ find_package(catkin REQUIRED COMPONENTS
   move_base_msgs
 )
 
-set(CYCLONE_INSTALL_PATH ${CMAKE_BINARY_DIR}/cyclonedds)
-
-ExternalProject_Add(cyclonedds
-  GIT_REPOSITORY https://github.com/eclipse-cyclonedds/cyclonedds.git
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CYCLONE_INSTALL_PATH} -DBUILD_IDLC=NO -DBUILD_SHARED_LIBS=FALSE
-)
+find_package(free_fleet_utils REQUIRED)
 
 catkin_package()
-
-link_directories(${CYCLONE_INSTALL_PATH}/lib)
 
 # -----------------------------------------------------------------------------
 
@@ -37,53 +26,50 @@ add_executable(free_fleet_client
   src/main.cpp
   src/Client.cpp
   src/ClientConfig.cpp
-  src/dds_utils/math.cpp
-  src/dds_utils/common.cpp
-  src/free_fleet/FreeFleet.c
 )
-add_dependencies(free_fleet_client cyclonedds)
 target_link_libraries(free_fleet_client
-  ddsc
-  crypto
-  ssl
+  ${free_fleet_utils_LIBRARIES}
   ${catkin_LIBRARIES}
 )
 target_include_directories(free_fleet_client
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE
+    ${free_fleet_utils_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
-    ${CYCLONE_INSTALL_PATH}/include
 )
 
 # -----------------------------------------------------------------------------
 
-set(testing_targets
-  fake_action_server
-  test_dds_sub_state
-  test_dds_pub_mode_request
-  test_dds_pub_path_request
-  test_dds_pub_sim_path_request
-  test_dds_pub_destination_request
-)
+# set(testing_targets
+#   fake_action_server
+#   test_dds_sub_state
+#   test_dds_pub_mode_request
+#   test_dds_pub_path_request
+#   test_dds_pub_sim_path_request
+#   test_dds_pub_destination_request
+# )
 
-foreach(target ${testing_targets})
-  add_executable(${target}
-    src/tests/${target}.cpp
-    src/dds_utils/common.cpp
-    src/free_fleet/FreeFleet.c
-  )
-  add_dependencies(${target} cyclonedds)
-  target_link_libraries(${target}
-    ddsc
-    crypto
-    ssl
-    ${catkin_LIBRARIES}
-  )
-  target_include_directories(${target}
-    PRIVATE
-      ${catkin_INCLUDE_DIRS}
-      ${CYCLONE_INSTALL_PATH}/include
-  )
-endforeach()
+# foreach(target ${testing_targets})
+#   add_executable(${target}
+#     src/tests/${target}.cpp
+#     src/dds_utils/common.cpp
+#     src/free_fleet/FreeFleet.c
+#   )
+#   add_dependencies(${target} cyclonedds)
+#   target_link_libraries(${target}
+#     ddsc
+#     crypto
+#     ssl
+#     ${catkin_LIBRARIES}
+#   )
+#   target_include_directories(${target}
+#     PRIVATE
+#       ${catkin_INCLUDE_DIRS}
+#       ${CYCLONE_INSTALL_PATH}/include
+#   )
+# endforeach()
 
 # -----------------------------------------------------------------------------
 
@@ -96,6 +82,6 @@ install(
 install(
   TARGETS 
     free_fleet_client 
-    ${testing_targets}
+    # ${testing_targets}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREEFLEETCLIENT__SRC__DDS_UTILS__COMMON_HPP
-#define FREEFLEETCLIENT__SRC__DDS_UTILS__COMMON_HPP
+#ifndef FREEFLEET__SRC__DDS_UTILS__COMMON_HPP
+#define FREEFLEET__SRC__DDS_UTILS__COMMON_HPP
 
 #include <iostream>
 
@@ -30,4 +30,4 @@ char* dds_string_alloc_and_copy(const std::string& str);
 } // namespace common
 } // namespace free_fleet
 
-#endif // FREEFLEETCLIENT__SRC__DDS_UTILS__COMMON_HPP
+#endif // FREEFLEET__SRC__DDS_UTILS__COMMON_HPP

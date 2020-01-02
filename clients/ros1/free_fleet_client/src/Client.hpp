@@ -39,11 +39,11 @@
 
 #include <dds/dds.h>
 
-#include "ClientConfig.hpp"
-#include "free_fleet/FreeFleet.h"
-#include "dds_utils/DDSPublishHandler.hpp"
-#include "dds_utils/DDSSubscribeHandler.hpp"
+#include <free_fleet_utils/FreeFleet.h>
+#include <free_fleet_utils/DDSPublishHandler.hpp>
+#include <free_fleet_utils/DDSSubscribeHandler.hpp>
 
+#include "ClientConfig.hpp"
 
 namespace free_fleet
 {

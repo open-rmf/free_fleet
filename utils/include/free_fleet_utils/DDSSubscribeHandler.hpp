@@ -19,6 +19,7 @@
 #define FREEFLEETCLIENT__SRC__DDSSUBSCRIBEHANDLER_HPP
 
 #include <memory>
+#include <vector>
 
 #include <dds/dds.h>
 
@@ -27,7 +28,7 @@ namespace free_fleet
 namespace dds
 {
 
-template <typename Message>
+template <typename Message, size_t MaxSamplesNum = 1>
 class DDSSubscribeHandler
 {
 public:
@@ -44,11 +45,11 @@ private:
   
   dds_entity_t reader;
   
-  std::shared_ptr<Message> shared_msg;
+  std::array<std::shared_ptr<Message>, MaxSamplesNum> shared_msgs;
 
-  void* samples[1];
+  void* samples[MaxSamplesNum];
 
-  dds_sample_info_t infos[1];
+  dds_sample_info_t infos[MaxSamplesNum];
 
   bool ready;
 
@@ -83,9 +84,11 @@ public:
     }
     dds_delete_qos(qos);
 
-    shared_msg = 
-        std::shared_ptr<Message>((Message*)dds_alloc(sizeof(Message)));
-    samples[0] = (void*)shared_msg.get();
+    for (size_t i = 0; i < shared_msgs.size(); ++i)
+    {
+      shared_msgs[i] = std::shared_ptr<Message>((Message*)dds_alloc(sizeof(Message)));
+      samples[i] = (void*)shared_msgs[i].get();
+    }
 
     ready = true;
   }
@@ -102,23 +105,31 @@ public:
   }
 
   ///
-  std::shared_ptr<const Message> read()
+  std::vector<std::shared_ptr<const Message>> read()
   {
+    std::vector<std::shared_ptr<const Message>> msgs;
     if (!is_ready())
-      return nullptr;
-    
-    return_code = dds_take(reader, samples, infos, 1, 1);
+      return msgs;
+
+    return_code = dds_take(reader, samples, infos, MaxSamplesNum, MaxSamplesNum);
     if (return_code < 0)
     {
       DDS_FATAL("dds_take: %s\n", dds_strretcode(-return_code));
-      return nullptr;
+      msgs.clear();
+      return msgs;
     }
-
-    if ((return_code > 0) && (infos[0].valid_data))
+    
+    if (return_code > 0)
     {
-      return std::shared_ptr<const Message>(shared_msg);
+      for (size_t i = 0; i < MaxSamplesNum; ++i)
+      {
+        if (infos[i].valid_data)
+          msgs.push_back(std::shared_ptr<const Message>(shared_msgs[i]));
+      }
+      return msgs;
     }
-    return nullptr;
+    msgs.clear();
+    return msgs;
   }
 
 };

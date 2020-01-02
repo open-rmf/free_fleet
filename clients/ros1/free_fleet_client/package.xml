@@ -29,4 +29,6 @@
   <exec_depend>actionlib</exec_depend>
   <exec_depend>move_base_msgs</exec_depend>
 
+  <depend>free_fleet_utils</depend>
+
 </package>
