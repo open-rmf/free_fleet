@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(free_fleet_client)
 
+if (NOT $ENV{ROS_VERSION} MATCHES "1")
+  message(WARNING "found a ROS 1 package, ignoring...") 
+  return()
+endif()
+
 # -----------------------------------------------------------------------------
 
 include(ExternalProject)
