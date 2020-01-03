@@ -10,9 +10,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# -----------------------------------------------------------------------------
+include(GNUInstallDirs)
 
-add_library(${PROJECT_NAME} STATIC
+add_library(${PROJECT_NAME} SHARED
   src/FreeFleet.c
   src/common.cpp
 )
@@ -23,34 +23,26 @@ find_package(cyclonedds_cmake_module QUIET CONFIG)
 find_package(CycloneDDS QUIET CONFIG)
 
 if (cyclonedds_cmake_module_FOUND AND CycloneDDS_FOUND)
-
   # TODO ROS2 builds
   # target_link_libraries(${PROJECT_NAME}
   #   CycloneDDS::ddsc
   # )
   return()
-
 endif()
 
 # -----------------------------------------------------------------------------
 
 # Getting CycloneDDS as an external project for ROS 1
 include(ExternalProject)
-set(CYCLONE_INSTALL_PATH ${CMAKE_BINARY_DIR}/cyclonedds)
+# set(CYCLONE_INSTALL_PATH ${CMAKE_BINARY_DIR}/cyclonedds)
+set(CYCLONE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
 ExternalProject_Add(cyclonedds
   GIT_REPOSITORY https://github.com/eclipse-cyclonedds/cyclonedds.git
   CMAKE_ARGS 
     -DCMAKE_INSTALL_PREFIX=${CYCLONE_INSTALL_PATH} 
     -DBUILD_IDLC=NO 
-    -DBUILD_SHARED_LIBS=FALSE
+    -DBUILD_SHARED_LIBS=TRUE
 )
-install(
-  DIRECTORY ${CYCLONE_INSTALL_PATH}/include/dds
-  DESTINATION include
-  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.hxx"
-  PATTERN ".svn" EXCLUDE
-)
-link_directories(${CYCLONE_INSTALL_PATH}/lib)
 
 add_dependencies(${PROJECT_NAME} 
   cyclonedds
@@ -63,6 +55,8 @@ target_include_directories(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
   ddsc
+  ssl
+  crypto
 )
 
 # -----------------------------------------------------------------------------
