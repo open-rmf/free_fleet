@@ -15,12 +15,12 @@
  *
  */
 
-#include <free_fleet/Location.hpp>
-#include <free_fleet/RobotMode.hpp>
-#include <free_fleet/RobotState.hpp>
-#include <free_fleet/ModeRequest.hpp>
-#include <free_fleet/PathRequest.hpp>
-#include <free_fleet/DestinationRequest.hpp>
+#include <free_fleet/messages/Location.hpp>
+#include <free_fleet/messages/RobotMode.hpp>
+#include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/PathRequest.hpp>
+#include <free_fleet/messages/DestinationRequest.hpp>
 
 #include "FreeFleet.h"
 
@@ -106,7 +106,7 @@ void convert(const FreeFleetData_Location& _input, Location& _output)
   _output.level_name = std::string(_input.level_name);
 }
 
-void convert(const Robotstate& _input, FreeFleetData_RobotState& _output)
+void convert(const RobotState& _input, FreeFleetData_RobotState& _output)
 {
   _output.name = common::dds_string_alloc_and_copy(_input.name);
   _output.model = common::dds_string_alloc_and_copy(_input.model);
@@ -156,7 +156,7 @@ void convert(const FreeFleetData_ModeRequest& _input, ModeRequest& _output)
   _output.fleet_name = std::string(_input.fleet_name);
   _output.robot_name = std::string(_input.robot_name);
   convert(_input.mode, _output.mode);
-  _output.task_id = std::strring(_input.task_id);
+  _output.task_id = std::string(_input.task_id);
 }
 
 void convert(const PathRequest& _input, FreeFleetData_PathRequest& _output)

@@ -24,12 +24,21 @@
 
 #include <dds/dds.h>
 
-#include <free_fleet/Client.hpp>
 #include <free_fleet/ClientConfig.hpp>
 
-#include "messages/FreeFleet.h"
-#include "dds_utils/DDSPublishHandler.hpp"
-#include "dds_utils/DDSSubscribeHandler.hpp"
+#include <free_fleet/dds_utils/DDSPublishHandler.hpp>
+#include <free_fleet/dds_utils/DDSSubscribeHandler.hpp>
+
+#include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/PathRequest.hpp>
+#include <free_fleet/messages/DestinationRequest.hpp>
+
+/// Forward declaration of internal types
+struct FreeFleetData_RobotState;
+struct FreeFleetData_ModeRequest;
+struct FreeFleetData_PathRequest;
+struct FreeFleetData_DestinationRequest;
 
 namespace free_fleet
 {
@@ -49,26 +58,54 @@ public:
   ///   Configuration that sets up the client to communicate with the server.
   static SharedPtr make(const ClientConfig &config);
 
+  ///
+  bool send_robot_state(const messages::RobotState& new_robot_state);
+
+  ///
+  bool read_mode_request(messages::ModeRequest& mode_request);
+
+  ///
+  bool read_path_request(messages::PathRequest& path_request);
+
+  ///
+  bool read_destination_request(
+      messages::DestinationRequest& destination_request);
+
   /// Destructor
   ~Client();
+
+  /// DDS related fields required for the client to operate
+  struct Fields
+  {
+    ///
+    dds_entity_t participant;
+
+    ///
+    dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
+        state_pub;
+
+    ///
+    dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
+        mode_request_sub;
+
+    ///
+    dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
+        path_request_sub;
+
+    /// 
+    dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
+        destination_request_sub;
+  };
 
 private:
 
   ClientConfig client_config;
 
-  std::atomic<bool> ready;
+  Fields fields;
 
-  dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
-      state_pub;
+  Client(const ClientConfig& config);
 
-  dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
-      mode_request_sub;
-
-  dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
-      path_request_sub;
-
-  dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
-      destination_request_sub;
+  void start(Fields fields);
 
 };
 

@@ -18,7 +18,7 @@
 #ifndef FREEFLEET__SRC__DDS_UTILS__COMMON_HPP
 #define FREEFLEET__SRC__DDS_UTILS__COMMON_HPP
 
-#include <iostream>
+#include <string>
 
 namespace free_fleet
 {

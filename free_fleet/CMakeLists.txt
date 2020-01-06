@@ -18,6 +18,7 @@ add_library(free_fleet_client
   src/Client.cpp
   src/configs/ClientConfig.cpp
   src/messages/FreeFleet.c
+  src/messages/message_utils.cpp
   src/dds_utils/common.cpp
 )
 
@@ -59,13 +60,13 @@ link_directories(${CYCLONE_INSTALL_PATH}/lib)
 
 
 add_dependencies(free_fleet_client cyclonedds)
-target_include_directories(${PROJECT_NAME}
+target_include_directories(free_fleet_client
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CYCLONE_INSTALL_PATH}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(free_fleet_client
   ddsc
   ssl
   crypto
@@ -86,51 +87,53 @@ target_link_libraries(${PROJECT_NAME}
 # -----------------------------------------------------------------------------
 
 # # Mark executables and/or libraries for installation
-# list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
-# install(
-#   TARGETS ${PACKAGE_LIBRARIES}
-#   EXPORT ${PROJECT_NAME}-targets 
-#   DESTINATION lib
-# )
-# install(
-#   EXPORT ${PROJECT_NAME}-targets 
-#   DESTINATION lib/cmake/${PROJECT_NAME}
-# )
+list(APPEND PACKAGE_LIBRARIES
+  free_fleet_client
+)
+install(
+  TARGETS ${PACKAGE_LIBRARIES}
+  EXPORT ${PROJECT_NAME}-targets 
+  DESTINATION lib
+)
+install(
+  EXPORT ${PROJECT_NAME}-targets 
+  DESTINATION lib/cmake/${PROJECT_NAME}
+)
 
 # # Mark cpp header files for installation
-# install(
-#   DIRECTORY include/${PROJECT_NAME}
-#   DESTINATION include
-#   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.hxx"
-#   PATTERN ".svn" EXCLUDE
-# )
-# install(
-#   FILES package.xml 
-#   DESTINATION share/${PROJECT_NAME}
-# )
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.hxx"
+  PATTERN ".svn" EXCLUDE
+)
+install(
+  FILES package.xml 
+  DESTINATION share/${PROJECT_NAME}
+)
 
-# # Create cmake config files
-# # See doc: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html#example-generating-package-files
-# include(CMakePackageConfigHelpers)
-# configure_package_config_file(
-#   ${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
-#   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-#   INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
-#   NO_CHECK_REQUIRED_COMPONENTS_MACRO
-# )
-# write_basic_package_version_file(
-#   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-#   VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion
-# )
+# Create cmake config files
+# See doc: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html#example-generating-package-files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+  INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+  VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion
+)
 
-# install(
-#   FILES
-#     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-#     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-#   DESTINATION lib/cmake/${PROJECT_NAME}
-# )
+install(
+  FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+  DESTINATION lib/cmake/${PROJECT_NAME}
+)
 
-# export(
-#   EXPORT ${PROJECT_NAME}-targets
-#   FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake
-# )
+export(
+  EXPORT ${PROJECT_NAME}-targets
+  FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake
+)
