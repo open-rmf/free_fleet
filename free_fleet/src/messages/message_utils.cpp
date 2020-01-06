@@ -25,6 +25,7 @@
 #include "FreeFleet.h"
 
 #include "message_utils.hpp"
+#include "../dds_utils/common.hpp"
 
 namespace free_fleet
 {
@@ -58,9 +59,156 @@ void convert(const RobotMode& _input, FreeFleetData_RobotMode& _output)
   }
 }
 
+void convert(const FreeFleetData_RobotMode& _input, RobotMode& _output)
+{
+  switch(_input.mode)
+  {
+    case FreeFleetData_RobotMode_Constants_MODE_CHARGING:
+      _output.mode = RobotMode::MODE_CHARGING;
+      break;
+    case FreeFleetData_RobotMode_Constants_MODE_MOVING:
+      _output.mode = RobotMode::MODE_MOVING;
+      break;
+    case FreeFleetData_RobotMode_Constants_MODE_PAUSED:
+      _output.mode = RobotMode::MODE_PAUSED;
+      break;
+    case FreeFleetData_RobotMode_Constants_MODE_WAITING:
+      _output.mode = RobotMode::MODE_WAITING;
+      break;
+    case FreeFleetData_RobotMode_Constants_MODE_EMERGENCY:
+      _output.mode = RobotMode::MODE_EMERGENCY;
+      break;
+    case FreeFleetData_RobotMode_Constants_MODE_GOING_HOME:
+      _output.mode = RobotMode::MODE_GOING_HOME;
+      break;
+    default:
+      _output.mode = RobotMode::MODE_IDLE;
+  }
+}
+
 void convert(const Location& _input, FreeFleetData_Location& _output)
 {
-  
+  _output.sec = _input.sec;
+  _output.nanosec = _input.nanosec;
+  _output.x = _input.x;
+  _output.y = _input.y;
+  _output.yaw = _input.yaw;
+  _output.level_name = common::dds_string_alloc_and_copy(_input.level_name);
+}
+
+void convert(const FreeFleetData_Location& _input, Location& _output)
+{
+  _output.sec = _input.sec;
+  _output.nanosec = _input.nanosec;
+  _output.x = _input.x;
+  _output.y = _input.y;
+  _output.yaw = _input.yaw;
+  _output.level_name = std::string(_input.level_name);
+}
+
+void convert(const Robotstate& _input, FreeFleetData_RobotState& _output)
+{
+  _output.name = common::dds_string_alloc_and_copy(_input.name);
+  _output.model = common::dds_string_alloc_and_copy(_input.model);
+  _output.task_id = common::dds_string_alloc_and_copy(_input.task_id);
+  convert(_input.mode, _output.mode);
+  _output.battery_percent = _input.battery_percent;
+  convert(_input.location, _output.location);
+
+  size_t path_length = _input.path.size();
+  _output.path._maximum = static_cast<uint32_t>(path_length);
+  _output.path._length = static_cast<uint32_t>(path_length);
+  _output.path._buffer = 
+      FreeFleetData_RobotState_path_seq_allocbuf(path_length);
+  _output.path._release = false;
+  for (size_t i = 0; i < path_length; ++i)
+    convert(_input.path[i], _output.path._buffer[i]);
+}
+
+void convert(const FreeFleetData_RobotState& _input, RobotState& _output)
+{
+  _output.name = std::string(_input.name);
+  _output.model = std::string(_input.model);
+  _output.task_id = std::string(_input.task_id);
+  convert(_input.mode, _output.mode);
+  _output.battery_percent = _input.battery_percent;
+  convert(_input.location, _output.location);
+
+  _output.path.clear();
+  for (uint32_t i = 0; i < _input.path._length; ++i)
+  {
+    Location tmp;
+    convert(_input.path._buffer[i], tmp);
+    _output.path.push_back(tmp);
+  }
+}
+
+void convert(const ModeRequest& _input, FreeFleetData_ModeRequest& _output)
+{
+  _output.fleet_name = common::dds_string_alloc_and_copy(_input.fleet_name);
+  _output.robot_name = common::dds_string_alloc_and_copy(_input.robot_name);
+  convert(_input.mode, _output.mode);
+  _output.task_id = common::dds_string_alloc_and_copy(_input.task_id);
+}
+
+void convert(const FreeFleetData_ModeRequest& _input, ModeRequest& _output)
+{
+  _output.fleet_name = std::string(_input.fleet_name);
+  _output.robot_name = std::string(_input.robot_name);
+  convert(_input.mode, _output.mode);
+  _output.task_id = std::strring(_input.task_id);
+}
+
+void convert(const PathRequest& _input, FreeFleetData_PathRequest& _output)
+{
+  _output.fleet_name = common::dds_string_alloc_and_copy(_input.fleet_name);
+  _output.robot_name = common::dds_string_alloc_and_copy(_input.robot_name);
+
+  size_t path_length = _input.path.size();
+  _output.path._maximum = static_cast<uint32_t>(path_length);
+  _output.path._length = static_cast<uint32_t>(path_length);
+  _output.path._buffer = 
+      FreeFleetData_PathRequest_path_seq_allocbuf(path_length);
+  for (size_t i = 0; i < path_length; ++i)
+    convert(_input.path[i], _output.path._buffer[i]);
+
+  _output.task_id = common::dds_string_alloc_and_copy(_input.task_id);
+}
+
+void convert(const FreeFleetData_PathRequest& _input, PathRequest& _output)
+{
+  _output.fleet_name = std::string(_input.fleet_name);
+  _output.robot_name = std::string(_input.robot_name);
+
+  _output.path.clear();
+  for (uint32_t i = 0; i < _input.path._length; ++i)
+  {
+    Location tmp;
+    convert(_input.path._buffer[i], tmp);
+    _output.path.push_back(tmp);
+  }
+
+  _output.task_id = std::string(_input.task_id);
+}
+
+void convert(
+    const DestinationRequest& _input, 
+    FreeFleetData_DestinationRequest& _output)
+{
+  _output.fleet_name = common::dds_string_alloc_and_copy(_input.fleet_name);
+  _output.robot_name = common::dds_string_alloc_and_copy(_input.robot_name);
+  convert(_input.destination, _output.destination);
+  _output.task_id = common::dds_string_alloc_and_copy(_input.task_id);
+}
+
+void convert(
+    const FreeFleetData_DestinationRequest& _input,
+    DestinationRequest& _output)
+{
+  _output.fleet_name = std::string(_input.fleet_name);
+  _output.robot_name = std::string(_input.robot_name);
+  convert(_input.destination, _output.destination);
+  _output.task_id = std::string(_input.task_id);
 }
 
 } // namespace messages
