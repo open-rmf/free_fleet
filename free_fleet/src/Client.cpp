@@ -85,25 +85,47 @@ void Client::start(Fields _fields)
   fields = std::move(_fields);
 }
 
-bool Client::send_robot_state(const messages::RobotState& new_robot_state)
+bool Client::send_robot_state(const messages::RobotState& _new_robot_state)
 {
-
+  FreeFleetData_RobotState* new_rs = FreeFleetData_RobotState__alloc();
+  convert(_new_robot_state, *new_rs);
+  bool sent = fields.state_pub->write(new_rs);
+  FreeFleetData_RobotState_free(new_rs, DDS_FREE_ALL);
+  return sent;
 }
 
 bool Client::read_mode_request(messages::ModeRequest& _mode_request)
 {
-
+  auto mode_requests = fields.mode_request_sub->read();
+  if (!mode_requests.empty())
+  {
+    convert(*(mode_requests[0]), _mode_request);
+    return true;
+  }
+  return false;
 }
 
 bool Client::read_path_request(messages::PathRequest& _path_request)
 {
-
+  auto path_requests = fields.path_request_sub->read();
+  if (!path_requests.empty())
+  {
+    convert(*(path_requests[0]), _path_request);
+    return true;
+  }
+  return false;
 }
 
 bool Client::read_destination_request(
     messages::DestinationRequest& _destination_request)
 {
-
+  auto destination_requests = fields.destination_request_sub->read();
+  if (!destination_requests.empty())
+  {
+    convert(*(destination_requests[0]), _destination_request);
+    return true;
+  }
+  return false;
 }
 
 } // namespace free_fleet

@@ -49,25 +49,52 @@ public:
 
   using SharedPtr = std::shared_ptr<Client>;
 
-  using ReadLock = std::unique_lock<std::mutex>;
-  using WriteLock = std::unique_lock<std::mutex>;
-
-  /// Factory function that creates an instance of the Free Fleet DDS Client
+  /// Factory function that creates an instance of the Free Fleet DDS Client.
   ///
   /// \param[in] config
   ///   Configuration that sets up the client to communicate with the server.
+  /// \return
+  ///   Shared pointer to a free fleet client.
   static SharedPtr make(const ClientConfig &config);
 
+  /// Attempts to send a new robot state to the free fleet server, to be 
+  /// registered by the fleet management system.
   ///
+  /// \param[in] new_robot_state
+  ///   Current robot state to be sent to the free fleet server to update the
+  ///   fleet management system.
+  /// \return
+  ///   True if robot state was successfully sent, false otherwise.
   bool send_robot_state(const messages::RobotState& new_robot_state);
 
+  /// Attempts to read and receive a new mode request from the free fleet
+  /// server, for commanding the robot client.
   ///
+  /// \param[out] mode_request
+  ///   Newly received robot mode request from the free fleet server, to be
+  ///   handled by the robot client.
+  /// \return
+  ///   True if a new mode request was received, false otherwise.
   bool read_mode_request(messages::ModeRequest& mode_request);
 
+  /// Attempts to read and receive a new path request from the free fleet
+  /// server, for commanding the robot client.
   ///
+  /// \param[out] path_request
+  ///   Newly received robot path request from the free fleet server, to be
+  ///   handled by the robot client.
+  /// \return
+  ///   True if a new path request was received, false otherwise.
   bool read_path_request(messages::PathRequest& path_request);
 
-  ///
+  /// Attempts to read and receive a new destination request from the free
+  /// fleet server, for commanding the robot client.
+  /// 
+  /// \param[out] destination_request
+  ///   Newly received robot destination request from the free fleet server,
+  ///   to be handled by the robot client.
+  /// \return
+  ///   True if a new destination request was received, false otherwise.
   bool read_destination_request(
       messages::DestinationRequest& destination_request);
 
@@ -77,22 +104,23 @@ public:
   /// DDS related fields required for the client to operate
   struct Fields
   {
-    ///
+    /// DDS participant that is tied to the configured dds_domain_id
     dds_entity_t participant;
 
-    ///
+    /// DDS publisher that handles sending out current robot states to the 
+    /// server
     dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
         state_pub;
 
-    ///
+    /// DDS subscriber for mode requests coming from the server
     dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
         mode_request_sub;
 
-    ///
+    /// DDS subscriber for path requests coming from the server
     dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
         path_request_sub;
 
-    /// 
+    /// DDS subscriber for destination requests coming from the server
     dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
         destination_request_sub;
   };
