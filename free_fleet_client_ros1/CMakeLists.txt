@@ -37,6 +37,8 @@ catkin_package()
 
 add_executable(free_fleet_client_ros1
   src/main.cpp
+  src/ClientNode.cpp
+  src/ClientNodeConfig.cpp
 )
 target_link_libraries(free_fleet_client_ros1
   ${free_fleet_LIBRARIES}

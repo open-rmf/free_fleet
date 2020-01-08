@@ -15,13 +15,48 @@
  *
  */
 
-#include <iostream>
+#ifndef FREE_FLEET_CLIENT_ROS1__SRC__CLIENTNODE_HPP
+#define FREE_FLEET_CLIENT_ROS1__SRC__CLIENTNODE_HPP
+
+#include <memory>
+
+#include <free_fleet/Client.hpp>
 
 #include "ClientNodeConfig.hpp"
-#include "ClientNode.hpp"
 
-int main(int argc, char** argv)
+namespace free_fleet
 {
-  std::cout << "all done" << std::endl;
-  return 0;
-}
+namespace ros1
+{
+
+class ClientNode
+{
+public:
+
+  using SharedPtr = std::shared_ptr<ClientNode>;
+
+  static SharedPtr make(const ClientNodeConfig& config);
+
+  ~ClientNode();
+
+  struct Fields
+  {
+    Client::SharedPtr client;
+  };
+
+private:
+
+  ClientNodeConfig client_node_config;
+
+  Fields fields;
+
+  ClientNode(const ClientNodeConfig& config);
+
+  void start(Fields fields);
+
+};
+
+} // namespace ros1
+} // namespace free_fleet
+
+#endif // FREE_FLEET_CLIENT_ROS1__SRC__CLIENTNODE_HPP
