@@ -23,6 +23,10 @@
 namespace free_fleet
 {
 
+class 
+
+
+
 Client::SharedPtr Client::make(const ClientConfig& _config)
 {
   SharedPtr client = SharedPtr(new Client(_config));

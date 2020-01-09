@@ -14,25 +14,12 @@ include(GNUInstallDirs)
 
 # -----------------------------------------------------------------------------
 
-# set(CYCLONE_SRC_PATH ${CMAKE_SOURCE_DIR})
-# set(CYCLONE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
-# include(ExternalProject)
-# ExternalProject_Add(cyclonedds
-#   GIT_REPOSITORY https://github.com/eclipse-cyclonedds/cyclonedds.git
-#   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CYCLONE_INSTALL_PATH} -DBUILD_IDLC=NO -DBUILD_SHARED_LIBS=FALSE
-# )
-# link_directories(${CYCLONE_INSTALL_PATH}/lib)
-
-# -----------------------------------------------------------------------------
-
 find_package(cyclonedds_cmake_module QUIET CONFIG)
 find_package(CycloneDDS QUIET CONFIG)
 if (NOT CycloneDDS_FOUND)
   message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
   return()
 endif()
-# find_package(CycloneDDS REQUIRED)
-# find_package(CycloneDDS::ddsc REQUIRED)
 
 # -----------------------------------------------------------------------------
 
@@ -43,20 +30,14 @@ add_library(free_fleet_client
   src/messages/message_utils.cpp
   src/dds_utils/common.cpp
 )
-# add_dependencies(free_fleet_client cyclonedds)
 target_include_directories(free_fleet_client
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  # PRIVATE
-  #   ${ddsc_INCLUDE_DIRS}
 )
 target_link_libraries(free_fleet_client
-  PUBLIC
+  PRIVATE
     CycloneDDS::ddsc
-    # ddsc
-    # ${CYCLONE_INSTALL_PATH}/lib/libddsc.a
-    # ${ddsc_LIBRARIES}
     ssl
     crypto
 )

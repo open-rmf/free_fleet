@@ -22,39 +22,15 @@
 #include <atomic>
 #include <memory>
 
-#include <dds/dds.h>
-
 #include <free_fleet/ClientConfig.hpp>
-
-#include <free_fleet/dds_utils/DDSPublishHandler.hpp>
-#include <free_fleet/dds_utils/DDSSubscribeHandler.hpp>
 
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/PathRequest.hpp>
 #include <free_fleet/messages/DestinationRequest.hpp>
 
-/// Forward declaration of internal types
-struct FreeFleetData_RobotState;
-struct FreeFleetData_ModeRequest;
-struct FreeFleetData_PathRequest;
-struct FreeFleetData_DestinationRequest;
-
 namespace free_fleet
 {
-
-/// Forward declaration of internal types
-namespace dds
-{
-template <typename Message, size_t MaxSamplesNum = 1>
-class DDSSubscribeHandler
-{
-public:
-  using SharedPtr = std::shared_ptr<DDSSubscribeHandler>;
-};
-
-}
-
 
 class Client
 {
@@ -114,39 +90,43 @@ public:
   /// Destructor
   ~Client();
 
-  /// DDS related fields required for the client to operate
-  struct Fields
-  {
-    /// DDS participant that is tied to the configured dds_domain_id
-    dds_entity_t participant;
+  // /// DDS related fields required for the client to operate
+  // struct Fields
+  // {
+  //   /// DDS participant that is tied to the configured dds_domain_id
+  //   dds_entity_t participant;
 
-    /// DDS publisher that handles sending out current robot states to the 
-    /// server
-    dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
-        state_pub;
+  //   /// DDS publisher that handles sending out current robot states to the 
+  //   /// server
+  //   dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
+  //       state_pub;
 
-    /// DDS subscriber for mode requests coming from the server
-    dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
-        mode_request_sub;
+  //   /// DDS subscriber for mode requests coming from the server
+  //   dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
+  //       mode_request_sub;
 
-    /// DDS subscriber for path requests coming from the server
-    dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
-        path_request_sub;
+  //   /// DDS subscriber for path requests coming from the server
+  //   dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
+  //       path_request_sub;
 
-    /// DDS subscriber for destination requests coming from the server
-    dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
-        destination_request_sub;
-  };
+  //   /// DDS subscriber for destination requests coming from the server
+  //   dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
+  //       destination_request_sub;
+  // };
 
 private:
 
   ClientConfig client_config;
 
-  Fields fields;
+  // Fields fields;
 
   Client(const ClientConfig& config);
 
   void start(Fields fields);
+
+  class ClientImpl;
+
+  std::unique_ptr<ClientImpl> impl;
 
 };
 
