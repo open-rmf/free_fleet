@@ -30,6 +30,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(free_fleet REQUIRED)
+find_package(CycloneDDS REQUIRED)
 
 catkin_package()
 
