@@ -12,46 +12,54 @@ endif()
 
 include(GNUInstallDirs)
 
+# -----------------------------------------------------------------------------
 
+# set(CYCLONE_SRC_PATH ${CMAKE_SOURCE_DIR})
+# set(CYCLONE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
+# include(ExternalProject)
+# ExternalProject_Add(cyclonedds
+#   GIT_REPOSITORY https://github.com/eclipse-cyclonedds/cyclonedds.git
+#   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CYCLONE_INSTALL_PATH} -DBUILD_IDLC=NO -DBUILD_SHARED_LIBS=FALSE
+# )
+# link_directories(${CYCLONE_INSTALL_PATH}/lib)
 
 # -----------------------------------------------------------------------------
 
-# find_package(cyclonedds_cmake_module QUIET CONFIG)
+find_package(cyclonedds_cmake_module QUIET CONFIG)
 find_package(CycloneDDS QUIET CONFIG)
 if (NOT CycloneDDS_FOUND)
   message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
   return()
 endif()
 # find_package(CycloneDDS REQUIRED)
+# find_package(CycloneDDS::ddsc REQUIRED)
 
 # -----------------------------------------------------------------------------
 
-add_library(free_fleet_client STATIC
+add_library(free_fleet_client
   src/Client.cpp
   src/configs/ClientConfig.cpp
   src/messages/FreeFleet.c
   src/messages/message_utils.cpp
   src/dds_utils/common.cpp
 )
+# add_dependencies(free_fleet_client cyclonedds)
 target_include_directories(free_fleet_client
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  # PRIVATE
+  #   ${ddsc_INCLUDE_DIRS}
 )
 target_link_libraries(free_fleet_client
-  CycloneDDS::ddsc
-  ssl
-  crypto
-  ${CycloneDDS_LIBRARIES}
+  PUBLIC
+    CycloneDDS::ddsc
+    # ddsc
+    # ${CYCLONE_INSTALL_PATH}/lib/libddsc.a
+    # ${ddsc_LIBRARIES}
+    ssl
+    crypto
 )
-
-# install(
-#   TARGETS free_fleet_client
-#   EXPORT free_fleet_client
-#   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-# )
 
 # -----------------------------------------------------------------------------
 
@@ -74,53 +82,53 @@ target_link_libraries(free_fleet_client
 
 # -----------------------------------------------------------------------------
 
-# # Mark executables and/or libraries for installation
-# list(APPEND PACKAGE_LIBRARIES
-#   free_fleet_client
-# )
-# install(
-#   TARGETS ${PACKAGE_LIBRARIES}
-#   EXPORT free_fleet-targets
-#   DESTINATION lib
-# )
-# install(
-#   EXPORT free_fleet-targets 
-#   DESTINATION lib/cmake/free_fleet
-# )
+# Mark executables and/or libraries for installation
+list(APPEND PACKAGE_LIBRARIES
+  free_fleet_client
+)
+install(
+  TARGETS ${PACKAGE_LIBRARIES}
+  EXPORT free_fleet-targets
+  DESTINATION lib
+)
+install(
+  EXPORT free_fleet-targets 
+  DESTINATION lib/cmake/free_fleet
+)
 
-# # Mark cpp header files for installation
-# install(
-#   DIRECTORY include/free_fleet
-#   DESTINATION include
-#   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.hxx"
-#   PATTERN ".svn" EXCLUDE
-# )
-# install(
-#   FILES package.xml 
-#   DESTINATION share/free_fleet
-# )
+# Mark cpp header files for installation
+install(
+  DIRECTORY include/free_fleet
+  DESTINATION include
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.hxx"
+  PATTERN ".svn" EXCLUDE
+)
+install(
+  FILES package.xml 
+  DESTINATION share/free_fleet
+)
 
-# # Create cmake config files
-# # See doc: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html#example-generating-package-files
-# include(CMakePackageConfigHelpers)
-# configure_package_config_file(
-#   ${CMAKE_CURRENT_LIST_DIR}/cmake/free_fleet-config.cmake.in
-#   ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config.cmake
-#   INSTALL_DESTINATION lib/cmake/free_fleet
-#   NO_CHECK_REQUIRED_COMPONENTS_MACRO
-# )
-# write_basic_package_version_file(
-#   ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config-version.cmake
-#   VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion
-# )
+# Create cmake config files
+# See doc: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html#example-generating-package-files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${CMAKE_CURRENT_LIST_DIR}/cmake/free_fleet-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config.cmake
+  INSTALL_DESTINATION lib/cmake/free_fleet
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config-version.cmake
+  VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion
+)
 
-# install(
-#   FILES
-#     ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config.cmake
-#     ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config-version.cmake
-#   DESTINATION lib/cmake/free_fleet
-# )
-# export(
-#   EXPORT free_fleet-targets
-#   FILE ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-targets.cmake
-# )
+install(
+  FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config-version.cmake
+  DESTINATION lib/cmake/free_fleet
+)
+export(
+  EXPORT free_fleet-targets
+  FILE ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-targets.cmake
+)

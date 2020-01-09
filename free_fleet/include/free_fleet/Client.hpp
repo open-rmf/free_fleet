@@ -43,6 +43,19 @@ struct FreeFleetData_DestinationRequest;
 namespace free_fleet
 {
 
+/// Forward declaration of internal types
+namespace dds
+{
+template <typename Message, size_t MaxSamplesNum = 1>
+class DDSSubscribeHandler
+{
+public:
+  using SharedPtr = std::shared_ptr<DDSSubscribeHandler>;
+};
+
+}
+
+
 class Client
 {
 public:
