@@ -4,7 +4,7 @@ if (NOT $ENV{ROS_VERSION} MATCHES "1")
   return()
 endif()
 
-project(free_fleet_client_ros1 LANGUAGES CXX)
+project(free_fleet_client_ros1 LANGUAGES C CXX)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)

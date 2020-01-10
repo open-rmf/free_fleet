@@ -22,6 +22,9 @@
 
 int main(int argc, char** argv)
 {
+  free_fleet::ClientConfig config;
+  auto client_node = free_fleet::ClientNode::make(config);
+
   std::cout << "all done" << std::endl;
   return 0;
 }
