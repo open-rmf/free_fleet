@@ -15,17 +15,9 @@
  *
  */
 
-#include <free_fleet/messages/Location.hpp>
-#include <free_fleet/messages/RobotMode.hpp>
-#include <free_fleet/messages/RobotState.hpp>
-#include <free_fleet/messages/ModeRequest.hpp>
-#include <free_fleet/messages/PathRequest.hpp>
-#include <free_fleet/messages/DestinationRequest.hpp>
-
-#include "FreeFleet.h"
+#include "../dds_utils/common.hpp"
 
 #include "message_utils.hpp"
-#include "../dds_utils/common.hpp"
 
 namespace free_fleet
 {

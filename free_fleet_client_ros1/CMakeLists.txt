@@ -30,19 +30,10 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(free_fleet REQUIRED)
-# find_package(CycloneDDS REQUIRED)
-# find_package(cyclonedds_cmake_module QUIET CONFIG)
-# find_package(CycloneDDS QUIET CONFIG)
-# if (NOT CycloneDDS_FOUND)
-#   message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
-#   return()
-# endif()
 
 catkin_package()
 
 # -----------------------------------------------------------------------------
-
-message(WARNING "free_fleet_LIBRARIES: ${free_fleet_LIBRARIES}")
 
 add_executable(free_fleet_client_ros1
   src/main.cpp

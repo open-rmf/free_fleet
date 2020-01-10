@@ -12,19 +12,13 @@ endif()
 
 include(GNUInstallDirs)
 
-# -----------------------------------------------------------------------------
-
-find_package(cyclonedds_cmake_module QUIET CONFIG)
-find_package(CycloneDDS QUIET CONFIG)
-if (NOT CycloneDDS_FOUND)
-  message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
-  return()
-endif()
+find_package(CycloneDDS REQUIRED)
 
 # -----------------------------------------------------------------------------
 
-add_library(free_fleet_client
+add_library(free_fleet_client STATIC
   src/Client.cpp
+  src/ClientImpl.cpp
   src/configs/ClientConfig.cpp
   src/messages/FreeFleet.c
   src/messages/message_utils.cpp

@@ -18,13 +18,47 @@
 #ifndef FREE_FLEET__SRC__MESSAGES__MESSAGE_UTILS_HPP
 #define FREE_FLEET__SRC__MESSAGES__MESSAGE_UTILS_HPP
 
+#include <free_fleet/messages/Location.hpp>
+#include <free_fleet/messages/RobotMode.hpp>
+#include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/PathRequest.hpp>
+#include <free_fleet/messages/DestinationRequest.hpp>
+
+#include "FreeFleet.h"
+
 namespace free_fleet
 {
 namespace messages
 {
 
-template<typename M, typename N>
-void convert(const M& input, N& output);
+void convert(const RobotMode& _input, FreeFleetData_RobotMode& _output);
+
+void convert(const FreeFleetData_RobotMode& _input, RobotMode& _output);
+
+void convert(const Location& _input, FreeFleetData_Location& _output);
+
+void convert(const FreeFleetData_Location& _input, Location& _output);
+
+void convert(const RobotState& _input, FreeFleetData_RobotState& _output);
+
+void convert(const FreeFleetData_RobotState& _input, RobotState& _output);
+
+void convert(const ModeRequest& _input, FreeFleetData_ModeRequest& _output);
+
+void convert(const FreeFleetData_ModeRequest& _input, ModeRequest& _output);
+
+void convert(const PathRequest& _input, FreeFleetData_PathRequest& _output);
+
+void convert(const FreeFleetData_PathRequest& _input, PathRequest& _output);
+
+void convert(
+    const DestinationRequest& _input, 
+    FreeFleetData_DestinationRequest& _output);
+
+void convert(
+    const FreeFleetData_DestinationRequest& _input,
+    DestinationRequest& _output);
 
 } // namespace 
 } // namespace free_fleet
