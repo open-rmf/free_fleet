@@ -36,11 +36,9 @@ target_include_directories(free_fleet_client
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_link_libraries(free_fleet_client
-  # PRIVATE
-  PUBLIC
-    CycloneDDS::ddsc
-    ssl
-    crypto
+  CycloneDDS::ddsc
+  ssl
+  crypto
 )
 
 # -----------------------------------------------------------------------------
