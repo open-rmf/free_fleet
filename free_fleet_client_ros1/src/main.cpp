@@ -15,16 +15,23 @@
  *
  */
 
-#include <iostream>
-
 #include "ClientNodeConfig.hpp"
 #include "ClientNode.hpp"
 
 int main(int argc, char** argv)
 {
-  free_fleet::ClientConfig config;
-  auto client_node = free_fleet::ClientNode::make(config);
+  ros::init(argc, argv, "free_fleet_client_ros1");
+  ros::NodeHandle ros_node_handle;
+  ROS_INFO("Greetings from free_fleet_client_ros1");
 
-  std::cout << "all done" << std::endl;
+  auto config = free_fleet::ros1::ClientNodeConfig::make();
+
+  auto client_node = free_fleet::ros1::ClientNode::make(config);
+
+  if (!client_node)
+  {
+    ROS_EFFOR("free_fleet_client_ros1: unable to initialize.");
+    return 1;
+  }
   return 0;
 }

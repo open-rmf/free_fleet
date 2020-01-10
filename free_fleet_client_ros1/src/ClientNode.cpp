@@ -51,5 +51,10 @@ void ClientNode::start(Fields _fields)
   fields = std::move(_fields);
 }
 
+void ClientNode::print_config()
+{
+  client_node_config.print_config();
+}
+
 } // namespace ros1
 } // namespace free_fleet
