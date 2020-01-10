@@ -15,17 +15,114 @@
  *
  */
 
+#include <dds/dds.h>
+
 #include <free_fleet/Client.hpp>
 
 #include "messages/FreeFleet.h"
 #include "messages/message_utils.hpp"
+#include "dds_utils/DDSPublishHandler.hpp"
+#include "dds_utils/DDSSubscribeHandler.hpp"
 
 namespace free_fleet
 {
 
-class 
+class Client::ClientImpl
+{
+public:
 
+  /// DDS related fields required for the client to operate
+  struct Fields
+  {
+    /// DDS participant that is tied to the configured dds_domain_id
+    dds_entity_t participant;
 
+    /// DDS publisher that handles sending out current robot states to the 
+    /// server
+    dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
+        state_pub;
+
+    /// DDS subscriber for mode requests coming from the server
+    dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
+        mode_request_sub;
+
+    /// DDS subscriber for path requests coming from the server
+    dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
+        path_request_sub;
+
+    /// DDS subscriber for destination requests coming from the server
+    dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
+        destination_request_sub;
+  };
+
+  ClientImpl(const ClientConfig& _config) :
+    client_config(_config)
+  {}
+
+  ~ClientImpl()
+  {
+    dds_return_t return_code = dds_delete(fields.participant);
+    if (return_code != DDS_RETCODE_OK)
+    {
+      DDS_FATAL("dds_delete: %s", dds_strretcode(-return_code));
+    }
+  }
+
+  void start(Fields _fields)
+  {
+    fields = std::move(_fields);
+  }
+
+  bool send_robot_state(const messages::RobotState& _new_robot_state)
+  {
+    FreeFleetData_RobotState* new_rs = FreeFleetData_RobotState__alloc();
+    convert(_new_robot_state, *new_rs);
+    bool sent = fields.state_pub->write(new_rs);
+    FreeFleetData_RobotState_free(new_rs, DDS_FREE_ALL);
+    return sent;
+  }
+
+  bool read_mode_request(messages::ModeRequest& _mode_request)
+  {
+    auto mode_requests = fields.mode_request_sub->read();
+    if (!mode_requests.empty())
+    {
+      convert(*(mode_requests[0]), _mode_request);
+      return true;
+    }
+    return false;
+  }
+
+  bool read_path_request(messages::PathRequest& _path_request)
+  {
+    auto path_requests = fields.path_request_sub->read();
+    if (!path_requests.empty())
+    {
+      convert(*(path_requests[0]), _path_request);
+      return true;
+    }
+    return false;
+  }
+
+  bool read_destination_request(
+      messages::DestinationRequest& _destination_request)
+  {
+    auto destination_requests = fields.destination_request_sub->read();
+    if (!destination_requests.empty())
+    {
+      convert(*(destination_requests[0]), _destination_request);
+      return true;
+    }
+    return false;
+  }
+
+private:
+
+  Fields fields;
+
+  ClientConfig client_config;
+
+};
 
 Client::SharedPtr Client::make(const ClientConfig& _config)
 {
@@ -68,7 +165,7 @@ Client::SharedPtr Client::make(const ClientConfig& _config)
       !destination_request_sub->is_ready())
     return nullptr;
 
-  client->start(Fields{
+  client->impl->start(ClientImpl::Fields{
       std::move(participant),
       std::move(state_pub),
       std::move(mode_request_sub),
@@ -77,59 +174,33 @@ Client::SharedPtr Client::make(const ClientConfig& _config)
   return client;
 }
 
-Client::Client(const ClientConfig& _config) :
-  client_config(_config)
-{}
+Client::Client(const ClientConfig& _config)
+{
+  impl.reset(new ClientImpl(_config));
+}
 
 Client::~Client()
 {}
 
-void Client::start(Fields _fields)
-{
-  fields = std::move(_fields);
-}
-
 bool Client::send_robot_state(const messages::RobotState& _new_robot_state)
 {
-  FreeFleetData_RobotState* new_rs = FreeFleetData_RobotState__alloc();
-  convert(_new_robot_state, *new_rs);
-  bool sent = fields.state_pub->write(new_rs);
-  FreeFleetData_RobotState_free(new_rs, DDS_FREE_ALL);
-  return sent;
+  return impl->send_robot_state(_new_robot_state);
 }
 
 bool Client::read_mode_request(messages::ModeRequest& _mode_request)
 {
-  auto mode_requests = fields.mode_request_sub->read();
-  if (!mode_requests.empty())
-  {
-    convert(*(mode_requests[0]), _mode_request);
-    return true;
-  }
-  return false;
+  return impl->read_mode_request(_mode_request);
 }
 
 bool Client::read_path_request(messages::PathRequest& _path_request)
 {
-  auto path_requests = fields.path_request_sub->read();
-  if (!path_requests.empty())
-  {
-    convert(*(path_requests[0]), _path_request);
-    return true;
-  }
-  return false;
+  return impl->read_path_request(_path_request);
 }
 
 bool Client::read_destination_request(
     messages::DestinationRequest& _destination_request)
 {
-  auto destination_requests = fields.destination_request_sub->read();
-  if (!destination_requests.empty())
-  {
-    convert(*(destination_requests[0]), _destination_request);
-    return true;
-  }
-  return false;
+  return impl->read_destination_request(_destination_request);
 }
 
 } // namespace free_fleet

@@ -90,43 +90,14 @@ public:
   /// Destructor
   ~Client();
 
-  // /// DDS related fields required for the client to operate
-  // struct Fields
-  // {
-  //   /// DDS participant that is tied to the configured dds_domain_id
-  //   dds_entity_t participant;
-
-  //   /// DDS publisher that handles sending out current robot states to the 
-  //   /// server
-  //   dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr
-  //       state_pub;
-
-  //   /// DDS subscriber for mode requests coming from the server
-  //   dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 
-  //       mode_request_sub;
-
-  //   /// DDS subscriber for path requests coming from the server
-  //   dds::DDSSubscribeHandler<FreeFleetData_PathRequest>::SharedPtr 
-  //       path_request_sub;
-
-  //   /// DDS subscriber for destination requests coming from the server
-  //   dds::DDSSubscribeHandler<FreeFleetData_DestinationRequest>::SharedPtr
-  //       destination_request_sub;
-  // };
-
 private:
 
-  ClientConfig client_config;
-
-  // Fields fields;
-
-  Client(const ClientConfig& config);
-
-  void start(Fields fields);
-
+  /// Forward declaration and unique implementation
   class ClientImpl;
 
   std::unique_ptr<ClientImpl> impl;
+
+  Client(const ClientConfig& config);
 
 };
 
