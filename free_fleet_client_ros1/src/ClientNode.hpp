@@ -36,6 +36,7 @@
 #include <actionlib/client/simple_action_client.h>
 
 #include <free_fleet/Client.hpp>
+#include <free_fleet/messages/Location.hpp>
 
 #include "ClientNodeConfig.hpp"
 
@@ -52,65 +53,134 @@ public:
   using ReadLock = std::unique_lock<std::mutex>;
   using WriteLock = std::unique_lock<std::mutex>;
 
+  using MoveBaseClient = 
+      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
+  using MoveBaseClientSharedPtr = std::shared_ptr<MoveBaseClient>;
+  using GoalState = actionlib::SimpleClientGoalState;
+
   static SharedPtr make(const ClientNodeConfig& config);
 
   ~ClientNode();
 
   struct Fields
   {
+    /// Free fleet client
     Client::SharedPtr client;
+
+    /// move base action client
+    MoveBaseClientSharedPtr move_base_client;
   };
 
   void print_config();
 
 private:
 
-  tf2_ros::Buffer tf2_buffer;
-  tf2_ros::TransformListener tf2_listener;
-  std::mutex robot_transform_mutex;
-  geometry_msgs::TransformStamped current_robot_transform;
-  geometry_msgs::TransformStamped previous_robot_transform;
+  // --------------------------------------------------------------------------
+  // Basic ROS 1 items
+
+  std::unique_ptr<ros::NodeHandle> node;
+
+  std::unique_ptr<ros::Rate> update_rate;
+
+  std::unique_ptr<ros::Rate> publish_rate;
+
+  // --------------------------------------------------------------------------
+  // Battery handling
 
   ros::Subscriber battery_percent_sub;
-  ros::Subscriber level_name_sub;
 
   std::mutex battery_state_mutex;
+
   sensor_msgs::BatteryState current_battery_state;
-
-  std::mutex level_name_mutex;
-  std_msgs::String current_level_name;
-
-  std::mutex task_id_mutex;
-  std::string current_task_id;
 
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
 
+  // --------------------------------------------------------------------------
+  // Level name handling 
+  // TODO: decide on a better way to get level data
+  // TODO: add functionality to handle level transition
+
+  ros::Subscriber level_name_sub;
+
+  std::mutex level_name_mutex;
+  
+  std_msgs::String current_level_name;
+
   void level_name_callback_fn(const std_msgs::String& msg);
+  
+  // --------------------------------------------------------------------------
+  // Robot transform handling
+
+  tf2_ros::Buffer tf2_buffer;
+
+  tf2_ros::TransformListener tf2_listener;
+
+  std::mutex robot_transform_mutex;
+
+  geometry_msgs::TransformStamped current_robot_transform;
+
+  geometry_msgs::TransformStamped previous_robot_transform;
 
   bool get_robot_transform();
 
-  uint32_t get_robot_mode();
+  // --------------------------------------------------------------------------
+  // Mode handling
 
-  void publish_robot_state();
+  // TODO: conditions to trigger emergency, however this is most likely for
+  // indicating emergency within the fleet and not in RMF
+  std::atomic<bool> emergency;
+
+  std::atomic<bool> paused;
+
+  messages::RobotMode get_robot_mode();
+
+  bool read_mode_request();
+
+  // --------------------------------------------------------------------------
+  // Path request handling
+
+  bool read_path_request();
+
+  // --------------------------------------------------------------------------
+  // Destination request handling
+
+  bool read_destination_request();
+
+  // --------------------------------------------------------------------------
+  // Task handling
+
+  bool is_valid_request(
+      const std::string& request_fleet_name,
+      const std::string& request_robot_name,
+      const std::string& request_task_id);
+
+  move_base_msgs::MoveBaseGoal location_to_move_base_goal(
+      const messages::Location& location) const;
+
+  std::mutex task_id_mutex;
+
+  std::string current_task_id;
 
   struct Goal
   {
     std::string level_name;
     move_base_msgs::MoveBaseGoal goal;
     bool sent = false;
-    ros::Time wait_at_goal_time;
+    ros::Time goal_end_time;
   };
 
-  std::atomic<bool> paused;
-
   std::mutex goal_path_mutex;
+
   std::deque<Goal> goal_path;
 
-  using MoveBaseClient = 
-      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
-  using GoalState = actionlib::SimpleClientGoalState;
+  void read_requests();
 
-  MoveBaseClient move_base_client;
+  void handle_requests();
+
+  void publish_robot_state();
+
+  // --------------------------------------------------------------------------
+  // Threads and thread functions
 
   std::thread update_thread;
 

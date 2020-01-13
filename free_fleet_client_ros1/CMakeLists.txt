@@ -37,6 +37,7 @@ catkin_package()
 
 add_executable(free_fleet_client_ros1
   src/main.cpp
+  src/utilities.cpp
   src/ClientNode.cpp
   src/ClientNodeConfig.cpp
 )
@@ -52,6 +53,25 @@ target_include_directories(free_fleet_client_ros1
 
 # -----------------------------------------------------------------------------
 
+set(testing_targets
+  fake_action_server
+)
+
+foreach(target ${testing_targets})
+  add_executable(${target}
+    src/tests/${target}.cpp
+  )
+  target_link_libraries(${target}
+    ${catkin_LIBRARIES}
+  )
+  target_include_directories(${target}
+    PRIVATE
+      ${catkin_INCLUDE_DIRS}
+  )
+endforeach()
+
+# -----------------------------------------------------------------------------
+
 install(
   DIRECTORY launch
   DESTINATION share/free_fleet_client_ros1
@@ -60,5 +80,6 @@ install(
 install(
   TARGETS
     free_fleet_client_ros1
+    ${testing_targets}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

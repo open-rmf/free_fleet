@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 
   if (!client_node)
   {
-    ROS_EFFOR("free_fleet_client_ros1: unable to initialize.");
+    ROS_ERROR("free_fleet_client_ros1: unable to initialize.");
     return 1;
   }
   return 0;

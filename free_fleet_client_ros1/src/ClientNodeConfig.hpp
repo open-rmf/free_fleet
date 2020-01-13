@@ -50,6 +50,7 @@ struct ClientNodeConfig
   std::string dds_path_request_topic = "path_request";
   std::string dds_destination_request_topic = "destination_request";
 
+  double wait_timeout = 10.0;
   double update_frequency = 10.0;
   double publish_frequency = 1.0;
 
@@ -72,6 +73,8 @@ struct ClientNodeConfig
   ClientConfig get_client_config() const;
 
   static ClientNodeConfig make();
+
+  ClientNodeConfig();
 
 };
 

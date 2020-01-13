@@ -69,6 +69,7 @@ void ClientNodeConfig::print_config() const
   printf("  fleet name: %s\n", fleet_name.c_str());
   printf("  robot name: %s\n", robot_name.c_str());
   printf("  robot model: %s\n", robot_model.c_str());
+  printf("  wait timeout: %.1f\n", wait_timeout);
   printf("  update request frequency: %.1f\n", update_frequency);
   printf("  publish state frequency: %.1f\n", publish_frequency);
   printf("  maximum distance to first waypoint: %.1f\n", 
@@ -130,6 +131,8 @@ ClientNodeConfig ClientNodeConfig::make()
       node_private_ns, "dds_destination_request_topic", 
       config.dds_destination_request_topic);
   config.get_param_if_available(
+      node_private_ns, "wait_timeout", config.wait_timeout);
+  config.get_param_if_available(
       node_private_ns, "update_frequency", config.update_frequency);
   config.get_param_if_available(
       node_private_ns, "publish_frequency", config.publish_frequency);
@@ -138,6 +141,9 @@ ClientNodeConfig ClientNodeConfig::make()
       config.max_dist_to_first_waypoint);
   return config;
 }
+
+ClientNodeConfig::ClientNodeConfig()
+{}
 
 } // namespace ros1
 } // namespace free_fleet

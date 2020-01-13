@@ -15,6 +15,8 @@
  *
  */
 
+#include <dds/dds.h>
+
 #include "../dds_utils/common.hpp"
 
 #include "message_utils.hpp"
