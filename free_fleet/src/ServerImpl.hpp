@@ -45,7 +45,7 @@ public:
     dds_entity_t participant;
 
     /// DDS subscribers for new incoming robot states from clients
-    dds::DDSSubscribeHandler<FreeFleetData_RobotState>::SharedPtr 
+    dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>::SharedPtr 
         robot_state_sub;
 
     /// DDS publisher for mode requests to be sent to clients

@@ -32,6 +32,49 @@ Server::SharedPtr Server::make(const ServerConfig& _config)
 {
   SharedPtr server = SharedPtr(new Server(_config));
 
+  dds_entity_t participant = dds_create_participant(
+      static_cast<dds_domainid_t>(_config.dds_domain), NULL, NULL);
+  if (participant < 0)
+  {
+    DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-participant));
+    return nullptr;
+  }
+
+  dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>::SharedPtr state_sub(
+      new dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>(
+          participant, &FreeFleetData_RobotState_desc,
+          _config.dds_robot_state_topic));
+
+  dds::DDSPublishHandler<FreeFleetData_ModeRequest>::SharedPtr 
+      mode_request_pub(
+          new dds::DDSPublishHandler<FreeFleetData_ModeRequest>(
+              participant, &FreeFleetData_ModeRequest_desc,
+              _config.dds_mode_request_topic));
+
+  dds::DDSPublishHandler<FreeFleetData_PathRequest>::SharedPtr 
+      path_request_pub(
+          new dds::DDSPublishHandler<FreeFleetData_PathRequest>(
+              participant, &FreeFleetData_PathRequest_desc,
+              _config.dds_path_request_topic));
+
+  dds::DDSPublishHandler<FreeFleetData_DestinationRequest>::SharedPtr 
+      destination_request_pub(
+          new dds::DDSPublishHandler<FreeFleetData_DestinationRequest>(
+              participant, &FreeFleetData_DestinationRequest_desc,
+              _config.dds_destination_request_topic));
+
+  if (!state_sub->is_ready() ||
+      !mode_request_pub->is_ready() ||
+      !path_request_pub->is_ready() ||
+      !destination_request_pub->is_ready())
+    return nullptr;
+
+  server->impl->start(ServerImpl::Fields{
+      std::move(participant),
+      std::move(state_sub),
+      std::move(mode_request_pub),
+      std::move(path_request_pub),
+      std::move(destination_request_pub)});
   return server;
 }
 

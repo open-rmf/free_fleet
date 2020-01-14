@@ -15,23 +15,39 @@
  *
  */
 
-#include <free_fleet/ServerConfig.hpp>
-
-#include <cstdio>
+#include "ServerNode.hpp"
 
 namespace free_fleet
 {
-
-void ServerConfig::print_config() const
+namespace ros2
 {
-  printf("SERVER-CLIENT DDS CONFIGURATION\n");
-  printf("  dds domain: %d\n", dds_domain);
-  printf("  TOPICS\n");
-  printf("    robot state: %s\n", dds_robot_state_topic.c_str());
-  printf("    mode request: %s\n", dds_mode_request_topic.c_str());
-  printf("    path request: %s\n", dds_path_request_topic.c_str());
-  printf("    destination request: %s\n", 
-      dds_destination_request_topic.c_str());
+
+ServerNode::SharedPtr ServerNode::make(
+    const ServerNodeConfig& _config, const rclcpp::NodeOptions& _node_options)
+{
+  SharedPtr server(new ServerNode(_config, _node_options));
+  return server;
 }
 
+ServerNode::~ServerNode()
+{}
+
+ServerNode::ServerNode(
+    const ServerNodeConfig& _config, 
+    const rclcpp::NodeOptions& _node_options) :
+  Node(_config.fleet_name + "_node", _node_options),
+  server_node_config(_config)
+{}
+
+void ServerNode::print_config()
+{
+  server_node_config.print_config();
+}
+
+void ServerNode::start(Fields _fields)
+{
+  fields = std::move(_fields);
+}
+
+} // namespace ros2
 } // namespace free_fleet

@@ -15,25 +15,10 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__SERVERCONFIG_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__SERVERCONFIG_HPP
+#include <iostream>
 
-#include <string>
-
-namespace free_fleet
+int main(int argc, char** argv)
 {
-
-struct ServerConfig
-{
-  int dds_domain = 42;
-  std::string dds_robot_state_topic = "robot_state";
-  std::string dds_mode_request_topic = "mode_request";
-  std::string dds_path_request_topic = "path_request";
-  std::string dds_destination_request_topic = "destination_request";
-
-  void print_config() const;
-};
-
-} // namespace free_fleet
-
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__SERVERCONFIG_HPP
+  std::cout << "all done!" << std::endl;
+  return 0;
+}

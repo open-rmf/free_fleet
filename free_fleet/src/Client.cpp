@@ -42,7 +42,7 @@ Client::SharedPtr Client::make(const ClientConfig& _config)
 
   dds::DDSPublishHandler<FreeFleetData_RobotState>::SharedPtr state_pub(
       new dds::DDSPublishHandler<FreeFleetData_RobotState>(
-          participant, &::FreeFleetData_RobotState_desc,
+          participant, &FreeFleetData_RobotState_desc,
           _config.dds_state_topic));
 
   dds::DDSSubscribeHandler<FreeFleetData_ModeRequest>::SharedPtr 

@@ -15,25 +15,56 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__SERVERCONFIG_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__SERVERCONFIG_HPP
+#ifndef FREE_FLEET_SERVER_ROS2__SRC__SERVERNODECONFIG_HPP
+#define FREE_FLEET_SERVER_ROS2__SRC__SERVERNODECONFIG_HPP
 
 #include <string>
 
 namespace free_fleet
 {
-
-struct ServerConfig
+namespace ros2
 {
+
+struct ServerNodeConfig
+{
+  
+  std::string fleet_name = "fleet_name";
+
+  std::string fleet_state_topic = "fleet_state";
+  std::string mode_request_topic = "mode_request";
+  std::string path_request_topic = "path_request";
+  std::string destination_request_topic = "destination_request";
+
   int dds_domain = 42;
   std::string dds_robot_state_topic = "robot_state";
   std::string dds_mode_request_topic = "mode_request";
   std::string dds_path_request_topic = "path_request";
   std::string dds_destination_request_topic = "destination_request";
 
+  double wait_timeout = 10.0;
+  double update_state_frequency = 10.0;
+  double publish_state_frequency = 10.0;
+
+  // the transformation order of operations from the server to the client is:
+  // 1) scale
+  // 2) rotate
+  // 3) translate
+  double scale = 1.0;
+  double rotation = 0.0;
+  double translation_x = 0.0;
+  double translation_y = 0.0;
+
   void print_config() const;
+
+  ServerConfig get_server_config() const;
+
+  static ServerNodeConfig make();
+
+  ServerNodeConfig();
+
 };
 
+} // namespace ros2
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__SERVERCONFIG_HPP
+#endif // FREE_FLEET_SERVER_ROS2__SRC__SERVERNODECONFIG_HPP
