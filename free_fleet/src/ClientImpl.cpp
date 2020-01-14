@@ -22,7 +22,7 @@ namespace free_fleet
 {
 
 Client::ClientImpl::ClientImpl(const ClientConfig& _config) :
-    client_config(_config)
+  client_config(_config)
 {}
 
 Client::ClientImpl::~ClientImpl()

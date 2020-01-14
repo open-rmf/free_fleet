@@ -15,11 +15,9 @@
  *
  */
 
-#ifndef FREE_FLEET__SRC__CLIENT_HPP
-#define FREE_FLEET__SRC__CLIENT_HPP
+#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__CLIENT_HPP
+#define FREE_FLEET__INCLUDE__FREE_FLEET__CLIENT_HPP
 
-#include <mutex>
-#include <atomic>
 #include <memory>
 
 #include <free_fleet/ClientConfig.hpp>
@@ -44,7 +42,7 @@ public:
   ///   Configuration that sets up the client to communicate with the server.
   /// \return
   ///   Shared pointer to a free fleet client.
-  static SharedPtr make(const ClientConfig &config);
+  static SharedPtr make(const ClientConfig& config);
 
   /// Attempts to send a new robot state to the free fleet server, to be 
   /// registered by the fleet management system.
@@ -103,4 +101,4 @@ private:
 
 } // namespace free_fleet
 
-#endif // FREE_FLEET__SRC__CLIENT_HPP
+#endif // FREE_FLEET__INCLUDE__FREE_FLEET__CLIENT_HPP

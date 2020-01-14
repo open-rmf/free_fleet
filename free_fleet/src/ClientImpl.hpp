@@ -62,20 +62,20 @@ public:
         destination_request_sub;
   };
 
-  ClientImpl(const ClientConfig& _config);
+  ClientImpl(const ClientConfig& config);
 
   ~ClientImpl();
 
-  void start(Fields _fields);
+  void start(Fields fields);
 
-  bool send_robot_state(const messages::RobotState& _new_robot_state);
+  bool send_robot_state(const messages::RobotState& new_robot_state);
 
-  bool read_mode_request(messages::ModeRequest& _mode_request);
+  bool read_mode_request(messages::ModeRequest& mode_request);
 
-  bool read_path_request(messages::PathRequest& _path_request);
+  bool read_path_request(messages::PathRequest& path_request);
 
   bool read_destination_request(
-      messages::DestinationRequest& _destination_request);
+      messages::DestinationRequest& destination_request);
 
 private:
 
