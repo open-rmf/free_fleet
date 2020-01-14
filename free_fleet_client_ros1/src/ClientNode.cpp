@@ -57,8 +57,8 @@ ClientNode::SharedPtr ClientNode::make(const ClientNodeConfig& _config)
 }
 
 ClientNode::ClientNode(const ClientNodeConfig& _config) :
-  client_node_config(_config),
-  tf2_listener(tf2_buffer)
+  tf2_listener(tf2_buffer),
+  client_node_config(_config)
 {}
 
 ClientNode::~ClientNode()
@@ -216,12 +216,12 @@ void ClientNode::publish_robot_state()
     {
       new_robot_state.path.push_back(
           messages::Location{
-              goal_path[i].goal.target_pose.header.stamp.sec,
+              (int32_t)goal_path[i].goal.target_pose.header.stamp.sec,
               goal_path[i].goal.target_pose.header.stamp.nsec,
-              goal_path[i].goal.target_pose.pose.position.x,
-              goal_path[i].goal.target_pose.pose.position.y,
-              get_yaw_from_quat(
-                  goal_path[i].goal.target_pose.pose.orientation),
+              (float)goal_path[i].goal.target_pose.pose.position.x,
+              (float)goal_path[i].goal.target_pose.pose.position.y,
+              (float)(get_yaw_from_quat(
+                  goal_path[i].goal.target_pose.pose.orientation)),
               goal_path[i].level_name
           });
     }
@@ -300,7 +300,7 @@ bool ClientNode::read_path_request()
           path_request.fleet_name, path_request.robot_name,
           path_request.task_id))
   {
-    ROS_INFO("received a Path command of size %d.", path_request.path.size());
+    ROS_INFO("received a Path command of size %lu.", path_request.path.size());
 
     if (path_request.path.size() <= 0)
       return false;
