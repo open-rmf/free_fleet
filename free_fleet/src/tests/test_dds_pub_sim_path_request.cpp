@@ -18,10 +18,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits>
+#include <iostream>
 
 #include <dds/dds.h>
 
-#include "../free_fleet/FreeFleet.h"
+#include "../messages/FreeFleet.h"
 #include "../dds_utils/common.hpp"
 
 int main (int argc, char ** argv)

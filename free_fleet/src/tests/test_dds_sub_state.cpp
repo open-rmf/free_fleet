@@ -19,7 +19,7 @@
 
 #include <dds/dds.h>
 
-#include "../free_fleet/FreeFleet.h"
+#include "../messages/FreeFleet.h"
 
 int main(int argc, char** argv)
 {

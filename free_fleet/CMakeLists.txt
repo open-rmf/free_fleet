@@ -56,6 +56,36 @@ target_link_libraries(free_fleet_client
 
 # -----------------------------------------------------------------------------
 
+set(testing_targets
+  test_dds_pub_destination_request
+  test_dds_pub_mode_request
+  test_dds_pub_path_request
+  test_dds_pub_sim_path_request
+  test_dds_sub_state
+)
+
+foreach(target ${testing_targets})
+  add_executable(${target}
+    src/tests/${target}.cpp
+    src/dds_utils/common.cpp
+    src/messages/FreeFleet.c
+  )
+  target_link_libraries(${target}
+    CycloneDDS::ddsc
+    ssl
+    crypto
+  )
+endforeach()
+
+install(
+  TARGETS ${testing_targets}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+# -----------------------------------------------------------------------------
+
 # Mark executables and/or libraries for installation
 list(APPEND PACKAGE_LIBRARIES
   free_fleet_client

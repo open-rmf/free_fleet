@@ -40,7 +40,7 @@ void execute(
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "fake_move_base_server");
+  ros::init(argc, argv, "fake_action_server");
   ros::NodeHandle n;
   MoveBaseServer server(
       n, "move_base", boost::bind(&execute, _1, &server), false);
