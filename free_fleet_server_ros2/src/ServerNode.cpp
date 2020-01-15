@@ -127,7 +127,7 @@ void ServerNode::setup_config()
 
 bool ServerNode::is_ready()
 {
-  if (server_node_config.fleet_name == "fleet_name")
+  if (server_node_config.fleet_name == "")
     return false;
   return true;
 }

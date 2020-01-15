@@ -1,0 +1,28 @@
+free_fleet_server:
+  ros__parameters:
+  
+    # Fleet config
+    fleet_name: "magni"
+
+    # ROS 2 topics
+    fleet_state_topic: "fleet_states"
+    mode_request_topic: "robot_mode_requests"
+    path_request_topic: "robot_path_requests"
+    destination_request_topic: "destination_requests"
+
+    # DDS domain and topics
+    dds_domain: 42
+    dds_robot_state_topic: "robot_state"
+    dds_mode_request_topic: "mode_request"
+    dds_path_request_topic: "path_request"
+    dds_destination_request_topic: "destination_request"
+
+    # Server config
+    update_state_frequency: 20.0
+    publish_state_frequency: 2.0
+
+    # Map config: transformation from "global" frame to this fleet frame
+    translation_x: -4.117
+    translation_y: 27.26
+    rotation: -0.013
+    scale: 0.928

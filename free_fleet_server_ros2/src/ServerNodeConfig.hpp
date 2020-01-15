@@ -28,7 +28,7 @@ namespace ros2
 struct ServerNodeConfig
 {
   
-  std::string fleet_name = "fleet_name";
+  std::string fleet_name = "";
 
   std::string fleet_state_topic = "fleet_state";
   std::string mode_request_topic = "mode_request";

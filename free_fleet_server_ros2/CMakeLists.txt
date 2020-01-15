@@ -50,6 +50,12 @@ ament_target_dependencies(free_fleet_server_ros2
 # -----------------------------------------------------------------------------
 
 install(
+  DIRECTORY
+    launch
+  DESTINATION share/free_fleet_server_ros2
+)
+
+install(
   TARGETS free_fleet_server_ros2
   RUNTIME DESTINATION lib/free_fleet_server_ros2
   LIBRARY DESTINATION lib
