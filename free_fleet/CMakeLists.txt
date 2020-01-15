@@ -91,6 +91,7 @@ install(
 # Mark executables and/or libraries for installation
 list(APPEND PACKAGE_LIBRARIES
   free_fleet_client
+  free_fleet_server
 )
 install(
   TARGETS ${PACKAGE_LIBRARIES}

@@ -41,7 +41,6 @@ struct ServerNodeConfig
   std::string dds_path_request_topic = "path_request";
   std::string dds_destination_request_topic = "destination_request";
 
-  double wait_timeout = 10.0;
   double update_state_frequency = 10.0;
   double publish_state_frequency = 10.0;
 

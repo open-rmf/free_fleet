@@ -30,7 +30,6 @@ void ServerNodeConfig::print_config() const
 {
   printf("ROS 2 SERVER CONFIGURATION\n");
   printf("  fleet name: %s\n", fleet_name.c_str());
-  printf("  wait timeout: %.1f\n", wait_timeout);
   printf("  update state frequency: %.1f\n", update_state_frequency);
   printf("  publish state frequency: %.1f\n", publish_state_frequency);
   printf("  TOPICS\n");

@@ -24,16 +24,19 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rmf_fleet_msgs REQUIRED)
 find_package(free_fleet REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 # -----------------------------------------------------------------------------
 
 add_executable(free_fleet_server_ros2
   src/main.cpp
+  src/utilities.cpp
   src/ServerNode.cpp
   src/ServerNodeConfig.cpp
 )
 target_link_libraries(free_fleet_server_ros2
   ${free_fleet_LIBRARIES}
+  Eigen3::Eigen
 )
 target_include_directories(free_fleet_server_ros2
   PRIVATE
