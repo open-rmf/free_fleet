@@ -24,13 +24,13 @@ jobs:
       run: |
         mkdir -p /home/ff_ws/src
         cd /home/ff_ws/src
-        ln -s /home/repos/free_fleet/clients/ros1 free_fleet_client
+        ln -s /home/repos/free_fleet free_fleet
     - name: build
       shell: bash
       run: |
         cd /home/ff_ws
         source /opt/ros/melodic/setup.bash
-        catkin build free_fleet_client
+        catkin build free_fleet_client_ros1 --cmake-args -DBUILD_IDLC=NO
 
   ros2:
     runs-on: ubuntu-18.04
@@ -55,11 +55,11 @@ jobs:
         cd /home/
         mkdir -p ff_ws/src
         cd ff_ws/src
-        ln -s /home/repos/free_fleet/servers/ros2 free_fleet_server
+        ln -s /home/repos/free_fleet free_fleet
         ln -s /home/repos/rmf_core rmf_core
     - name: build
       shell: bash
       run: |
         cd /home/ff_ws
         source /opt/ros/eloquent/setup.bash
-        colcon build --packages-up-to free_fleet_server
+        colcon build --packages-up-to free_fleet_server_ros2 --cmake-args -DBUILD_IDLC=NO
