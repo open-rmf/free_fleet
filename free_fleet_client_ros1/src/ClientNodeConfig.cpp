@@ -142,8 +142,5 @@ ClientNodeConfig ClientNodeConfig::make()
   return config;
 }
 
-ClientNodeConfig::ClientNodeConfig()
-{}
-
 } // namespace ros1
 } // namespace free_fleet

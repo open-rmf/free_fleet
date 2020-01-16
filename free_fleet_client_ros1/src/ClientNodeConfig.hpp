@@ -74,8 +74,6 @@ struct ClientNodeConfig
 
   static ClientNodeConfig make();
 
-  ClientNodeConfig();
-
 };
 
 } // namespace ros1
