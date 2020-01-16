@@ -12,33 +12,22 @@
 
 # ROS 1 building instructions
 
-Clone the repository somewhere,
-
-```bash
-cd
-git clone https://github.com/osrf/free_fleet
-```
-
-Start a new ROS 1 workspace while symbolically linking the client in,
+Start a new ROS 1 workspace, clone the repository,
 
 ```bash
 mkdir -p ~/client_ws/src
 cd ~/client_ws/src
-ln -s ~/free_fleet/clients/ros1 free_fleet_ros1
+
+git clone https://github.com/osrf/free_fleet.git
 ```
 
-Source ROS 1 and build!
+Source ROS 1 and build with the cmake flag that minimizes the build of `CycloneDDS`
 
 ```bash
 cd ~/client_ws
+
 source /opt/ros/melodic/setup.bash
-catkin build
-```
-
-At this point the build will fail due to the project failing to find the necessary headers in the CycloneDDS `ExternalProject`, this can currently be solved by simply invoking build again.
-
-```bash
-catkin build
+catkin build --cmake-args -DBUILD_IDLC=NO
 ```
 
 # Testing
