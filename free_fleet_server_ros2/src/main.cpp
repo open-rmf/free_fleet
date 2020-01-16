@@ -29,6 +29,7 @@ int main(int argc, char** argv)
 
   free_fleet::ros2::ServerNodeConfig server_node_config = 
       free_fleet::ros2::ServerNodeConfig::make();
+  server_node_config.fleet_name = "free_fleet_server_ros2";
 
   auto server_node = free_fleet::ros2::ServerNode::make(server_node_config);
   if (!server_node)

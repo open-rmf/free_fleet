@@ -127,7 +127,7 @@ void ServerNode::setup_config()
 
 bool ServerNode::is_ready()
 {
-  if (server_node_config.fleet_name == "")
+  if (server_node_config.fleet_name == "fleet_name")
     return false;
   return true;
 }
@@ -240,22 +240,22 @@ void ServerNode::transform_fleet_to_rmf(
       - Eigen::Vector2d(
           server_node_config.translation_x, server_node_config.translation_y);
 
-  RCLCPP_INFO(
-      get_logger(), "    fleet->rmf translated: (%.3f, %.3f)",
-      translated[0], translated[1]);
+  // RCLCPP_INFO(
+  //     get_logger(), "    fleet->rmf translated: (%.3f, %.3f)",
+  //     translated[0], translated[1]);
 
   const auto rotated =
       Eigen::Rotation2D<double>(-server_node_config.rotation) * translated;
 
-  RCLCPP_INFO(
-      get_logger(), "    fleet->rmf rotated: (%.3f, %.3f)",
-      rotated[0], rotated[1]);
+  // RCLCPP_INFO(
+  //     get_logger(), "    fleet->rmf rotated: (%.3f, %.3f)",
+  //     rotated[0], rotated[1]);
 
   const auto scaled = 1.0 / server_node_config.scale * rotated;
 
-  RCLCPP_INFO(
-      get_logger(), "    fleet->rmf scaled: (%.3f, %.3f)",
-      scaled[0], scaled[1]);
+  // RCLCPP_INFO(
+  //     get_logger(), "    fleet->rmf scaled: (%.3f, %.3f)",
+  //     scaled[0], scaled[1]);
       
   _rmf_frame_location.x = scaled[0];
   _rmf_frame_location.y = scaled[1];
@@ -276,25 +276,25 @@ void ServerNode::transform_rmf_to_fleet(
       server_node_config.scale * 
       Eigen::Vector2d(_rmf_frame_location.x, _rmf_frame_location.y);
 
-  RCLCPP_INFO(
-      get_logger(), "    rmf->fleet scaled: (%.3f, %.3f)",
-      scaled[0], scaled[1]);
+  // RCLCPP_INFO(
+  //     get_logger(), "    rmf->fleet scaled: (%.3f, %.3f)",
+  //     scaled[0], scaled[1]);
 
   const auto rotated =
       Eigen::Rotation2D<double>(server_node_config.rotation) * scaled;
   
-  RCLCPP_INFO(
-      get_logger(), "    rmf->fleet rotated: (%.3f, %.3f)",
-      rotated[0], rotated[1]);
+  // RCLCPP_INFO(
+  //     get_logger(), "    rmf->fleet rotated: (%.3f, %.3f)",
+  //     rotated[0], rotated[1]);
 
   const auto translated =
       rotated + 
       Eigen::Vector2d(
           server_node_config.translation_x, server_node_config.translation_y);
 
-  RCLCPP_INFO(
-      get_logger(), "    rmf->fleet translated: (%.3f, %.3f)",
-      translated[0], translated[1]);
+  // RCLCPP_INFO(
+  //     get_logger(), "    rmf->fleet translated: (%.3f, %.3f)",
+  //     translated[0], translated[1]);
 
   _fleet_frame_location.x = translated[0];
   _fleet_frame_location.y = translated[1];
@@ -364,15 +364,15 @@ void ServerNode::publish_fleet_state()
 
     transform_fleet_to_rmf(fleet_frame_rs.location, rmf_frame_rs.location);
 
-    RCLCPP_INFO(
-        get_logger(), 
-        "robot location: (%.1f, %.1f, %.1f) -> (%.1f, %.1f, %.1f)",
-        fleet_frame_rs.location.x,
-        fleet_frame_rs.location.y,
-        fleet_frame_rs.location.yaw,
-        rmf_frame_rs.location.x,
-        rmf_frame_rs.location.y,
-        rmf_frame_rs.location.yaw);
+    // RCLCPP_INFO(
+    //     get_logger(), 
+    //     "robot location: (%.1f, %.1f, %.1f) -> (%.1f, %.1f, %.1f)",
+    //     fleet_frame_rs.location.x,
+    //     fleet_frame_rs.location.y,
+    //     fleet_frame_rs.location.yaw,
+    //     rmf_frame_rs.location.x,
+    //     rmf_frame_rs.location.y,
+    //     rmf_frame_rs.location.yaw);
     
     rmf_frame_rs.name = fleet_frame_rs.name;
     rmf_frame_rs.model = fleet_frame_rs.model;

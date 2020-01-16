@@ -141,11 +141,7 @@ private:
   Fields fields;
 
   ServerNode(
-      const ServerNodeConfig& config, 
-      const rclcpp::NodeOptions& options =
-          rclcpp::NodeOptions()
-              .allow_undeclared_parameters(true)
-              .automatically_declare_parameters_from_overrides(true));
+      const ServerNodeConfig& config, const rclcpp::NodeOptions& options);
 
   void start(Fields fields);
 

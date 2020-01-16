@@ -1,4 +1,4 @@
-free_fleet_server:
+free_fleet_server_ros2:
   ros__parameters:
   
     # Fleet config

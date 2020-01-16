@@ -69,8 +69,5 @@ ServerNodeConfig ServerNodeConfig::make()
   return config;
 }
 
-ServerNodeConfig::ServerNodeConfig()
-{}
-
 } // namespace ros2
 } // namespace free_fleet
