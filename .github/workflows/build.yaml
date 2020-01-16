@@ -16,6 +16,7 @@ jobs:
         mkdir -p /home/repos
         cd /home/repos/
         git clone https://github.com/osrf/free_fleet
+        git clone https://github.com/eclipse-cyclonedds/cyclonedds
     - name: checkout
       run: |
         cd /home/repos/free_fleet
@@ -25,6 +26,7 @@ jobs:
         mkdir -p /home/ff_ws/src
         cd /home/ff_ws/src
         ln -s /home/repos/free_fleet free_fleet
+        ln -s /home/repos/cyclonedds cyclonedds
     - name: build
       shell: bash
       run: |
@@ -45,6 +47,7 @@ jobs:
         mkdir repos
         cd repos/
         git clone https://github.com/osrf/free_fleet
+        git clone https://github.com/eclipse-cyclonedds/cyclonedds
         git clone https://github.com/osrf/rmf_core
     - name: checkout
       run: |
@@ -56,6 +59,7 @@ jobs:
         mkdir -p ff_ws/src
         cd ff_ws/src
         ln -s /home/repos/free_fleet free_fleet
+        ln -s /home/repos/cyclonedds cyclonedds
         ln -s /home/repos/rmf_core rmf_core
     - name: build
       shell: bash
