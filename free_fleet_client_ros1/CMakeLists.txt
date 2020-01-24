@@ -80,6 +80,11 @@ install(
 )
 
 install(
+  DIRECTORY test_maps
+  DESTINATION share/free_fleet_client_ros1
+)
+
+install(
   TARGETS
     free_fleet_client_ros1
     ${testing_targets}

@@ -5,4 +5,9 @@
     <arg name="model" value="waffle"/>
   </include>
 
+  <!-- launch the navigation stack with test maps -->
+  <include file="$(find turtlebot3_navigation)/launch/turtlebot3_navigation.launch">
+    <arg name="map_file" value="$(find free_fleet_client_ros1)/test_maps/maps.yaml"/>
+  </include>
+
 </launch>
