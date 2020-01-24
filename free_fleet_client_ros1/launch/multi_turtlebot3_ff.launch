@@ -1,0 +1,31 @@
+<launch>
+  <arg name="model" value="waffle"/>
+  <arg name="move_forward_only" value="false"/>
+
+  <!-- launches the basic multi turtlebot3 world -->
+  <include file="$(find turtlebot3_gazebo)/launch/multi_turtlebot3.launch">
+    <arg name="model" value="$(arg model)"/>
+  </include>
+
+  <!-- Map server -->
+  <!-- <node pkg="map_server" name="map_server" type="map_server" 
+      args="$(find free_fleet_client_ros1)/test_maps/house.yaml"/> -->
+
+  <!-- launch the navigation stacks -->
+  <group ns="tb3_0">
+    <!-- Map server -->
+    <node pkg="map_server" name="map_server" type="map_server" 
+        args="$(find free_fleet_client_ros1)/test_maps/house.yaml"/>
+    <!-- AMCL -->
+    <include file="$(find turtlebot3_navigation)/launch/amcl.launch"/>
+    <!-- move_base -->
+    <include file="$(find turtlebot3_navigation)/launch/move_base.launch">
+      <arg name="model" value="$(arg model)" />
+      <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+    </include>
+    <!-- rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+        args="-d $(find turtlebot3_navigation)/rviz/turtlebot3_navigation.rviz"/>
+  </group>
+  
+</launch>
