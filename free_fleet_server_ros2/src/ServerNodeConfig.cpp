@@ -28,6 +28,7 @@ namespace ros2
 
 void ServerNodeConfig::print_config() const
 {
+  setbuf(stdout, NULL);
   printf("ROS 2 SERVER CONFIGURATION\n");
   printf("  fleet name: %s\n", fleet_name.c_str());
   printf("  update state frequency: %.1f\n", update_state_frequency);
