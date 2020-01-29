@@ -67,6 +67,14 @@ ament_export_dependencies(
   Qt5Widgets
 )
 
+# -----------------------------------------------------------------------------
+
+install(
+  DIRECTORY
+    launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 install(
   TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}
