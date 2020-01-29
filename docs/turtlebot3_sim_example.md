@@ -14,7 +14,7 @@ git clone https://github.com/osrf/free_fleet.git
 git clone https://github.com/eclipse-cyclonedds/cyclonedds.git
 git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
 git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
-git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulation.git
+git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
 ```
 
 Source ROS 1 and build with the cmake flag that minimizes the build of `CycloneDDS`,
