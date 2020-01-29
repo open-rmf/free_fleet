@@ -23,3 +23,5 @@ location in `/opt/ros/eloquent`
 * [Building the ROS 1 Client](docs/clients.md)
 
 * [Running tests on the ROS 1 Client](docs/clients_test.md)
+
+* [Turtlebot3 simulation example](docs/turtlebot3_sim_example.md)

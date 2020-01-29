@@ -19,7 +19,7 @@ mkdir -p ~/client_ws/src
 cd ~/client_ws/src
 
 git clone https://github.com/osrf/free_fleet.git
-git clone https://github.com/eclipse-cyclonedds/cyclonedds
+git clone https://github.com/eclipse-cyclonedds/cyclonedds.git
 ```
 
 Source ROS 1 and build with the cmake flag that minimizes the build of `CycloneDDS`
