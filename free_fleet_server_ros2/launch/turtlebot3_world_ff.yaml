@@ -25,4 +25,4 @@ free_fleet_server_ros2_node:
     translation_x: 0.0
     translation_y: 0.0
     rotation: 0.0
-    scale: 0.0
+    scale: 1.0

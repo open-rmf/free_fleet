@@ -38,12 +38,7 @@ namespace viz
 {
 
 FreeFleetPanel::FreeFleetPanel(QWidget* parent) :
-  rviz_common::Panel(parent),
-  Node(
-      "free_fleet_panel_node", 
-      rclcpp::NodeOptions()
-          .allow_undeclared_parameters(true)
-          .automatically_declare_parameters_from_overrides(true))
+  rviz_common::Panel(parent)
 {
   /// Horizontal layout for path request
   // QHBoxLayout* path_request_layout = new QHBoxLayout;
@@ -80,39 +75,52 @@ FreeFleetPanel::FreeFleetPanel(QWidget* parent) :
   setLayout(vertical_layout);
 
   connect(
-      fleet_name_editor, SIGNAL(editingFinished()), this, 
-      SLOT(update_fleet_name()));
-  connect(
       test_push_button, &QPushButton::clicked, this, 
       &FreeFleetPanel::publish_marker_array);
 
   // ---------------------------------------------------------------------------
-  // Create subscription to start monitoring Free Fleet
+  /// Handle all the ROS related stuff and start spinning
+  ros_node = std::make_shared<rclcpp::Node>("free_fleet_panel_ros2_node");
 
-  fleet_state_sub = create_subscription<FleetState>(
+  fleet_state_sub = ros_node->create_subscription<FleetState>(
       "fleet_states", rclcpp::SystemDefaultsQoS(), 
       [&](FleetState::UniquePtr msg)
       {
         fleet_state_cb_fn(std::move(msg));
       });
 
-  marker_array_pub = create_publisher<MarkerArray>(
+  marker_array_pub = ros_node->create_publisher<MarkerArray>(
       "marker_array", rclcpp::SystemDefaultsQoS());
+
+  ros_thread = 
+      std::thread(&FreeFleetPanel::ros_thread_fn, this);
 }
 
-void FreeFleetPanel::set_fleet_name(const QString& new_fleet_name)
+FreeFleetPanel::~FreeFleetPanel()
 {
-  if (new_fleet_name != fleet_name)
+  ros_thread.join();
+}
+
+void FreeFleetPanel::ros_thread_fn()
+{
+  rclcpp::spin(ros_node);
+}
+
+void FreeFleetPanel::refresh_fleet_name()
+{
+  WriteLock fleet_name_lock(fleet_name_mutex);
+  QString new_fleet_name = fleet_name_editor->text();
+
+  if (fleet_name.compare(new_fleet_name) != 0)
   {
-    WriteLock(fleet_name_mutex);
     fleet_name = new_fleet_name;
-    Q_EMIT configChanged();
-  } 
-}
+    WriteLock robot_states_lock(robot_states_mutex);
+    robot_states.clear();
 
-void FreeFleetPanel::update_fleet_name()
-{
-  set_fleet_name(fleet_name_editor->text());
+    RCLCPP_INFO(
+        ros_node->get_logger(), 
+        "fleet_name changed to %s", fleet_name.toStdString().c_str());
+  }
 }
 
 void FreeFleetPanel::create_fleet_name_group()
@@ -122,11 +130,24 @@ void FreeFleetPanel::create_fleet_name_group()
 
   fleet_name_editor = new QLineEdit(this);
 
+  QPushButton* refresh_fleet_name_button = 
+      new QPushButton(tr("Refresh"), this);
+
+  // number_of_robots_display = new QLabel("0", this);
+  test_number = 0;
+  number_of_robots_display = 
+      new QLabel(std::to_string(test_number).c_str(), this);
+
   layout->addWidget(new QLabel(tr("Name:"), this), 0, 0, 1, 1);
   layout->addWidget(fleet_name_editor, 0, 1, 1, 4);
-  layout->addWidget(new QWidget(this), 0, 5, 1, 1);
+  layout->addWidget(refresh_fleet_name_button, 0, 5, 1, 1);
+  layout->addWidget(new QLabel(tr("Number of robots:"), this), 1, 0, 1, 3);
+  layout->addWidget(number_of_robots_display, 1, 3, 1, 3);
 
   fleet_name_group_box->setLayout(layout);
+
+  connect(refresh_fleet_name_button, &QPushButton::clicked, this, 
+      &FreeFleetPanel::refresh_fleet_name);
 }
 
 void FreeFleetPanel::create_robot_name_group()
@@ -252,14 +273,21 @@ void FreeFleetPanel::create_path_request_subgroup()
 void FreeFleetPanel::fleet_state_cb_fn(FleetState::UniquePtr _msg)
 {
   QString incoming_fleet_name(std::string(_msg->name).c_str());
-  if (incoming_fleet_name != fleet_name)
-    return;
+
+  {
+    ReadLock fleet_name_lock(fleet_name_mutex);
+    if (incoming_fleet_name != fleet_name)
+      return;
+  }
 
   MarkerArray array;
   array.markers.clear();
   
+  WriteLock robot_states_lock(robot_states_mutex);
   for (const auto& rs : _msg->robots)
   {
+    robot_states[rs.name] = rs;
+
     Marker marker = get_robot_marker_with_shape();
     marker.header.frame_id = "map";
     marker.header.stamp.sec = rs.location.t.sec;
@@ -271,18 +299,36 @@ void FreeFleetPanel::fleet_state_cb_fn(FleetState::UniquePtr _msg)
     marker.pose.position.y = rs.location.y;
     marker.pose.position.z = 0.0;
 
-    Eigen::Quaterniond q;
-    q = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
-        Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
-        Eigen::AngleAxisd(rs.location.yaw, Eigen::Vector3d::UnitZ());
-    marker.pose.orientation.x = q.x();
-    marker.pose.orientation.y = q.y();
-    marker.pose.orientation.z = q.z();
-    marker.pose.orientation.w = q.w();
+    // Eigen::Quaterniond q;
+    // q = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
+    //     Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
+    //     Eigen::AngleAxisd(rs.location.yaw, Eigen::Vector3d::UnitZ());
+    // marker.pose.orientation.x = q.x();
+    // marker.pose.orientation.y = q.y();
+    // marker.pose.orientation.z = q.z();
+    // marker.pose.orientation.w = q.w();
+    
+    const double yaw = rs.location.yaw;
+    const double pitch = 0.0;
+    const double roll = 0.0;
+    double cy = cos(yaw * 0.5);
+    double sy = sin(yaw * 0.5);
+    double cp = cos(pitch * 0.5);
+    double sp = sin(pitch * 0.5);
+    double cr = cos(roll * 0.5);
+    double sr = sin(roll * 0.5);
+    marker.pose.orientation.x = cy * cp * sr - sy * sp * cr;
+    marker.pose.orientation.y = sy * cp * sr + cy * sp * cr;
+    marker.pose.orientation.z = sy * cp * cr - cy * sp * sr;
+    marker.pose.orientation.w = cy * cp * cr + sy * sp * sr;
 
     array.markers.push_back(marker);
   }
   marker_array_pub->publish(array);
+
+  // Update the number of robots registered
+  number_of_robots_display->setText(
+      QString(std::to_string(robot_states.size()).c_str()));
 }
 
 void FreeFleetPanel::publish_marker_array()
@@ -291,7 +337,7 @@ void FreeFleetPanel::publish_marker_array()
 
   Marker marker = get_robot_marker_with_shape();
   marker.header.frame_id = "map";
-  marker.header.stamp = get_clock()->now();
+  marker.header.stamp = ros_node->get_clock()->now();
   marker.ns = "free_fleet";
   marker.id = 0;
   marker.action = Marker::MODIFY;

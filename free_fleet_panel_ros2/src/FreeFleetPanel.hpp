@@ -41,6 +41,7 @@
 #include <QVBoxLayout>
 
 #include <mutex>
+#include <thread>
 #include <unordered_map>
 
 namespace free_fleet
@@ -48,7 +49,7 @@ namespace free_fleet
 namespace viz
 {
 
-class FreeFleetPanel : public rviz_common::Panel, public rclcpp::Node
+class FreeFleetPanel : public rviz_common::Panel
 {
 
 Q_OBJECT
@@ -71,19 +72,13 @@ public:
 
   FreeFleetPanel(QWidget* parent = 0);
 
-public Q_SLOTS:
+  ~FreeFleetPanel();
 
-  void set_fleet_name(const QString& fleet_name);
+private Q_SLOTS:
 
-protected Q_SLOTS:
-
-  void update_fleet_name();
+  void refresh_fleet_name();
 
 private:
-
-  /// Fleet name group
-  QGroupBox* fleet_name_group_box;
-  QLineEdit* fleet_name_editor;
 
   /// Robot name, move-to and follow group
   QGroupBox* robot_name_group_box;
@@ -110,10 +105,32 @@ private:
   QGroupBox* path_request_group_box;
   QLabel* path_display;
 
-  // ---------------------------------------------------------------------------
-  /// Group creation helper functions
+  // --------------------------------------------------------------------------
+  /// Fleet name components
+  
+  QGroupBox* fleet_name_group_box;
+
+  QLineEdit* fleet_name_editor;
+
+  std::mutex fleet_name_mutex;
+
+  QString fleet_name;
 
   void create_fleet_name_group();
+
+  // --------------------------------------------------------------------------
+  /// Robot components
+
+  QLabel* number_of_robots_display;
+
+  std::mutex robot_states_mutex;
+
+  int test_number;
+  
+  std::unordered_map<std::string, RobotState> robot_states;
+
+  // ---------------------------------------------------------------------------
+  /// Group creation helper functions
 
   void create_robot_name_group();
 
@@ -126,16 +143,9 @@ private:
   void create_path_request_subgroup();
 
   // ---------------------------------------------------------------------------
-  /// Internal states
-
-  std::mutex fleet_name_mutex;
-  QString fleet_name;
-
-  std::mutex robot_states_mutex;
-  std::unordered_map<std::string, RobotState> robot_states;
-
-  // ---------------------------------------------------------------------------
   /// ROS components
+
+  rclcpp::Node::SharedPtr ros_node;
 
   rclcpp::Subscription<FleetState>::SharedPtr fleet_state_sub;
 
@@ -146,6 +156,10 @@ private:
   void publish_marker_array();
 
   Marker get_robot_marker_with_shape();
+
+  std::thread ros_thread;
+
+  void ros_thread_fn();
 
 };
 
