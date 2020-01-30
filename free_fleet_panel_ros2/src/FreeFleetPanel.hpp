@@ -145,6 +145,8 @@ private:
 
   void publish_marker_array();
 
+  Marker get_robot_marker_with_shape();
+
 };
 
 } // namespace viz

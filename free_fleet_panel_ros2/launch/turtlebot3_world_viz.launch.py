@@ -39,6 +39,7 @@ def generate_launch_description():
             'launch',
             'test_maps',
             'house.yaml'))
+    print('getting map yaml from: {}'.format(map_yaml_file_path))
 
     map_yaml_file_param = {
         'yaml_filename': map_yaml_file_path}
@@ -53,6 +54,15 @@ def generate_launch_description():
             'launch',
             'test_maps',
             'free_fleet_panel_ros2.rviz'))
+    print('getting rviz config from: {}'.format(rviz_config_path))
+
+    server_yaml = LaunchConfiguration(
+        'server_yaml',
+        default=os.path.join(
+            get_package_share_directory('free_fleet_server_ros2'),
+            'launch',
+            'turtlebot3_world_ff.yaml'))
+    print('getting server parameters from: {}'.format(server_yaml))
 
     return LaunchDescription([
 
@@ -69,6 +79,12 @@ def generate_launch_description():
             node_executable='rviz2',
             node_name='rviz2',
             arguments=['-d', rviz_config_path],
+            output='screen'),
+
+        Node(
+            package='free_fleet_server_ros2',
+            node_executable='free_fleet_server_ros2',
+            parameters=[server_yaml],
             output='screen')
 
     ])

@@ -30,6 +30,8 @@
 #include <QPushButton>
 #include <QScrollArea>
 
+#include <Eigen/Geometry>
+
 namespace free_fleet
 {
 namespace viz
@@ -88,7 +90,7 @@ FreeFleetPanel::FreeFleetPanel(QWidget* parent) :
   // Create subscription to start monitoring Free Fleet
 
   fleet_state_sub = create_subscription<FleetState>(
-      "fleet_state", rclcpp::SystemDefaultsQoS(), 
+      "fleet_states", rclcpp::SystemDefaultsQoS(), 
       [&](FleetState::UniquePtr msg)
       {
         fleet_state_cb_fn(std::move(msg));
@@ -258,8 +260,26 @@ void FreeFleetPanel::fleet_state_cb_fn(FleetState::UniquePtr _msg)
   
   for (const auto& rs : _msg->robots)
   {
-    Marker marker;
-    // TODO
+    Marker marker = get_robot_marker_with_shape();
+    marker.header.frame_id = "map";
+    marker.header.stamp.sec = rs.location.t.sec;
+    marker.header.stamp.nanosec = rs.location.t.nanosec;
+    marker.ns = rs.name;
+    marker.id = 0;
+    marker.action = Marker::MODIFY;
+    marker.pose.position.x = rs.location.x;
+    marker.pose.position.y = rs.location.y;
+    marker.pose.position.z = 0.0;
+
+    Eigen::Quaterniond q;
+    q = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
+        Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
+        Eigen::AngleAxisd(rs.location.yaw, Eigen::Vector3d::UnitZ());
+    marker.pose.orientation.x = q.x();
+    marker.pose.orientation.y = q.y();
+    marker.pose.orientation.z = q.z();
+    marker.pose.orientation.w = q.w();
+
     array.markers.push_back(marker);
   }
   marker_array_pub->publish(array);
@@ -269,27 +289,33 @@ void FreeFleetPanel::publish_marker_array()
 {
   MarkerArray msg;
 
-  Marker marker;
+  Marker marker = get_robot_marker_with_shape();
   marker.header.frame_id = "map";
   marker.header.stamp = get_clock()->now();
   marker.ns = "free_fleet";
   marker.id = 0;
-  marker.type = Marker::CUBE;
   marker.action = Marker::MODIFY;
   marker.pose.position.x = 0.0;
   marker.pose.position.y = 0.0;
   marker.pose.position.z = 0.0;
   marker.pose.orientation.w = 1.0;
-  marker.scale.x = 1.0;
-  marker.scale.y = 0.5;
-  marker.scale.z = 0.5; 
-  marker.color.r = 1.0; 
-  marker.color.a = 0.75;
 
   msg.markers.clear();
   msg.markers.push_back(marker);
 
   marker_array_pub->publish(msg);
+}
+
+FreeFleetPanel::Marker FreeFleetPanel::get_robot_marker_with_shape()
+{
+  Marker marker;
+  marker.type = Marker::CUBE;
+  marker.scale.x = 1.0;
+  marker.scale.y = 0.5;
+  marker.scale.z = 0.5;
+  marker.color.r = 1.0;
+  marker.color.a = 0.75;
+  return marker;
 }
 
 } // namespace viz

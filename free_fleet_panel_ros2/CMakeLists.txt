@@ -31,6 +31,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets Test)
+find_package(Eigen3 REQUIRED)
 
 add_definitions(-DQT_NO_KEYWORDS)
 
@@ -48,6 +49,7 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
   rviz_common::rviz_common
+  Eigen3::Eigen
 )
 target_include_directories(${PROJECT_NAME}
   PRIVATE
