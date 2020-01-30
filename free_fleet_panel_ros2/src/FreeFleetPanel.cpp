@@ -299,28 +299,14 @@ void FreeFleetPanel::fleet_state_cb_fn(FleetState::UniquePtr _msg)
     marker.pose.position.y = rs.location.y;
     marker.pose.position.z = 0.0;
 
-    // Eigen::Quaterniond q;
-    // q = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
-    //     Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
-    //     Eigen::AngleAxisd(rs.location.yaw, Eigen::Vector3d::UnitZ());
-    // marker.pose.orientation.x = q.x();
-    // marker.pose.orientation.y = q.y();
-    // marker.pose.orientation.z = q.z();
-    // marker.pose.orientation.w = q.w();
-    
-    const double yaw = rs.location.yaw;
-    const double pitch = 0.0;
-    const double roll = 0.0;
-    double cy = cos(yaw * 0.5);
-    double sy = sin(yaw * 0.5);
-    double cp = cos(pitch * 0.5);
-    double sp = sin(pitch * 0.5);
-    double cr = cos(roll * 0.5);
-    double sr = sin(roll * 0.5);
-    marker.pose.orientation.x = cy * cp * sr - sy * sp * cr;
-    marker.pose.orientation.y = sy * cp * sr + cy * sp * cr;
-    marker.pose.orientation.z = sy * cp * cr - cy * sp * sr;
-    marker.pose.orientation.w = cy * cp * cr + sy * sp * sr;
+    Eigen::Quaterniond q;
+    q = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
+        Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
+        Eigen::AngleAxisd(rs.location.yaw, Eigen::Vector3d::UnitZ());
+    marker.pose.orientation.x = q.x();
+    marker.pose.orientation.y = q.y();
+    marker.pose.orientation.z = q.z();
+    marker.pose.orientation.w = q.w();
 
     array.markers.push_back(marker);
   }
