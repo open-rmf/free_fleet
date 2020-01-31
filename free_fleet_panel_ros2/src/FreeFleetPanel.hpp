@@ -20,6 +20,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <rmf_fleet_msgs/msg/robot_mode.hpp>
 #include <rmf_fleet_msgs/msg/robot_state.hpp>
 #include <rmf_fleet_msgs/msg/fleet_state.hpp>
 
@@ -59,6 +60,7 @@ public:
   using ReadLock = std::unique_lock<std::mutex>;
   using WriteLock = std::unique_lock<std::mutex>;
 
+  using RobotMode = rmf_fleet_msgs::msg::RobotMode;
   using RobotState = rmf_fleet_msgs::msg::RobotState;
   using FleetState = rmf_fleet_msgs::msg::FleetState;
 
@@ -78,35 +80,28 @@ private Q_SLOTS:
 
   void refresh_fleet_name();
 
+  void refresh_robot_name_list();
+
+  void move_to_robot();
+
+  void follow_robot();
+
+  void send_robot_mode_request();
+
+  void select_robot_destination();
+
+  void send_robot_destination_request();
+
+  void select_robot_path();
+
+  void send_robot_path_request();
+
 private:
 
-  /// Robot name, move-to and follow group
-  QGroupBox* robot_name_group_box;
-  QComboBox* robot_name_combo;
-  QString default_robot_name_selection;
-
-  /// Robot request group
-  QGroupBox* request_group_box;
-  QVBoxLayout* request_group_layout;
-
-  /// Robot mode request subgroup
-  QComboBox* mode_selection_combo;
-
-  /// Robot destination request subgroup
-  QGroupBox* destination_request_group_box;
-  double destination_x;
-  double destination_y;
-  double destination_yaw;
-  QLabel* destination_x_display;
-  QLabel* destination_y_display;
-  QLabel* destination_yaw_display;
-
-  /// Robot path request subgroup
-  QGroupBox* path_request_group_box;
-  QLabel* path_display;
-
-  // --------------------------------------------------------------------------
+  //===========================================================================
   /// Fleet name components
+
+  void create_fleet_name_group();
   
   QGroupBox* fleet_name_group_box;
 
@@ -116,34 +111,83 @@ private:
 
   QString fleet_name;
 
-  void create_fleet_name_group();
-
-  // --------------------------------------------------------------------------
-  /// Robot components
-
   QLabel* number_of_robots_display;
 
-  std::mutex robot_states_mutex;
-
-  int test_number;
-  
-  std::unordered_map<std::string, RobotState> robot_states;
-
-  // ---------------------------------------------------------------------------
-  /// Group creation helper functions
+  //===========================================================================
+  /// Robot components
 
   void create_robot_name_group();
 
+  QGroupBox* robot_name_group_box;
+
+  QComboBox* robot_name_combo;
+
+  QString robot_name_placeholder;
+
+  QString robot_mode_placeholder;
+
+  QLabel* current_robot_mode;
+
+  std::mutex robot_states_mutex;
+  
+  std::unordered_map<std::string, RobotState> robot_states;
+
+  void clear_robot_states();
+
+  void selected_robot_name(const QString& robot_name);
+
+  void display_robot_mode();
+
+  //===========================================================================
+  /// Request group components
+
   void create_request_group();
+
+  QGroupBox* request_group_box;
+
+  QVBoxLayout* request_group_layout;
+
+  //===========================================================================
+  /// Mode Request subgroup components
 
   void create_mode_request_subgroup();
 
+  QComboBox* mode_selection_combo;
+
+  //===========================================================================
+  /// Destination Request subgroup components
+
   void create_destination_request_subgroup();
+
+  QGroupBox* destination_request_group_box;
+
+  QString coordinate_placeholder;
+
+  double destination_x;
+
+  double destination_y;
+
+  double destination_yaw;
+
+  QLabel* destination_x_display;
+
+  QLabel* destination_y_display;
+
+  QLabel* destination_yaw_display;
+
+  //===========================================================================
+  /// Path Request subgroup components
 
   void create_path_request_subgroup();
 
-  // ---------------------------------------------------------------------------
+  QGroupBox* path_request_group_box;
+
+  QLabel* path_display;
+
+  //===========================================================================
   /// ROS components
+
+  void initialize_ros();
 
   rclcpp::Node::SharedPtr ros_node;
 
@@ -151,15 +195,17 @@ private:
 
   rclcpp::Publisher<MarkerArray>::SharedPtr marker_array_pub;
 
+  rclcpp::TimerBase::SharedPtr refresh_values_timer;
+
   void fleet_state_cb_fn(FleetState::UniquePtr msg);
-
-  void publish_marker_array();
-
-  Marker get_robot_marker_with_shape();
 
   std::thread ros_thread;
 
   void ros_thread_fn();
+
+  void refresh_values();
+
+  Marker get_robot_marker_with_shape();
 
 };
 

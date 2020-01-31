@@ -21,6 +21,8 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 
+#include <QtGlobal>
+
 #include <QFrame>
 #include <QWidget>
 #include <QSplitter>
@@ -32,54 +34,146 @@
 
 #include <Eigen/Geometry>
 
+#include "rviz_common/load_resource.hpp"
+
 namespace free_fleet
 {
 namespace viz
 {
 
+//=============================================================================
+
 FreeFleetPanel::FreeFleetPanel(QWidget* parent) :
   rviz_common::Panel(parent)
 {
-  /// Horizontal layout for path request
-  // QHBoxLayout* path_request_layout = new QHBoxLayout;
-  // QPushButton* path_selection_button = new QPushButton("Select Path", this);
-  // path_display = new QLabel("TODO", this);
-  // QPushButton* send_path_request_button = new QPushButton("Send Request", this);
-  // path_request_layout->addWidget(path_selection_button);
-  // path_request_layout->addWidget(path_display);
-  // path_request_layout->addWidget(send_path_request_button);
-
-  /// Vertical layout for sending all types of requests to robots
-  // QVBoxLayout* request_layout = new QVBoxLayout;
-  // request_layout->addLayout(robot_name_layout);
-  // request_layout->addLayout(mode_request_layout);
-  // request_layout->addLayout(destination_request_layout);
-  // request_layout->addLayout(path_request_layout);
-
-  /// Layouts' creation
   create_fleet_name_group();
-  create_robot_name_group();
-  create_request_group();
 
-  /// FOR TESTING ONLY, horizontal layout for testing button
-  QPushButton* test_push_button = new QPushButton("Publish Marker Array", this);
-  test_push_button->setSizePolicy(
-      QSizePolicy::Expanding, QSizePolicy::Expanding);
+  create_robot_name_group();
+
+  create_request_group();
 
   /// Putting all the other layouts into an overall vertical layout
   QVBoxLayout* vertical_layout = new QVBoxLayout;
   vertical_layout->addWidget(fleet_name_group_box);
   vertical_layout->addWidget(robot_name_group_box);
   vertical_layout->addWidget(request_group_box);
-  vertical_layout->addWidget(test_push_button);
   setLayout(vertical_layout);
 
-  connect(
-      test_push_button, &QPushButton::clicked, this, 
-      &FreeFleetPanel::publish_marker_array);
+  initialize_ros();
+}
 
-  // ---------------------------------------------------------------------------
-  /// Handle all the ROS related stuff and start spinning
+//=============================================================================
+
+FreeFleetPanel::~FreeFleetPanel()
+{
+  ros_thread.join();
+}
+
+//=============================================================================
+
+void FreeFleetPanel::refresh_fleet_name()
+{
+  WriteLock fleet_name_lock(fleet_name_mutex);
+  QString new_fleet_name = fleet_name_editor->text();
+
+  if (fleet_name.compare(new_fleet_name) != 0)
+  {
+    fleet_name = new_fleet_name;
+
+    clear_robot_states();
+
+    RCLCPP_INFO(
+        ros_node->get_logger(), 
+        "fleet_name changed to %s", fleet_name.toStdString().c_str());
+  }
+}
+
+//=============================================================================
+
+void FreeFleetPanel::refresh_robot_name_list()
+{
+  ReadLock robot_states_lock(robot_states_mutex);
+  QStringList current_robot_name_list = {};
+  for (auto it = robot_states.begin(); it != robot_states.end(); ++it)
+  {
+    current_robot_name_list << QString((it->first).c_str());
+  }
+  current_robot_name_list.sort();
+
+  QStringList full_list_with_placeholder = {robot_name_placeholder};
+  full_list_with_placeholder << current_robot_name_list;
+
+  robot_name_combo->clear();
+  robot_name_combo->addItems(full_list_with_placeholder);
+}
+
+//=============================================================================
+
+void FreeFleetPanel::move_to_robot()
+{
+  RCLCPP_INFO(
+      ros_node->get_logger(), "move_to_robot has yet to be implemented.");
+}
+
+//=============================================================================
+
+void FreeFleetPanel::follow_robot()
+{
+  RCLCPP_INFO(
+      ros_node->get_logger(), "follow_robot has yet to be implemented.");
+}
+
+//=============================================================================
+
+void FreeFleetPanel::send_robot_mode_request()
+{
+  RCLCPP_INFO(
+      ros_node->get_logger(), 
+      "send_robot_mode_request has yet to be implemented.");
+}
+
+//=============================================================================
+
+void FreeFleetPanel::select_robot_destination()
+{
+  RCLCPP_INFO(
+      ros_node->get_logger(), 
+      "select_robot_destination has yet to be implemented.");
+}
+
+//=============================================================================
+
+void FreeFleetPanel::send_robot_destination_request()
+{
+  RCLCPP_INFO(
+      ros_node->get_logger(), 
+      "send_robot_destination_request has yet to be implemented.");
+}
+
+//=============================================================================
+
+void FreeFleetPanel::select_robot_path()
+{
+  RCLCPP_INFO(
+      ros_node->get_logger(), 
+      "select_robot_path has yet to be implemented.");
+}
+
+//=============================================================================
+
+void FreeFleetPanel::send_robot_path_request()
+{
+  RCLCPP_INFO(
+      ros_node->get_logger(), 
+      "send_robot_path_request has yet to be implemented.");
+}
+
+//=============================================================================
+
+void FreeFleetPanel::initialize_ros()
+{
+  setbuf(stdout, NULL);
+
   ros_node = std::make_shared<rclcpp::Node>("free_fleet_panel_ros2_node");
 
   fleet_state_sub = ros_node->create_subscription<FleetState>(
@@ -92,36 +186,23 @@ FreeFleetPanel::FreeFleetPanel(QWidget* parent) :
   marker_array_pub = ros_node->create_publisher<MarkerArray>(
       "marker_array", rclcpp::SystemDefaultsQoS());
 
+  using namespace std::chrono_literals;
+
+  refresh_values_timer = ros_node->create_wall_timer(
+      500ms, std::bind(&FreeFleetPanel::refresh_values, this));
+
   ros_thread = 
       std::thread(&FreeFleetPanel::ros_thread_fn, this);
 }
 
-FreeFleetPanel::~FreeFleetPanel()
-{
-  ros_thread.join();
-}
+//=============================================================================
 
 void FreeFleetPanel::ros_thread_fn()
 {
   rclcpp::spin(ros_node);
 }
 
-void FreeFleetPanel::refresh_fleet_name()
-{
-  WriteLock fleet_name_lock(fleet_name_mutex);
-  QString new_fleet_name = fleet_name_editor->text();
-
-  if (fleet_name.compare(new_fleet_name) != 0)
-  {
-    fleet_name = new_fleet_name;
-    WriteLock robot_states_lock(robot_states_mutex);
-    robot_states.clear();
-
-    RCLCPP_INFO(
-        ros_node->get_logger(), 
-        "fleet_name changed to %s", fleet_name.toStdString().c_str());
-  }
-}
+//=============================================================================
 
 void FreeFleetPanel::create_fleet_name_group()
 {
@@ -130,19 +211,26 @@ void FreeFleetPanel::create_fleet_name_group()
 
   fleet_name_editor = new QLineEdit(this);
 
+  QIcon refresh_icon = 
+      rviz_common::loadPixmap(
+          "package://free_fleet_panel_ros2/media/Refresh-icon.png");
   QPushButton* refresh_fleet_name_button = 
-      new QPushButton(tr("Refresh"), this);
+      new QPushButton(refresh_icon, "", this);
 
-  // number_of_robots_display = new QLabel("0", this);
-  test_number = 0;
-  number_of_robots_display = 
-      new QLabel(std::to_string(test_number).c_str(), this);
+  {
+    WriteLock robot_states_lock(robot_states_mutex);
+    robot_states.clear();
+    number_of_robots_display = 
+        new QLabel(std::to_string(robot_states.size()).c_str(), this);
+  }
 
-  layout->addWidget(new QLabel(tr("Name:"), this), 0, 0, 1, 1);
-  layout->addWidget(fleet_name_editor, 0, 1, 1, 4);
-  layout->addWidget(refresh_fleet_name_button, 0, 5, 1, 1);
-  layout->addWidget(new QLabel(tr("Number of robots:"), this), 1, 0, 1, 3);
-  layout->addWidget(number_of_robots_display, 1, 3, 1, 3);
+  layout->addWidget(new QLabel(tr("Name:"), this), 0, 0, 1, 4);
+  layout->addWidget(fleet_name_editor, 0, 4, 1, 12);
+  layout->addWidget(new QWidget(this), 0, 16, 1, 1);
+  layout->addWidget(refresh_fleet_name_button, 0, 17, 1, 1);
+
+  layout->addWidget(new QLabel(tr("Number of robots:"), this), 1, 0, 1, 9);
+  layout->addWidget(number_of_robots_display, 1, 9, 1, 9);
 
   fleet_name_group_box->setLayout(layout);
 
@@ -150,28 +238,152 @@ void FreeFleetPanel::create_fleet_name_group()
       &FreeFleetPanel::refresh_fleet_name);
 }
 
+//=============================================================================
+
 void FreeFleetPanel::create_robot_name_group()
 {
-  default_robot_name_selection = tr("Select Robot");
-  QStringList robot_name_list = {default_robot_name_selection};
+  robot_name_placeholder = tr("Select Robot");
+  QStringList robot_name_list = {robot_name_placeholder};
+
+  robot_mode_placeholder = tr("None");
 
   robot_name_combo = new QComboBox(this);
   robot_name_combo->addItems(robot_name_list);
 
+  QIcon refresh_icon = 
+      rviz_common::loadPixmap(
+          "package://free_fleet_panel_ros2/media/Refresh-icon.png");
+  QPushButton* refresh_robot_list_button = 
+      new QPushButton(refresh_icon, "", this);
+
   QPushButton* move_to_button = new QPushButton(tr("Move To"), this);
   QPushButton* follow_button = new QPushButton(tr("Follow"), this);
 
+  current_robot_mode = new QLabel(robot_mode_placeholder, this);
+
   QGridLayout* layout = new QGridLayout(this);
-  layout->addWidget(new QLabel(tr("Name:"), this), 0, 0, 1, 1);
-  layout->addWidget(robot_name_combo, 0, 1, 1, 3);
-  layout->addWidget(move_to_button, 0, 4, 1, 1);
-  layout->addWidget(follow_button, 0, 5, 1, 1);
+  layout->addWidget(new QLabel(tr("Name:"), this), 0, 0, 1, 4);
+  layout->addWidget(robot_name_combo, 0, 4, 1, 12);
+  layout->addWidget(new QWidget(this), 0, 16, 1, 1);
+  layout->addWidget(refresh_robot_list_button, 0, 17, 1, 1);
+
+  layout->addWidget(new QLabel(tr("Mode:"), this), 1, 0, 1, 4);
+  layout->addWidget(current_robot_mode, 1, 4, 1, 4);
+  layout->addWidget(new QWidget(this), 1, 8, 1, 4);
+  layout->addWidget(move_to_button, 1, 12, 1, 3);
+  layout->addWidget(follow_button, 1, 15, 1, 3);
   
   robot_name_group_box = new QGroupBox(tr("Robot"), this);
   robot_name_group_box->setLayout(layout);
 
-  // TODO: button connections
+  connect(refresh_robot_list_button, &QPushButton::clicked, this,
+      &FreeFleetPanel::refresh_robot_name_list);
+  connect(move_to_button, &QPushButton::clicked, this,
+      &FreeFleetPanel::move_to_robot);
+  connect(follow_button, &QPushButton::clicked, this,
+      &FreeFleetPanel::follow_robot);
+  connect(
+      robot_name_combo,
+      QOverload<const QString&>::of(&QComboBox::currentTextChanged),
+      [=](const QString& robot_name)
+      {
+        selected_robot_name(robot_name);
+      });
 }
+
+//=============================================================================
+
+void FreeFleetPanel::clear_robot_states()
+{
+  WriteLock robot_states_lock(robot_states_mutex);
+
+  MarkerArray array;
+  array.markers.clear();
+
+  for (auto it = robot_states.begin(); it != robot_states.end(); ++it)
+  {
+    Marker marker;
+    marker.header.frame_id = "map";
+    marker.header.stamp = ros_node->get_clock()->now();
+    marker.ns = it->second.name;
+    marker.id = 0;
+    marker.action = Marker::DELETE;
+    array.markers.push_back(marker);
+  }
+  marker_array_pub->publish(array);
+  
+  robot_states.clear();
+  number_of_robots_display->setText(
+      std::to_string(robot_states.size()).c_str());
+
+  QStringList robot_name_list = {robot_name_placeholder};
+  robot_name_combo->clear();
+  robot_name_combo->addItems(robot_name_list);
+
+  current_robot_mode->setText(robot_mode_placeholder);
+}
+
+//=============================================================================
+
+void FreeFleetPanel::selected_robot_name(const QString& _robot_name)
+{
+  if (_robot_name.compare(robot_name_placeholder) == 0 ||
+      _robot_name.compare("") == 0)
+    return;
+
+  RCLCPP_INFO(
+      ros_node->get_logger(), 
+      "robot name selected: %s", 
+      (_robot_name.toStdString()).c_str());
+}
+
+//=============================================================================
+
+void FreeFleetPanel::display_robot_mode()
+{
+  const QString current_selected_rn = robot_name_combo->currentText();
+  if (current_selected_rn.compare(robot_name_placeholder) == 0 ||
+      current_selected_rn.compare("") == 0)
+    current_robot_mode->setText(robot_mode_placeholder);
+  
+  const std::string str_rn = current_selected_rn.toStdString();
+
+  ReadLock robot_states_lock(robot_states_mutex);
+  auto it = robot_states.find(str_rn);
+  if (it != robot_states.end())
+  {
+    switch(it->second.mode.mode) {
+      case RobotMode::MODE_IDLE:
+        current_robot_mode->setText(QString(tr("Idle")));
+        break;
+      case RobotMode::MODE_CHARGING:
+        current_robot_mode->setText(QString(tr("Charging")));
+        break;
+      case RobotMode::MODE_MOVING:
+        current_robot_mode->setText(QString(tr("Moving")));
+        break;
+      case RobotMode::MODE_PAUSED:
+        current_robot_mode->setText(QString(tr("Paused")));
+        break;
+      case RobotMode::MODE_WAITING:
+        current_robot_mode->setText(QString(tr("Waiting")));
+        break;
+      case RobotMode::MODE_EMERGENCY:
+        current_robot_mode->setText(QString(tr("Emergency")));
+        break;
+      case RobotMode::MODE_GOING_HOME:
+        current_robot_mode->setText(QString(tr("Going Home")));
+        break;
+      case RobotMode::MODE_DOCKING:
+        current_robot_mode->setText(QString(tr("Docking")));
+        break;
+      default:
+        current_robot_mode->setText(QString(tr("Undefined")));
+    }
+  }
+}
+
+//=============================================================================
 
 void FreeFleetPanel::create_request_group()
 {
@@ -184,6 +396,8 @@ void FreeFleetPanel::create_request_group()
   request_group_box = new QGroupBox(tr("Robot Requests"), this);
   request_group_box->setLayout(request_group_layout);
 }
+
+//=============================================================================
 
 void FreeFleetPanel::create_mode_request_subgroup()
 {
@@ -205,46 +419,56 @@ void FreeFleetPanel::create_mode_request_subgroup()
   subgroup_widget->setLayout(layout);
   request_group_layout->addWidget(subgroup_widget);
 
-  // TODO: button connections
+  connect(send_request_button, &QPushButton::clicked, this,
+      &FreeFleetPanel::send_robot_mode_request);
 }
+
+//=============================================================================
 
 void FreeFleetPanel::create_destination_request_subgroup()
 {
   QLabel* destination_subgroup_label = new QLabel(tr("Destination:"), this);
 
-  QPushButton* destination_selection_button = new QPushButton("Select", this);
+  QPushButton* select_destination_button = new QPushButton("Select", this);
   QPushButton* send_request_button = new QPushButton(tr("Send"), this);
 
-  destination_x_display = new QLabel("", this);
-  destination_y_display = new QLabel("", this);
-  destination_yaw_display = new QLabel("", this);
+  coordinate_placeholder = tr("null");
+
+  destination_x_display = new QLabel(coordinate_placeholder, this);
+  destination_y_display = new QLabel(coordinate_placeholder, this);
+  destination_yaw_display = new QLabel(coordinate_placeholder, this);
 
   QGridLayout* layout = new QGridLayout(this);
-  layout->addWidget(destination_subgroup_label, 0, 0, 1, 1);
+  layout->addWidget(destination_subgroup_label, 0, 0, 1, 2);
 
-  layout->addWidget(destination_selection_button, 1, 0, 1, 1);
-  layout->addWidget(new QWidget(this), 1, 1, 1, 4);
-  layout->addWidget(send_request_button, 1, 5, 1, 1);
+  layout->addWidget(select_destination_button, 1, 0, 1, 2);
+  layout->addWidget(new QWidget(this), 1, 2, 1, 5);
+  layout->addWidget(send_request_button, 1, 7, 1, 2);
 
   layout->addWidget(new QLabel("x:", this), 2, 0, 1, 1);
-  layout->addWidget(destination_x_display, 2, 1, 1, 1);
-  layout->addWidget(new QLabel("y:", this), 2, 2, 1, 1);
-  layout->addWidget(destination_x_display, 2, 3, 1, 1);
-  layout->addWidget(new QLabel("yaw:", this), 2, 4, 1, 1);
-  layout->addWidget(destination_x_display, 2, 5, 1, 1);
+  layout->addWidget(destination_x_display, 2, 1, 1, 2);
+  layout->addWidget(new QLabel("y:", this), 2, 3, 1, 1);
+  layout->addWidget(destination_y_display, 2, 4, 1, 2);
+  layout->addWidget(new QLabel("θ:", this), 2, 6, 1, 1);
+  layout->addWidget(destination_yaw_display, 2, 7, 1, 2);
 
   QWidget* subgroup_widget = new QWidget(this);
   subgroup_widget->setLayout(layout);
   request_group_layout->addWidget(subgroup_widget);
 
-  // TODO: button connections
+  connect(select_destination_button, &QPushButton::clicked, this,
+      &FreeFleetPanel::select_robot_destination);
+  connect(send_request_button, &QPushButton::clicked, this,
+      &FreeFleetPanel::send_robot_destination_request);
 }
+
+//=============================================================================
 
 void FreeFleetPanel::create_path_request_subgroup()
 {
   QLabel* path_subgroup_label = new QLabel(tr("Path:"), this);
 
-  QPushButton* path_selection_button = new QPushButton("Select", this);
+  QPushButton* select_path_button = new QPushButton("Select", this);
   QPushButton* send_request_button = new QPushButton(tr("Send"), this);
 
   // setup the scroll area
@@ -255,7 +479,7 @@ void FreeFleetPanel::create_path_request_subgroup()
   QGridLayout* layout = new QGridLayout(this);
   layout->addWidget(path_subgroup_label, 0, 0, 1, 1);
 
-  layout->addWidget(path_selection_button, 1, 0, 1, 1);
+  layout->addWidget(select_path_button, 1, 0, 1, 1);
   layout->addWidget(new QWidget(this), 1, 1, 1, 4);
   layout->addWidget(send_request_button, 1, 5, 1, 1);
 
@@ -267,8 +491,13 @@ void FreeFleetPanel::create_path_request_subgroup()
   subgroup_widget->setLayout(layout);
   request_group_layout->addWidget(subgroup_widget);
 
-  // TODO: button connections
+  connect(select_path_button, &QPushButton::clicked, this,
+      &FreeFleetPanel::select_robot_path);
+  connect(send_request_button, &QPushButton::clicked, this,
+      &FreeFleetPanel::send_robot_path_request);
 }
+
+//=============================================================================
 
 void FreeFleetPanel::fleet_state_cb_fn(FleetState::UniquePtr _msg)
 {
@@ -311,32 +540,21 @@ void FreeFleetPanel::fleet_state_cb_fn(FleetState::UniquePtr _msg)
     array.markers.push_back(marker);
   }
   marker_array_pub->publish(array);
+}
 
+//=============================================================================
+
+void FreeFleetPanel::refresh_values()
+{
   // Update the number of robots registered
   number_of_robots_display->setText(
       QString(std::to_string(robot_states.size()).c_str()));
+
+  // Update the robot mode of the current selected robot
+  display_robot_mode();
 }
 
-void FreeFleetPanel::publish_marker_array()
-{
-  MarkerArray msg;
-
-  Marker marker = get_robot_marker_with_shape();
-  marker.header.frame_id = "map";
-  marker.header.stamp = ros_node->get_clock()->now();
-  marker.ns = "free_fleet";
-  marker.id = 0;
-  marker.action = Marker::MODIFY;
-  marker.pose.position.x = 0.0;
-  marker.pose.position.y = 0.0;
-  marker.pose.position.z = 0.0;
-  marker.pose.orientation.w = 1.0;
-
-  msg.markers.clear();
-  msg.markers.push_back(marker);
-
-  marker_array_pub->publish(msg);
-}
+//=============================================================================
 
 FreeFleetPanel::Marker FreeFleetPanel::get_robot_marker_with_shape()
 {
@@ -349,6 +567,8 @@ FreeFleetPanel::Marker FreeFleetPanel::get_robot_marker_with_shape()
   marker.color.a = 0.75;
   return marker;
 }
+
+//=============================================================================
 
 } // namespace viz
 } // namespace free_fleet

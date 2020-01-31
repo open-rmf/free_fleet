@@ -30,7 +30,10 @@ find_package(visualization_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Widgets Test)
+find_package(Qt5 5.7.0 REQUIRED COMPONENTS
+  Core
+  Test
+)
 find_package(Eigen3 REQUIRED)
 
 add_definitions(-DQT_NO_KEYWORDS)
@@ -45,7 +48,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   rmf_fleet_msgs
   visualization_msgs
-  Qt5Widgets
+  Qt5Core
 )
 target_link_libraries(${PROJECT_NAME}
   rviz_common::rviz_common
@@ -66,7 +69,7 @@ ament_export_dependencies(
   rclcpp
   rviz_common
   Qt5
-  Qt5Widgets
+  Qt5Core
 )
 
 # -----------------------------------------------------------------------------
@@ -74,6 +77,12 @@ ament_export_dependencies(
 install(
   DIRECTORY
     launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY
+    media
   DESTINATION share/${PROJECT_NAME}
 )
 
