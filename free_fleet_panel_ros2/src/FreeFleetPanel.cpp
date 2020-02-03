@@ -15,6 +15,8 @@
  *
  */
 
+#include <random>
+
 #include "FreeFleetPanel.hpp"
 
 #include <rclcpp/node_options.hpp>
@@ -127,9 +129,35 @@ void FreeFleetPanel::follow_robot()
 
 void FreeFleetPanel::send_robot_mode_request()
 {
-  RCLCPP_INFO(
-      ros_node->get_logger(), 
-      "send_robot_mode_request has yet to be implemented.");
+  ModeRequest msg;
+
+  {
+    ReadLock fleet_name_lock(fleet_name_mutex);
+    msg.fleet_name = fleet_name.toStdString();
+  }
+
+  const QString current_selected_rn = robot_name_combo->currentText();
+  msg.robot_name = current_selected_rn.toStdString();
+
+  // QStringList mode_list = {"Select Mode", "Pause", "Resume", "Emergency"};
+  switch (mode_selection_combo->currentIndex())
+  {
+    case 1:
+      msg.mode.mode = RobotMode::MODE_PAUSED;
+      break;
+    case 2:
+      msg.mode.mode = RobotMode::MODE_MOVING;
+      break;
+    case 3:
+      msg.mode.mode = RobotMode::MODE_EMERGENCY;
+      break;
+    default:
+      return;
+  }
+
+  msg.task_id = generate_new_random_task_id();
+
+  mode_request_pub->publish(msg);
 }
 
 //=============================================================================
@@ -170,6 +198,30 @@ void FreeFleetPanel::send_robot_path_request()
 
 //=============================================================================
 
+// implementation from 
+// https://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
+std::string FreeFleetPanel::generate_new_random_task_id(
+    unsigned int num_chars) const
+{  
+  auto randchar = []() -> char
+  {
+    static std::string character_list = 
+        "0123456789"
+        "abcdefghijklmnopqrstuvwxyz"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    thread_local static std::mt19937 rg{std::random_device{}()};
+    thread_local static std::uniform_int_distribution<std::string::size_type> 
+        pick(0, sizeof(character_list) - 2);
+    return pick(rg);
+  };
+
+  std::string str(num_chars, 0);
+  std::generate_n(str.begin(), num_chars, randchar);
+  return str;
+}
+
+//=============================================================================
+
 void FreeFleetPanel::initialize_ros()
 {
   setbuf(stdout, NULL);
@@ -185,6 +237,15 @@ void FreeFleetPanel::initialize_ros()
 
   marker_array_pub = ros_node->create_publisher<MarkerArray>(
       "marker_array", rclcpp::SystemDefaultsQoS());
+
+  mode_request_pub = ros_node->create_publisher<ModeRequest>(
+      "mode_request", rclcpp::SystemDefaultsQoS());
+      
+  path_request_pub = ros_node->create_publisher<PathRequest>(
+      "path_request", rclcpp::SystemDefaultsQoS());
+
+  destination_request_pub = ros_node->create_publisher<DestinationRequest>(
+      "destination_request", rclcpp::SystemDefaultsQoS());
 
   using namespace std::chrono_literals;
 

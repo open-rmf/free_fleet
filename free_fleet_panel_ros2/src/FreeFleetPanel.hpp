@@ -23,6 +23,9 @@
 #include <rmf_fleet_msgs/msg/robot_mode.hpp>
 #include <rmf_fleet_msgs/msg/robot_state.hpp>
 #include <rmf_fleet_msgs/msg/fleet_state.hpp>
+#include <rmf_fleet_msgs/msg/mode_request.hpp>
+#include <rmf_fleet_msgs/msg/path_request.hpp>
+#include <rmf_fleet_msgs/msg/destination_request.hpp>
 
 #include <rviz_common/panel.hpp>
 
@@ -63,6 +66,10 @@ public:
   using RobotMode = rmf_fleet_msgs::msg::RobotMode;
   using RobotState = rmf_fleet_msgs::msg::RobotState;
   using FleetState = rmf_fleet_msgs::msg::FleetState;
+
+  using ModeRequest = rmf_fleet_msgs::msg::ModeRequest;
+  using PathRequest = rmf_fleet_msgs::msg::PathRequest;
+  using DestinationRequest = rmf_fleet_msgs::msg::DestinationRequest;
 
   using Marker = visualization_msgs::msg::Marker;
   using MarkerArray = visualization_msgs::msg::MarkerArray;
@@ -184,6 +191,11 @@ private:
 
   QLabel* path_display;
 
+  //============================================================================
+  /// Request utilities
+
+  std::string generate_new_random_task_id(unsigned int num_chars = 20) const;
+
   //===========================================================================
   /// ROS components
 
@@ -194,6 +206,12 @@ private:
   rclcpp::Subscription<FleetState>::SharedPtr fleet_state_sub;
 
   rclcpp::Publisher<MarkerArray>::SharedPtr marker_array_pub;
+
+  rclcpp::Publisher<ModeRequest>::SharedPtr mode_request_pub;
+
+  rclcpp::Publisher<PathRequest>::SharedPtr path_request_pub;
+
+  rclcpp::Publisher<DestinationRequest>::SharedPtr destination_request_pub;
 
   rclcpp::TimerBase::SharedPtr refresh_values_timer;
 
