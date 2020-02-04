@@ -239,13 +239,13 @@ void FreeFleetPanel::initialize_ros()
       "marker_array", rclcpp::SystemDefaultsQoS());
 
   mode_request_pub = ros_node->create_publisher<ModeRequest>(
-      "mode_request", rclcpp::SystemDefaultsQoS());
+      "robot_mode_requests", rclcpp::SystemDefaultsQoS());
       
   path_request_pub = ros_node->create_publisher<PathRequest>(
-      "path_request", rclcpp::SystemDefaultsQoS());
+      "robot_path_requests", rclcpp::SystemDefaultsQoS());
 
   destination_request_pub = ros_node->create_publisher<DestinationRequest>(
-      "destination_request", rclcpp::SystemDefaultsQoS());
+      "robot_destination_requests", rclcpp::SystemDefaultsQoS());
 
   using namespace std::chrono_literals;
 

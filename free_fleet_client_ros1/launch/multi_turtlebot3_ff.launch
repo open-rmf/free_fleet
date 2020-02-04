@@ -64,6 +64,7 @@
     <param name="battery_state_topic" value="$(arg tb3_0_prefix)/battery_state"/>
     <param name="robot_frame" value="$(arg tb3_0_prefix)/base_footprint"/>
     <param name="move_base_server_name" value="$(arg tb3_0_prefix)/move_base"/>
+    <param name="publish_frequency" value="2"/>
   </node>
 
   <node name="$(arg tb3_1_prefix)_free_fleet_client_node" 
@@ -76,6 +77,7 @@
     <param name="battery_state_topic" value="$(arg tb3_1_prefix)/battery_state"/>
     <param name="robot_frame" value="$(arg tb3_1_prefix)/base_footprint"/>
     <param name="move_base_server_name" value="$(arg tb3_1_prefix)/move_base"/>
+    <param name="publish_frequency" value="2"/>
   </node>
 
   <node name="$(arg tb3_2_prefix)_free_fleet_client_node" 
@@ -88,6 +90,7 @@
     <param name="battery_state_topic" value="$(arg tb3_2_prefix)/battery_state"/>
     <param name="robot_frame" value="$(arg tb3_2_prefix)/base_footprint"/>
     <param name="move_base_server_name" value="$(arg tb3_2_prefix)/move_base"/>
+    <param name="publish_frequency" value="2"/>
   </node>
   
 </launch>
