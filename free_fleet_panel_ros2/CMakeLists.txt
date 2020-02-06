@@ -26,6 +26,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rmf_fleet_msgs REQUIRED)
 find_package(rviz_common REQUIRED)
+find_package(rviz_default_plugins REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -43,6 +44,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 add_library(${PROJECT_NAME}
   SHARED
     src/FreeFleetPanel.cpp
+    src/RobotViewController.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
@@ -52,6 +54,7 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
   rviz_common::rviz_common
+  rviz_default_plugins::rviz_default_plugins
   Eigen3::Eigen
 )
 target_include_directories(${PROJECT_NAME}

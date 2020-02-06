@@ -36,7 +36,10 @@
 
 #include <Eigen/Geometry>
 
-#include "rviz_common/load_resource.hpp"
+#include <rviz_common/load_resource.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/view_controller.hpp>
 
 namespace free_fleet
 {
@@ -48,6 +51,8 @@ namespace viz
 FreeFleetPanel::FreeFleetPanel(QWidget* parent) :
   rviz_common::Panel(parent)
 {
+  initialize_ros();
+
   create_fleet_name_group();
 
   create_robot_name_group();
@@ -61,7 +66,8 @@ FreeFleetPanel::FreeFleetPanel(QWidget* parent) :
   vertical_layout->addWidget(request_group_box);
   setLayout(vertical_layout);
 
-  initialize_ros();
+  ros_thread = 
+      std::thread(&FreeFleetPanel::ros_thread_fn, this);
 }
 
 //=============================================================================
@@ -113,8 +119,14 @@ void FreeFleetPanel::refresh_robot_name_list()
 
 void FreeFleetPanel::move_to_robot()
 {
-  RCLCPP_INFO(
-      ros_node->get_logger(), "move_to_robot has yet to be implemented.");
+  if (!robot_view_controller)
+  {
+    RCLCPP_WARN(
+        ros_node->get_logger(), 
+        "robot view controller is null");
+    return;
+  }
+  robot_view_controller->lookAt(0.0, 0.0, 0.0);
 }
 
 //=============================================================================
@@ -251,9 +263,6 @@ void FreeFleetPanel::initialize_ros()
 
   refresh_values_timer = ros_node->create_wall_timer(
       500ms, std::bind(&FreeFleetPanel::refresh_values, this));
-
-  ros_thread = 
-      std::thread(&FreeFleetPanel::ros_thread_fn, this);
 }
 
 //=============================================================================
@@ -336,6 +345,25 @@ void FreeFleetPanel::create_robot_name_group()
   
   robot_name_group_box = new QGroupBox(tr("Robot"), this);
   robot_name_group_box->setLayout(layout);
+
+  // const rviz_common::DisplayContext* display_context =
+  //     this->getDisplayContext();
+  // if (!display_context)
+  // {
+  //   RCLCPP_WARN(
+  //       ros_node->get_logger(),
+  //       "WHOOPS, display context is null, what do we do now :(");
+  // }
+
+  // robot_view_manager = 
+  //     new rviz_common::ViewManager(this->getDisplayContext());
+  // robot_view_controller = robot_view_manager->getCurrent();
+  // if (!robot_view_controller)
+  // {
+  //   RCLCPP_WARN(
+  //       ros_node->get_logger(), 
+  //       "somehow can't get the current view controller");
+  // }
 
   connect(refresh_robot_list_button, &QPushButton::clicked, this,
       &FreeFleetPanel::refresh_robot_name_list);

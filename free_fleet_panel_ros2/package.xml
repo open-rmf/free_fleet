@@ -12,6 +12,7 @@
   <depend>rclcpp</depend>
   <depend>rmf_fleet_msgs</depend>
   <depend>rviz_common</depend>
+  <depend>rviz_default_plugins</depend>
   <depend>visualization_msgs</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>

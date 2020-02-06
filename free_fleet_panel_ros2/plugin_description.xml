@@ -1,4 +1,5 @@
 <library path="/libfree_fleet_panel_ros2">
+  
   <class name="free_fleet_panel_ros2/FreeFleetPanel"
          type="free_fleet::viz::FreeFleetPanel"
          base_class_type="rviz_common::Panel">
@@ -6,4 +7,13 @@
       A panel widget that allows managing Free Fleet robots over rviz2.
     </description>
   </class>
+
+  <class name="free_fleet_panel_ros2/RobotViewController"
+      type="free_fleet::viz::RobotViewController"
+      base_class_type="rviz_common::FramePositionTrackingViewController">
+    <description>
+      A view controller plugin that will communicate and be controlled by the panel.
+    </description>
+  </class>
+
 </library>

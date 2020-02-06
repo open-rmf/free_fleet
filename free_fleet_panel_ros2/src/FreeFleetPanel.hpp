@@ -28,6 +28,8 @@
 #include <rmf_fleet_msgs/msg/destination_request.hpp>
 
 #include <rviz_common/panel.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/view_controller.hpp>
 
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -47,6 +49,7 @@
 #include <mutex>
 #include <thread>
 #include <unordered_map>
+
 
 namespace free_fleet
 {
@@ -144,6 +147,10 @@ private:
   void selected_robot_name(const QString& robot_name);
 
   void display_robot_mode();
+
+  rviz_common::ViewManager* robot_view_manager;
+
+  rviz_common::ViewController* robot_view_controller;
 
   //===========================================================================
   /// Request group components
