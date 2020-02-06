@@ -20,7 +20,7 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet
-        git checkout ${GITHUB_REF##*/}
+        git checkout ${GITHUB_REF:11}
     - name: workspace
       run: |
         mkdir -p /home/ff_ws/src
@@ -52,7 +52,7 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet 
-        git checkout ${GITHUB_REF##*/}
+        git checkout ${GITHUB_REF:11}
     - name: workspace
       run: |
         cd /home/

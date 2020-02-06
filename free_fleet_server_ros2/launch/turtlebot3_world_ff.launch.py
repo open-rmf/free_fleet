@@ -30,7 +30,7 @@ def generate_launch_description():
     # .yaml file for configuring the parameters
     yaml = os.path.join(
         get_package_share_directory('free_fleet_server_ros2'), 
-            'launch', 'test_server.yaml')
+            'launch', 'turtlebot3_world_ff.yaml')
     print('getting parameter file: {}'.format(yaml))
 
     return launch.LaunchDescription([
