@@ -1,4 +1,4 @@
-name: build_ci
+name: build
 on: push
 jobs:
 
@@ -20,7 +20,7 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet
-        git checkout ${GITHUB_REF:11}
+        git checkout "${GITHUB_REF:11}"
     - name: workspace
       run: |
         mkdir -p /home/ff_ws/src
@@ -52,7 +52,7 @@ jobs:
     - name: checkout
       run: |
         cd /home/repos/free_fleet 
-        git checkout ${GITHUB_REF:11}
+        git checkout "${GITHUB_REF:11}"
     - name: workspace
       run: |
         cd /home/
