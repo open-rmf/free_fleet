@@ -1,4 +1,4 @@
-name: build_ci
+name: build
 on: push
 jobs:
 
@@ -18,9 +18,10 @@ jobs:
         git clone https://github.com/osrf/free_fleet
         git clone https://github.com/eclipse-cyclonedds/cyclonedds
     - name: checkout
+      shell: bash
       run: |
         cd /home/repos/free_fleet
-        git checkout ${GITHUB_REF##*/}
+        git checkout "${GITHUB_REF:11}"
     - name: workspace
       run: |
         mkdir -p /home/ff_ws/src
@@ -50,9 +51,10 @@ jobs:
         git clone https://github.com/eclipse-cyclonedds/cyclonedds
         git clone https://github.com/osrf/rmf_core
     - name: checkout
+      shell: bash
       run: |
         cd /home/repos/free_fleet 
-        git checkout ${GITHUB_REF##*/}
+        git checkout "${GITHUB_REF:11}"
     - name: workspace
       run: |
         cd /home/
