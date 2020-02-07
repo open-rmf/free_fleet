@@ -18,6 +18,7 @@ jobs:
         git clone https://github.com/osrf/free_fleet
         git clone https://github.com/eclipse-cyclonedds/cyclonedds
     - name: checkout
+      shell: bash
       run: |
         cd /home/repos/free_fleet
         git checkout "${GITHUB_REF:11}"
@@ -50,6 +51,7 @@ jobs:
         git clone https://github.com/eclipse-cyclonedds/cyclonedds
         git clone https://github.com/osrf/rmf_core
     - name: checkout
+      shell: bash
       run: |
         cd /home/repos/free_fleet 
         git checkout "${GITHUB_REF:11}"
