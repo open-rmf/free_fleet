@@ -317,6 +317,13 @@ void ServerNode::handle_mode_request(
 void ServerNode::handle_path_request(
     rmf_fleet_msgs::msg::PathRequest::UniquePtr _msg)
 {
+  for (std::size_t i = 0; i < _msg->path.size(); ++i)
+  {
+    rmf_fleet_msgs::msg::Location fleet_frame_waypoint;
+    transform_rmf_to_fleet(_msg->path[i], fleet_frame_waypoint);
+    _msg->path[i] = fleet_frame_waypoint;
+  }
+
   messages::PathRequest ff_msg;
   to_ff_message(*(_msg.get()), ff_msg);
   fields.server->send_path_request(ff_msg);
@@ -325,6 +332,10 @@ void ServerNode::handle_path_request(
 void ServerNode::handle_destination_request(
     rmf_fleet_msgs::msg::DestinationRequest::UniquePtr _msg)
 {
+  rmf_fleet_msgs::msg::Location fleet_frame_destination;
+  transform_rmf_to_fleet(_msg->destination, fleet_frame_destination);
+  _msg->destination = fleet_frame_destination;
+
   messages::DestinationRequest ff_msg;
   to_ff_message(*(_msg.get()), ff_msg);
   fields.server->send_destination_request(ff_msg);
