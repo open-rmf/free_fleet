@@ -31,6 +31,8 @@ def generate_launch_description():
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
 
+    autostart = LaunchConfiguration('autostart', default='true')
+
     map_yaml_file_path = LaunchConfiguration(
         'map_param_file',
         default=os.path.join(
@@ -68,6 +70,15 @@ def generate_launch_description():
             node_executable='rviz2',
             node_name='rviz2',
             arguments=['-d', rviz_config_path],
-            output='screen')
+            output='screen'),
+
+        Node(
+            package='nav2_lifecycle_manager',
+            node_executable='lifecycle_manager',
+            node_name='lifecycle_manager_localization',
+            output='screen',
+            parameters=[{'use_sim_time': use_sim_time},
+                        {'autostart': autostart},
+                        {'node_names': ['map_server']}])
 
     ])
