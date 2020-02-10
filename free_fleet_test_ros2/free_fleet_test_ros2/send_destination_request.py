@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import argparse
 
 import rclpy
@@ -47,9 +48,10 @@ def main(argv = sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--fleet-name', default=default_fleet_name)
     parser.add_argument('-r', '--robot-name', default=default_robot_name)
-    parser.add_argument('--x', default=default_desired_x)
-    parser.add_argument('--y', default=default_desired_y)
+    parser.add_argument('-x', default=default_desired_x)
+    parser.add_argument('-y', default=default_desired_y)
     parser.add_argument('--yaw', default=default_desired_yaw)
+    parser.add_argument('-l', '--level-name', default=default_level_name)
     parser.add_argument('-i', '--task-id', default=default_task_id)
     parser.add_argument('-t', '--topic-name', default=default_topic_name)
     args = parser.parse_args(argv[1:])
@@ -59,10 +61,11 @@ def main(argv = sys.argv):
     print('x: {}'.format(args.x))
     print('y: {}'.format(args.y))
     print('yaw: {}'.format(args.yaw))
+    print('level_name: {}'.format(args.level_name))
     print('task_id: {}'.format(args.task_id))
     print('topic_name: {}'.format(args.topic_name))
 
-    rclpy.init(argv)
+    rclpy.init()
     node = rclpy.create_node('send_destination_request_node')
     pub = node.create_publisher(DestinationRequest, args.topic_name, 10)
 
@@ -74,6 +77,7 @@ def main(argv = sys.argv):
     msg.destination.x = float(args.x)
     msg.destination.y = float(args.y)
     msg.destination.yaw = float(args.yaw)
+    msg.destination.level_name = args.level_name
 
     rclpy.spin_once(node, timeout_sec=1.0)
     pub.publish(msg)
