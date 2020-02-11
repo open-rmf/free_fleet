@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import argparse
 
 import rclpy
@@ -35,8 +36,8 @@ def main(argv = sys.argv):
     default_fleet_name = 'fleet_name'
     default_robot_name = 'robot_name'
     default_task_id = '576y13ewgyffeijuais'
-    default_mode = 'pause'
-    default_topic_name = 'mode_request'
+    default_mode = 'mode'
+    default_topic_name = 'robot_mode_requests'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--fleet-name', default=default_fleet_name)
@@ -52,7 +53,7 @@ def main(argv = sys.argv):
     print('task_id: {}'.format(args.task_id))
     print('topic_name: {}'.format(args.topic_name))
 
-    rclpy.init(argv)
+    rclpy.init()
     node = rclpy.create_node('send_mode_request_node')
     pub = node.create_publisher(ModeRequest, args.topic_name, 10)
 
@@ -61,7 +62,10 @@ def main(argv = sys.argv):
     msg.robot_name = args.robot_name
     msg.task_id = args.task_id
     
-    if args.mode == 'pause':
+    if args.mode == 'mode':
+        print('Please insert desired mode, pause or resume')
+        return
+    elif args.mode == 'pause':
         msg.mode.mode = RobotMode.MODE_PAUSED
     elif args.mode == 'resume':
         msg.mode.mode = RobotMode.MODE_MOVING

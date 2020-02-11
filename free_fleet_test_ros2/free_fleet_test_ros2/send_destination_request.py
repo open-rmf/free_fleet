@@ -43,7 +43,7 @@ def main(argv = sys.argv):
     default_desired_y = 0.0
     default_desired_yaw = 0.0
     default_level_name = 'B1'
-    default_topic_name = 'destination_request'
+    default_topic_name = 'robot_destination_requests'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--fleet-name', default=default_fleet_name)

@@ -59,3 +59,21 @@ ros2 topic list
 
 ros2 topic echo /fleet_state
 ```
+
+## Mode Request
+
+```bash
+
+```
+
+## Path Reqeust
+
+```bash
+
+```
+
+## Destination Request
+
+```bash
+ros2 run free_fleet_test_ros2 send_destination_request -f turtlebot3 -r turtlebot3_1 -x 1.725 -y -0.39 --yaw 0.0 -l B1 -i ygiuhjkdsfoijds -t destination_requests
+```

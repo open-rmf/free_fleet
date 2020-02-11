@@ -331,9 +331,19 @@ void ServerNode::handle_path_request(
 void ServerNode::handle_destination_request(
     rmf_fleet_msgs::msg::DestinationRequest::UniquePtr _msg)
 {
+  RCLCPP_INFO(
+      get_logger(),
+      "received a destination request: x: %.2f, y: %.2f, yaw: %.2f",
+      _msg->destination.x, _msg->destination.y, _msg->destination.yaw);
+
   rmf_fleet_msgs::msg::Location fleet_frame_destination;
   transform_rmf_to_fleet(_msg->destination, fleet_frame_destination);
+
   _msg->destination = fleet_frame_destination;
+  RCLCPP_INFO(
+      get_logger(),
+      "after transformation: x: %.2f, y: %.2f, yaw: %.2f",
+      _msg->destination.x, _msg->destination.y, _msg->destination.yaw);
 
   messages::DestinationRequest ff_msg;
   to_ff_message(*(_msg.get()), ff_msg);
