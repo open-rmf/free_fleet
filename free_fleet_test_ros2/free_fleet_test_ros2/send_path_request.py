@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
+import sys
 import json
+import argparse
 
 import rclpy
 from rclpy.node import Node
@@ -25,7 +26,7 @@ from rmf_fleet_msgs.msg import PathRequest
 
 
 def print_path(json_path_string):
-    path_dict = json.load(json_path_string)
+    path_dict = json.loads(json_path_string)
     for waypoint in path_dict:
         print('01 x: {} y: {} yaw: {} level_name: {}'.format(
                 waypoint['x'], waypoint['y'], waypoint['yaw'],
@@ -33,7 +34,7 @@ def print_path(json_path_string):
 
 
 def get_path_message(json_path_string):
-    path_dict = json.load(json_path_string)
+    path_dict = json.loads(json_path_string)
     path = []
     for waypoint in path_dict:
         new_wp = Location()

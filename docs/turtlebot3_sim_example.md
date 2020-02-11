@@ -63,13 +63,14 @@ ros2 topic echo /fleet_state
 ## Mode Request
 
 ```bash
-
+ros2 run free_fleet_test_ros2 send_mode_request -f turtlebot3 -r turtlebot3_1 -m pause -i gyifoiuds
+ros2 run free_fleet_test_ros2 send_mode_request -f turtlebot3 -r turtlebot3_1 -m resume -i gyifoiudsudfd
 ```
 
 ## Path Reqeust
 
 ```bash
-
+ros2 run free_fleet_test_ros2 send_path_request -f turtlebot3 -r turtlebot3_1 -i huiesio -p '[{"x": 1.725, "y": -0.39, "yaw": 0.0, "level_name": "B1"}, {"x": 1.737, "y": 0.951, "yaw": 1.57, "level_name": "B1"}, {"x": -0.616, "y": 1.852, "yaw": 3.14, "level_name": "B1"}, {"x": -0.626, "y": -1.972, "yaw": 4.71, "level_name": "B1"}]'
 ```
 
 ## Destination Request
