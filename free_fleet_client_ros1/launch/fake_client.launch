@@ -9,8 +9,8 @@
 
   <node name="magni_node" pkg="free_fleet_client_ros1"
       type="free_fleet_client_ros1" output="screen">
-    <param name="fleet_name" type="string" value="magni"/>
-    <param name="robot_name" type="string" value="magni1"/>
+    <param name="fleet_name" type="string" value="fake_fleet"/>
+    <param name="robot_name" type="string" value="fake_robot"/>
     <param name="dds_domain" type="int" value="42"/>
     <param name="max_dist_to_first_waypoint" type="double" value="10.0"/>
   </node>
