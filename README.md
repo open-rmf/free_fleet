@@ -164,7 +164,7 @@ Launch the basic simulation of a single Turtlebot3, with a free fleet client att
 
 ```bash
 source ~/client_ws/devel/setup.bash
-roslaunch free_fleet_client_ros1 turtlebot3_world_ff.launch
+export TURTLEBOT3_MODEL=waffle && roslaunch free_fleet_client_ros1 turtlebot3_world_ff.launch
 ```
 
 This launch file starts the simulation in `gazebo`, visualization in `rviz`, as well as the simulated navigation stack of the single turtlebot3. Once the simulation and visualization show up, the robot can be commanded as per normal through `rviz` with `2D Nav Goal`.
@@ -190,7 +190,7 @@ Similarly to the example above, launch the provided launch file, which will star
 
 ```bash
 source ~/client_ws/devel/setup.bash
-roslaunch free_fleet_client_ros1 multi_turtlebot3_ff.launch
+export TURTLEBOT3_MODEL=waffle && roslaunch free_fleet_client_ros1 multi_turtlebot3_ff.launch
 ```
 
 Once the simulation shows up and the free fleet clients are alive, we launch the free fleet server just like the example above, 
@@ -215,20 +215,20 @@ Now the fun begins! There are 3 types of commands/requests that can be sent to t
 Destination requests, which allows single destination commands for the robots,
 
 ```bash
-ros2 run free_fleet_test_ros2 send_destination_request -f <fleet_name> -r <robot_name> -x 1.725 -y -0.39 --yaw 0.0 -l B1 -i <unique_task_id> -t destination_requests
+ros2 run free_fleet_test_ros2 send_destination_request -f FLEET_NAME -r ROBOT_NAME -x 1.725 -y -0.39 --yaw 0.0 -l B1 -i UNIQUE_TASK_ID -t destination_requests
 ```
 
 Path requests, which requests that the robot perform a string of destination commands,
 
 ```bash
-ros2 run free_fleet_test_ros2 send_path_request -f <fleet_name> -r <robot_name> -i <unique_task_id> -p '[{"x": 1.725, "y": -0.39, "yaw": 0.0, "level_name": "B1"}, {"x": 1.737, "y": 0.951, "yaw": 1.57, "level_name": "B1"}, {"x": -0.616, "y": 1.852, "yaw": 3.14, "level_name": "B1"}, {"x": -0.626, "y": -1.972, "yaw": 4.71, "level_name": "B1"}]'
+ros2 run free_fleet_test_ros2 send_path_request -f FLEET_NAME -r ROBOT_NAME -i UNIQUE_TASK_ID -p '[{"x": 1.725, "y": -0.39, "yaw": 0.0, "level_name": "B1"}, {"x": 1.737, "y": 0.951, "yaw": 1.57, "level_name": "B1"}, {"x": -0.616, "y": 1.852, "yaw": 3.14, "level_name": "B1"}, {"x": -0.626, "y": -1.972, "yaw": 4.71, "level_name": "B1"}]'
 ```
 
 Mode requests which only supports `pause` and `resume` at the moment,
 
 ```bash
-ros2 run free_fleet_test_ros2 send_mode_request -f <fleet_name> -r <robot_name> -m pause -i <unique_task_id>
-ros2 run free_fleet_test_ros2 send_mode_request -f <fleet_name> -r <robot_name> -m resume -i <unique_task_id>
+ros2 run free_fleet_test_ros2 send_mode_request -f FLEET_NAME -r ROBOT_NAME -m pause -i UNIQUE_TASK_ID
+ros2 run free_fleet_test_ros2 send_mode_request -f FLEET_NAME -r ROBOT_NAME -m resume -i UNIQUE_TASK_ID
 ```
 
 **Note** that the task IDs need to be unique, if a request is sent using a previously used task ID, the request will be ignored by the free fleet clients.
