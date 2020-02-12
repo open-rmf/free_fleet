@@ -19,7 +19,8 @@
   - [Client in ROS 1](#client-in-ros-1)
 - **[Plans](#plans)**
 
----
+</br>
+</br>
 
 ## About
 
@@ -31,7 +32,7 @@ for a while. Please open an issue ticket on this repo if you have problems.
 Cheers.
 
 </br>
----
+</br>
 
 ## Installation Instructions
 
@@ -112,7 +113,7 @@ colcon build
 ```
 
 </br>
----
+</br>
 
 ## Examples
 
@@ -233,7 +234,7 @@ ros2 run free_fleet_test_ros2 send_mode_request -f <fleet_name> -r <robot_name> 
 **Note** that the task IDs need to be unique, if a request is sent using a previously used task ID, the request will be ignored by the free fleet clients.
 
 </br>
----
+</br>
 
 ## Notes
 
@@ -248,7 +249,7 @@ ros2 run free_fleet_test_ros2 send_mode_request -f <fleet_name> -r <robot_name> 
 * level name is currently derived from a simple `std_msgs/String`, and at the moment is not used in any core components or decision making
 
 </br>
----
+</br>
 
 ## Plans
 
