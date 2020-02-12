@@ -30,6 +30,7 @@ Sometimes it is called the "Fun Free Fleet For Friends" (F5).
 for a while. Please open an issue ticket on this repo if you have problems.
 Cheers.
 
+</br>
 ---
 
 ## Installation Instructions
@@ -42,7 +43,7 @@ uses DDS implementations packaged as part of the ROS 2 project.
 The build scripts assume that ROS 2 Eloquent is installed to the canonical
 location in `/opt/ros/eloquent`
 
-
+</br>
 
 ### Message Generation
 
@@ -54,7 +55,7 @@ To recreate them, a full installtion of `CycloneDDS` will be needed, which will 
 ./dds_idlc -allstructs FreeFleet.idl
 ```
 
-
+</br>
 
 ### Client in ROS 1
 
@@ -82,7 +83,7 @@ catkin build cyclonedds --cmake-args -DBUILD_IDLC=NO
 catkin build
 ```
 
-
+</br>
 
 ### Server in ROS 2
 
@@ -110,6 +111,7 @@ colcon build --packages-select cyclonedds --cmake-args -DBUILD_IDLC=NO
 colcon build
 ```
 
+</br>
 ---
 
 ## Examples
@@ -139,7 +141,7 @@ ros2 topic echo /fleet_states
 
 Next, to send requests and commands, check out the example scripts and their uses [here](#commands-and-requests).
 
-
+</br>
 
 ### Turtlebot3 Simulation
 
@@ -177,7 +179,7 @@ At this point, the server should have registered the client running on that sing
 
 Next, to send requests and commands, check out the example scripts and their uses [here](#commands-and-requests).
 
-
+</br>
 
 ### Multi Turtlebot3 Simulation
 
@@ -203,7 +205,7 @@ At this point, the server should have registered the client running on the 3 sim
 
 Next, to send requests and commands, check out the example scripts and their uses [here](#commands-and-requests).
 
-
+</br>
 
 ### Commands and Requests
 
@@ -230,6 +232,7 @@ ros2 run free_fleet_test_ros2 send_mode_request -f <fleet_name> -r <robot_name> 
 
 **Note** that the task IDs need to be unique, if a request is sent using a previously used task ID, the request will be ignored by the free fleet clients.
 
+</br>
 ---
 
 ## Notes
@@ -244,6 +247,7 @@ ros2 run free_fleet_test_ros2 send_mode_request -f <fleet_name> -r <robot_name> 
 
 * level name is currently derived from a simple `std_msgs/String`, and at the moment is not used in any core components or decision making
 
+</br>
 ---
 
 ## Plans
