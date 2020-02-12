@@ -4,20 +4,20 @@
 
 ## Contents
 
-**[About](#About)**
-**[Installation Instructions](#installation-instructions)**
+- **[About](#About)**
+- **[Installation Instructions](#installation-instructions)**
   - [Prerequisites](#prerequisites)
   - [Message Generation](#message-generation)
   - [Client in ROS 1](#client-in-ros-1)
   - [Server in ROS 2](#server-in-ros-2)
-**[Examples](#examples)**
+- **[Examples](#examples)**
   - [Barebones Example](#barebones-example)
   - [Turtlebot3 Simulation](#turtlebot3-simulation)
   - [Multi Turtlebot3 Simulation](#multi-turtlebot3-simulation)
   - [Commands and Requests](#commands-and-requests)
-**[Notes](#notes)**
+- **[Notes](#notes)**
   - [Client in ROS 1](#client-in-ros-1)
-**[Plans](#plans)**
+- **[Plans](#plans)**
 
 ---
 
