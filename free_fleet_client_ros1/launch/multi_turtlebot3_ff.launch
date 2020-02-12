@@ -24,6 +24,8 @@
       <arg name="initial_pose_x" default="-6.58309602737"/>
       <arg name="initial_pose_y" default="-0.598859667778"/>
       <arg name="initial_pose_a" default="1.57"/>
+      <!-- <arg name="cmd_vel_topic" default="$(arg tb3_0_prefix)/cmd_vel" />
+      <arg name="odom_topic" default="$(arg tb3_0_prefix)/odom" /> -->
     </include>
   </group>
 
@@ -37,6 +39,8 @@
       <arg name="initial_pose_x" default="6.72441768646"/>
       <arg name="initial_pose_y" default="-1.08069348335"/>
       <arg name="initial_pose_a" default="1.57"/>
+      <!-- <arg name="cmd_vel_topic" default="$(arg tb3_1_prefix)/cmd_vel" />
+      <arg name="odom_topic" default="$(arg tb3_1_prefix)/odom" /> -->
     </include>
   </group>
 
@@ -50,6 +54,8 @@
       <arg name="initial_pose_x" default="0.30019775033"/>
       <arg name="initial_pose_y" default="2.9819111824"/>
       <arg name="initial_pose_a" default="0.0"/>
+      <!-- <arg name="cmd_vel_topic" default="$(arg tb3_2_prefix)/cmd_vel" />
+      <arg name="odom_topic" default="$(arg tb3_2_prefix)/odom" /> -->
     </include>
   </group>
 

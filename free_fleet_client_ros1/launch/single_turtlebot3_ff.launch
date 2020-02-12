@@ -13,7 +13,7 @@
   <arg name="set_map_frame"  default="map"/>
 
   <!-- move_base Arguments -->
-  <arg name="cmd_vel_topic" default="/cmd_vel" />
+  <arg name="cmd_vel_topic" default="cmd_vel" />
   <arg name="odom_topic" default="odom" />
   <arg name="move_forward_only" default="false"/>
 
