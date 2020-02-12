@@ -7,7 +7,7 @@
       name="fake_robot_transform" 
       args="0.0 0.0 0.0 0.0 0.0 0.0 1.0 base_footprint map 200"/>
 
-  <node name="magni_node" pkg="free_fleet_client_ros1"
+  <node name="fake_client_node" pkg="free_fleet_client_ros1"
       type="free_fleet_client_ros1" output="screen">
     <param name="fleet_name" type="string" value="fake_fleet"/>
     <param name="robot_name" type="string" value="fake_robot"/>

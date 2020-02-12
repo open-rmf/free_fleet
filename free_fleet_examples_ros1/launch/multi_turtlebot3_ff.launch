@@ -9,14 +9,14 @@
 
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" 
-      args="$(find free_fleet_client_ros1)/test_maps/house.yaml">
+      args="$(find free_fleet_examples_ros1)/test_maps/house.yaml">
     <param name="frame_id" value="$(arg set_map_frame)"/>
   </node>
 
   <!-- launch the navigation stacks of 3 turtlebot3s-->
   <arg name="tb3_0_prefix" value="tb3_0"/>
   <group ns="$(arg tb3_0_prefix)">
-    <include file="$(find free_fleet_client_ros1)/launch/single_turtlebot3_ff.launch">
+    <include file="$(find free_fleet_examples_ros1)/launch/single_turtlebot3_ff.launch">
       <arg name="set_base_frame" value="$(arg tb3_0_prefix)/base_footprint"/>
       <arg name="set_odom_frame" value="$(arg tb3_0_prefix)/odom"/>
       <arg name="set_map_frame" value="$(arg set_map_frame)"/>
@@ -24,14 +24,12 @@
       <arg name="initial_pose_x" default="-6.58309602737"/>
       <arg name="initial_pose_y" default="-0.598859667778"/>
       <arg name="initial_pose_a" default="1.57"/>
-      <!-- <arg name="cmd_vel_topic" default="$(arg tb3_0_prefix)/cmd_vel" />
-      <arg name="odom_topic" default="$(arg tb3_0_prefix)/odom" /> -->
     </include>
   </group>
 
   <arg name="tb3_1_prefix" value="tb3_1"/>
   <group ns="$(arg tb3_1_prefix)">
-    <include file="$(find free_fleet_client_ros1)/launch/single_turtlebot3_ff.launch">
+    <include file="$(find free_fleet_examples_ros1)/launch/single_turtlebot3_ff.launch">
       <arg name="set_base_frame" value="$(arg tb3_1_prefix)/base_footprint"/>
       <arg name="set_odom_frame" value="$(arg tb3_1_prefix)/odom"/>
       <arg name="set_map_frame" value="$(arg set_map_frame)"/>
@@ -39,14 +37,12 @@
       <arg name="initial_pose_x" default="6.72441768646"/>
       <arg name="initial_pose_y" default="-1.08069348335"/>
       <arg name="initial_pose_a" default="1.57"/>
-      <!-- <arg name="cmd_vel_topic" default="$(arg tb3_1_prefix)/cmd_vel" />
-      <arg name="odom_topic" default="$(arg tb3_1_prefix)/odom" /> -->
     </include>
   </group>
 
   <arg name="tb3_2_prefix" value="tb3_2"/>
   <group ns="$(arg tb3_2_prefix)">
-    <include file="$(find free_fleet_client_ros1)/launch/single_turtlebot3_ff.launch">
+    <include file="$(find free_fleet_examples_ros1)/launch/single_turtlebot3_ff.launch">
       <arg name="set_base_frame" value="$(arg tb3_2_prefix)/base_footprint"/>
       <arg name="set_odom_frame" value="$(arg tb3_2_prefix)/odom"/>
       <arg name="set_map_frame" value="$(arg set_map_frame)"/>
@@ -54,8 +50,6 @@
       <arg name="initial_pose_x" default="0.30019775033"/>
       <arg name="initial_pose_y" default="2.9819111824"/>
       <arg name="initial_pose_a" default="0.0"/>
-      <!-- <arg name="cmd_vel_topic" default="$(arg tb3_2_prefix)/cmd_vel" />
-      <arg name="odom_topic" default="$(arg tb3_2_prefix)/odom" /> -->
     </include>
   </group>
 
