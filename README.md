@@ -38,11 +38,31 @@ Cheers.
 
 ### Prerequisites
 
-ROS 1 Melodic and ROS 2 Eloquent need to be installed, since the ROS 1 client
-uses DDS implementations packaged as part of the ROS 2 project.
+* [Ubuntu 18.04 LTS](https://releases.ubuntu.com/18.04/)
+* [ROS 1 - Melodic](https://wiki.ros.org/melodic)
+* [ROS 2 - Eloquent](https://index.ros.org/doc/ros2/Releases/Release-Eloquent-Elusor/)
 
-The build scripts assume that ROS 2 Eloquent is installed to the canonical
-location in `/opt/ros/eloquent`
+Install all non-ROS prerequisite packages,
+
+```bash
+sudo apt update && sudo apt install \
+  git cmake wget \
+  python3-vcstool \
+  python-catkin-tools \
+  libyaml-cpp-dev
+```
+
+Install all ROS prerequisite packages,
+
+```bash
+sudo apt install \
+  ros-melodic-move-base-msgs \
+  ros-melodic-tf2 \
+  ros-melodic-tf2-ros \
+  ros-melodic-tf2-geometry-msgs \
+  ros-melodic-actionlib \
+  ros-melodic-sensor-msgs
+```
 
 </br>
 
