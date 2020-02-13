@@ -4,16 +4,16 @@
 
   <node pkg="free_fleet_server_ros2"
       exec="free_fleet_server_ros2"
-      name="test_server_node"
-      node-name="test_server_node"
+      name="fake_server_node"
+      node-name="fake_server_node"
       output="both">
 
-    <param name="fleet_name" value="magni"/>
+    <param name="fleet_name" value="fake_fleet"/>
 
     <param name="fleet_state_topic" value="fleet_states"/>
     <param name="mode_request_topic" value="robot_mode_requests"/>
     <param name="path_request_topic" value="robot_path_requests"/>
-    <param name="destination_request_topic" value="destination_requests"/>
+    <param name="destination_request_topic" value="robot_destination_requests"/>
 
     <param name="dds_domain" value="42"/>
     <param name="dds_robot_state_topic" value="robot_state"/>
@@ -32,3 +32,4 @@
   </node>
 
 </launch>
+
