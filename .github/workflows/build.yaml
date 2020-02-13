@@ -70,4 +70,5 @@ jobs:
         cd /home/ros2_ws
         source /opt/ros/eloquent/setup.bash
         colcon build --packages-select cyclonedds --cmake-args -DBUILD_IDLC=NO
-        colcon build
+        colcon build --packages-up-to free_fleet_server_ros2 free_fleet_examples_ros2
+
