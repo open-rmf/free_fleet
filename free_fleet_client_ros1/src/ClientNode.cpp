@@ -273,7 +273,14 @@ bool ClientNode::read_mode_request()
     if (mode_request.mode.mode == messages::RobotMode::MODE_PAUSED)
     {
       ROS_INFO("received a PAUSE command.");
+
+      fields.move_base_client->cancelAllGoals();
+      WriteLock goal_path_lock(goal_path_mutex);
+      if (!goal_path.empty())
+        goal_path[0].sent = false;
+
       paused = true;
+      emergency = false;
     }
     else if (mode_request.mode.mode == messages::RobotMode::MODE_MOVING)
     {
