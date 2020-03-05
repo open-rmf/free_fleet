@@ -52,6 +52,7 @@ jobs:
           git cmake wget \
           python3-vcstool \
           libyaml-cpp-dev -y
+        sudo apt install ros-eloquent-launch* -y
     - name: workspace
       shell: bash
       run: |
