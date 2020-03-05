@@ -61,7 +61,8 @@ sudo apt install \
   ros-melodic-tf2-ros \
   ros-melodic-tf2-geometry-msgs \
   ros-melodic-actionlib \
-  ros-melodic-sensor-msgs
+  ros-melodic-sensor-msgs \
+  ros-eloquent-launch*
 ```
 
 </br>
