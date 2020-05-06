@@ -66,6 +66,7 @@ jobs:
       shell: bash
       run: |
         cd /home/ros2_ws
+        rosdep update
         rosdep install --from-paths src --ignore-src -y -r --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
     - name: build
       shell: bash
