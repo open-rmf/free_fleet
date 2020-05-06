@@ -49,10 +49,7 @@ jobs:
     - name: deps
       run: |
         sudo apt update && sudo apt install \
-          git cmake wget \
-          python3-vcstool \
-          libyaml-cpp-dev -y
-        sudo apt install ros-eloquent-launch* -y
+          git wget python3-vcstool -y
     - name: workspace
       shell: bash
       run: |
@@ -65,11 +62,14 @@ jobs:
       run: |
         cd /home/ros2_ws/src/free_fleet
         git checkout "${GITHUB_REF:11}"
+    - name: rosdeps
+      shell: bash
+      run: |
+        cd /home/ros2_ws
+        rosdep install --from-paths src --ignore-src -y -r --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
     - name: build
       shell: bash
       run: |
         cd /home/ros2_ws
         source /opt/ros/eloquent/setup.bash
-        colcon build --packages-select cyclonedds --cmake-args -DBUILD_IDLC=NO
-        colcon build --packages-up-to free_fleet_server_ros2 free_fleet_examples_ros2
-
+        colcon build --mixin-files src/free_fleet/mixins/ros2/skip.mixin --mixin skip

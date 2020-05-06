@@ -65,6 +65,18 @@ sudo apt install \
   ros-eloquent-launch*
 ```
 
+TODO: rosdep stuff during ROS2 installation,
+
+```bash
+rosdep install --from-paths src --ignore-src -y -r --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
+```
+
+to build
+
+```bash
+colcon build --mixin-files src/free_fleet/mixins/ros2/skip.mixin --mixin skip
+```
+
 </br>
 
 ### Message Generation

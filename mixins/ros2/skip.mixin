@@ -1,0 +1,10 @@
+{
+  "build": {
+    "skip": {
+      "packages-skip": [
+        "free_fleet_client_ros1",
+        "free_fleet_examples_ros1",
+      ],
+    }
+  }
+}
