@@ -11,7 +11,3 @@ repositories:
     type: git
     url: https://github.com/osrf/rmf_core.git
     version: master
-  traffic_editor:
-    type: git
-    url: https://github.com/osrf/traffic_editor.git
-    version: master
