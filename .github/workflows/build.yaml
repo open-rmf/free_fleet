@@ -46,7 +46,9 @@ jobs:
     - name: deps
       run: |
         sudo apt update && sudo apt install \
-          git wget python3-vcstool -y
+          git wget python3-vcstool \
+          python-colcon-common-extensions \
+          python-colcon-mixin -y
     - name: workspace
       shell: bash
       run: |

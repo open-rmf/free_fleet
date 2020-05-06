@@ -46,23 +46,9 @@ Install all non-ROS prerequisite packages,
 
 ```bash
 sudo apt update && sudo apt install \
-  git cmake wget \
-  python3-vcstool \
-  python-catkin-tools \
-  libyaml-cpp-dev
-```
-
-Install all ROS prerequisite packages,
-
-```bash
-sudo apt install \
-  ros-melodic-move-base-msgs \
-  ros-melodic-tf2 \
-  ros-melodic-tf2-ros \
-  ros-melodic-tf2-geometry-msgs \
-  ros-melodic-actionlib \
-  ros-melodic-sensor-msgs \
-  ros-eloquent-launch*
+  git wget python3-vcstool \
+  python-colcon-common-extensions \
+  python-colcon-mixin
 ```
 
 TODO: rosdep stuff during ROS2 installation,
