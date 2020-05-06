@@ -68,6 +68,10 @@ sudo apt install \
 TODO: rosdep stuff during ROS2 installation,
 
 ```bash
+sudo apt install python3-colcon-common-extensions python3-colcon-mixin
+```
+
+```bash
 rosdep install --from-paths src --ignore-src -y -r --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
 ```
 
@@ -75,6 +79,12 @@ to build
 
 ```bash
 colcon build --mixin-files src/free_fleet/mixins/ros2/skip.mixin --mixin skip
+```
+
+ROS1 rosdep
+
+```bash
+rosdep install --from-paths src --ignore-src -y -r --skip-keys="rmf_fleet_msgs ament_lint_common rclpy rclcpp rosidl_default_generators ament_cmake builtin_interfaces"
 ```
 
 </br>
