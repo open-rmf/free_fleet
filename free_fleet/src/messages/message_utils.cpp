@@ -21,10 +21,8 @@
 
 #include "message_utils.hpp"
 
-namespace free_fleet
-{
-namespace messages
-{
+namespace free_fleet {
+namespace messages {
 
 void convert(const RobotMode& _input, FreeFleetData_RobotMode& _output)
 {

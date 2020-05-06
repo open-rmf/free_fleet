@@ -21,12 +21,11 @@
 
 #include "ClientImpl.hpp"
 
-#include "messages/FreeFleet.h"
+#include "messages/FleetMessages.h"
 #include "dds_utils/DDSPublishHandler.hpp"
 #include "dds_utils/DDSSubscribeHandler.hpp"
 
-namespace free_fleet
-{
+namespace free_fleet {
 
 Client::SharedPtr Client::make(const ClientConfig& _config)
 {

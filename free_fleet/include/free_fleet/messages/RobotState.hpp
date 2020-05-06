@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__ROBOTSTATE_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__ROBOTSTATE_HPP
+#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
+#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
 
 #include <string>
 #include <vector>
@@ -24,10 +24,8 @@
 #include "Location.hpp"
 #include "RobotMode.hpp"
 
-namespace free_fleet
-{
-namespace messages
-{
+namespace free_fleet {
+namespace messages {
 
 struct RobotState
 {
@@ -43,4 +41,4 @@ struct RobotState
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__ROBOTSTATE_HPP
+#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP

@@ -22,7 +22,7 @@
 
 #include <dds/dds.h>
 
-#include "../messages/FreeFleet.h"
+#include "../messages/FleetMessages.h"
 #include "../dds_utils/common.hpp"
 
 int main (int argc, char ** argv)

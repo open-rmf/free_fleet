@@ -25,12 +25,10 @@
 #include <free_fleet/messages/PathRequest.hpp>
 #include <free_fleet/messages/DestinationRequest.hpp>
 
-#include "FreeFleet.h"
+#include "FleetMessages.h"
 
-namespace free_fleet
-{
-namespace messages
-{
+namespace free_fleet {
+namespace messages {
 
 void convert(const RobotMode& _input, FreeFleetData_RobotMode& _output);
 

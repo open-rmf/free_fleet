@@ -18,8 +18,7 @@
 #include "ClientImpl.hpp"
 #include "messages/message_utils.hpp"
 
-namespace free_fleet
-{
+namespace free_fleet {
 
 Client::ClientImpl::ClientImpl(const ClientConfig& _config) :
   client_config(_config)

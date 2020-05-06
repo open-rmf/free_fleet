@@ -23,10 +23,8 @@
 
 #include <dds/dds.h>
 
-namespace free_fleet
-{
-namespace dds
-{
+namespace free_fleet {
+namespace dds {
 
 template <typename Message, size_t MaxSamplesNum = 1>
 class DDSSubscribeHandler
@@ -55,7 +53,6 @@ private:
 
 public:
 
-  /// 
   DDSSubscribeHandler(
       const dds_entity_t& _participant, 
       const dds_topic_descriptor_t* _topic_desc, 
@@ -93,18 +90,14 @@ public:
     ready = true;
   }
 
-  /// 
   ~DDSSubscribeHandler()
   {}
 
-  /// Checks if all the DDS items have been set up correctly
-  ///
   bool is_ready()
   {
     return ready;
   }
 
-  ///
   std::vector<std::shared_ptr<const Message>> read()
   {
     std::vector<std::shared_ptr<const Message>> msgs;

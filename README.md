@@ -69,12 +69,12 @@ sudo apt install \
 
 ### Message Generation
 
-Message generation via `FreeFleet.idl` is done using `dds_idlc` from `CycloneDDS`. For convenience, the generated mesasges and files has been done offline and committed into the code base. They can be found [here](./free_fleet/src/messages/).
+Message generation via `FleetMessages.idl` is done using `dds_idlc` from `CycloneDDS`. For convenience, the generated mesasges and files has been done offline and committed into the code base. They can be found [here](./free_fleet/src/messages/).
 
-To recreate them, a full installtion of `CycloneDDS` will be needed, which will require additional prerequisites. The full instructions can be found on its [repository](https://github.com/eclipse-cyclonedds/cyclonedds).
+To recreate them, a full installation of `CycloneDDS` will be needed, which will require additional prerequisites. The full instructions can be found on its [repository](https://github.com/eclipse-cyclonedds/cyclonedds).
 
 ```bash
-./dds_idlc -allstructs FreeFleet.idl
+./dds_idlc -allstructs FleetMessages.idl
 ```
 
 </br>

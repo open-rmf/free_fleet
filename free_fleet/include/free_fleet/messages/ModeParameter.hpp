@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,21 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__PATHREQUEST_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__PATHREQUEST_HPP
+#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
+#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
 
-#include <vector>
-
-#include "Location.hpp"
+#include <string>
 
 namespace free_fleet {
 namespace messages {
 
-struct PathRequest
+struct ModeParameter
 {
-  std::string fleet_name;
-  std::string robot_name;
-  std::vector<Location> path;
-  std::string task_id;
+  std::string name;
+  std::string value;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__PATHREQUEST_HPP
+#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
