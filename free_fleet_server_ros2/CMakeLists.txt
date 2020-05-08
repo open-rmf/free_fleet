@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-if (NOT $ENV{ROS_VERSION} MATCHES "2")
-  return()
-endif()
-
 project(free_fleet_server_ros2 LANGUAGES C CXX)
 
 # Default to C++14

@@ -91,7 +91,10 @@ Source ROS1 and build with the provided mixin file, to skip the ROS2 packages,
 ```bash
 cd ~/client_ws
 source /opt/ros/melodic/setup.bash
-colcon build --mixin-files src/free_fleet/mixins/ros1/skip.mixin --mixin skip
+
+# Blacklist the ROS2 packages so it doesn't complain during compilation, this applies to this workspace only
+catkin config --blacklist free_fleet_server_ros2 free_fleet_examples_ros2
+catkin build
 ```
 
 </br>
@@ -123,7 +126,7 @@ Source ROS2 and build with the provided mixin file, which skips the ROS1 package
 ```bash
 cd ~/server_ws
 source /opt/ros/eloquent/setup.bash
-colcon build --mixin-files src/free_fleet/mixins/ros2/skip.mixin --mixin skip
+colcon build
 ```
 
 </br>

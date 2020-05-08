@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-if (NOT $ENV{ROS_VERSION} MATCHES "1")
-  return()
-endif()
-
 project(free_fleet_examples_ros1)
 
 # -----------------------------------------------------------------------------
