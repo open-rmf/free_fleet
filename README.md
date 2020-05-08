@@ -45,9 +45,11 @@ Install all non-ROS prerequisite packages,
 
 ```bash
 sudo apt update && sudo apt install \
-  git wget python3-vcstool \
+  git wget \
+  python3-vcstool \
   python3-colcon-common-extensions \
-  python3-colcon-mixin
+  python3-colcon-mixin \
+  maven default-jdk   # CycloneDDS dependencies
 ```
 
 </br>
