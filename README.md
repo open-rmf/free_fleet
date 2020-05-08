@@ -52,10 +52,6 @@ sudo apt update && sudo apt install \
   python3-colcon-common-extensions \
   python3-colcon-mixin \
   maven default-jdk   # CycloneDDS dependencies
-
-# Just in case rosdep has not been installed before, remember to initialize and update
-sudo rosdep init
-rosdep update
 ```
 
 </br>

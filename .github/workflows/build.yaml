@@ -17,8 +17,6 @@ jobs:
           python3-colcon-common-extensions \
           python3-colcon-mixin \
           maven default-jdk -y
-        sudo rosdep init
-        rosdep update
     - name: workspace
       shell: bash
       run: |
@@ -35,6 +33,7 @@ jobs:
       shell: bash
       run: |
         cd /home/ros1_ws
+        rosdep update
         rosdep install --from-paths src --ignore-src -y -r --skip-keys="rmf_fleet_msgs ament_lint_common rclpy rclcpp rosidl_default_generators ament_cmake builtin_interfaces"
     - name: build
       shell: bash
@@ -59,8 +58,6 @@ jobs:
           python3-colcon-common-extensions \
           python3-colcon-mixin \
           maven default-jdk -y
-        sudo rosdep init
-        rosdep update
     - name: workspace
       shell: bash
       run: |
@@ -77,6 +74,7 @@ jobs:
       shell: bash
       run: |
         cd /home/ros2_ws
+        rosdep update
         rosdep install --from-paths src --ignore-src -y -r --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
     - name: build
       shell: bash
