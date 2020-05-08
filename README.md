@@ -8,15 +8,14 @@
 - **[Installation Instructions](#installation-instructions)**
   - [Prerequisites](#prerequisites)
   - [Message Generation](#message-generation)
-  - [Client in ROS 1](#client-in-ros-1)
-  - [Server in ROS 2](#server-in-ros-2)
+  - [Client in ROS1](#client-in-ros1)
+  - [Server in ROS2](#server-in-ros2)
 - **[Examples](#examples)**
   - [Barebones Example](#barebones-example)
   - [Turtlebot3 Simulation](#turtlebot3-simulation)
   - [Multi Turtlebot3 Simulation](#multi-turtlebot3-simulation)
   - [Commands and Requests](#commands-and-requests)
-- **[Notes](#notes)**
-  - [Client in ROS 1](#client-in-ros-1)
+- **[FAQ](#faq)**
 - **[Plans](#plans)**
 
 </br>
@@ -39,8 +38,8 @@ Cheers.
 ### Prerequisites
 
 * [Ubuntu 18.04 LTS](https://releases.ubuntu.com/18.04/)
-* [ROS 1 - Melodic](https://wiki.ros.org/melodic)
-* [ROS 2 - Eloquent](https://index.ros.org/doc/ros2/Releases/Release-Eloquent-Elusor/)
+* [ROS1 - Melodic](https://wiki.ros.org/melodic)
+* [ROS2 - Eloquent](https://index.ros.org/doc/ros2/Releases/Release-Eloquent-Elusor/)
 
 Install all non-ROS prerequisite packages,
 
@@ -49,28 +48,6 @@ sudo apt update && sudo apt install \
   git wget python3-vcstool \
   python3-colcon-common-extensions \
   python3-colcon-mixin
-```
-
-TODO: rosdep stuff during ROS2 installation,
-
-```bash
-sudo apt install python3-colcon-common-extensions python3-colcon-mixin
-```
-
-```bash
-rosdep install --from-paths src --ignore-src -y -r --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
-```
-
-to build
-
-```bash
-colcon build --mixin-files src/free_fleet/mixins/ros2/skip.mixin --mixin skip
-```
-
-ROS1 rosdep
-
-```bash
-rosdep install --from-paths src --ignore-src -y -r --skip-keys="rmf_fleet_msgs ament_lint_common rclpy rclcpp rosidl_default_generators ament_cmake builtin_interfaces"
 ```
 
 </br>
@@ -87,58 +64,66 @@ To recreate them, a full installation of `CycloneDDS` will be needed, which will
 
 </br>
 
-### Client in ROS 1
+### Client in ROS1
 
-Start a new ROS 1 workspace, and pull in the necessary repositories,
+Start a new ROS1 workspace, and pull in the necessary repositories,
 
 ```bash
 mkdir -p ~/client_ws/src
 cd ~/client_ws
 
-# set up the ROS 1 workspace free_fleet
+# set up the ROS1 workspace free_fleet
 wget https://raw.githubusercontent.com/osrf/free_fleet/master/free_fleet_ros1.repos
 vcs import src < free_fleet_ros1.repos
 ```
 
-Source ROS 1 and build with the cmake flag that minimizes the build of `CycloneDDS`,
+Install all the dependencies through `rosdep`,
+
+```bash
+cd ~/client_ws
+rosdep update
+rosdep install --from-paths src --ignore-src -y -r \
+  --skip-keys="rmf_fleet_msgs ament_lint_common rclpy rclcpp rosidl_default_generators ament_cmake builtin_interfaces"
+```
+
+Source ROS1 and build with the provided mixin file, to skip the ROS2 packages,
 
 ```bash
 cd ~/client_ws
 source /opt/ros/melodic/setup.bash
-
-# build cyclonedds first with the necessary cmake flags
-catkin build cyclonedds --cmake-args -DBUILD_IDLC=NO
-
-# build the rest of the packages
-catkin build
+colcon build --mixin-files src/free_fleet/mixins/ros1/skip.mixin --mixin skip
 ```
 
 </br>
 
-### Server in ROS 2
+### Server in ROS2
 
-Start a new ROS 2 workspace, and pull in the necessary repositories,
+Start a new ROS2 workspace, and pull in the necessary repositories,
 
 ```bash
 mkdir -p ~/server_ws/src
 cd ~/server_ws
 
-# set up the ROS 2 workspace for free_fleet
+# set up the ROS2 workspace for free_fleet
 wget https://raw.githubusercontent.com/osrf/free_fleet/master/free_fleet_ros2.repos
 vcs import src < free_fleet_ros2.repos
 ```
 
-Source ROS 2 and build with the cmake flag that minimizes the build of `CycloneDDS`,
+Install all the dependencies through `rosdep`,
 
-``` bash
+```bash
+cd ~/server_ws
+rosdep update
+rosdep install --from-paths src --ignore-src -y -r \
+  --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
+```
+
+Source ROS2 and build with the provided mixin file, which skips the ROS1 packages,
+
+```bash
 cd ~/server_ws
 source /opt/ros/eloquent/setup.bash
-
-# build cyclonedds first with the necessary cmake flags
-colcon build --packages-select cyclonedds --cmake-args -DBUILD_IDLC=NO
-
-# build the rest of the packages
-colcon build
+colcon build --mixin-files src/free_fleet/mixins/ros2/skip.mixin --mixin skip
 ```
 
 </br>
@@ -151,7 +136,7 @@ colcon build
 This example emulates a running robot and also a running free fleet server,
 
 ```bash
-source ~/client_ws/devel/setup.bash
+source ~/client_ws/install/setup.bash
 roslaunch free_fleet_examples_ros1 fake_client.launch
 ```
 
@@ -162,7 +147,7 @@ source ~/server_ws/install/setup.bash
 ros2 launch free_fleet_examples_ros2 fake_server.launch.xml
 ```
 
-To verify that the fake client has been registered, there will be print-outs on the server terminal, otherwise, the ROS 2 messages over the `/fleet_states` topic can also be used to verify,
+To verify that the fake client has been registered, there will be print-outs on the server terminal, otherwise, the ROS2 messages over the `/fleet_states` topic can also be used to verify,
 
 ```bash
 source ~/server_ws/install/setup.bash
@@ -175,7 +160,7 @@ Next, to send requests and commands, check out the example scripts and their use
 
 ### Turtlebot3 Simulation
 
-This example launches a single Turtlebot3 in simulation, and registers it as a robot within a fleet controlled by `free_fleet`. To set up this simulation example, more ROS 1 packages will be needed, assuming we already have built the initial setup listed [here](#installation-instructions)
+This example launches a single Turtlebot3 in simulation, and registers it as a robot within a fleet controlled by `free_fleet`. To set up this simulation example, more ROS1 packages will be needed, assuming we already have built the initial setup listed [here](#installation-instructions)
 
 ```bash
 cd ~/client_ws/src
@@ -265,17 +250,9 @@ ros2 run free_fleet_examples_ros2 send_mode_request.py -f FLEET_NAME -r ROBOT_NA
 </br>
 </br>
 
-## Notes
+## FAQ
 
-### Client in ROS 1
-
-* the time of the state is tied to the transform, if no transform is found no state will be published over DDS
-
-* battery percentages is derived from `sensor_msgs/BatteryState`
-
-* robot mode is derived from a combination of battery states and robot motion
-
-* level name is currently derived from a simple `std_msgs/String`, and at the moment is not used in any core components or decision making
+Answers to frequently asked questions can be found [here](/docs/faq.md).
 
 </br>
 </br>
@@ -292,4 +269,4 @@ ros2 run free_fleet_examples_ros2 send_mode_request.py -f FLEET_NAME -r ROBOT_NA
 
 * Documentation!
 
-* Integration demonstrations with `rmf_core`
+* Integration demonstrations with [`rmf_core`](https://github.com/osrf/rmf_core)
