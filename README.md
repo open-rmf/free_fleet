@@ -46,6 +46,7 @@ Install all non-ROS prerequisite packages,
 ```bash
 sudo apt update && sudo apt install \
   git wget \
+  python-catkin-tools \
   python3-vcstool \
   python3-colcon-common-extensions \
   python3-colcon-mixin \

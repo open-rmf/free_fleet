@@ -11,6 +11,7 @@ jobs:
       run: |
         sudo apt update && sudo apt install \
           git wget \
+          python-catkin-tools \
           python3-vcstool \
           python3-colcon-common-extensions \
           python3-colcon-mixin \
@@ -50,6 +51,7 @@ jobs:
       run: |
         sudo apt update && sudo apt install \
           git wget \
+          python-catkin-tools \
           python3-vcstool \
           python3-colcon-common-extensions \
           python3-colcon-mixin \
