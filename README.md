@@ -46,11 +46,16 @@ Install all non-ROS prerequisite packages,
 ```bash
 sudo apt update && sudo apt install \
   git wget \
+  python-rosdep \
   python-catkin-tools \
   python3-vcstool \
   python3-colcon-common-extensions \
   python3-colcon-mixin \
   maven default-jdk   # CycloneDDS dependencies
+
+# Just in case rosdep has not been installed before, remember to initialize and update
+sudo rosdep init
+rosdep update
 ```
 
 </br>
@@ -84,7 +89,6 @@ Install all the dependencies through `rosdep`,
 
 ```bash
 cd ~/client_ws
-rosdep update
 rosdep install --from-paths src --ignore-src -y -r \
   --skip-keys="rmf_fleet_msgs ament_lint_common rclpy rclcpp rosidl_default_generators ament_cmake builtin_interfaces"
 ```
@@ -119,7 +123,6 @@ Install all the dependencies through `rosdep`,
 
 ```bash
 cd ~/server_ws
-rosdep update
 rosdep install --from-paths src --ignore-src -y -r \
   --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
 ```
