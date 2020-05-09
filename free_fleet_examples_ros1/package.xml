@@ -12,13 +12,10 @@
   <exec_depend>free_fleet_client_ros1</exec_depend>
 
   <exec_depend>turtlebot3_bringup</exec_depend>
-  <exec_depend>turtlebot3_description</exec_depend>
-  <exec_depend>turtlebot3_navigation</exec_depend>
-  <exec_depend>turtlebot3_slam</exec_depend>
-  <exec_depend>turtlebot3_teleop</exec_depend>
   <exec_depend>turtlebot3_gazebo</exec_depend>
-  <exec_depend>turtlebot3_msgs</exec_depend>
-
+  <exec_depend>turtlebot3_navigation</exec_depend>
+  <exec_depend>amcl</exec_depend>
+  <exec_depend>move_base</exec_depend>
   <exec_depend>map_server</exec_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>tf2</exec_depend>

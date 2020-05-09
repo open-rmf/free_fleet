@@ -17,7 +17,7 @@ include(GNUInstallDirs)
 
 # -----------------------------------------------------------------------------
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin QUIET COMPONENTS
   roscpp
   sensor_msgs
   tf2
@@ -27,52 +27,58 @@ find_package(catkin REQUIRED COMPONENTS
   move_base_msgs
 )
 
-find_package(free_fleet REQUIRED)
+if (catkin_FOUND)
 
-catkin_package()
+  find_package(free_fleet REQUIRED)
 
-# -----------------------------------------------------------------------------
+  catkin_package()
 
-add_executable(free_fleet_client_ros1
-  src/main.cpp
-  src/utilities.cpp
-  src/ClientNode.cpp
-  src/ClientNodeConfig.cpp
-)
-target_link_libraries(free_fleet_client_ros1
-  ${free_fleet_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
-target_include_directories(free_fleet_client_ros1
-  PRIVATE
-    ${free_fleet_INCLUDE_DIRS}
-    ${catkin_INCLUDE_DIRS}
-)
+  #=============================================================================
 
-# -----------------------------------------------------------------------------
-
-set(testing_targets
-  fake_action_server
-)
-
-foreach(target ${testing_targets})
-  add_executable(${target}
-    src/tests/${target}.cpp
+  add_executable(free_fleet_client_ros1
+    src/main.cpp
+    src/utilities.cpp
+    src/ClientNode.cpp
+    src/ClientNodeConfig.cpp
   )
-  target_link_libraries(${target}
+  target_link_libraries(free_fleet_client_ros1
+    ${free_fleet_LIBRARIES}
     ${catkin_LIBRARIES}
   )
-  target_include_directories(${target}
+  target_include_directories(free_fleet_client_ros1
     PRIVATE
+      ${free_fleet_INCLUDE_DIRS}
       ${catkin_INCLUDE_DIRS}
   )
-endforeach()
 
-# -----------------------------------------------------------------------------
+  #=============================================================================
 
-install(
-  TARGETS
-    free_fleet_client_ros1
-    ${testing_targets}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+  set(testing_targets
+    fake_action_server
+  )
+  
+  foreach(target ${testing_targets})
+    add_executable(${target}
+      src/tests/${target}.cpp
+    )
+    target_link_libraries(${target}
+      ${catkin_LIBRARIES}
+    )
+    target_include_directories(${target}
+      PRIVATE
+        ${catkin_INCLUDE_DIRS}
+    )
+  endforeach()
+  
+  #=============================================================================
+
+  install(
+    TARGETS
+      free_fleet_client_ros1
+      ${testing_targets}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  )
+
+else()
+  message("catkin not found so skipping this ROS1 package")
+endif()

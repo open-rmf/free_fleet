@@ -50,7 +50,6 @@ sudo apt update && sudo apt install \
   python-catkin-tools \
   python3-vcstool \
   python3-colcon-common-extensions \
-  python3-colcon-mixin \
   maven default-jdk   # CycloneDDS dependencies
 ```
 
@@ -85,18 +84,16 @@ Install all the dependencies through `rosdep`,
 
 ```bash
 cd ~/client_ws
+source /opt/ros/melodic/setup.bash
 rosdep install --from-paths src --ignore-src -y -r \
   --skip-keys="rmf_fleet_msgs ament_lint_common rclpy rclcpp rosidl_default_generators ament_cmake builtin_interfaces"
 ```
 
-Source ROS1 and build with the provided mixin file, to skip the ROS2 packages,
+Source ROS1 and build,
 
 ```bash
 cd ~/client_ws
 source /opt/ros/melodic/setup.bash
-
-# Blacklist the ROS2 packages so it doesn't complain during compilation, this applies to this workspace only
-catkin config --blacklist free_fleet_server_ros2 free_fleet_examples_ros2
 catkin build
 ```
 
@@ -119,8 +116,9 @@ Install all the dependencies through `rosdep`,
 
 ```bash
 cd ~/server_ws
+source /opt/ros/eloquent/setup.bash
 rosdep install --from-paths src --ignore-src -y -r \
-  --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo"
+  --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo move_base amcl"
 ```
 
 Source ROS2 and build with the provided mixin file, which skips the ROS1 packages,
