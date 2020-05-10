@@ -76,8 +76,8 @@ mkdir -p ~/client_ws/src
 cd ~/client_ws
 
 # set up the ROS1 workspace free_fleet
-wget https://raw.githubusercontent.com/osrf/free_fleet/master/free_fleet_ros1.repos
-vcs import src < free_fleet_ros1.repos
+wget https://raw.githubusercontent.com/osrf/free_fleet/master/ros1.repos
+vcs import src < ros1.repos
 ```
 
 Install all the dependencies through `rosdep`,
@@ -108,8 +108,8 @@ mkdir -p ~/server_ws/src
 cd ~/server_ws
 
 # set up the ROS2 workspace for free_fleet
-wget https://raw.githubusercontent.com/osrf/free_fleet/master/free_fleet_ros2.repos
-vcs import src < free_fleet_ros2.repos
+wget https://raw.githubusercontent.com/osrf/free_fleet/master/ros2.repos
+vcs import src < ros2.repos
 ```
 
 Install all the dependencies through `rosdep`,
