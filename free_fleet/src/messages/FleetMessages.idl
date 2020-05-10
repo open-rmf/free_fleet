@@ -9,6 +9,7 @@ module FreeFleetData
     const unsigned long MODE_WAITING = 4;
     const unsigned long MODE_EMERGENCY = 5;
     const unsigned long MODE_GOING_HOME = 6;
+    const unsigned long MODE_DOCKING = 7;
   };
   struct RobotMode
   {
@@ -33,12 +34,18 @@ module FreeFleetData
     Location location;
     sequence<Location> path;
   };
+  struct ModeParameter
+  {
+    string name;
+    string value;
+  };
   struct ModeRequest
   {
     string fleet_name;
     string robot_name;
     RobotMode mode;
     string task_id;
+    sequence<ModeParameter> parameters;
   };
   struct PathRequest
   {

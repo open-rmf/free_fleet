@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="3">
+<package format="2">
   <name>free_fleet_examples_ros1</name>
   <version>0.0.1</version>
   <description>A package containing some examples of using free fleet ROS 1 components</description>
@@ -10,11 +10,14 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>free_fleet_client_ros1</exec_depend>
-  <exec_depend>turtlebot3_gazebo</exec_depend>
+
   <exec_depend>turtlebot3_bringup</exec_depend>
+  <exec_depend>turtlebot3_gazebo</exec_depend>
   <exec_depend>turtlebot3_navigation</exec_depend>
+  <exec_depend>amcl</exec_depend>
+  <exec_depend>move_base</exec_depend>
   <exec_depend>map_server</exec_depend>
   <exec_depend>rviz</exec_depend>
-  <exec_depend>tf</exec_depend>
+  <exec_depend>tf2</exec_depend>
 
 </package>

@@ -15,16 +15,14 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__LOCATION_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__LOCATION_HPP
+#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
+#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
 
 #include <string>
 #include <cstdint>
 
-namespace free_fleet
-{
-namespace messages
-{
+namespace free_fleet {
+namespace messages {
 
 struct Location
 {
@@ -39,4 +37,4 @@ struct Location
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__LOCATION_HPP
+#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP

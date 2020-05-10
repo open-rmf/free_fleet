@@ -20,10 +20,8 @@
 
 #include <string>
 
-namespace free_fleet
-{
-namespace common
-{
+namespace free_fleet {
+namespace common {
 
 char* dds_string_alloc_and_copy(const std::string& str);
 

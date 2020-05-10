@@ -21,16 +21,15 @@
 #include <free_fleet/messages/Location.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/messages/ModeParameter.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/PathRequest.hpp>
 #include <free_fleet/messages/DestinationRequest.hpp>
 
-#include "FreeFleet.h"
+#include "FleetMessages.h"
 
-namespace free_fleet
-{
-namespace messages
-{
+namespace free_fleet {
+namespace messages {
 
 void convert(const RobotMode& _input, FreeFleetData_RobotMode& _output);
 
@@ -43,6 +42,10 @@ void convert(const FreeFleetData_Location& _input, Location& _output);
 void convert(const RobotState& _input, FreeFleetData_RobotState& _output);
 
 void convert(const FreeFleetData_RobotState& _input, RobotState& _output);
+
+void convert(const ModeParameter& _input, FreeFleetData_ModeParameter& _output);
+
+void convert(const FreeFleetData_ModeParameter& _input, ModeParameter& _output);
 
 void convert(const ModeRequest& _input, FreeFleetData_ModeRequest& _output);
 

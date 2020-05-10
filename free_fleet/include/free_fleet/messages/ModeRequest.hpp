@@ -15,17 +15,17 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MODEREQUEST_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__MODEREQUEST_HPP
+#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP
+#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP
 
 #include <string>
+#include <vector>
 
 #include "RobotMode.hpp"
+#include "ModeParameter.hpp"
 
-namespace free_fleet
-{
-namespace messages
-{
+namespace free_fleet {
+namespace messages {
 
 struct ModeRequest
 {
@@ -33,9 +33,10 @@ struct ModeRequest
   std::string robot_name;
   RobotMode mode;
   std::string task_id;
+  std::vector<ModeParameter> parameters;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MODEREQUEST_HPP
+#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP

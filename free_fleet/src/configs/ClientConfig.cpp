@@ -19,8 +19,7 @@
 
 #include <cstdio>
 
-namespace free_fleet
-{
+namespace free_fleet {
 
 void ClientConfig::print_config() const
 {

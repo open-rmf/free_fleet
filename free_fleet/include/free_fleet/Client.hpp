@@ -27,8 +27,7 @@
 #include <free_fleet/messages/PathRequest.hpp>
 #include <free_fleet/messages/DestinationRequest.hpp>
 
-namespace free_fleet
-{
+namespace free_fleet {
 
 class Client
 {

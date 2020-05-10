@@ -22,10 +22,8 @@
 
 #include <dds/dds.h>
 
-namespace free_fleet
-{
-namespace dds
-{
+namespace free_fleet {
+namespace dds {
 
 template <typename Message>
 class DDSPublishHandler
@@ -48,7 +46,6 @@ private:
 
 public:
 
-  ///
   DDSPublishHandler(
       const dds_entity_t& _participant,
       const dds_topic_descriptor_t* _topic_desc,
@@ -78,18 +75,14 @@ public:
     ready = true;
   }
 
-  ///
   ~DDSPublishHandler()
   {}
 
-  /// Checks if all the DDS items have been set up correctly
-  ///
   bool is_ready()
   {
     return ready;
   }
 
-  ///
   bool write(Message* msg)
   {
     return_code = dds_write(writer, msg);

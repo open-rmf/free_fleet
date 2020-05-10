@@ -18,8 +18,7 @@
 #include "ServerImpl.hpp"
 #include "messages/message_utils.hpp"
 
-namespace free_fleet
-{
+namespace free_fleet {
 
 Server::ServerImpl::ServerImpl(const ServerConfig& _config) :
   server_config(_config)

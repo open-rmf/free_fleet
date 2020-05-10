@@ -20,8 +20,7 @@
 
 #include <string>
 
-namespace free_fleet
-{
+namespace free_fleet {
 
 struct ClientConfig
 {

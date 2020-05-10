@@ -20,7 +20,7 @@ add_library(free_fleet_client SHARED
   src/Client.cpp
   src/ClientImpl.cpp
   src/configs/ClientConfig.cpp
-  src/messages/FreeFleet.c
+  src/messages/FleetMessages.c
   src/messages/message_utils.cpp
   src/dds_utils/common.cpp
 )
@@ -41,7 +41,7 @@ add_library(free_fleet_server SHARED
   src/Server.cpp
   src/ServerImpl.cpp
   src/configs/ServerConfig.cpp
-  src/messages/FreeFleet.c
+  src/messages/FleetMessages.c
   src/messages/message_utils.cpp
   src/dds_utils/common.cpp
 )
@@ -70,7 +70,7 @@ foreach(target ${testing_targets})
   add_executable(${target}
     src/tests/${target}.cpp
     src/dds_utils/common.cpp
-    src/messages/FreeFleet.c
+    src/messages/FleetMessages.c
   )
   target_link_libraries(${target}
     CycloneDDS::ddsc
