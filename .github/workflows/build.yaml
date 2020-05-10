@@ -21,8 +21,8 @@ jobs:
       run: |
         mkdir -p /home/ros1_ws/src
         cd /home/ros1_ws
-        wget https://raw.githubusercontent.com/osrf/free_fleet/${GITHUB_REF:11}/free_fleet_ros1.repos
-        vcs import src < free_fleet_ros1.repos
+        wget https://raw.githubusercontent.com/osrf/free_fleet/${GITHUB_REF:11}/ros1.repos
+        vcs import src < ros1.repos
     - name: checkout
       shell: bash
       run: |
@@ -61,8 +61,8 @@ jobs:
       run: |
         mkdir -p /home/ros2_ws/src
         cd /home/ros2_ws
-        wget https://raw.githubusercontent.com/osrf/free_fleet/${GITHUB_REF:11}/free_fleet_ros2.repos
-        vcs import src < free_fleet_ros2.repos
+        wget https://raw.githubusercontent.com/osrf/free_fleet/${GITHUB_REF:11}/ros2.repos
+        vcs import src < ros2.repos
     - name: checkout
       shell: bash
       run: |
