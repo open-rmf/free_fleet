@@ -57,9 +57,7 @@ sudo apt update && sudo apt install \
 
 ### Message Generation
 
-Message generation via `FleetMessages.idl` is done using `dds_idlc` from `CycloneDDS`. For convenience, the generated mesasges and files has been done offline and committed into the code base. They can be found [here](./free_fleet/src/messages/).
-
-To recreate them, a full installation of `CycloneDDS` will be needed, which will require additional prerequisites. The full instructions can be found on its [repository](https://github.com/eclipse-cyclonedds/cyclonedds).
+Message generation via `FleetMessages.idl` is done using `dds_idlc` from `CycloneDDS`. For convenience, the generated mesasges and files has been done offline and committed into the code base. They can be found [here](./free_fleet/src/messages/FleetMessages.idl).
 
 ```bash
 ./dds_idlc -allstructs FleetMessages.idl
@@ -169,7 +167,7 @@ Launch the basic simulation of a single Turtlebot3, with a free fleet client att
 
 ```bash
 source ~/client_ws/devel/setup.bash
-export TURTLEBOT3_MODEL=waffle && roslaunch free_fleet_examples_ros1 turtlebot3_world_ff.launch
+export TURTLEBOT3_MODEL=burger; roslaunch free_fleet_examples_ros1 turtlebot3_world_ff.launch
 ```
 
 This launch file starts the simulation in `gazebo`, visualization in `rviz`, as well as the simulated navigation stack of the single turtlebot3. Once the simulation and visualization show up, the robot can be commanded as per normal through `rviz` with `2D Nav Goal`.
@@ -195,7 +193,7 @@ Similarly to the example above, launch the provided launch file, which will star
 
 ```bash
 source ~/client_ws/devel/setup.bash
-export TURTLEBOT3_MODEL=waffle && roslaunch free_fleet_examples_ros1 multi_turtlebot3_ff.launch
+export TURTLEBOT3_MODEL=burger; roslaunch free_fleet_examples_ros1 multi_turtlebot3_ff.launch
 ```
 
 Once the simulation shows up and the free fleet clients are alive, we launch the free fleet server just like the example above, 
