@@ -79,3 +79,9 @@ These do not have any adverse effect to the workspace, and can be ignored.
 The current example ROS1 client that uses the navigation stack, derives the time of the state from the transform of the robot, the battery percentages and robot modes are derived the battery states over `sensor_msgs/BatteryState` and robot motion.
 
 Level names are a work in progress, and can currently be set with a simple `std_msgs/String`. At the moment, this field is not used by any core component or decision making yet.
+
+#### How should the workspaces be built when they contain both ROS1 and ROS2 packages?
+
+The repository can be placed in workspaces as per normal, while the build tool will choose to skip or build a package depending on the availability of `catkin` (ROS1) and `ament_cmake` (ROS2). Credits to [romainreignier](https://github.com/romainreignier/share_ros1_ros2_lib_demo) for the trick.
+
+`catkin-tools` will skip packages with `COLCON_IGNORE`, while `colcon-mixin` will require specifying `mixin` files everytime a build is required. The current solution has thus far been the cleanest. In the near future, the repository will be split for ROS1 and ROS2 using branches.
