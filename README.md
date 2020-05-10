@@ -232,7 +232,7 @@ Now the fun begins! There are 3 types of commands/requests that can be sent to t
 Destination requests, which allows single destination commands for the robots,
 
 ```bash
-ros2 run free_fleet_examples_ros2 send_destination_request.py -f FLEET_NAME -r ROBOT_NAME -x 1.725 -y -0.39 --yaw 0.0 -l B1 -i UNIQUE_TASK_ID -t destination_requests
+ros2 run free_fleet_examples_ros2 send_destination_request.py -f FLEET_NAME -r ROBOT_NAME -x 1.725 -y -0.39 --yaw 0.0 -i UNIQUE_TASK_ID
 ```
 
 Path requests, which requests that the robot perform a string of destination commands,
