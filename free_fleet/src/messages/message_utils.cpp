@@ -135,12 +135,33 @@ void convert(const FreeFleetData_RobotState& _input, RobotState& _output)
   }
 }
 
+
+void convert(const ModeParameter& _input, FreeFleetData_ModeParameter& _output)
+{
+  _output.name = common::dds_string_alloc_and_copy(_input.name);
+  _output.value = common::dds_string_alloc_and_copy(_input.value);
+}
+
+void convert(const FreeFleetData_ModeParameter& _input, ModeParameter& _output)
+{
+  _output.name = std::string(_input.name);
+  _output.value = std::string(_input.value);
+}
+
 void convert(const ModeRequest& _input, FreeFleetData_ModeRequest& _output)
 {
   _output.fleet_name = common::dds_string_alloc_and_copy(_input.fleet_name);
   _output.robot_name = common::dds_string_alloc_and_copy(_input.robot_name);
   convert(_input.mode, _output.mode);
   _output.task_id = common::dds_string_alloc_and_copy(_input.task_id);
+
+  size_t mode_parameter_num = _input.parameters.size();
+  _output.parameters._maximum = static_cast<uint32_t>(mode_parameter_num);
+  _output.parameters._length = static_cast<uint32_t>(mode_parameter_num);
+  _output.parameters._buffer = 
+      FreeFleetData_ModeRequest_parameters_seq_allocbuf(mode_parameter_num);
+  for (size_t i = 0; i < mode_parameter_num; ++i)
+    convert(_input.parameters[i], _output.parameters._buffer[i]);
 }
 
 void convert(const FreeFleetData_ModeRequest& _input, ModeRequest& _output)
@@ -149,6 +170,14 @@ void convert(const FreeFleetData_ModeRequest& _input, ModeRequest& _output)
   _output.robot_name = std::string(_input.robot_name);
   convert(_input.mode, _output.mode);
   _output.task_id = std::string(_input.task_id);
+
+  _output.parameters.clear();
+  for (uint32_t i = 0; i < _input.parameters._length; ++i)
+  {
+    ModeParameter tmp;
+    convert(_input.parameters._buffer[i], tmp);
+    _output.parameters.push_back(tmp);
+  }
 }
 
 void convert(const PathRequest& _input, FreeFleetData_PathRequest& _output)

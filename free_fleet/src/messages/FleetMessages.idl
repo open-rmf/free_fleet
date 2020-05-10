@@ -34,7 +34,7 @@ module FreeFleetData
     Location location;
     sequence<Location> path;
   };
-  struct ModeParameters
+  struct ModeParameter
   {
     string name;
     string value;
@@ -45,7 +45,7 @@ module FreeFleetData
     string robot_name;
     RobotMode mode;
     string task_id;
-    sequence<ModeParameters> parameters;
+    sequence<ModeParameter> parameters;
   };
   struct PathRequest
   {

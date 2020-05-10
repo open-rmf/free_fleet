@@ -163,19 +163,7 @@ Next, to send requests and commands, check out the example scripts and their use
 
 ### Turtlebot3 Simulation
 
-This example launches a single Turtlebot3 in simulation, and registers it as a robot within a fleet controlled by `free_fleet`. To set up this simulation example, more ROS1 packages will be needed, assuming we already have built the initial setup listed [here](#installation-instructions)
-
-```bash
-cd ~/client_ws/src
-git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
-git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
-git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
-
-# source and build
-cd ~/client_ws
-source devel/setup.bash
-catkin build
-```
+Before starting these examples, remember to install all the prerequisites according to the [official tutorials](http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/#install-dependent-ros-1-packages) of using `Turtlebot3`.
 
 Launch the basic simulation of a single Turtlebot3, with a free fleet client attached to it, by sourcing the client workspace and launching the provided example launch file,
 
