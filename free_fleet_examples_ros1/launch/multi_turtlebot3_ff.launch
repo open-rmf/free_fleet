@@ -89,5 +89,10 @@
     <param name="robot_frame" value="$(arg tb3_2_prefix)/base_footprint"/>
     <param name="move_base_server_name" value="$(arg tb3_2_prefix)/move_base"/>
   </node>
+
+  <!-- launch the overall visualization on rviz -->
+  <node pkg="rviz" type="rviz" name="rviz" required="true"
+        args="-d $(find free_fleet_examples_ros1)/rviz/multi_turtlebot3_ff.rviz"/>
+  
   
 </launch>
