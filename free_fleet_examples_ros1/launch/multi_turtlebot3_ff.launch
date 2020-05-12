@@ -94,5 +94,4 @@
   <node pkg="rviz" type="rviz" name="rviz" required="true"
         args="-d $(find free_fleet_examples_ros1)/rviz/multi_turtlebot3_ff.rviz"/>
   
-  
 </launch>
