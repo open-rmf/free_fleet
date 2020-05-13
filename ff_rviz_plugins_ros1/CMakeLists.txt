@@ -11,6 +11,8 @@ set(QT_LIBRARIES Qt5::Widgets)
 set(QT_VERSION ${Qt5Widgets_VERSION})
 
 find_package(catkin QUIET COMPONENTS
+  roscpp
+  geometry_msgs
   pluginlib
   rviz
 )

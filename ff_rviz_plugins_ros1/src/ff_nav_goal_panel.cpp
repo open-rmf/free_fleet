@@ -15,9 +15,10 @@
  *
  */
 
-#include <iostream>
+#include <string>
 
 #include <QLabel>
+#include <QSizePolicy>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -34,39 +35,104 @@ namespace free_fleet {
 FFNavToolPanel::FFNavToolPanel(QWidget* parent)
 : rviz::Panel(parent)
 {
-  QGridLayout* nav_tool_layout = new QGridLayout;
-  nav_tool_layout->addWidget(new QLabel("Select Robot:"), 0, 0, 1, 1);
-  nav_tool_layout->addWidget(new QLabel("selection_placeholder"), 0, 1, 1, 3);
-  // add box to select available robots
+  create_robot_group_box();
+  create_nav_group_box();
+  create_debug_group_box();
 
-  QIcon destination_icon =
-      rviz::loadPixmap("package://ff_rviz_plugins_ros1/icons/destination.svg");
-  QPushButton* destination_nav_goal_button =
-      new QPushButton(destination_icon, "", this);
-  nav_tool_layout->addWidget(destination_nav_goal_button, 0, 4, 1, 1);
-
-  QVBoxLayout* layout = new QVBoxLayout;
-  layout->addLayout(nav_tool_layout);
+  QGridLayout* layout = new QGridLayout;
+  layout->addWidget(_robot_group_box, 0, 0, 1, 1);
+  layout->addWidget(_nav_group_box, 1, 0, 6, 1);
+  layout->addWidget(_debug_group_box, 7, 0, 1, 1);
   setLayout(layout);
 
-  // connect(destination_nav_goal_button, &QPushButton::clicked, this,
-  //     &FFNavToolPanel::test_display_context);
+  // connect(_nav_goal_button, &QPushButton::clicked, this,
+  //     &FFNavToolPanel::debug);
 }
 
 void FFNavToolPanel::onInitialize()
 {
-  // if (!vis_manager_)
-  //   std::cout << "vis_manager_ is null" << std::endl;
-  
-  // if (!vis_manager_->getRenderPanel())
-  //   std::cout << "render_panel is null" << std::endl;
-
-  // if (!vis_manager_->getRenderPanel()->getManager())
-  //   std::cout << "display_context is null" << std::endl;
-
-  context_ = vis_manager_->getRenderPanel()->getManager();
+  _nav_goal_sub = _nh.subscribe(
+          "/move_base_simple/goal", 2, &FFNavToolPanel::update_goal, this);
 }
 
+void FFNavToolPanel::debug()
+{
+}
+
+void FFNavToolPanel::create_robot_group_box()
+{
+  _robot_group_box = new QGroupBox("Robot Selection");
+  QHBoxLayout* layout = new QHBoxLayout;
+
+  _robot_name_edit = new QLineEdit;
+  _robot_name_edit->setPlaceholderText("Insert robot name here");
+  layout->addWidget(_robot_name_edit);
+
+  _robot_group_box->setLayout(layout);
+}
+
+void FFNavToolPanel::create_nav_group_box()
+{
+  _nav_group_box = new QGroupBox("Navigation");
+  QGridLayout* layout = new QGridLayout;
+
+  _nav_goal_edit = new QTextEdit;
+  _nav_goal_edit->setReadOnly(true);
+  _nav_goal_edit->setPlainText(nav_goal_to_qstring(_nav_goal));
+
+  QPushButton* send_nav_goal_button = new QPushButton("Send Nav Goal");
+  QPushButton* send_path_goal_button = new QPushButton("Send Path Goal");
+
+  QSizePolicy size_policy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  size_policy.setHorizontalStretch(0);
+  size_policy.setVerticalStretch(0);
+  size_policy.setHeightForWidth(
+      send_nav_goal_button->sizePolicy().hasHeightForWidth());
+  send_nav_goal_button->setSizePolicy(size_policy);
+  send_path_goal_button->setSizePolicy(size_policy);
+
+  layout->addWidget(_nav_goal_edit, 0, 0, 6, 3);
+  layout->addWidget(send_nav_goal_button, 0, 3, 3, 1);
+  layout->addWidget(send_path_goal_button, 3, 3, 3, 1);
+
+  _nav_group_box->setLayout(layout);
+}
+
+void FFNavToolPanel::create_debug_group_box()
+{
+  _debug_group_box = new QGroupBox("Debug");
+  QHBoxLayout* layout = new QHBoxLayout;
+
+  _debug_label = new QLabel("Debugging started...");
+  layout->addWidget(_debug_label);
+
+  _debug_group_box->setLayout(layout);
+}
+
+void FFNavToolPanel::update_goal(
+    const geometry_msgs::PoseStampedConstPtr& msg)
+{
+  std::unique_lock<std::mutex> nav_goal_lock(_nav_goal_mutex);
+  _nav_goal = *msg;
+  _nav_goal_edit->setPlainText(nav_goal_to_qstring(_nav_goal));
+}
+
+QString FFNavToolPanel::nav_goal_to_qstring(
+    const geometry_msgs::PoseStamped& msg) const
+{
+  std::ostringstream ss;
+  ss <<
+      "Position:" <<
+      "\n    x: " << std::to_string(msg.pose.position.x) <<
+      "\n    y: " << std::to_string(msg.pose.position.y) <<
+      "\n    z: " << std::to_string(msg.pose.position.z) <<
+      "\nOrientation:" <<
+      "\n    x: " << std::to_string(msg.pose.orientation.x) <<
+      "\n    y: " << std::to_string(msg.pose.orientation.y) <<
+      "\n    z: " << std::to_string(msg.pose.orientation.z) <<
+      "\n    w: " << std::to_string(msg.pose.orientation.w) << std::endl;
+  return QString::fromStdString(ss.str());
+}
 
 } // namespace free_fleet
 

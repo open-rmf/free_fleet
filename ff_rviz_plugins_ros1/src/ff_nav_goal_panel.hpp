@@ -18,9 +18,17 @@
 #ifndef FREE_FLEET_EXAMPLES_ROS1__SRC__FF_NAV_GOAL_PANEL__HPP
 #define FREE_FLEET_EXAMPLES_ROS1__SRC__FF_NAV_GOAL_PANEL__HPP
 
+#include <mutex>
+
+#include <QString>
+#include <QLineEdit>
+#include <QTextEdit>
+#include <QGroupBox>
+
 #include <rviz/panel.h>
-#include <rviz/display_context.h>
-#include <rviz/default_plugin/tools/pose_tool.h>
+ 
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace free_fleet {
 
@@ -35,10 +43,33 @@ public:
 
 private Q_SLOTS:
 
+  void debug();
+
+protected:
+
 private:
 
-  rviz::DisplayContext* context_;
+  void create_robot_group_box();
+  void create_nav_group_box();
+  void create_debug_group_box();
 
+  QGroupBox* _robot_group_box;
+  QGroupBox* _nav_group_box;
+  QGroupBox* _debug_group_box;
+
+  QLineEdit* _robot_name_edit;
+  QTextEdit* _nav_goal_edit;
+  QLabel* _debug_label;
+
+  ros::NodeHandle _nh;
+  ros::Subscriber _nav_goal_sub;
+
+  std::mutex _nav_goal_mutex;
+  geometry_msgs::PoseStamped _nav_goal;
+
+  void update_goal(const geometry_msgs::PoseStamped::ConstPtr& msg);
+
+  QString nav_goal_to_qstring(const geometry_msgs::PoseStamped& msg) const;
 };
 
 } // namespace free_fleet
