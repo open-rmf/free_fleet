@@ -54,6 +54,7 @@
     <param name="base_frame_id"             value="$(arg set_base_frame)"/>
     <param name="global_frame_id"           value="$(arg set_map_frame)"/>
 
+    <remap from="map" to="/map"/>
     <remap from="static_map" to="/static_map"/>
   </node>
 
