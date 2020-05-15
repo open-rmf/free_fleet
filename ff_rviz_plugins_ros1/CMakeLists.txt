@@ -19,19 +19,24 @@ find_package(catkin QUIET COMPONENTS
 
 if (catkin_FOUND)
 
+  find_package(free_fleet REQUIRED)
+
   catkin_package()
   
   #=============================================================================
 
   add_library(${PROJECT_NAME}
     src/ff_nav_goal_panel.cpp
+    src/utilities.cpp
   )
   target_link_libraries(${PROJECT_NAME}
+    ${free_fleet_LIBRARIES}
     ${catkin_LIBRARIES}
     ${QT_LIBRARIES}
   )
   target_include_directories(${PROJECT_NAME}
     PRIVATE
+      ${free_fleet_INCLUDE_DIRS}
       ${catkin_INCLUDE_DIRS}
   )
 

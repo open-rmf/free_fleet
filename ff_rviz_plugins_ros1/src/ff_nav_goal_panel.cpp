@@ -28,9 +28,17 @@
 #include <rviz/render_panel.h>
 #include <rviz/visualization_manager.h>
 
+#include <free_fleet/ServerConfig.hpp>
+#include <free_fleet/messages/Location.hpp>
+#include <free_fleet/messages/DestinationRequest.hpp>
+#include <free_fleet/messages/RobotState.hpp>
+
 #include "ff_nav_goal_panel.hpp"
+#include "utilities.hpp"
 
 namespace free_fleet {
+
+//==============================================================================
 
 FFNavToolPanel::FFNavToolPanel(QWidget* parent)
 : rviz::Panel(parent)
@@ -45,31 +53,78 @@ FFNavToolPanel::FFNavToolPanel(QWidget* parent)
   layout->addWidget(_debug_group_box, 7, 0, 1, 1);
   setLayout(layout);
 
-  // connect(_nav_goal_button, &QPushButton::clicked, this,
-  //     &FFNavToolPanel::debug);
-}
+  connect(_send_nav_goal_button, &QPushButton::clicked, this,
+      &FFNavToolPanel::send_nav_goal);
 
-void FFNavToolPanel::onInitialize()
-{
+  ServerConfig default_server_conf;
+  _free_fleet_server = Server::make(default_server_conf);
+  if (!_free_fleet_server)
+  {
+    _debug_label->setText("Free Fleet server unable to start...");
+    return;
+  }
+
   _nav_goal_sub = _nh.subscribe(
-          "/move_base_simple/goal", 2, &FFNavToolPanel::update_goal, this);
+      "/move_base_simple/goal", 2, &FFNavToolPanel::update_goal, this);
 }
 
-void FFNavToolPanel::debug()
+//==============================================================================
+
+void FFNavToolPanel::send_nav_goal()
 {
+  std::string fleet_name = _fleet_name_edit->text().toStdString();
+  std::string robot_name = _robot_name_edit->text().toStdString();
+
+  messages::Location nav_goal_location;
+  messages::DestinationRequest destination_request;
+
+  {
+    std::unique_lock<std::mutex> nav_goal_lock(_nav_goal_mutex);
+    nav_goal_location = {
+      static_cast<int32_t>(_nav_goal.header.stamp.sec),
+      _nav_goal.header.stamp.nsec,
+      static_cast<float>(_nav_goal.pose.position.x),
+      static_cast<float>(_nav_goal.pose.position.y),
+      static_cast<float>(get_yaw_from_quat(_nav_goal.pose.orientation)),
+      ""
+    };
+    destination_request = {
+      std::move(fleet_name),
+      std::move(robot_name),
+      std::move(nav_goal_location),
+      generate_random_task_id(20)
+    };
+  }
+
+  if (!_free_fleet_server->send_destination_request(destination_request))
+  {
+    std::string debug_str = "Failed to send navigation request...";
+    _debug_label->setText(QString::fromStdString(debug_str));
+    return;
+  }
 }
+
+//==============================================================================
 
 void FFNavToolPanel::create_robot_group_box()
 {
   _robot_group_box = new QGroupBox("Robot Selection");
-  QHBoxLayout* layout = new QHBoxLayout;
+  QGridLayout* layout = new QGridLayout;
+
+  _fleet_name_edit = new QLineEdit;
+  _fleet_name_edit->setPlaceholderText("enter fleet name here");
 
   _robot_name_edit = new QLineEdit;
-  _robot_name_edit->setPlaceholderText("Insert robot name here");
-  layout->addWidget(_robot_name_edit);
+  _robot_name_edit->setPlaceholderText("enter robot name here");
 
+  layout->addWidget(new QLabel("Fleet:"), 0, 0, 1, 1);
+  layout->addWidget(_fleet_name_edit, 0, 1, 1, 2);
+  layout->addWidget(new QLabel("Robot:"), 1, 0, 1, 1);
+  layout->addWidget(_robot_name_edit, 1, 1, 1, 2);
   _robot_group_box->setLayout(layout);
 }
+
+//==============================================================================
 
 void FFNavToolPanel::create_nav_group_box()
 {
@@ -80,34 +135,38 @@ void FFNavToolPanel::create_nav_group_box()
   _nav_goal_edit->setReadOnly(true);
   _nav_goal_edit->setPlainText(nav_goal_to_qstring(_nav_goal));
 
-  QPushButton* send_nav_goal_button = new QPushButton("Send Nav Goal");
-  QPushButton* send_path_goal_button = new QPushButton("Send Path Goal");
+  _send_nav_goal_button = new QPushButton("Send Nav Goal");
+  _send_path_goal_button = new QPushButton("Send Path Goal");
 
   QSizePolicy size_policy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   size_policy.setHorizontalStretch(0);
   size_policy.setVerticalStretch(0);
   size_policy.setHeightForWidth(
-      send_nav_goal_button->sizePolicy().hasHeightForWidth());
-  send_nav_goal_button->setSizePolicy(size_policy);
-  send_path_goal_button->setSizePolicy(size_policy);
+      _send_nav_goal_button->sizePolicy().hasHeightForWidth());
+  _send_nav_goal_button->setSizePolicy(size_policy);
+  _send_path_goal_button->setSizePolicy(size_policy);
 
   layout->addWidget(_nav_goal_edit, 0, 0, 6, 3);
-  layout->addWidget(send_nav_goal_button, 0, 3, 3, 1);
-  layout->addWidget(send_path_goal_button, 3, 3, 3, 1);
+  layout->addWidget(_send_nav_goal_button, 0, 3, 3, 1);
+  layout->addWidget(_send_path_goal_button, 3, 3, 3, 1);
 
   _nav_group_box->setLayout(layout);
 }
+
+//==============================================================================
 
 void FFNavToolPanel::create_debug_group_box()
 {
   _debug_group_box = new QGroupBox("Debug");
   QHBoxLayout* layout = new QHBoxLayout;
 
-  _debug_label = new QLabel("Debugging started...");
+  _debug_label = new QLabel("Panel started...");
   layout->addWidget(_debug_label);
 
   _debug_group_box->setLayout(layout);
 }
+
+//==============================================================================
 
 void FFNavToolPanel::update_goal(
     const geometry_msgs::PoseStampedConstPtr& msg)
@@ -116,6 +175,8 @@ void FFNavToolPanel::update_goal(
   _nav_goal = *msg;
   _nav_goal_edit->setPlainText(nav_goal_to_qstring(_nav_goal));
 }
+
+//==============================================================================
 
 QString FFNavToolPanel::nav_goal_to_qstring(
     const geometry_msgs::PoseStamped& msg) const
@@ -133,6 +194,8 @@ QString FFNavToolPanel::nav_goal_to_qstring(
       "\n    w: " << std::to_string(msg.pose.orientation.w) << std::endl;
   return QString::fromStdString(ss.str());
 }
+
+//==============================================================================
 
 } // namespace free_fleet
 

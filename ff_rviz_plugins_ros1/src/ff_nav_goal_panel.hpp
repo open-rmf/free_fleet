@@ -26,9 +26,11 @@
 #include <QGroupBox>
 
 #include <rviz/panel.h>
- 
+
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
+
+#include <free_fleet/Server.hpp>
 
 namespace free_fleet {
 
@@ -39,11 +41,9 @@ public:
 
   FFNavToolPanel(QWidget* parent = 0);
 
-  void onInitialize() final;
-
 private Q_SLOTS:
 
-  void debug();
+  void send_nav_goal();
 
 protected:
 
@@ -57,9 +57,15 @@ private:
   QGroupBox* _nav_group_box;
   QGroupBox* _debug_group_box;
 
+  QLineEdit* _fleet_name_edit;
   QLineEdit* _robot_name_edit;
   QTextEdit* _nav_goal_edit;
   QLabel* _debug_label;
+
+  QPushButton* _send_nav_goal_button;
+  QPushButton* _send_path_goal_button;
+
+  Server::SharedPtr _free_fleet_server;
 
   ros::NodeHandle _nh;
   ros::Subscriber _nav_goal_sub;
