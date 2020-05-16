@@ -196,18 +196,11 @@ source ~/client_ws/devel/setup.bash
 export TURTLEBOT3_MODEL=burger; roslaunch free_fleet_examples_ros1 multi_turtlebot3_ff.launch
 ```
 
-Once the simulation shows up and the free fleet clients are alive, we launch the free fleet server just like the example above, 
+Once the simulation and visualization show up, the robots can then be commanded to navigate to different parts of the map by using the tool and panels in the visualization. Fill in the fleet name and robot name, select the navigation goal using `2D Nav Goal`, which will be reflected on the panel, and select `Send Nav Goal`.
 
-```bash
-source ~/server_ws/install/setup.bash
-ros2 launch free_fleet_examples_ros2 turtlebot3_world_ff.launch.xml
-```
+![](media/multi_tb3.gif)
 
-Note how we are using the exact same launch script as above, this is because all the turtlebot3s in the simulation are registered under the same fleet, identified by the `fleet_name`, which in this case is `turtlebot3`.
-
-At this point, the server should have registered the client running on the 3 simulated robots and print-outs should appear in the server terminal. Another way to check, is to listen in on the `/fleet_states` topic, using `ros2 topic echo /fleet_states`.
-
-Next, to send requests and commands, check out the example scripts and their uses [here](#commands-and-requests).
+Next, to send more specific requests and commands, check out the example scripts and their uses [here](#commands-and-requests).
 
 </br>
 
