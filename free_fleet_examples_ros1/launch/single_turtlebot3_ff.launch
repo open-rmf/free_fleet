@@ -10,6 +10,7 @@
   <arg name="initial_pose_a" default="0.0"/>
   <arg name="set_base_frame" default="base_footprint"/>
   <arg name="set_odom_frame" default="odom"/>
+  <arg name="set_scan_frame" default="base_scan"/>
   <arg name="set_map_frame"  default="map"/>
 
   <!-- move_base Arguments -->
@@ -71,10 +72,12 @@
     <remap from="odom" to="$(arg odom_topic)"/>
     <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
     
-    <param name="local_costmap/global_frame" value="$(arg set_odom_frame)"/>
-    <param name="local_costmap/robot_base_frame" value="$(arg set_base_frame)"/>
-    <param name="global_costmap/global_frame" value="$(arg set_map_frame)"/>
-    <param name="global_costmap/robot_base_frame" value="$(arg set_base_frame)"/>
+    <param name="local_costmap/scan/sensor_frame"   value="$(arg set_scan_frame)"/>
+    <param name="local_costmap/global_frame"        value="$(arg set_odom_frame)"/>
+    <param name="local_costmap/robot_base_frame"    value="$(arg set_base_frame)"/>
+    <param name="global_costmap/scan/sensor_frame"  value="$(arg set_scan_frame)"/>
+    <param name="global_costmap/global_frame"       value="$(arg set_map_frame)"/>
+    <param name="global_costmap/robot_base_frame"   value="$(arg set_base_frame)"/>
     <remap from="map" to="/map"/>
   </node>
 
