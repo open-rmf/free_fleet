@@ -136,7 +136,6 @@ void FFNavToolPanel::create_nav_group_box()
   _nav_goal_edit->setPlainText(nav_goal_to_qstring(_nav_goal));
 
   _send_nav_goal_button = new QPushButton("Send Nav Goal");
-  _send_path_goal_button = new QPushButton("Send Path Goal");
 
   QSizePolicy size_policy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   size_policy.setHorizontalStretch(0);
@@ -144,11 +143,9 @@ void FFNavToolPanel::create_nav_group_box()
   size_policy.setHeightForWidth(
       _send_nav_goal_button->sizePolicy().hasHeightForWidth());
   _send_nav_goal_button->setSizePolicy(size_policy);
-  _send_path_goal_button->setSizePolicy(size_policy);
 
   layout->addWidget(_nav_goal_edit, 0, 0, 6, 3);
-  layout->addWidget(_send_nav_goal_button, 0, 3, 3, 1);
-  layout->addWidget(_send_path_goal_button, 3, 3, 3, 1);
+  layout->addWidget(_send_nav_goal_button, 0, 3, 6, 1);
 
   _nav_group_box->setLayout(layout);
 }

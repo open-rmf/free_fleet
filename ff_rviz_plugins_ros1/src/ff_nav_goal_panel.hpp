@@ -63,7 +63,6 @@ private:
   QLabel* _debug_label;
 
   QPushButton* _send_nav_goal_button;
-  QPushButton* _send_path_goal_button;
 
   Server::SharedPtr _free_fleet_server;
 

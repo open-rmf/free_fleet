@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(free_fleet_examples_ros1)
+project(ff_examples_ros1)
 
 #===============================================================================
 
@@ -21,7 +21,7 @@ if (catkin_FOUND)
   )
 
   install(
-    DIRECTORY test_maps
+    DIRECTORY maps
     DESTINATION share/${PROJECT_NAME}
   )
 

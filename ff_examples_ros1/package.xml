@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>free_fleet_examples_ros1</name>
+  <name>ff_examples_ros1</name>
   <version>0.0.1</version>
   <description>A package containing some examples of using free fleet ROS1 components</description>
   <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>

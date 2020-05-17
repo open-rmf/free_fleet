@@ -9,14 +9,14 @@
 
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" 
-      args="$(find free_fleet_examples_ros1)/test_maps/house.yaml">
+      args="$(find ff_examples_ros1)/maps/house.yaml">
     <param name="frame_id" value="$(arg set_map_frame)"/>
   </node>
 
   <!-- launch the navigation stacks of 3 turtlebot3s-->
   <arg name="tb3_0_prefix" value="tb3_0"/>
   <group ns="$(arg tb3_0_prefix)">
-    <include file="$(find free_fleet_examples_ros1)/launch/single_turtlebot3_ff.launch">
+    <include file="$(find ff_examples_ros1)/launch/include/single_turtlebot3_ff.launch">
       <arg name="model" value="$(arg model)"/>
       <arg name="set_base_frame" value="$(arg tb3_0_prefix)/base_footprint"/>
       <arg name="set_odom_frame" value="$(arg tb3_0_prefix)/odom"/>
@@ -31,7 +31,7 @@
 
   <arg name="tb3_1_prefix" value="tb3_1"/>
   <group ns="$(arg tb3_1_prefix)">
-    <include file="$(find free_fleet_examples_ros1)/launch/single_turtlebot3_ff.launch">
+    <include file="$(find ff_examples_ros1)/launch/include/single_turtlebot3_ff.launch">
       <arg name="model" value="$(arg model)"/>
       <arg name="set_base_frame" value="$(arg tb3_1_prefix)/base_footprint"/>
       <arg name="set_odom_frame" value="$(arg tb3_1_prefix)/odom"/>
@@ -46,7 +46,7 @@
 
   <arg name="tb3_2_prefix" value="tb3_2"/>
   <group ns="$(arg tb3_2_prefix)">
-    <include file="$(find free_fleet_examples_ros1)/launch/single_turtlebot3_ff.launch">
+    <include file="$(find ff_examples_ros1)/launch/include/single_turtlebot3_ff.launch">
       <arg name="model" value="$(arg model)"/>
       <arg name="set_base_frame" value="$(arg tb3_2_prefix)/base_footprint"/>
       <arg name="set_odom_frame" value="$(arg tb3_2_prefix)/odom"/>
@@ -98,6 +98,6 @@
 
   <!-- launch the overall visualization on rviz -->
   <node pkg="rviz" type="rviz" name="rviz" required="true"
-        args="-d $(find free_fleet_examples_ros1)/rviz/multi_turtlebot3_ff.rviz"/>
+        args="-d $(find ff_examples_ros1)/rviz/multi_turtlebot3_ff.rviz"/>
   
 </launch>

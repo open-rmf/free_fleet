@@ -62,11 +62,6 @@ if (catkin_FOUND)
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 
-  install(
-    DIRECTORY icons
-    DESTINATION share/${PROJECT_NAME}
-  )
-
   install(FILES
     plugin_description.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
