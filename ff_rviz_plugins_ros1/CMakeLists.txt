@@ -2,13 +2,20 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(ff_rviz_plugins_ros1)
 
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # we dont use add_compile_options with pedantic in message packages
+  # because the Python C extensions dont comply with it
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+endif()
+
+include(GNUInstallDirs)
+
 #===============================================================================
-
-set(CMAKE_AUTOMOC ON)
-
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
-set(QT_LIBRARIES Qt5::Widgets)
-set(QT_VERSION ${Qt5Widgets_VERSION})
 
 find_package(catkin QUIET COMPONENTS
   roscpp
@@ -18,6 +25,12 @@ find_package(catkin QUIET COMPONENTS
 )
 
 if (catkin_FOUND)
+
+  set(CMAKE_AUTOMOC ON)
+
+  find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
+  set(QT_LIBRARIES Qt5::Widgets)
+  set(QT_VERSION ${Qt5Widgets_VERSION})
 
   find_package(free_fleet REQUIRED)
 
