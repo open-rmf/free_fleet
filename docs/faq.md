@@ -58,9 +58,9 @@ CMake Warning:
 
 ---
 Finished <<< free_fleet_client_ros1 [1.63s]
-Starting >>> free_fleet_examples_ros1
-[59.959s] WARNING:colcon.colcon_cmake.task.cmake.build:Could not run installation step for package 'free_fleet_examples_ros1' because it has no 'install' target
---- stderr: free_fleet_examples_ros1                                        
+Starting >>> ff_examples_ros1
+[59.959s] WARNING:colcon.colcon_cmake.task.cmake.build:Could not run installation step for package 'ff_examples_ros1' because it has no 'install' target
+--- stderr: ff_examples_ros1                                        
 catkin not found so skipping this ROS1 package
 CMake Warning:
   Manually-specified variables were not used by the project:
@@ -69,7 +69,7 @@ CMake Warning:
 
 
 ---
-Finished <<< free_fleet_examples_ros1 [1.69s]
+Finished <<< ff_examples_ros1 [1.69s]
 ```
 
 These do not have any adverse effect to the workspace, and can be ignored.
