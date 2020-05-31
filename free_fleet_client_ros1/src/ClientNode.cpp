@@ -232,8 +232,8 @@ void ClientNode::publish_robot_state()
     }
   }
 
-  if (fields.client->send_robot_state(new_robot_state))
-    ROS_INFO("sent robot state: msg sec %u", new_robot_state.location.sec);
+  if (!fields.client->send_robot_state(new_robot_state))
+    ROS_WARN("failed to send robot state: msg sec %u", new_robot_state.location.sec);
 }
 
 bool ClientNode::is_valid_request(

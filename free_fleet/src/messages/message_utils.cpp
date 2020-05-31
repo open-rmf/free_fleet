@@ -26,56 +26,16 @@ namespace messages {
 
 void convert(const RobotMode& _input, FreeFleetData_RobotMode& _output)
 {
-  switch(_input.mode)
-  {
-    case RobotMode::MODE_CHARGING:
-      _output.mode = FreeFleetData_RobotMode_Constants_MODE_CHARGING;
-      break;
-    case RobotMode::MODE_MOVING:
-      _output.mode = FreeFleetData_RobotMode_Constants_MODE_MOVING;
-      break;
-    case RobotMode::MODE_PAUSED:
-      _output.mode = FreeFleetData_RobotMode_Constants_MODE_PAUSED;
-      break;
-    case RobotMode::MODE_WAITING:
-      _output.mode = FreeFleetData_RobotMode_Constants_MODE_WAITING;
-      break;
-    case RobotMode::MODE_EMERGENCY:
-      _output.mode = FreeFleetData_RobotMode_Constants_MODE_EMERGENCY;
-      break;
-    case RobotMode::MODE_GOING_HOME:
-      _output.mode = FreeFleetData_RobotMode_Constants_MODE_GOING_HOME;
-      break;
-    default:
-      _output.mode = FreeFleetData_RobotMode_Constants_MODE_IDLE;
-  }
+  // Consequently, free fleet robot modes need to be ordered similarly as 
+  // RMF robot modes.
+  _output.mode = _input.mode;
 }
 
 void convert(const FreeFleetData_RobotMode& _input, RobotMode& _output)
 {
-  switch(_input.mode)
-  {
-    case FreeFleetData_RobotMode_Constants_MODE_CHARGING:
-      _output.mode = RobotMode::MODE_CHARGING;
-      break;
-    case FreeFleetData_RobotMode_Constants_MODE_MOVING:
-      _output.mode = RobotMode::MODE_MOVING;
-      break;
-    case FreeFleetData_RobotMode_Constants_MODE_PAUSED:
-      _output.mode = RobotMode::MODE_PAUSED;
-      break;
-    case FreeFleetData_RobotMode_Constants_MODE_WAITING:
-      _output.mode = RobotMode::MODE_WAITING;
-      break;
-    case FreeFleetData_RobotMode_Constants_MODE_EMERGENCY:
-      _output.mode = RobotMode::MODE_EMERGENCY;
-      break;
-    case FreeFleetData_RobotMode_Constants_MODE_GOING_HOME:
-      _output.mode = RobotMode::MODE_GOING_HOME;
-      break;
-    default:
-      _output.mode = RobotMode::MODE_IDLE;
-  }
+  // Consequently, free fleet robot modes need to be ordered similarly as 
+  // RMF robot modes.
+  _output.mode = _input.mode;
 }
 
 void convert(const Location& _input, FreeFleetData_Location& _output)
