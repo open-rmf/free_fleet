@@ -53,6 +53,10 @@ void to_ff_message(
 // ----------------------------------------------------------------------------
 
 void to_ros_message(
+    const messages::Location& in_msg,
+    rmf_fleet_msgs::msg::Location& out_msg);
+
+void to_ros_message(
     const messages::RobotState& in_msg,
     rmf_fleet_msgs::msg::RobotState& out_msg);
 
