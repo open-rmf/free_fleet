@@ -15,8 +15,10 @@
  *
 */
 
+#include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 
+#include "utilities.hpp"
 #include "RobotCommand.hpp"
 
 namespace free_fleet {
@@ -71,14 +73,23 @@ void RobotCommand::follow_new_path(
     const std::vector<rmf_traffic::agv::Plan::Waypoint>& waypoints,
     ArrivalEstimator next_arrival_estimator,
     std::function<void()> path_finished_callback) final
-{}
+{
+  
+}
 
 //==============================================================================
 
 void RobotCommand::stop() final
 {
-  messages::ModeRequest msg;
-
+  messages::RobotMode mode_msg = { messages::RobotMode::MODE_PAUSED };
+  messages::ModeRequest msg = {
+    _config.fleet_name,
+    _config.robot_name,
+    std::move(mode_msg),
+    generate_random_task_id(20)
+  };
+  if (!_request_publisher->send_mode_request(msg))
+    RCLCPP_ERROR(_node->get_logger(), "Failed to send a stop command.");
 }
 
 //==============================================================================
@@ -86,7 +97,10 @@ void RobotCommand::stop() final
 void RobotCommand::dock(
     const std::string& dock_name,
     std::function<void()> docking_finished_callback) final
-{}
+{
+  // Free fleet robots are by default without any docking procedure. This
+  // function is implemented as a no-op.
+}
 
 //==============================================================================
 
