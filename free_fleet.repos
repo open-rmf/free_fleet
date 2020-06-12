@@ -2,7 +2,7 @@ repositories:
   free_fleet:
     type: git
     url: https://github.com/osrf/free_fleet.git
-    version: master
+    version: eloquent-devel
   cyclonedds:
     type: git
     url: https://github.com/eclipse-cyclonedds/cyclonedds.git
