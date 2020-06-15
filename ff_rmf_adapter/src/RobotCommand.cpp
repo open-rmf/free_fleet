@@ -35,6 +35,11 @@ void RobotCommand::Config::print_config() const
   printf("    mode request: %s\n", mode_request_topic.c_str());
   printf("    path request: %s\n", path_request_topic.c_str());
   printf("    destination request: %s\n", destination_request_topic.c_str());
+  printf("COORDINATE TRANSFORMATION\n");
+  printf("  translation x (meters): %.3f\n", translation_x);
+  printf("  translation y (meters): %.3f\n", translation_y);
+  printf("  rotation (radians): %.3f\n", rotation);
+  printf("  scale: %.3f\n", scale);
 }
 
 //==============================================================================
@@ -60,9 +65,20 @@ RobotCommand::SharedPtr RobotCommand::make(
   if (!request_publisher)
     return nullptr;
 
+  RmfFrameTransformer::SharedPtr frame_transformer =
+      RmfFrameTransformer::make(RmfFrameTransformer::Transformation{
+          config.scale,
+          config.rotation,
+          config.translation_x,
+          config.translation_y
+      });
+  if (!frame_transformer)
+    return nullptr;
+
   RobotCommand::SharedPtr command_ptr(new RobotCommand(
       std::move(node),
       std::move(request_publisher),
+      std::move(frame_transformer),
       std::move(config)));
   return command_ptr;
 }
@@ -74,7 +90,6 @@ void RobotCommand::follow_new_path(
     ArrivalEstimator next_arrival_estimator,
     std::function<void()> path_finished_callback) final
 {
-  
 }
 
 //==============================================================================
@@ -107,9 +122,11 @@ void RobotCommand::dock(
 RobotCommand::RobotCommand(
     std::shared_ptr<rclcpp::Node> node,
     RequestPublisher::SharedPtr request_publisher,
+    RmfFrameTransformer::SharedPtr frame_transformer,
     Config config)
 : _node(std::move(node)),
   _request_publisher(std::move(request_publisher)),
+  _frame_transformer(std::move(frame_transformer)),
   _config(std::move(config)),
   _active(false)
 {}

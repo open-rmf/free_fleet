@@ -22,7 +22,10 @@
 
 #include <free_fleet/RequestPublisher.hpp>
 
-#include <rmf_fleet_adapter/agv/RobotCommandHandle.hpp>
+// #include <rmf_fleet_adapter/agv/parse_graph.hpp>
+#include <rmf_fleet_adapter/agv/Adapter.hpp>
+
+#include "RmfFrameTransformer.hpp"
 
 namespace free_fleet {
 
@@ -40,6 +43,15 @@ public:
 
     std::string fleet_name = "fleet_name";
     std::string robot_name = "robot_name";
+
+    // the transformation order of operations from the adapter to the clients
+    // 1) scale
+    // 2) rotate
+    // 3) translate
+    double scale = 1.0;
+    double rotation = 0.0;
+    double translation_x = 0.0;
+    double translation_y = 0.0;
 
     void print_config() const;
 
@@ -72,9 +84,12 @@ private:
   Config _config;
   RequestPublisher::SharedPtr _request_publisher;
 
+  RmfFrameTransformer::SharedPtr _frame_transformer;
+
   RobotCommand(
       std::shared_ptr<rclcpp::Node> node,
       RequestPublisher::SharedPtr request_publisher,
+      RmfFrameTransformer::SharedPtr frame_transformer,
       Config config);
 
 };

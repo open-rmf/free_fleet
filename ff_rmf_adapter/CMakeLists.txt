@@ -10,6 +10,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+include(GNUInstallDirs)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -23,15 +25,19 @@ add_executable(ff_rmf_adapter
   src/RobotCommand.cpp
   # src/FleetAdapter.cpp
 )
-target_link_libraries(ff_rmf_adapter
-  ${free_fleet_LIBRARIES}
-  Eigen3::Eigen
-)
 target_include_directories(ff_rmf_adapter
   PRIVATE
-    ${rclcpp_INCLUDE_DIRS}
-    ${rmf_fleet_adapter_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     ${free_fleet_INCLUDE_DIRS}
+    ${rclcpp_INCLUDE_DIRS}
+)
+target_link_libraries(ff_rmf_adapter
+  PRIVATE
+    ${free_fleet_LIBRARIES}
+    ${rclcpp_LIBRARIES}
+
+    rmf_fleet_adapter
+    Eigen3::Eigen
 )
 
 #===============================================================================
