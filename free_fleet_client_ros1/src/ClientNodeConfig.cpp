@@ -124,6 +124,8 @@ ClientNodeConfig ClientNodeConfig::make()
   config.get_param_if_available(
       node_private_ns, "dds_domain", config.dds_domain);
   config.get_param_if_available(
+      node_private_ns, "dds_state_topic", config.dds_state_topic);
+  config.get_param_if_available(
       node_private_ns, "dds_mode_request_topic", config.dds_mode_request_topic);
   config.get_param_if_available(
       node_private_ns, "dds_path_request_topic", config.dds_path_request_topic);
