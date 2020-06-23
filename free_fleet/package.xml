@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>free_fleet</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>Free Fleet client and server library</description>
   <maintainer email="morgan@openrobotics.org">Morgan Quigley</maintainer>
   <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
