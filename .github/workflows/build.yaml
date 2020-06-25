@@ -40,7 +40,11 @@ jobs:
       run: |
         cd /home/ros1_ws
         source /opt/ros/melodic/setup.bash
-        catkin build
+        catkin build \
+          free_fleet \
+          ff_examples_ros1 \
+          ff_rviz_plugins_ros1 \
+          free_fleet_client_ros1
 
   ros2:
     runs-on: ubuntu-18.04
@@ -80,4 +84,7 @@ jobs:
       run: |
         cd /home/ros2_ws
         source /opt/ros/eloquent/setup.bash
-        colcon build
+        colcon build --packages-up-to \
+          free_fleet \
+          ff_examples_ros2 \
+          free_fleet_server_ros2
