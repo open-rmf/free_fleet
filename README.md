@@ -8,12 +8,11 @@
 - **[Installation Instructions](#installation-instructions)**
   - [Prerequisites](#prerequisites)
   - [Message Generation](#message-generation)
-  - [Client in ROS1](#client-in-ros1)
-  - [Server in ROS2](#server-in-ros2)
+  - [Client](#client)
+  - [Server](#server)
 - **[Examples](#examples)**
   - [Barebones Example](#barebones-example)
   - [Turtlebot3 Simulation](#turtlebot3-simulation)
-  - [Multi Turtlebot3 Simulation](#multi-turtlebot3-simulation)
   - [Commands and Requests](#commands-and-requests)
 - **[FAQ](#faq)**
 - **[Plans](#plans)**
@@ -46,17 +45,15 @@ Install all non-ROS prerequisite packages,
 sudo apt update && sudo apt install \
   git wget \
   python-rosdep \
-  python-catkin-tools \
   python3-vcstool \
-  python3-colcon-common-extensions \
-  maven default-jdk   # CycloneDDS dependencies
+  python3-colcon-common-extensions
 ```
 
 </br>
 
 ### Message Generation
 
-Message generation via `FleetMessages.idl` is done using `dds_idlc` from `CycloneDDS`. For convenience, the generated mesasges and files has been done offline and committed into the code base. They can be found [here](./free_fleet/src/messages/FleetMessages.idl).
+Message generation via `FleetMessages.idl` is done using `dds_idlc` from `CycloneDDS`. For convenience, the generated mesasges and files has been done offline and committed into the code base. They can be found [here](./free_fleet/src/messages/FleetMessages.idl). In order to regenerate new messages, a source build of `CycloneDDS` is required.
 
 ```bash
 ./dds_idlc -allstructs FleetMessages.idl
