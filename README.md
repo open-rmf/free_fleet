@@ -38,7 +38,6 @@ Cheers.
 ### Prerequisites
 
 * [Ubuntu 18.04 LTS](https://releases.ubuntu.com/18.04/)
-* [ROS1 - Melodic](https://wiki.ros.org/melodic)
 * [ROS2 - Eloquent](https://index.ros.org/doc/ros2/Releases/Release-Eloquent-Elusor/)
 
 Install all non-ROS prerequisite packages,
