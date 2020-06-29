@@ -235,7 +235,7 @@ void ServerNode::transform_fleet_to_rmf(
 {
   // It feels easier to read if each operation is a separate statement.
   // The compiler will be super smart and elide all these operations.
-  const auto translated =
+  const Eigen::Vector2d translated =
       Eigen::Vector2d(_fleet_frame_location.x, _fleet_frame_location.y)
       - Eigen::Vector2d(
           server_node_config.translation_x, server_node_config.translation_y);
@@ -244,14 +244,14 @@ void ServerNode::transform_fleet_to_rmf(
   //     get_logger(), "    fleet->rmf translated: (%.3f, %.3f)",
   //     translated[0], translated[1]);
 
-  const auto rotated =
+  const Eigen::Vector2d rotated =
       Eigen::Rotation2D<double>(-server_node_config.rotation) * translated;
 
   // RCLCPP_INFO(
   //     get_logger(), "    fleet->rmf rotated: (%.3f, %.3f)",
   //     rotated[0], rotated[1]);
 
-  const auto scaled = 1.0 / server_node_config.scale * rotated;
+  const Eigen::Vector2d scaled = 1.0 / server_node_config.scale * rotated;
 
   // RCLCPP_INFO(
   //     get_logger(), "    fleet->rmf scaled: (%.3f, %.3f)",
@@ -272,7 +272,7 @@ void ServerNode::transform_rmf_to_fleet(
 {
   // It feels easier to read if each operation is a separate statement.
   // The compiler will be super smart and elide all these operations.
-  const auto scaled = 
+  const Eigen::Vector2d scaled = 
       server_node_config.scale * 
       Eigen::Vector2d(_rmf_frame_location.x, _rmf_frame_location.y);
 
@@ -280,14 +280,14 @@ void ServerNode::transform_rmf_to_fleet(
   //     get_logger(), "    rmf->fleet scaled: (%.3f, %.3f)",
   //     scaled[0], scaled[1]);
 
-  const auto rotated =
+  const Eigen::Vector2d rotated =
       Eigen::Rotation2D<double>(server_node_config.rotation) * scaled;
   
   // RCLCPP_INFO(
   //     get_logger(), "    rmf->fleet rotated: (%.3f, %.3f)",
   //     rotated[0], rotated[1]);
 
-  const auto translated =
+  const Eigen::Vector2d translated =
       rotated + 
       Eigen::Vector2d(
           server_node_config.translation_x, server_node_config.translation_y);

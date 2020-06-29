@@ -39,8 +39,6 @@ add_library(free_fleet SHARED
 
 target_link_libraries(free_fleet
   CycloneDDS::ddsc
-  ssl
-  crypto
 )
 
 target_include_directories(free_fleet
@@ -51,6 +49,34 @@ target_include_directories(free_fleet
 
 ament_export_interfaces(free_fleet HAS_LIBRARY_TARGET)
 ament_export_dependencies(CycloneDDS)
+
+if(BUILD_TESTING)
+  set(testing_targets
+    test_dds_pub_destination_request
+    test_dds_pub_mode_request
+    test_dds_pub_path_request
+    test_dds_pub_sim_path_request
+    test_dds_sub_state
+  )
+
+  foreach(target ${testing_targets})
+    add_executable(${target}
+      src/tests/${target}.cpp
+      src/dds_utils/common.cpp
+      src/messages/FleetMessages.c
+    )
+    target_link_libraries(${target}
+      CycloneDDS::ddsc
+    )
+  endforeach()
+
+  install(
+    TARGETS ${testing_targets}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+endif()
 
 install(
   DIRECTORY include/free_fleet
