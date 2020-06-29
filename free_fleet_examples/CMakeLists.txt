@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(free_fleet_examples)
 
-find_package(ament_cmake QUIET)
+find_package(ament_cmake REQUIRED)
 
 install(
   DIRECTORY launch
