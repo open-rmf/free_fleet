@@ -53,9 +53,13 @@ public:
   ///
   /// \param[in] config
   ///   Configuration that sets up the request publisher.
+  /// \param[in] participant
+  ///   Shared pointer to a participant, that can be used to create the
+  ///   subscriber, instead of re-initializing a participant.
   /// \return
   ///   Shared pointer to the request publisher, nullptr if creation failed.
-  static SharedPtr make(Config config);
+  static SharedPtr make(
+      Config config, Participant::SharedPtr participant = nullptr);
 
   /// Attempts to send a new mode request to all the clients. Clients are in
   /// charge to identify if requests are targetted towards them.

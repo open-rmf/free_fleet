@@ -15,7 +15,6 @@
  *
 */
 
-#include <free_fleet/Participant.hpp>
 #include <free_fleet/RequestPublisher.hpp>
 
 #include "messages/FleetMessages.h"
@@ -42,7 +41,8 @@ public:
   DestinationRequestPub::SharedPtr _destination_request_pub;
 
   Implementation(
-      Config config, Participant::SharedPtr participant,
+      Config config,
+      Participant::SharedPtr participant,
       ModeRequestPub::SharedPtr mode_request_pub,
       PathRequestPub::SharedPtr path_request_pub,
       DestinationRequestPub::SharedPtr destination_request_pub)
@@ -71,32 +71,34 @@ void RequestPublisher::Config::print_config() const
 
 //==============================================================================
 
-RequestPublisher::SharedPtr RequestPublisher::make(Config config)
+RequestPublisher::SharedPtr RequestPublisher::make(
+    Config config, Participant::SharedPtr participant)
 {
-  auto participant_ptr = Participant::make(config.domain_id);
+  auto participant_ptr = std::move(participant);
   if (!participant_ptr)
-    return nullptr;
+  {
+    participant_ptr = Participant::make(config.domain_id);
+    if (!participant_ptr)
+      return nullptr;
+  }
 
-  dds::DDSPublishHandler<FreeFleetData_ModeRequest>::SharedPtr 
-      mode_request_pub(
-          new dds::DDSPublishHandler<FreeFleetData_ModeRequest>(
-              participant_ptr->id(),
-              &FreeFleetData_ModeRequest_desc,
-              config.mode_request_topic));
+  Implementation::ModeRequestPub::SharedPtr mode_request_pub(
+      new Implementation::ModeRequestPub(
+          participant_ptr->id(),
+          &FreeFleetData_ModeRequest_desc,
+          config.mode_request_topic));
 
-  dds::DDSPublishHandler<FreeFleetData_PathRequest>::SharedPtr 
-      path_request_pub(
-          new dds::DDSPublishHandler<FreeFleetData_PathRequest>(
-              participant_ptr->id(),
-              &FreeFleetData_PathRequest_desc,
-              config.path_request_topic));
+  Implementation::PathRequestPub::SharedPtr path_request_pub(
+      new Implementation::PathRequestPub(
+          participant_ptr->id(),
+          &FreeFleetData_PathRequest_desc,
+          config.path_request_topic));
 
-  dds::DDSPublishHandler<FreeFleetData_DestinationRequest>::SharedPtr 
-      destination_request_pub(
-          new dds::DDSPublishHandler<FreeFleetData_DestinationRequest>(
-              participant_ptr->id(),
-              &FreeFleetData_DestinationRequest_desc,
-              config.destination_request_topic));
+  Implementation::DestinationRequestPub::SharedPtr destination_request_pub(
+      new Implementation::DestinationRequestPub(
+          participant_ptr->id(),
+          &FreeFleetData_DestinationRequest_desc,
+          config.destination_request_topic));
 
   if (!mode_request_pub->is_ready() ||
       !path_request_pub->is_ready() ||
@@ -107,10 +109,10 @@ RequestPublisher::SharedPtr RequestPublisher::make(Config config)
   request_publisher_ptr->_pimpl.reset(
       new Implementation(
           std::move(config),
-          participant_ptr,
-          mode_request_pub,
-          path_request_pub,
-          destination_request_pub));
+          std::move(participant_ptr),
+          std::move(mode_request_pub),
+          std::move(path_request_pub),
+          std::move(destination_request_pub)));
   return request_publisher_ptr;
 }
 
