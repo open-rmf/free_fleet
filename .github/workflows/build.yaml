@@ -12,10 +12,8 @@ jobs:
         sudo apt update && sudo apt install \
           git wget \
           python-rosdep \
-          python-catkin-tools \
           python3-vcstool \
-          python3-colcon-common-extensions \
-          maven default-jdk -y
+          python3-colcon-common-extensions -y
     - name: workspace
       shell: bash
       run: |
@@ -34,10 +32,13 @@ jobs:
         cd /home/ff_ws
         rosdep update
         source /opt/ros/eloquent/setup.bash
-        rosdep install --from-paths src --ignore-src -y -r
+        rosdep install --from-paths src --ignore-src -yr
     - name: build
       shell: bash
       run: |
         cd /home/ff_ws
         source /opt/ros/eloquent/setup.bash
-        colcon build
+        colcon build --packages-up-to \
+          free_fleet \
+          free_fleet_server \
+          free_fleet_examples 
