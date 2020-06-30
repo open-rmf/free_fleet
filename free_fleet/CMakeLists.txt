@@ -27,7 +27,6 @@ endif()
 
 file(GLOB lib_srcs 
   "src/*.cpp"
-  "src/configs/*.cpp"
   "src/dds_utils/*.cpp"
   "src/messages/*.c"
   "src/messages/*.cpp"

@@ -21,8 +21,6 @@
 #include <memory>
 #include <vector>
 
-#include <free_fleet/ServerConfig.hpp>
-
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/PathRequest.hpp>
@@ -34,6 +32,19 @@ class Server
 {
 public:
 
+  /// Configuration for setting up a Server, defines the DDS domain,
+  /// and various topic names for sending requests and receiving states.
+  struct Config
+  {
+    int domain_id = 42;
+    std::string robot_state_topic = "robot_state";
+    std::string mode_request_topic = "mode_request";
+    std::string path_request_topic = "path_request";
+    std::string destination_request_topic = "destination_request";
+
+    void print_config() const;
+  };
+
   using SharedPtr = std::shared_ptr<Server>;
 
   /// Factory function that creates an instance of the Free Fleet Server.
@@ -42,7 +53,7 @@ public:
   ///   Configuration that sets up the server to communicate with the clients.
   /// \return
   ///   Shared pointer to a free fleet server.
-  static SharedPtr make(const ServerConfig& config);
+  static SharedPtr make(Config config);
 
   /// Attempts to read new incoming robot states sent by free fleet clients
   /// over DDS.
@@ -85,15 +96,10 @@ public:
   /// Destructor
   ~Server();
 
+  class Implementation;
 private:
-
-  /// Forward declaration and unique implementation
-  class ServerImpl;
-
-  std::unique_ptr<ServerImpl> impl;
-
-  Server(const ServerConfig& config);
-
+  Server();
+  std::unique_ptr<Implementation> _pimpl;
 };
 
 } // namespace free_fleet

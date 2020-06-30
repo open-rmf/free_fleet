@@ -20,7 +20,7 @@
 #include "messages/FleetMessages.h"
 #include "messages/message_utils.hpp"
 
-#include "dds_utils/DDSSubscriberHandler.hpp"
+#include "dds_utils/DDSSubscribeHandler.hpp"
 
 namespace free_fleet {
 

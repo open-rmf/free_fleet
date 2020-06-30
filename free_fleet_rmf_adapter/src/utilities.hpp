@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,15 @@
  *
  */
 
-#include <free_fleet/ClientConfig.hpp>
+#ifndef FF_RMF_ADAPTER__SRC__UTILITIES_HPP
+#define FF_RMF_ADAPTER__SRC__UTILITIES_HPP
 
-#include <cstdio>
+#include <string>
 
 namespace free_fleet {
 
-void ClientConfig::print_config() const
-{
-  printf("CLIENT-SERVER DDS CONFIGURATION\n");
-  printf("  dds domain: %d\n", dds_domain);
-  printf("  TOPICS\n");
-  printf("    robot state: %s\n", dds_state_topic.c_str());
-  printf("    mode request: %s\n", dds_mode_request_topic.c_str());
-  printf("    path request: %s\n", dds_path_request_topic.c_str());
-  printf("    destination request: %s\n", 
-      dds_destination_request_topic.c_str());
-}
+std::string generate_random_task_id(size_t length);
 
 } // namespace free_fleet
+
+#endif // FF_RMF_ADAPTER__SRC__UTILITIES_HPP

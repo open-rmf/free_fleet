@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,27 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__CLIENTCONFIG_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__CLIENTCONFIG_HPP
+#include <cstdlib>
+#include <algorithm>
 
-#include <string>
+#include "utilities.hpp"
 
 namespace free_fleet {
 
-struct ClientConfig
+std::string generate_random_task_id(size_t length)
 {
-  int dds_domain = 42;
-  std::string dds_state_topic = "robot_state";
-  std::string dds_mode_request_topic = "mode_request";
-  std::string dds_path_request_topic = "path_request";
-  std::string dds_destination_request_topic = "destination_request";
-
-  void print_config() const;
-};
+  auto randchar = []() -> char
+  {
+      const char charset[] =
+      "0123456789"
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "abcdefghijklmnopqrstuvwxyz";
+      const size_t max_index = (sizeof(charset) - 1);
+      return charset[ rand() % max_index ];
+  };
+  std::string str(length,0);
+  std::generate_n( str.begin(), length, randchar );
+  return str;
+}
 
 } // namespace free_fleet
-
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__CLIENTCONFIG_HPP

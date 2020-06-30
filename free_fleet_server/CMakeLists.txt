@@ -29,7 +29,6 @@ add_executable(free_fleet_server
   src/main.cpp
   src/utilities.cpp
   src/ServerNode.cpp
-  src/ServerNodeConfig.cpp
 )
 
 target_link_libraries(free_fleet_server
