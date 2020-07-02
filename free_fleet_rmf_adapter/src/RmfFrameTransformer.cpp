@@ -39,22 +39,22 @@ void RmfFrameTransformer::transform_rmf_to_fleet(
 {
   // It feels easier to read if each operation is a separate statement.
   // The compiler will be super smart and elide all these operations.
-  const auto scaled = 
-      _config.scale * 
+  const Eigen::Vector2d scaled = 
+      _config.scale *
       Eigen::Vector2d(rmf_frame_location.x, rmf_frame_location.y);
 
   // RCLCPP_INFO(
   //     get_logger(), "    rmf->fleet scaled: (%.3f, %.3f)",
   //     scaled[0], scaled[1]);
 
-  const auto rotated =
+  const Eigen::Vector2d rotated =
       Eigen::Rotation2D<double>(_config.rotation) * scaled;
   
   // RCLCPP_INFO(
   //     get_logger(), "    rmf->fleet rotated: (%.3f, %.3f)",
   //     rotated[0], rotated[1]);
 
-  const auto translated =
+  const Eigen::Vector2d translated =
       rotated + Eigen::Vector2d(_config.translation_x, _config.translation_y);
 
   // RCLCPP_INFO(
@@ -77,7 +77,7 @@ void RmfFrameTransformer::transform_fleet_to_rmf(
 {
   // It feels easier to read if each operation is a separate statement.
   // The compiler will be super smart and elide all these operations.
-  const auto translated =
+  const Eigen::Vector2d translated =
       Eigen::Vector2d(fleet_frame_location.x, fleet_frame_location.y)
       - Eigen::Vector2d(_config.translation_x, _config.translation_y);
 
@@ -85,14 +85,14 @@ void RmfFrameTransformer::transform_fleet_to_rmf(
   //     get_logger(), "    fleet->rmf translated: (%.3f, %.3f)",
   //     translated[0], translated[1]);
 
-  const auto rotated =
+  const Eigen::Vector2d rotated =
       Eigen::Rotation2D<double>(-_config.rotation) * translated;
 
   // RCLCPP_INFO(
   //     get_logger(), "    fleet->rmf rotated: (%.3f, %.3f)",
   //     rotated[0], rotated[1]);
 
-  const auto scaled = 1.0 / _config.scale * rotated;
+  const Eigen::Vector2d scaled = 1.0 / _config.scale * rotated;
 
   // RCLCPP_INFO(
   //     get_logger(), "    fleet->rmf scaled: (%.3f, %.3f)",

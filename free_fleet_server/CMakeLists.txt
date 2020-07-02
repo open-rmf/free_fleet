@@ -25,10 +25,12 @@ find_package(rmf_fleet_msgs REQUIRED)
 find_package(free_fleet REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+file(GLOB bin_srcs 
+  "src/*.cpp"
+)
+
 add_executable(free_fleet_server
-  src/main.cpp
-  src/utilities.cpp
-  src/ServerNode.cpp
+  ${bin_srcs}
 )
 
 target_link_libraries(free_fleet_server

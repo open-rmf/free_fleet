@@ -56,6 +56,8 @@ public:
     void print_config() const;
 
     RequestPublisher::Config request_publisher_config() const;
+
+    RmfFrameTransformer::Transformation transformation() const;
   };
 
   using SharedPtr = std::shared_ptr<RobotCommand>;
@@ -86,11 +88,7 @@ private:
 
   RmfFrameTransformer::SharedPtr _frame_transformer;
 
-  RobotCommand(
-      std::shared_ptr<rclcpp::Node> node,
-      RequestPublisher::SharedPtr request_publisher,
-      RmfFrameTransformer::SharedPtr frame_transformer,
-      Config config);
+  RobotCommand();
 
 };
 

@@ -44,14 +44,24 @@ void RobotCommand::Config::print_config() const
 
 //==============================================================================
 
-RequestPublisher::Config RobotCommand::request_publisher_config() const
+RequestPublisher::Config RobotCommand::Config::request_publisher_config() const
 {
-  return RequestPublisher::Config{
-    _config.domain_id,
-    _config.mode_request_topic,
-    _config.path_request_topic,
-    _config.destination_request_topic
-  };
+  return RequestPublisher::Config {
+    domain_id,
+    mode_request_topic,
+    path_request_topic,
+    destination_request_topic};
+}
+
+//==============================================================================
+
+RmfFrameTransformer::Transformation RobotCommand::Config::transformation() const
+{
+  return RmfFrameTransformer::Transformation {
+    scale,
+    rotation,
+    translation_x,
+    translation_y};
 }
 
 //==============================================================================
@@ -66,20 +76,16 @@ RobotCommand::SharedPtr RobotCommand::make(
     return nullptr;
 
   RmfFrameTransformer::SharedPtr frame_transformer =
-      RmfFrameTransformer::make(RmfFrameTransformer::Transformation{
-          config.scale,
-          config.rotation,
-          config.translation_x,
-          config.translation_y
-      });
+      RmfFrameTransformer::make(config.transformation());
   if (!frame_transformer)
     return nullptr;
 
-  RobotCommand::SharedPtr command_ptr(new RobotCommand(
-      std::move(node),
-      std::move(request_publisher),
-      std::move(frame_transformer),
-      std::move(config)));
+  RobotComamd::SharedPtr command_ptr(new RobotCommand);
+  command_ptr->_active = false;
+  command_ptr->_node = std::move(node);
+  command_ptr->_request_publisher = std::move(request_publisher);
+  command_ptr->_frame_transformer = std::move(frame_transformer);
+  commadn_ptr->_config = std::move(config);
   return command_ptr;
 }
 
@@ -119,16 +125,7 @@ void RobotCommand::dock(
 
 //==============================================================================
 
-RobotCommand::RobotCommand(
-    std::shared_ptr<rclcpp::Node> node,
-    RequestPublisher::SharedPtr request_publisher,
-    RmfFrameTransformer::SharedPtr frame_transformer,
-    Config config)
-: _node(std::move(node)),
-  _request_publisher(std::move(request_publisher)),
-  _frame_transformer(std::move(frame_transformer)),
-  _config(std::move(config)),
-  _active(false)
+RobotCommand::RobotCommand()
 {}
 
 //==============================================================================
