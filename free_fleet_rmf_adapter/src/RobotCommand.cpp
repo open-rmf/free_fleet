@@ -50,7 +50,8 @@ RequestPublisher::Config RobotCommand::Config::request_publisher_config() const
     domain_id,
     mode_request_topic,
     path_request_topic,
-    destination_request_topic};
+    destination_request_topic
+  };
 }
 
 //==============================================================================
@@ -61,14 +62,17 @@ RmfFrameTransformer::Transformation RobotCommand::Config::transformation() const
     scale,
     rotation,
     translation_x,
-    translation_y};
+    translation_y
+  };
 }
 
 //==============================================================================
 
 RobotCommand::SharedPtr RobotCommand::make(
     std::shared_ptr<rclcpp::Node> node,
-    Config config)
+    Config config,
+    std::shared_ptr<const rmf_traffic::agv::Graph> graph,
+    std::shared_ptr<const rmf_traffic::agv::VehicleTraits> traits)
 {
   RequestPublisher::SharedPtr request_publisher =
       RequestPublisher::make(config.request_publisher_config());
@@ -85,7 +89,11 @@ RobotCommand::SharedPtr RobotCommand::make(
   command_ptr->_node = std::move(node);
   command_ptr->_request_publisher = std::move(request_publisher);
   command_ptr->_frame_transformer = std::move(frame_transformer);
-  commadn_ptr->_config = std::move(config);
+  command_ptr->_travel_info.graph = std::move(graph);
+  command_ptr->_travel_info.traits = std::move(traits);
+  command_ptr->_travel_info.fleet_name = config.fleet_name;
+  command_ptr->_travel_info.robot_name = config.robot_name;
+  command_ptr->_config = std::move(config);
   return command_ptr;
 }
 
@@ -96,6 +104,46 @@ void RobotCommand::follow_new_path(
     ArrivalEstimator next_arrival_estimator,
     std::function<void()> path_finished_callback) final
 {
+  std::lock_guard<std::mutex> lock(_mutex);
+  _clear_last_command();
+
+  _travel_info.waypoints = waypoints;
+  _travel_info.next_arrival_estimator = std::move(next_arrival_estimator);
+  _travel_info.path_finished_callback = std::move(path_finished_callback);
+  _interrupted = false;
+
+  _current_path_request.task_id = std::to_string(++_current_task_id);
+  _current_path_request.fleet_name = _travel_info.fleet_name;
+  _current_path_request.robot_name = _travel_info.robot_name;
+  _current_path_request.path.clear();
+  for (const auto& wp : waypoints)
+  {
+    const Eigen::Vector3d pos = wp.position();
+    messages::Location rmf_loc;
+    rmf_loc.sec = rmf_traffic_ros2::convert(wp.time()).sec();
+    rmf_loc.nanosec = rmf_traffic_ros2::convert(wp.time()).nanosec();
+    rmf_loc.x = pos.x();
+    rmf_loc.y = pos.y();
+    rmf_loc.yaw = pos.z();
+    if (wp.graph_index())
+    {
+      rmf_loc.level_name =
+          _travel_info.graph->get_waypoint(*wp.graph_index()).get_map_name();
+    }
+
+    messages::Location ff_loc;
+    _frame_transformer->transform_rmf_to_fleet(rmf_loc, fleet_loc);
+
+    _current_path_request.path.emplace_back(std::move(fleet_loc));
+  }
+  
+  if (!_request_publisher->send_path_request(_current_path_request))
+  {
+    RCLCPP_ERROR(
+        _node->get_logger(), 
+        "Failed to send path request [%s]",
+        std::to_string(_current_task_id).c_str());
+  }
 }
 
 //==============================================================================
@@ -103,14 +151,17 @@ void RobotCommand::follow_new_path(
 void RobotCommand::stop() final
 {
   messages::RobotMode mode_msg = { messages::RobotMode::MODE_PAUSED };
-  messages::ModeRequest msg = {
-    _config.fleet_name,
-    _config.robot_name,
-    std::move(mode_msg),
-    generate_random_task_id(20)
-  };
-  if (!_request_publisher->send_mode_request(msg))
-    RCLCPP_ERROR(_node->get_logger(), "Failed to send a stop command.");
+  _current_mode_request.fleet_name = _travel_info.fleet_name;
+  _current_mode_request.robot_name = _travel_info.robot_name;
+  _current_mode_request.mode = mode_msg;
+  _current_mode_request.task_id = std::to_string(++_current_task_id);
+  if (!_request_publisher->send_mode_request(_current_mode_request))
+  {
+    RCLCPP_ERROR(
+        _node->get_logger(), 
+        "Failed to send a stop request [%s]",
+        std::to_string(_current_task_id).c_str());
+  }
 }
 
 //==============================================================================
@@ -121,6 +172,132 @@ void RobotCommand::dock(
 {
   // Free fleet robots are by default without any docking procedure. This
   // function is implemented as a no-op.
+}
+
+//==============================================================================
+
+void update_state(const messages::RobotState& state)
+{
+  std::lock_guard<std::mutex> lock(_mutex);
+  if (_travel_info.path_finished_callback)
+  {
+    // If we have a path_finished_callback, then the robot should be
+    // following a path
+
+    // The arrival estimator should be available
+    assert(_travel_info.next_arrival_estimator);
+
+    if (state.task_id != _current_task_id)
+    {
+      if (_current_task_id == _current_path_request.task_id)
+      {
+        // The robot has not received our path request yet
+        if (!_request_publisher->send_path_request(_current_path_request))
+        {
+          RCLCPP_ERROR(
+              _node->get_logger(),
+              "Failed to send path request [%s]",
+              std::to_string(_current_task_id).c_str());
+        }
+      }
+      else if (_current_task_id == _current_mode_request.task_id)
+      {
+        // The robot has not received our mode request yet
+        if (!_request_publisher->send_mode_request(_current_mode_request))
+        {
+          RCLCPP_ERROR(
+              _node->get_logger(),
+              "Failed to send mode request [%s]",
+              std::to_string(_current_task_id).c_str());
+        }
+      }
+      // return estimate_state(_node, state.location, _travel_info);
+      // update adapter regardless
+      // * no assumptions on lanes, etc
+      // * update with the lane that it is supposed to go down
+      // * update with its current location
+    }
+
+    if (state.mode.mode == state.mode.MODE_REQUEST_ERROR)
+    {
+      if (_interrupted)
+      {
+        // This interruption was already noticed
+        return;
+      }
+
+      RCLCPP_INFO(
+            _node->get_logger(),
+            "Fleet [%s] reported interruption for [%s]",
+            _travel_info.fleet_name.c_str(),
+            _travel_info.robot_name.c_str());
+      _interrupted = true;
+      // estimate_state(_node, state.location, _travel_info);
+      // update adapter regardless
+      // * no assumptions on lanes, etc
+      // * update with the lane that it is supposed to go down
+      // * update with its current location
+      return _travel_info.updater->interrupted();
+    }
+
+    // if (state.path.empty())
+    // {
+    //   // When the state path is empty, that means the robot believes it has
+    //   // arrived at its destination.
+    //   return check_path_finish(_node, state, _travel_info);
+    // }
+
+    // return estimate_path_traveling(_node, state, _travel_info);
+  }
+  else if (_dock_finished_callback)
+  {
+    // TODO: docking
+  }
+  else
+  {
+    // If we don't have a finishing callback, then the robot is not under our
+    // command
+    // estimate_state(_node, state.location, _travel_info);
+    // update adapter regardless
+    // * no assumptions on lanes, etc
+    // * update with the lane that it is supposed to go down
+    // * update with its current location
+  }
+}
+
+//==============================================================================
+
+void RobotCommand::update_position(const messages::RobotState& state)
+{
+  const messages::Location loc = state.location;
+  if (loc.level_name.empty())
+  {
+    RCLCPP_ERROR(
+          node->get_logger(),
+          "Robot named [%s] belonging to fleet [%s] is lost because we cannot "
+          "figure out what floor it is on. Please publish the robot's current "
+          "floor name in the level_name field of its RobotState.",
+          info.robot_name.c_str(), info.fleet_name.c_str());
+    return;
+  }
+
+  // check if has changed map
+  // update last known map
+  // update with map name and location
+
+  // find nearest waypoint
+  // if near enough, update with waypoint and orientation
+  // update last visited waypoint
+
+  // check last visited waypoint
+  // link with current target, find lane
+  // update with lane
+
+  std::vector<std::size_t> lanes;
+  // find what lanes it is supposed to be on
+  // if the robots stray too far away from the lanes, it is up to the client to
+  // handle that
+  _travel_info.updater->update_position({loc.x, loc.y, loc.yaw}, lanes);
 }
 
 //==============================================================================

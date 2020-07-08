@@ -21,10 +21,12 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <free_fleet/RequestPublisher.hpp>
+#include <free_fleet/messages/RobotState.hpp>
 
 // #include <rmf_fleet_adapter/agv/parse_graph.hpp>
 #include <rmf_fleet_adapter/agv/Adapter.hpp>
 
+#include "estimation.hpp"
 #include "RmfFrameTransformer.hpp"
 
 namespace free_fleet {
@@ -60,6 +62,26 @@ public:
     RmfFrameTransformer::Transformation transformation() const;
   };
 
+  struct TravelInfo
+  {
+    using ArrivalEstimator =
+      rmf_fleet_adapter::agv::RobotCommandHandle::ArrivalEstimator;
+    using RequestCompleted =
+      rmf_fleet_adapter::agv::RobotCommandHandle::RequestCompleted;
+
+    std::vector<rmf_traffic::agv::Plan::Waypoint> waypoints;
+    ArrivalEstimator next_arrival_estimator;
+    RequestCompleted path_finished_callback;
+    rmf_utils::optional<std::size_t> last_known_wp;
+    std::string last_known_map;
+    rmf_fleet_adapter::agv::RobotUpdateHandlePtr updater;
+    std::shared_ptr<const rmf_traffic::agv::Graph> graph;
+    std::shared_ptr<const rmf_traffic::agv::VehicleTraits> traits;
+
+    std::string fleet_name;
+    std::string robot_name;
+  };
+
   using SharedPtr = std::shared_ptr<RobotCommand>;
 
   static SharedPtr make(std::shared_ptr<rclcpp::Node> node, Config config);
@@ -77,16 +99,35 @@ public:
       const std::string& dock_name,
       std::function<void()> docking_finished_callback) final;
 
+  void update_state(const messages::RobotState& state);
+
 private:
 
   bool _active;
   std::shared_ptr<rclcpp::Node> _node;
-  rclcpp::TimerBase::SharedPtr _timer;
 
   Config _config;
-  RequestPublisher::SharedPtr _request_publisher;
+  TravelInfo _travel_info;
+  bool _interrupted = false;
 
+  messages::ModeRequest _current_mode_request;
+  messages::PathRequest _current_path_request;
+  uint32_t _current_task_id = 0;
+
+  RequestPublisher::SharedPtr _request_publisher;
   RmfFrameTransformer::SharedPtr _frame_transformer;
+
+  std::mutex _mutex;
+
+  // TODO: docking
+
+  void _clear_last_command()
+  {
+    _travel_info.next_arrival_estimator = nullptr;
+    _travel_info.path_finished_callback = nullptr;
+  }
+
+  void update_position(const messages::RobotState& state);
 
   RobotCommand();
 
