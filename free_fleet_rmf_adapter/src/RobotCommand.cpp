@@ -282,22 +282,60 @@ void RobotCommand::update_position(const messages::RobotState& state)
   }
 
   // check if has changed map
-  // update last known map
-  // update with map name and location
+  if (!_travel_info.last_known_map.empty() &&
+      _travel_info.last_known_map != loc.level_name)
+  {
+    _travel_info.last_known_map = loc.level_name;
+    _travel_info.updater->update_position(
+        loc.level_name, {loc.x, loc.y, loc.yaw});
+    return;
+  }
 
-  // find nearest waypoint
-  // if near enough, update with waypoint and orientation
-  // update last visited waypoint
+  if (state.path.empty())
+  {
+    // robot is not on the way
+    // no known past waypoint
+    if (!_travel_info.last_known_wp)
+    {
+      // find nearest waypoint
+      // if near enough, update with waypoint and orientation
+      // update last visited waypoint
+      const Eigen::Vector2d p(loc.x, loc.y);
+      const rmf_traffic::agv::Graph::Waypoint* closest_wp = nullptr;
+      double nearest_dist = std::numeric_limits<double>::infinity();
 
-  // check last visited waypoint
-  // link with current target, find lane
-  // update with lane
+    }
+  }
+  else
+  {
+    // robot is on the way somewhere
 
-  std::vector<std::size_t> lanes;
-  // find what lanes it is supposed to be on
-  // if the robots stray too far away from the lanes, it is up to the client to
-  // handle that
-  _travel_info.updater->update_position({loc.x, loc.y, loc.yaw}, lanes);
+    // no known past waypoint
+    // find nearest waypoint
+    // if near enough, update with waypoint and orientation
+    // update late known waypoint
+    // else find nearest waypoint using path's next waypoint
+    // if not near enough, warn
+    // update position with target waypoint
+    // DO NOT update late known waypoint
+
+    // there is a known past waypoint
+    // get the lanes leading from the past waypoint
+    // for each lane's ending waypoint find nearest to next path waypoint in state
+    // or find which lane the next path waypoint is lying on
+    // update with position and applicable lanes
+  }
+
+  // Do we need to worry about keeping track of which lanes?
+  // like holding it in _travel_info, what is the advantage?
+  // finding lane transition from there?
+  // probably optimize by searching through waypoints on lanes
+
+  // std::vector<std::size_t> lanes;
+  // // find what lanes it is supposed to be on
+  // // if the robots stray too far away from the lanes, it is up to the client to
+  // // handle that
+  // _travel_info.updater->update_position({loc.x, loc.y, loc.yaw}, lanes);
 }
 
 //==============================================================================
