@@ -211,11 +211,8 @@ void update_state(const messages::RobotState& state)
               std::to_string(_current_task_id).c_str());
         }
       }
-      // return estimate_state(_node, state.location, _travel_info);
-      // update adapter regardless
-      // * no assumptions on lanes, etc
-      // * update with the lane that it is supposed to go down
-      // * update with its current location
+
+      update_position(state);
     }
 
     if (state.mode.mode == state.mode.MODE_REQUEST_ERROR)
@@ -232,11 +229,7 @@ void update_state(const messages::RobotState& state)
             _travel_info.fleet_name.c_str(),
             _travel_info.robot_name.c_str());
       _interrupted = true;
-      // estimate_state(_node, state.location, _travel_info);
-      // update adapter regardless
-      // * no assumptions on lanes, etc
-      // * update with the lane that it is supposed to go down
-      // * update with its current location
+      update_position(state);
       return _travel_info.updater->interrupted();
     }
 
@@ -280,16 +273,7 @@ void RobotCommand::update_position(const messages::RobotState& state)
           info.robot_name.c_str(), info.fleet_name.c_str());
     return;
   }
-
-  // check if has changed map
-  if (!_travel_info.last_known_map.empty() &&
-      _travel_info.last_known_map != loc.level_name)
-  {
-    _travel_info.last_known_map = loc.level_name;
-    _travel_info.updater->update_position(
-        loc.level_name, {loc.x, loc.y, loc.yaw});
-    return;
-  }
+ 
 
   if (state.path.empty())
   {
@@ -303,7 +287,29 @@ void RobotCommand::update_position(const messages::RobotState& state)
       const Eigen::Vector2d p(loc.x, loc.y);
       const rmf_traffic::agv::Graph::Waypoint* closest_wp = nullptr;
       double nearest_dist = std::numeric_limits<double>::infinity();
+      for (std::size_t i=0; i < _travel_info.graph->num_waypoints(); ++i)
+      {
+        const auto& wp = _travel_info.graph->get_waypoint(i);
+        const Eigen::Vector2d p_wp = wp.get_location();
+        const double dist = (p -p_wp).norm();
+        if (dist < nearest_dist)
+        {
+          closest_wp = &wp;
+          nearest_dist = dist;
+        }
+      }
 
+      assert(closest_wp);
+
+      if (nearest_dist < 0.25)
+      {
+        _travel_info.updater->update_position(closest_wp->index(), loc.yaw);
+        _travel_info.last_known_wp = closest_wp->index();
+      }
+      else
+      {
+        _travel_info.updater->update_position()
+      }
     }
   }
   else
