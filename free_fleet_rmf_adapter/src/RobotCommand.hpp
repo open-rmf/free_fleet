@@ -73,7 +73,6 @@ public:
     ArrivalEstimator next_arrival_estimator;
     RequestCompleted path_finished_callback;
     rmf_utils::optional<std::size_t> last_known_wp;
-    std::string last_known_map;
     rmf_fleet_adapter::agv::RobotUpdateHandlePtr updater;
     std::shared_ptr<const rmf_traffic::agv::Graph> graph;
     std::shared_ptr<const rmf_traffic::agv::VehicleTraits> traits;
@@ -128,6 +127,11 @@ private:
   }
 
   void update_position(const messages::RobotState& state);
+
+  void update_position_with_path(const messages::RobotState& state);
+
+  rmf_traffic::agv::Graph::Waypoint* closest_waypoint(
+      const messages::Location& location) const;
 
   RobotCommand();
 

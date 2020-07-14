@@ -212,11 +212,11 @@ void update_state(const messages::RobotState& state)
         }
       }
 
-      update_position(state);
+      return update_position(state);
     }
 
     if (state.mode.mode == state.mode.MODE_REQUEST_ERROR)
-    {
+    {egardi
       if (_interrupted)
       {
         // This interruption was already noticed
@@ -233,14 +233,14 @@ void update_state(const messages::RobotState& state)
       return _travel_info.updater->interrupted();
     }
 
-    // if (state.path.empty())
-    // {
-    //   // When the state path is empty, that means the robot believes it has
-    //   // arrived at its destination.
-    //   return check_path_finish(_node, state, _travel_info);
-    // }
-
-    // return estimate_path_traveling(_node, state, _travel_info);
+    if (state.path.empty())
+    {
+      // When the state path is empty, that means the robot believes it has
+      // arrived at its destination.
+      return update_position(state);
+    }
+  
+    return update_position_with_path(state);
   }
   else if (_dock_finished_callback)
   {
@@ -248,13 +248,10 @@ void update_state(const messages::RobotState& state)
   }
   else
   {
-    // If we don't have a finishing callback, then the robot is not under our
-    // command
-    // estimate_state(_node, state.location, _travel_info);
-    // update adapter regardless
-    // * no assumptions on lanes, etc
-    // * update with the lane that it is supposed to go down
-    // * update with its current location
+    if (state.location.path.empty())
+      update_position(state);
+    else
+      update_position_with_path(state);
   }
 }
 
@@ -262,6 +259,8 @@ void update_state(const messages::RobotState& state)
 
 void RobotCommand::update_position(const messages::RobotState& state)
 {
+  // This fleet adapter will not be compliant and infer the map from
+  // last known waypoints, level names have to be published in all states
   const messages::Location loc = state.location;
   if (loc.level_name.empty())
   {
@@ -270,78 +269,148 @@ void RobotCommand::update_position(const messages::RobotState& state)
           "Robot named [%s] belonging to fleet [%s] is lost because we cannot "
           "figure out what floor it is on. Please publish the robot's current "
           "floor name in the level_name field of its RobotState.",
-          info.robot_name.c_str(), info.fleet_name.c_str());
+          _travel_info.robot_name.c_str(), _travel_info.fleet_name.c_str());
     return;
   }
  
+  const rmf_traffic::agv::Graph::Waypoint* closest_wp = closest_waypoint(loc);
+  assert(closest_wp);
 
-  if (state.path.empty())
+  const Eigen::Vector2d p(loc.x, loc.y);
+  const double nearest_dist = (p - closest_wp.get_location()).norm();
+  
+  // Really close enough to the waypoint, assume that was where it intended
+  // to land on
+  if (nearest_dist < 0.25)
   {
-    // robot is not on the way
-    // no known past waypoint
-    if (!_travel_info.last_known_wp)
-    {
-      // find nearest waypoint
-      // if near enough, update with waypoint and orientation
-      // update last visited waypoint
-      const Eigen::Vector2d p(loc.x, loc.y);
-      const rmf_traffic::agv::Graph::Waypoint* closest_wp = nullptr;
-      double nearest_dist = std::numeric_limits<double>::infinity();
-      for (std::size_t i=0; i < _travel_info.graph->num_waypoints(); ++i)
-      {
-        const auto& wp = _travel_info.graph->get_waypoint(i);
-        const Eigen::Vector2d p_wp = wp.get_location();
-        const double dist = (p -p_wp).norm();
-        if (dist < nearest_dist)
-        {
-          closest_wp = &wp;
-          nearest_dist = dist;
-        }
-      }
+    _travel_info.last_known_wp = closest_wp->index();
+    return _travel_info.updater->update_position(closest_wp->index(), loc.yaw);
+  }
+  // Not close enough, we will not assume that closest_wp was the last_known_wp,
+  // update map and position as a last resort.
+  return _travel_info.updater->update_position(
+      loc.level_name, 
+      {loc.x, loc.y, loc.yaw});
+}
 
-      assert(closest_wp);
+//==============================================================================
 
-      if (nearest_dist < 0.25)
-      {
-        _travel_info.updater->update_position(closest_wp->index(), loc.yaw);
-        _travel_info.last_known_wp = closest_wp->index();
-      }
-      else
-      {
-        _travel_info.updater->update_position()
-      }
-    }
+void RobotCommand::update_position_with_path(const messages::RobotState& state)
+{
+  // This fleet adapter will not be compliant and infer the map from
+  // last known waypoints, level names have to be published in all states
+  const messages::Location loc = state.location;
+  if (loc.level_name.empty())
+  {
+    RCLCPP_ERROR(
+          node->get_logger(),
+          "Robot named [%s] belonging to fleet [%s] is lost because we cannot "
+          "figure out what floor it is on. Please publish the robot's current "
+          "floor name in the level_name field of its RobotState.",
+          _travel_info.robot_name.c_str(), _travel_info.fleet_name.c_str());
+    return;
+  }
+
+  const rmf_traffic::agv::Graph::Waypoint* closest_wp = closest_waypoint(loc);
+  assert(closest_wp);
+
+  const Eigen::Vector2d p(loc.x, loc.y);
+  const double nearest_dist = (p - closest_wp.get_location()).norm();
+
+  if (nearest_dist < 0.25)
+  {
+    // Waypoint is near enough, to be updated with waypoint index and 
+    // orientation
+    _travel_info.last_known_wp = closest_wp->index();
+    return _travel_info.updater->update_position(closest_wp->index(), loc.yaw);
   }
   else
   {
-    // robot is on the way somewhere
+    // It is somewhere in between waypoints now, we will update with lanes
+    assert(!state.path.empty());
 
-    // no known past waypoint
-    // find nearest waypoint
-    // if near enough, update with waypoint and orientation
-    // update late known waypoint
-    // else find nearest waypoint using path's next waypoint
-    // if not near enough, warn
-    // update position with target waypoint
-    // DO NOT update late known waypoint
+    // Find nearest next waypoint using path's next waypoint
+    const rmf_traffic::agv::Graph::Waypoint* closest_next_wp = 
+        closest_waypoint(state.path[0]);
+    assert(closest_next_wp);
 
-    // there is a known past waypoint
-    // get the lanes leading from the past waypoint
-    // for each lane's ending waypoint find nearest to next path waypoint in state
-    // or find which lane the next path waypoint is lying on
-    // update with position and applicable lanes
+    const Eigen::Vector2d p(state.path[0].x, state.path[0].y);
+    const double nearest_dist = (p - closest_next_wp.get_location()).norm();
+
+    // This next waypoint is close enough to the one in the graph
+    if (nearest_dist < 0.25)
+    {
+      // Try to update position with lane between valid next waypoint and
+      // last known wp
+      if (_travel_info.last_known_wp)
+      {
+        std::vector<std::size_t> current_lanes;
+        auto lanes = 
+            _travel_info.graph->lanes_from(_travel_info.last_known_wp.index());
+        for (std::size_t i : lanes)
+        {
+          std::size_t exit_wp_index = 
+              _travel_info.graph->get_lane(i).exit().waypoint_index();
+          if (exit_wp_index == closest_next_wp.index())
+            current_lanes.push_back(i);
+        }
+
+        if (!current_lanes.empty())
+        {
+          // We found the lanes that it is travelling on, update with lane info
+          return _travel_info.updater->update_position(
+              {loc.x, loc.y, loc.yaw},
+              current_lanes);
+        }
+      }
+
+      // no last_known_wp or no valid lanes were found, update with target 
+      // waypoint
+      return _travel_info.updater->update_position(
+          {loc.x, loc.y, loc.yaw},
+          closest_next_wp->index());
+    }
+    // No valid next waypoint was found using the path from state, update
+    // with map and position as last resort
+    else
+    {
+      RCLCPP_ERROR(
+          node->get_logger(),
+          "Robot named [%s] belonging to fleet [%s] is lost because we cannot "
+          "figure out where its next target waypoint is. The robot seems to be "
+          "following a path that is unknown to RMF.",
+          _travel_info.robot_name.c_str(), _travel_info.fleet_name.c_str());
+      return _travel_info.updater->update_position(
+          loc.level_name,
+          {loc.x, loc.y, loc.yaw});
+    }
   }
+}
 
-  // Do we need to worry about keeping track of which lanes?
-  // like holding it in _travel_info, what is the advantage?
-  // finding lane transition from there?
-  // probably optimize by searching through waypoints on lanes
+//==============================================================================
 
-  // std::vector<std::size_t> lanes;
-  // // find what lanes it is supposed to be on
-  // // if the robots stray too far away from the lanes, it is up to the client to
-  // // handle that
-  // _travel_info.updater->update_position({loc.x, loc.y, loc.yaw}, lanes);
+rmf_traffic::agv::Graph::Waypoint* RobotCommand::closest_waypoint(
+    const messages::Location& location) const
+{
+  const std::string map_name = location.level_name;
+  const Eigen::Vector2d p(loc.x, loc.y);
+  const rmf_traffic::agv::Graph::Waypoint* closest_wp = nullptr;
+  double nearest_dist = std::numeric_limits<double>::infinity();
+  for (std::size_t i=0; i < _travel_info.graph->num_waypoints(); ++i)
+  {
+    const auto& wp = _travel_info.graph->get_waypoint(i);
+    if (map_name != wp.get_map_name())
+      continue;
+
+    const Eigen::Vector2d p_wp = wp.get_location();
+    const double dist = (p -p_wp).norm();
+    if (dist < nearest_dist)
+    {
+      closest_wp = &wp;
+      nearest_dist = dist;
+    }
+  }
+  return closest_wp;
 }
 
 //==============================================================================
