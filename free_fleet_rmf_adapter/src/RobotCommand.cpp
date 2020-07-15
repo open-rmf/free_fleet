@@ -18,6 +18,8 @@
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 
+#include <rmf_traffic_ros2/Time.hpp>
+
 #include "utilities.hpp"
 #include "RobotCommand.hpp"
 
@@ -84,7 +86,7 @@ RobotCommand::SharedPtr RobotCommand::make(
   if (!frame_transformer)
     return nullptr;
 
-  RobotComamd::SharedPtr command_ptr(new RobotCommand);
+  RobotCommand::SharedPtr command_ptr(new RobotCommand);
   command_ptr->_active = false;
   command_ptr->_node = std::move(node);
   command_ptr->_request_publisher = std::move(request_publisher);
@@ -102,7 +104,7 @@ RobotCommand::SharedPtr RobotCommand::make(
 void RobotCommand::follow_new_path(
     const std::vector<rmf_traffic::agv::Plan::Waypoint>& waypoints,
     ArrivalEstimator next_arrival_estimator,
-    std::function<void()> path_finished_callback) final
+    std::function<void()> path_finished_callback)
 {
   std::lock_guard<std::mutex> lock(_mutex);
   _clear_last_command();
@@ -120,8 +122,8 @@ void RobotCommand::follow_new_path(
   {
     const Eigen::Vector3d pos = wp.position();
     messages::Location rmf_loc;
-    rmf_loc.sec = rmf_traffic_ros2::convert(wp.time()).sec();
-    rmf_loc.nanosec = rmf_traffic_ros2::convert(wp.time()).nanosec();
+    rmf_loc.sec = rmf_traffic_ros2::convert(wp.time()).sec;
+    rmf_loc.nanosec = rmf_traffic_ros2::convert(wp.time()).nanosec;
     rmf_loc.x = pos.x();
     rmf_loc.y = pos.y();
     rmf_loc.yaw = pos.z();
@@ -132,9 +134,9 @@ void RobotCommand::follow_new_path(
     }
 
     messages::Location ff_loc;
-    _frame_transformer->transform_rmf_to_fleet(rmf_loc, fleet_loc);
+    _frame_transformer->transform_rmf_to_fleet(rmf_loc, ff_loc);
 
-    _current_path_request.path.emplace_back(std::move(fleet_loc));
+    _current_path_request.path.emplace_back(std::move(ff_loc));
   }
   
   if (!_request_publisher->send_path_request(_current_path_request))
@@ -148,7 +150,7 @@ void RobotCommand::follow_new_path(
 
 //==============================================================================
 
-void RobotCommand::stop() final
+void RobotCommand::stop()
 {
   messages::RobotMode mode_msg = { messages::RobotMode::MODE_PAUSED };
   _current_mode_request.fleet_name = _travel_info.fleet_name;
@@ -168,7 +170,7 @@ void RobotCommand::stop() final
 
 void RobotCommand::dock(
     const std::string& dock_name,
-    std::function<void()> docking_finished_callback) final
+    std::function<void()> docking_finished_callback)
 {
   // Free fleet robots are by default without any docking procedure. This
   // function is implemented as a no-op.
@@ -176,7 +178,15 @@ void RobotCommand::dock(
 
 //==============================================================================
 
-void update_state(const messages::RobotState& state)
+void RobotCommand::set_updater(
+    rmf_fleet_adapter::agv::RobotUpdateHandlePtr updater)
+{
+  _travel_info.updater = std::move(updater);
+}
+
+//==============================================================================
+
+void RobotCommand::update_state(const messages::RobotState& state)
 {
   std::lock_guard<std::mutex> lock(_mutex);
   if (_travel_info.path_finished_callback)
@@ -187,9 +197,9 @@ void update_state(const messages::RobotState& state)
     // The arrival estimator should be available
     assert(_travel_info.next_arrival_estimator);
 
-    if (state.task_id != _current_task_id)
+    if (state.task_id != std::to_string(_current_task_id))
     {
-      if (_current_task_id == _current_path_request.task_id)
+      if (std::to_string(_current_task_id) == _current_path_request.task_id)
       {
         // The robot has not received our path request yet
         if (!_request_publisher->send_path_request(_current_path_request))
@@ -200,7 +210,7 @@ void update_state(const messages::RobotState& state)
               std::to_string(_current_task_id).c_str());
         }
       }
-      else if (_current_task_id == _current_mode_request.task_id)
+      else if (std::to_string(_current_task_id) == _current_mode_request.task_id)
       {
         // The robot has not received our mode request yet
         if (!_request_publisher->send_mode_request(_current_mode_request))
@@ -216,7 +226,7 @@ void update_state(const messages::RobotState& state)
     }
 
     if (state.mode.mode == state.mode.MODE_REQUEST_ERROR)
-    {egardi
+    {
       if (_interrupted)
       {
         // This interruption was already noticed
@@ -242,13 +252,13 @@ void update_state(const messages::RobotState& state)
   
     return update_position_with_path(state);
   }
-  else if (_dock_finished_callback)
+  else if (_travel_info.dock_finished_callback)
   {
     // TODO: docking
   }
   else
   {
-    if (state.location.path.empty())
+    if (state.path.empty())
       update_position(state);
     else
       update_position_with_path(state);
@@ -265,7 +275,7 @@ void RobotCommand::update_position(const messages::RobotState& state)
   if (loc.level_name.empty())
   {
     RCLCPP_ERROR(
-          node->get_logger(),
+          _node->get_logger(),
           "Robot named [%s] belonging to fleet [%s] is lost because we cannot "
           "figure out what floor it is on. Please publish the robot's current "
           "floor name in the level_name field of its RobotState.",
@@ -277,7 +287,7 @@ void RobotCommand::update_position(const messages::RobotState& state)
   assert(closest_wp);
 
   const Eigen::Vector2d p(loc.x, loc.y);
-  const double nearest_dist = (p - closest_wp.get_location()).norm();
+  const double nearest_dist = (p - closest_wp->get_location()).norm();
   
   // Really close enough to the waypoint, assume that was where it intended
   // to land on
@@ -303,7 +313,7 @@ void RobotCommand::update_position_with_path(const messages::RobotState& state)
   if (loc.level_name.empty())
   {
     RCLCPP_ERROR(
-          node->get_logger(),
+          _node->get_logger(),
           "Robot named [%s] belonging to fleet [%s] is lost because we cannot "
           "figure out what floor it is on. Please publish the robot's current "
           "floor name in the level_name field of its RobotState.",
@@ -315,7 +325,7 @@ void RobotCommand::update_position_with_path(const messages::RobotState& state)
   assert(closest_wp);
 
   const Eigen::Vector2d p(loc.x, loc.y);
-  const double nearest_dist = (p - closest_wp.get_location()).norm();
+  const double nearest_dist = (p - closest_wp->get_location()).norm();
 
   if (nearest_dist < 0.25)
   {
@@ -335,7 +345,7 @@ void RobotCommand::update_position_with_path(const messages::RobotState& state)
     assert(closest_next_wp);
 
     const Eigen::Vector2d p(state.path[0].x, state.path[0].y);
-    const double nearest_dist = (p - closest_next_wp.get_location()).norm();
+    const double nearest_dist = (p - closest_next_wp->get_location()).norm();
 
     // This next waypoint is close enough to the one in the graph
     if (nearest_dist < 0.25)
@@ -346,12 +356,12 @@ void RobotCommand::update_position_with_path(const messages::RobotState& state)
       {
         std::vector<std::size_t> current_lanes;
         auto lanes = 
-            _travel_info.graph->lanes_from(_travel_info.last_known_wp.index());
-        for (std::size_t i : lanes)
+            _travel_info.graph->lanes_from(*_travel_info.last_known_wp);
+        for (const auto& i : lanes)
         {
           std::size_t exit_wp_index = 
               _travel_info.graph->get_lane(i).exit().waypoint_index();
-          if (exit_wp_index == closest_next_wp.index())
+          if (exit_wp_index == closest_next_wp->index())
             current_lanes.push_back(i);
         }
 
@@ -375,7 +385,7 @@ void RobotCommand::update_position_with_path(const messages::RobotState& state)
     else
     {
       RCLCPP_ERROR(
-          node->get_logger(),
+          _node->get_logger(),
           "Robot named [%s] belonging to fleet [%s] is lost because we cannot "
           "figure out where its next target waypoint is. The robot seems to be "
           "following a path that is unknown to RMF.",
@@ -389,11 +399,11 @@ void RobotCommand::update_position_with_path(const messages::RobotState& state)
 
 //==============================================================================
 
-rmf_traffic::agv::Graph::Waypoint* RobotCommand::closest_waypoint(
+const rmf_traffic::agv::Graph::Waypoint* RobotCommand::closest_waypoint(
     const messages::Location& location) const
 {
   const std::string map_name = location.level_name;
-  const Eigen::Vector2d p(loc.x, loc.y);
+  const Eigen::Vector2d p(location.x, location.y);
   const rmf_traffic::agv::Graph::Waypoint* closest_wp = nullptr;
   double nearest_dist = std::numeric_limits<double>::infinity();
   for (std::size_t i=0; i < _travel_info.graph->num_waypoints(); ++i)

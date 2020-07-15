@@ -21,10 +21,12 @@
 #include <string>
 #include <memory>
 
-#include <rclcpp/Node.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <free_fleet/StateSubscriber.hpp>
 #include <free_fleet/RequestPublisher.hpp>
+
+#include <rmf_traffic/agv/VehicleTraits.hpp>
 
 #include "RmfFrameTransformer.hpp"
 

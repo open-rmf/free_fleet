@@ -29,7 +29,9 @@
 
 #include <rmf_traffic/agv/Graph.hpp>
 #include <rmf_traffic/agv/VehicleTraits.hpp>
+#include <rmf_traffic_ros2/Time.hpp>
 #include <rmf_fleet_adapter/agv/Adapter.hpp>
+#include <rmf_fleet_adapter/agv/parse_graph.hpp>
 #include <rmf_fleet_adapter/agv/FleetUpdateHandle.hpp>
 #include <rmf_fleet_adapter/agv/RobotUpdateHandle.hpp>
 
@@ -87,9 +89,14 @@ struct Connections : public std::enable_shared_from_this<Connections>
       parameters.translation_x,
       parameters.translation_y,
     };
-    const auto command = free_fleet::RobotCommand::make(adapter->node(), conf);
 
-    // TODO: handle level name
+    const auto command = free_fleet::RobotCommand::make(
+        adapter->node(), 
+        conf,
+        graph,
+        traits);
+
+    // TODO: handle level name on free fleet client level
     const auto& l = state.location;
     fleet->add_robot(
         command, robot_name, traits->profile(),
@@ -167,9 +174,9 @@ std::shared_ptr<Connections> make_fleet(
       return;
 
     std::vector<free_fleet::messages::RobotState> incoming_states;
-    if (conenctions->state_subscriber->read_robot_states(incoming_states))
+    if (connections->state_subscriber->read_robot_states(incoming_states))
     {
-      for (const auto& rs : incoming_states))
+      for (const auto& rs : incoming_states)
       {
         const auto insertion = connections->robots.insert({rs.name, nullptr});
         const bool new_robot = insertion.second;

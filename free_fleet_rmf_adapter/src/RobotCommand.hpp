@@ -15,18 +15,18 @@
  *
 */
 
-#ifndef FF_RMF_ADAPTER__SRC__ROBOTCOMMAND_HPP
-#define FF_RMF_ADAPTER__SRC__ROBOTCOMMAND_HPP
+#ifndef FREE_FLEET_RMF_ADAPTER__SRC__ROBOTCOMMAND_HPP
+#define FREE_FLEET_RMF_ADAPTER__SRC__ROBOTCOMMAND_HPP
+
+#include <mutex>
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <free_fleet/RequestPublisher.hpp>
 #include <free_fleet/messages/RobotState.hpp>
 
-// #include <rmf_fleet_adapter/agv/parse_graph.hpp>
 #include <rmf_fleet_adapter/agv/Adapter.hpp>
 
-#include "estimation.hpp"
 #include "RmfFrameTransformer.hpp"
 
 namespace free_fleet {
@@ -72,6 +72,7 @@ public:
     std::vector<rmf_traffic::agv::Plan::Waypoint> waypoints;
     ArrivalEstimator next_arrival_estimator;
     RequestCompleted path_finished_callback;
+    RequestCompleted dock_finished_callback;
     rmf_utils::optional<std::size_t> last_known_wp;
     rmf_fleet_adapter::agv::RobotUpdateHandlePtr updater;
     std::shared_ptr<const rmf_traffic::agv::Graph> graph;
@@ -83,7 +84,11 @@ public:
 
   using SharedPtr = std::shared_ptr<RobotCommand>;
 
-  static SharedPtr make(std::shared_ptr<rclcpp::Node> node, Config config);
+  static SharedPtr make(
+      std::shared_ptr<rclcpp::Node> node, 
+      Config config,
+      std::shared_ptr<const rmf_traffic::agv::Graph> graph,
+      std::shared_ptr<const rmf_traffic::agv::VehicleTraits> traits);
 
   void follow_new_path(
       const std::vector<rmf_traffic::agv::Plan::Waypoint>& waypoints,
@@ -97,6 +102,8 @@ public:
   void dock(
       const std::string& dock_name,
       std::function<void()> docking_finished_callback) final;
+
+  void set_updater(rmf_fleet_adapter::agv::RobotUpdateHandlePtr updater);
 
   void update_state(const messages::RobotState& state);
 
@@ -124,13 +131,14 @@ private:
   {
     _travel_info.next_arrival_estimator = nullptr;
     _travel_info.path_finished_callback = nullptr;
+    _travel_info.dock_finished_callback = nullptr;
   }
 
   void update_position(const messages::RobotState& state);
 
   void update_position_with_path(const messages::RobotState& state);
 
-  rmf_traffic::agv::Graph::Waypoint* closest_waypoint(
+  const rmf_traffic::agv::Graph::Waypoint* closest_waypoint(
       const messages::Location& location) const;
 
   RobotCommand();
@@ -139,4 +147,4 @@ private:
 
 } // namespace free_fleet
 
-#endif // FF_RMF_ADAPTER__SRC__ROBOTCOMMAND_HPP
+#endif // FREE_FLEET_RMF_ADAPTER__SRC__ROBOTCOMMAND_HPP

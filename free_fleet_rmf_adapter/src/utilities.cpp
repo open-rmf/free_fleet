@@ -22,20 +22,24 @@
 
 namespace free_fleet {
 
-std::string generate_random_task_id(size_t length)
+//==============================================================================
+
+bool get_string_parameter_mandatory(
+    std::shared_ptr<rclcpp::Node> node, 
+    const std::string& param_name, 
+    std::string& value)
 {
-  auto randchar = []() -> char
+  value = node->declare_parameter(param_name, std::string());
+  if (value.empty())
   {
-      const char charset[] =
-      "0123456789"
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      "abcdefghijklmnopqrstuvwxyz";
-      const size_t max_index = (sizeof(charset) - 1);
-      return charset[ rand() % max_index ];
-  };
-  std::string str(length,0);
-  std::generate_n( str.begin(), length, randchar );
-  return str;
+    RCLCPP_ERROR(
+        node->get_logger(),
+        "Missing [%s] parameter", param_name.c_str());
+    return false;
+  }
+  return true;
 }
+
+//==============================================================================
 
 } // namespace free_fleet

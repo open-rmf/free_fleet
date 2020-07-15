@@ -15,7 +15,7 @@
  *
 */
 
-#include <eigen3/Geometry>
+#include <Eigen/Geometry>
 
 #include "RmfFrameTransformer.hpp"
 
@@ -26,8 +26,8 @@ namespace free_fleet {
 RmfFrameTransformer::SharedPtr RmfFrameTransformer::make(
     Transformation transformation)
 {
-  SharedPtr transformer_ptr = std::make_shared(new RmfFrameTransformer);
-  transformer_ptr->_config(std::move(transformation));
+  SharedPtr transformer_ptr(new RmfFrameTransformer);
+  transformer_ptr->_config = std::move(transformation);
   return transformer_ptr;
 }
 
@@ -65,7 +65,8 @@ void RmfFrameTransformer::transform_rmf_to_fleet(
   fleet_frame_location.y = translated[1];
   fleet_frame_location.yaw = rmf_frame_location.yaw + _config.rotation;
 
-  fleet_frame_location.t = rmf_frame_location.t;
+  fleet_frame_location.sec = rmf_frame_location.sec;
+  fleet_frame_location.nanosec = rmf_frame_location.nanosec;
   fleet_frame_location.level_name = rmf_frame_location.level_name;
 }
 
@@ -102,7 +103,8 @@ void RmfFrameTransformer::transform_fleet_to_rmf(
   rmf_frame_location.y = scaled[1];
   rmf_frame_location.yaw = fleet_frame_location.yaw - _config.rotation;
 
-  rmf_frame_location.t = fleet_frame_location.t;
+  rmf_frame_location.sec = fleet_frame_location.sec;
+  rmf_frame_location.nanosec = fleet_frame_location.nanosec;
   rmf_frame_location.level_name = fleet_frame_location.level_name;
 }
 

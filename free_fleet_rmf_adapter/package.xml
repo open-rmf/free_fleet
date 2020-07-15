@@ -11,6 +11,9 @@
   
   <depend>rclcpp</depend>
   <depend>free_fleet</depend>
+  <depend>rmf_traffic</depend>
+  <depend>rmf_task_msgs</depend>
+  <depend>rmf_traffic_ros2</depend>
   <depend>rmf_fleet_adapter</depend>
   
   <export>

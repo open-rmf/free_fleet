@@ -17,6 +17,8 @@
 
 #include "Parameters.hpp"
 
+#include <rmf_traffic/geometry/Circle.hpp>
+
 namespace free_fleet {
 
 //==============================================================================

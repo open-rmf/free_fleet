@@ -15,10 +15,12 @@
  *
 */
 
-#ifndef FF_RMF_ADAPTER__SRC__RMFFRAMETRANSFORMER_HPP
-#define FF_RMF_ADAPTER__SRC__RMFFRAMETRANSFORMER_HPP
+#ifndef FREE_FLEET_RMF_ADAPTER__SRC__RMFFRAMETRANSFORMER_HPP
+#define FREE_FLEET_RMF_ADAPTER__SRC__RMFFRAMETRANSFORMER_HPP
 
-#include <messages/Location.hpp>
+#include <memory>
+
+#include <free_fleet/messages/Location.hpp>
 
 namespace free_fleet {
 
@@ -55,4 +57,4 @@ private:
 
 } // namespace free_fleet
 
-#endif // FF_RMF_ADAPTER__SRC__RMFFRAMETRANSFORMER_HPP
+#endif // FREE_FLEET_RMF_ADAPTER__SRC__RMFFRAMETRANSFORMER_HPP
