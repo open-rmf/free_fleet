@@ -41,4 +41,5 @@ jobs:
         colcon build --packages-up-to \
           free_fleet \
           free_fleet_server \
-          free_fleet_examples 
+          free_fleet_examples \
+          free_fleet_rmf_adapter
