@@ -13,7 +13,8 @@ jobs:
           git wget \
           python-rosdep \
           python3-vcstool \
-          python3-colcon-common-extensions -y
+          python3-colcon-common-extensions \
+          g++8 -y
     - name: workspace
       shell: bash
       run: |
@@ -38,7 +39,9 @@ jobs:
       run: |
         cd /home/ff_ws
         source /opt/ros/eloquent/setup.bash
-        colcon build --packages-up-to \
+        CXX=g++-8 colcon build \
+          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
+          --packages-up-to \
           free_fleet \
           free_fleet_server \
           free_fleet_examples \
