@@ -15,7 +15,10 @@
   <buildtool_depend>building_map_tools</buildtool_depend>
   <buildtool_depend>ros2run</buildtool_depend>
 
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>turtlebot3_gazebo</exec_depend>
+  <exec_depend>turtlebot3_description</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -19,6 +19,7 @@ install(
     scripts/send_destination_request.py
     scripts/send_path_request.py
     scripts/send_mode_request.py
+    scripts/send_initial_pose.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
