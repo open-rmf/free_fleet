@@ -1,0 +1,62 @@
+levels:
+  L1:
+    elevation: 0
+    flattened_x_offset: 0
+    flattened_y_offset: 0
+    floors:
+      - parameters: {texture_name: [1, blue_linoleum], texture_rotation: [3, 0], texture_scale: [3, 1]}
+        vertices: [0, 3, 2, 1, 4]
+    lanes:
+      - [9, 10, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [10, 11, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [12, 13, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [13, 10, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [11, 14, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [14, 15, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [15, 16, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [12, 17, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [12, 18, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [18, 11, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [18, 19, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+    layers:
+      {}
+    measurements:
+      - [0, 1, {distance: [3, 10]}]
+    models:
+      - {model_name: OpenRobotics/MiniSofa, name: OpenRobotics/MiniSofa, static: true, x: 170.016, y: 125.782, yaw: 0, z: 0}
+      - {model_name: OpenRobotics/MaleVisitorSit, name: OpenRobotics/MaleVisitorSit, static: true, x: 168.401, y: 125.358, yaw: -1.5708, z: 0}
+    vertices:
+      - [1.754, 1.754, 0, ""]
+      - [198.407, 1.559, 0, ""]
+      - [198.407, 199.187, 0, ""]
+      - [0.974, 198.407, 0, ""]
+      - [60.224, 1.559, 0, ""]
+      - [60.224, 52.428, 0, ""]
+      - [60.224, 87.705, 0, ""]
+      - [60.224, 169.172, 0, ""]
+      - [157.478, 52.428, 0, ""]
+      - [28.506, 23.19, 0, northeast, {is_parking_spot: [4, true]}]
+      - [28.506, 70.09399999999999, 0, ""]
+      - [94.67100000000001, 70.292, 0, ""]
+      - [93.621, 183.354, 0, ""]
+      - [27.817, 183.354, 0, southeast, {is_parking_spot: [4, true]}]
+      - [180.532, 70.09399999999999, 0, ""]
+      - [180.532, 26.501, 0, ""]
+      - [84.378, 26.501, 0, north_room, {is_parking_spot: [4, true]}]
+      - [177.359, 183.354, 0, southwest, {is_parking_spot: [4, true], spawn_robot_name: [1, tb3_0], spawn_robot_type: [1, turtlebot3_burger]}]
+      - [93.621, 128.373, 0, ""]
+      - [144.259, 128.373, 0, human, {is_parking_spot: [4, true]}]
+    walls:
+      - [0, 1, {}]
+      - [1, 2, {}]
+      - [2, 3, {}]
+      - [3, 0, {}]
+      - [4, 5, {}]
+      - [6, 7, {}]
+      - [5, 8, {}]
+    x_meters: 10.32274616706853
+    y_meters: 10.32274616706853
+lifts:
+  {}
+name: empty_map
+reference_level_name: L1

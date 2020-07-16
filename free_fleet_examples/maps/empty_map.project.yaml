@@ -1,0 +1,6 @@
+building:
+  filename: empty_map.building.yaml
+name: empty_map
+traffic_maps:
+  {}
+version: 1

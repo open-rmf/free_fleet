@@ -1,0 +1,51 @@
+<?xml version='1.0' ?>
+
+<launch>
+
+  <!-- Common launch -->
+  <!-- <include file="$(find-pkg-share free_fleet_examples)/common.launch.xml">
+    <arg name="use_sim_time" value="true"/>
+    <arg name="viz_config_file" value ="$(find-pkg-share free_fleet_examples)/include/office/office.rviz"/>
+    <arg name="config_file" value="$(find-pkg-share rmf_demo_maps)/office/office.building.yaml"/>
+  </include> -->
+
+  <group>
+    <let name="world_path" value="$(find-pkg-share free_fleet_examples)/maps/empty_map/empty_map.world" />
+    <let name="model_path" value="$(find-pkg-share free_fleet_examples)/maps/empty_map/models:$(find-pkg-share turtlebot3_gazebo)/models:/usr/share/gazebo-9/models" />
+    <let name="resource_path" value="/usr/share/gazebo-9" />
+    <let name="plugin_path" value="$(find-pkg-prefix building_gazebo_plugins)/lib" />
+
+    <executable cmd="gzserver --verbose -s libgazebo_ros_factory.so -s libgazebo_ros_init.so $(var world_path)" output="both">
+      <env name="GAZEBO_MODEL_PATH" value="$(var model_path)" />
+      <env name="GAZEBO_RESOURCE_PATH" value="$(var resource_path)" />
+      <env name="GAZEBO_PLUGIN_PATH" value="$(var plugin_path)" />
+      <env name="GAZEBO_MODEL_DATABASE_URI" value="" />
+    </executable>
+    <executable cmd="gzclient --verbose $(var world_path)" output="both">
+      <env name="GAZEBO_MODEL_PATH" value="$(var model_path)" />
+      <env name="GAZEBO_RESOURCE_PATH" value="$(var resource_path)" />
+      <env name="GAZEBO_PLUGIN_PATH" value="$(var plugin_path)" />
+    </executable>
+  </group>
+
+  <!-- <group>
+    <node pkg="gazebo_ros" exec="spawn_entity.py"
+          args="-database turtlebot3_burger -reference_frame tb3_0_placeholder -entity tb3_0 -z 0.05"/>
+  </group> -->
+
+  <!-- Magni fleet adapter and robot state aggregator needed for the Magni slotcar_plugin -->
+  <!-- <group>
+    <let name="fleet_name" value="magni"/>
+    <include file="$(find-pkg-share demos)/include/adapters/magni_adapter.launch.xml">
+      <arg name="fleet_name" value="$(var fleet_name)"/>
+      <arg name="use_sim_time" value="$(var use_sim_time)"/>
+      <arg name="nav_graph_file" value="$(find-pkg-share rmf_demo_maps)/maps/office/nav_graphs/0.yaml" />
+    </include>
+    <include file="$(find-pkg-share rmf_fleet_adapter)/robot_state_aggregator.launch.xml">
+      <arg name="robot_prefix" value="magni"/>
+      <arg name="fleet_name" value="$(var fleet_name)"/>
+      <arg name="use_sim_time" value="true"/>
+    </include>
+  </group> -->
+
+</launch>
