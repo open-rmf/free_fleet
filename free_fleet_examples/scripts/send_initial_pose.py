@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2019 Open Source Robotics Foundation, Inc.
+# Copyright 2020 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import argparse
 
 import rclpy
 from rclpy.node import Node
+from rclpy.utilities import remove_ros_args
 
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
@@ -42,11 +43,11 @@ def main(argv = sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--topic-name', default=default_topic)
     parser.add_argument('-f', '--frame', default=default_frame)
-    parser.add_argument('-x', default=default_initial_x)
-    parser.add_argument('-y', default=default_initial_y)
-    parser.add_argument('-z', default=default_initial_z)
-    parser.add_argument('--yaw', default=default_initial_yaw)
-    args = parser.parse_args(argv[1:])
+    parser.add_argument('-x', default=default_initial_x, type=float)
+    parser.add_argument('-y', default=default_initial_y, type=float)
+    parser.add_argument('-z', default=default_initial_z, type=float)
+    parser.add_argument('--yaw', default=default_initial_yaw, type=float)
+    args = parser.parse_args(remove_ros_args(argv[1:]))
 
     print('topic_name: {}'.format(args.topic_name))
     print('frame: {}'.format(args.frame))
@@ -83,60 +84,3 @@ def main(argv = sys.argv):
 
 if __name__ == '__main__':
     main(sys.argv)
-
-# <!-- aaron@biryani:~/workspaces/adapter_ws$ ros2 topic echo /initialpose 
-# header:
-#   stamp:
-#     sec: 1594893329
-#     nanosec: 595356466
-#   frame_id: map
-# pose:
-#   pose:
-#     position:
-#       x: -0.010395495221018791
-#       y: -0.002189747989177704
-#       z: 0.0
-#     orientation:
-#       x: 0.0
-#       y: 0.0
-#       z: 0.00039813093658257876
-#       w: 0.9999999207458755
-#   covariance:
-#   - 0.25
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.25
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.0
-#   - 0.06853891945200942
-# --- -->
-

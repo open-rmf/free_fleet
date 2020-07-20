@@ -1,0 +1,9 @@
+<?xml version='1.0' ?>
+
+<launch>
+
+  <node pkg="free_fleet_examples" exec="send_initial_pose.py" 
+    args="-x -0.010395 -y -0.00219 --yaw 0.0">
+  </node>
+  
+</launch>

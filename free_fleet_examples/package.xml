@@ -11,9 +11,11 @@
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>rmf_fleet_msgs</exec_depend>
-  <exec_depend>free_fleet_server</exec_depend>
   <buildtool_depend>building_map_tools</buildtool_depend>
   <buildtool_depend>ros2run</buildtool_depend>
+  
+  <exec_depend>free_fleet_server</exec_depend>
+  <exec_depend>free_fleet_rmf_adapter</exec_depend>
 
   <exec_depend>tf2</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
