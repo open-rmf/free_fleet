@@ -24,7 +24,7 @@
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
-  std::cout << "Greetings from free_fleet_server_ros2" << std::endl;
+  std::cout << "Greetings from free_fleet_server" << std::endl;
 
   free_fleet::ros2::ServerNode::Config server_node_config;
 

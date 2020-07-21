@@ -23,6 +23,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(free_fleet REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 file(GLOB bin_srcs 
   "src/*.cpp"
@@ -37,6 +38,7 @@ target_link_libraries(free_fleet_client
   ${rclcpp_LIBRARIES}
   ${rclcpp_action_LIBRARIES}
   ${nav2_msgs_LIBRARIES}
+  ${tf2_ros_LIBRARIES}
 )
 
 target_include_directories(free_fleet_client
@@ -46,6 +48,7 @@ target_include_directories(free_fleet_client
     ${rclcpp_INCLUDE_DIRS}
     ${rclcpp_action_INCLUDE_DIRS}
     ${nav2_msgs_INCLUDE_DIRS}
+    ${tf2_ros_INCLUDE_DIRS}
 )
 
 install(

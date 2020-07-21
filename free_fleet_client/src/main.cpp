@@ -19,55 +19,68 @@
 #include <memory>
 
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp_action/rclcpp_action.hpp>
 
-#include <nav2_msgs/action/navigate_to_pose.hpp>
+#include "ClientNode.hpp"
 
-class ClientNode : public rclcpp::Node
-{
-public:
-  using SharedPtr = std::shared_ptr<ClientNode>;
-  using NavigateToPose = nav2_msgs::action::NavigateToPose;
+// #include <rclcpp_action/rclcpp_action.hpp>
 
-  static SharedPtr make(const std::string node_name)
-  {
-    SharedPtr client_node(new ClientNode(node_name));
-    if (!client_node)
-      return nullptr;
+// #include <nav2_msgs/action/navigate_to_pose.hpp>
 
-    std::string action_name = "/NavigateToPose";
-    auto action_client = rclcpp_action::create_client<NavigateToPose>(
-        client_node, action_name);
-    // Make sure the server is actually there before continuing
-    RCLCPP_INFO(
-        client_node->get_logger(), 
-        "Waiting for \"%s\" action server", 
-        action_name.c_str());
-    action_client->wait_for_action_server();
+// class ClientNode : public rclcpp::Node
+// {
+// public:
+//   using SharedPtr = std::shared_ptr<ClientNode>;
+//   using NavigateToPose = nav2_msgs::action::NavigateToPose;
 
-    client_node->_action_client = std::move(action_client);
-    return client_node;
-  }
+//   static SharedPtr make(const std::string node_name)
+//   {
+//     SharedPtr client_node(new ClientNode(node_name));
+//     if (!client_node)
+//       return nullptr;
 
-private:
-  std::shared_ptr<rclcpp_action::Client<NavigateToPose>> _action_client;
+//     std::string action_name = "/NavigateToPose";
+//     auto action_client = rclcpp_action::create_client<NavigateToPose>(
+//         client_node, action_name);
+//     // Make sure the server is actually there before continuing
+//     RCLCPP_INFO(
+//         client_node->get_logger(), 
+//         "Waiting for \"%s\" action server", 
+//         action_name.c_str());
+//     action_client->wait_for_action_server();
 
-  ClientNode(const std::string node_name)
-  : Node(node_name)
-  {}
-};
+//     client_node->_action_client = std::move(action_client);
+//     return client_node;
+//   }
+
+// private:
+//   std::shared_ptr<rclcpp_action::Client<NavigateToPose>> _action_client;
+
+//   ClientNode(const std::string node_name)
+//   : Node(node_name)
+//   {}
+// };
 
 
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
+  std::cout << "Greetings from free_fleet_client" << std::endl;
 
-  auto node = ClientNode::make("free_fleet_client_node");
-  if (!node)
-  {
-    std::cout << "Something went wrong with creating a client" << std::endl;
-    return 1;
-  }
+  free_fleet::ClientNode::Config client_node_config;
+
+  auto client_node = free_fleet::ClientNode::make(client_node_config);
+  // if (!client_node)
+  //   return 1;
+
+  // rclcpp::exe
+
+
+  // auto node = ClientNode::make("free_fleet_client_node");
+  // if (!node)
+  // {
+  //   std::cout << "Something went wrong with creating a client" << std::endl;
+  //   return 1;
+  // }
 
   std::cout << "all done" << std::endl;
   return 0;
