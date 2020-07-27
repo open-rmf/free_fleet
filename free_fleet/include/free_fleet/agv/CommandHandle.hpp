@@ -15,5 +15,23 @@
  *
  */
 
-// ABSTRACT CLASS TO HANDLE MIDDLEWARE CHANGES, SENDING, RECEIVING, SERVICE 
-// CALLS ETC
+// THIS WILL BE FOR COMING UP WITH THE STATES, WHAT TO DO FOR EACH COMMAND
+
+#ifndef INCLUDE__FREE_FLEET__AGV__COMMANDHANDLE_HPP
+#define INCLUDE__FREE_FLEET__AGV__COMMANDHANDLE_HPP
+
+namespace free_fleet {
+namespace agv {
+
+class CommandHandle
+{
+public:
+
+private:
+
+};
+
+} // namespace agv
+} // namespace free_fleet
+
+#endif // INCLUDE__FREE_FLEET__AGV__COMMANDHANDLE_HPP
