@@ -18,8 +18,9 @@
 #include <dds/dds.h>
 
 #include <free_fleet/Server.hpp>
-
-#include "ServerImpl.hpp"
+#include <free_fleet/Participant.hpp>
+#include <free_fleet/StateSubscriber.hpp>
+#include <free_fleet/RequestPublisher.hpp>
 
 #include "messages/FleetMessages.h"
 #include "dds_utils/DDSPublishHandler.hpp"
@@ -27,84 +28,123 @@
 
 namespace free_fleet {
 
-Server::SharedPtr Server::make(const ServerConfig& _config)
+//==============================================================================
+
+class Server::Implementation
 {
-  SharedPtr server = SharedPtr(new Server(_config));
+public:
+  Config _config;
+  Participant::SharedPtr _participant;
+  StateSubscriber::SharedPtr _state_subscriber;
+  RequestPublisher::SharedPtr _request_publisher;
 
-  dds_entity_t participant = dds_create_participant(
-      static_cast<dds_domainid_t>(_config.dds_domain), NULL, NULL);
-  if (participant < 0)
-  {
-    DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-participant));
-    return nullptr;
-  }
+  Implementation(
+      Config config,
+      Participant::SharedPtr participant,
+      StateSubscriber::SharedPtr state_subscriber,
+      RequestPublisher::SharedPtr request_publisher)
+  : _config(std::move(config)),
+    _participant(std::move(participant)),
+    _state_subscriber(std::move(state_subscriber)),
+    _request_publisher(std::move(request_publisher))
+  {}
 
-  dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>::SharedPtr state_sub(
-      new dds::DDSSubscribeHandler<FreeFleetData_RobotState, 10>(
-          participant, &FreeFleetData_RobotState_desc,
-          _config.dds_robot_state_topic));
+  ~Implementation()
+  {}
+};
 
-  dds::DDSPublishHandler<FreeFleetData_ModeRequest>::SharedPtr 
-      mode_request_pub(
-          new dds::DDSPublishHandler<FreeFleetData_ModeRequest>(
-              participant, &FreeFleetData_ModeRequest_desc,
-              _config.dds_mode_request_topic));
+//==============================================================================
 
-  dds::DDSPublishHandler<FreeFleetData_PathRequest>::SharedPtr 
-      path_request_pub(
-          new dds::DDSPublishHandler<FreeFleetData_PathRequest>(
-              participant, &FreeFleetData_PathRequest_desc,
-              _config.dds_path_request_topic));
-
-  dds::DDSPublishHandler<FreeFleetData_DestinationRequest>::SharedPtr 
-      destination_request_pub(
-          new dds::DDSPublishHandler<FreeFleetData_DestinationRequest>(
-              participant, &FreeFleetData_DestinationRequest_desc,
-              _config.dds_destination_request_topic));
-
-  if (!state_sub->is_ready() ||
-      !mode_request_pub->is_ready() ||
-      !path_request_pub->is_ready() ||
-      !destination_request_pub->is_ready())
-    return nullptr;
-
-  server->impl->start(ServerImpl::Fields{
-      std::move(participant),
-      std::move(state_sub),
-      std::move(mode_request_pub),
-      std::move(path_request_pub),
-      std::move(destination_request_pub)});
-  return server;
+void Server::Config::print_config() const
+{
+  printf("SERVER-CLIENT DDS CONFIGURATION\n");
+  printf("  dds domain: %d\n", domain_id);
+  printf("  TOPICS\n");
+  printf("    robot state: %s\n", robot_state_topic.c_str());
+  printf("    mode request: %s\n", mode_request_topic.c_str());
+  printf("    path request: %s\n", path_request_topic.c_str());
+  printf("    destination request: %s\n", destination_request_topic.c_str());
 }
 
-Server::Server(const ServerConfig& _config)
+//==============================================================================
+
+Server::SharedPtr Server::make(Config config)
 {
-  impl.reset(new ServerImpl(_config));
+  auto participant_ptr = Participant::make(config.domain_id);
+  if (!participant_ptr)
+    return nullptr;
+
+  StateSubscriber::Config ss_config {
+    config.domain_id,
+    config.robot_state_topic
+  };
+  auto state_subscriber_ptr = StateSubscriber::make(
+      std::move(ss_config), participant_ptr);
+  if (!state_subscriber_ptr)
+    return nullptr;
+
+  RequestPublisher::Config rp_config {
+    config.domain_id,
+    config.mode_request_topic,
+    config.path_request_topic,
+    config.destination_request_topic
+  };
+  auto request_publisher_ptr = RequestPublisher::make(
+      std::move(rp_config), participant_ptr);
+  if (!request_publisher_ptr)
+    return nullptr;
+
+  SharedPtr server_ptr = SharedPtr(new Server);
+  server_ptr->_pimpl.reset(
+      new Implementation(
+          std::move(config),
+          std::move(participant_ptr),
+          std::move(state_subscriber_ptr),
+          std::move(request_publisher_ptr)));
+  return server_ptr;
 }
+
+//==============================================================================
+
+bool Server::read_robot_states(
+    std::vector<messages::RobotState>& new_robot_states)
+{
+  return _pimpl->_state_subscriber->read_robot_states(new_robot_states);
+}
+
+//==============================================================================
+
+bool Server::send_mode_request(const messages::ModeRequest& mode_request)
+{
+  return _pimpl->_request_publisher->send_mode_request(mode_request);
+}
+
+//==============================================================================
+
+bool Server::send_path_request(const messages::PathRequest& path_request)
+{
+  return _pimpl->_request_publisher->send_path_request(path_request);
+}
+
+//==============================================================================
+
+bool Server::send_destination_request(
+    const messages::DestinationRequest& destination_request)
+{
+  return 
+      _pimpl->_request_publisher->send_destination_request(destination_request);
+}
+
+//==============================================================================
 
 Server::~Server()
 {}
 
-bool Server::read_robot_states(
-    std::vector<messages::RobotState>& _new_robot_states)
-{
-  return impl->read_robot_states(_new_robot_states);
-}
+//==============================================================================
 
-bool Server::send_mode_request(const messages::ModeRequest& _mode_request)
-{
-  return impl->send_mode_request(_mode_request);
-}
+Server::Server()
+{}
 
-bool Server::send_path_request(const messages::PathRequest& _path_request)
-{
-  return impl->send_path_request(_path_request);
-}
-
-bool Server::send_destination_request(
-    const messages::DestinationRequest& _destination_request)
-{
-  return impl->send_destination_request(_destination_request);
-}
+//==============================================================================
 
 } // namespace free_fleet

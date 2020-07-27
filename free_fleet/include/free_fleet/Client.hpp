@@ -20,18 +20,30 @@
 
 #include <memory>
 
-#include <free_fleet/ClientConfig.hpp>
-
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/PathRequest.hpp>
 #include <free_fleet/messages/DestinationRequest.hpp>
+
 
 namespace free_fleet {
 
 class Client
 {
 public:
+
+  /// Configuration for setting up a Client, defines the DDS domain,
+  /// and various topic names for receiving requests and sending states.
+  struct Config
+  {
+    int domain_id = 42;
+    std::string robot_state_topic = "robot_state";
+    std::string mode_request_topic = "mode_request";
+    std::string path_request_topic = "path_request";
+    std::string destination_request_topic = "destination_request";
+
+    void print_config() const;
+  };
 
   using SharedPtr = std::shared_ptr<Client>;
 
@@ -41,7 +53,7 @@ public:
   ///   Configuration that sets up the client to communicate with the server.
   /// \return
   ///   Shared pointer to a free fleet client.
-  static SharedPtr make(const ClientConfig& config);
+  static SharedPtr make(Config config);
 
   /// Attempts to send a new robot state to the free fleet server, to be 
   /// registered by the fleet management system.
@@ -87,15 +99,10 @@ public:
   /// Destructor
   ~Client();
 
+  class Implementation;
 private:
-
-  /// Forward declaration and unique implementation
-  class ClientImpl;
-
-  std::unique_ptr<ClientImpl> impl;
-
-  Client(const ClientConfig& config);
-
+  Client();
+  std::unique_ptr<Implementation> _pimpl;
 };
 
 } // namespace free_fleet
