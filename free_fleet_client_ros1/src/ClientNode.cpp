@@ -88,10 +88,6 @@ void ClientNode::start(Fields _fields)
       client_node_config.battery_state_topic, 1,
       &ClientNode::battery_state_callback_fn, this);
 
-  level_name_sub = node->subscribe(
-      client_node_config.level_name_topic, 1, 
-      &ClientNode::level_name_callback_fn, this);
-
   request_error = false;
   emergency = false;
   paused = false;
@@ -114,12 +110,6 @@ void ClientNode::battery_state_callback_fn(
 {
   WriteLock battery_state_lock(battery_state_mutex);
   current_battery_state = _msg;
-}
-
-void ClientNode::level_name_callback_fn(const std_msgs::String& _msg)
-{
-  WriteLock level_name_lock(level_name_mutex);
-  current_level_name = _msg;
 }
 
 bool ClientNode::get_robot_transform()
@@ -208,9 +198,7 @@ void ClientNode::publish_robot_state()
         current_robot_transform.transform.translation.y;
     new_robot_state.location.yaw = 
         get_yaw_from_transform(current_robot_transform);
-    
-    ReadLock level_name_lock(level_name_mutex);
-    new_robot_state.location.level_name = current_level_name.data;
+    new_robot_state.location.level_name = client_node_config.level_name;
   }
 
   new_robot_state.path.clear();

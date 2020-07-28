@@ -97,16 +97,9 @@ private:
 
   // --------------------------------------------------------------------------
   // Level name handling 
-  // TODO: decide on a better way to get level data
-  // TODO: add functionality to handle level transition
+  // TODO: figure out a better way to change level names, other than initialization
 
-  ros::Subscriber level_name_sub;
-
-  std::mutex level_name_mutex;
-  
-  std_msgs::String current_level_name;
-
-  void level_name_callback_fn(const std_msgs::String& msg);
+  std::string current_level_name;
   
   // --------------------------------------------------------------------------
   // Robot transform handling
