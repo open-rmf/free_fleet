@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTMODE_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTMODE_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__ROBOTMODE_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__ROBOTMODE_HPP
 
 #include <cstdint>
 
@@ -35,9 +35,12 @@ struct RobotMode
   static const uint32_t MODE_GOING_HOME = 6;
   static const uint32_t MODE_DOCKING = 7;
   static const uint32_t MODE_REQUEST_ERROR = 8;
+  static const uint32_t MODE_UNDEFINED = 9;
+
+  std::string info;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTMODE_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__ROBOTMODE_HPP

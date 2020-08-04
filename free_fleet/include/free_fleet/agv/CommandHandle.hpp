@@ -21,6 +21,12 @@
 #include <vector>
 #include <functional>
 
+#include <rmf_traffic/agv/Planner.hpp>
+
+
+// Heavily referenced from RobotCommandHandle
+// https://github.com/osrf/rmf_core/blob/master/rmf_fleet_adapter/include/rmf_fleet_adapter/agv/RobotCommandHandle.hpp
+
 namespace free_fleet {
 namespace agv {
 
@@ -34,10 +40,6 @@ public:
   /// completed. It should only be triggered that one time and then discarded.
   using RequestCompleted = std::function<void()>;
 
-  /// Trigger this callback function when the robot encounters an error 
-  using ErrorEncountered = std::function<void()>;
-
-
   /// Have the robot follow a new path. If it was already following a path, then
   /// it should immediately switch over to this one.
   ///
@@ -48,26 +50,34 @@ public:
   ///   because the waypoint timing is used to avoid traffic conflicts with
   ///   other vehicles.
   ///
-  /// \param[in] next_arrival_estimator
-  ///   Give an estimate for how long the robot will take to reach the path
-  ///   element of the specified index. You should still be calling
-  ///   RobotUpdateHandle::update_position() even as you call this function.
-  ///
   /// \param[in] path_finished_callback
   ///   Trigger this callback when the robot is done following the new path.
   ///   You do not need to trigger waypoint_arrival_callback when triggering
   ///   this one.
   virtual void follow_new_path(
       const std::vector<rmf_traffic::agv::Plan::Waypoint>& waypoints,
-      ArrivalEstimator next_arrival_estimator,
       RequestCompleted path_finished_callback) = 0;
 
   /// Have the robot come to an immediate stop.
   virtual void stop() = 0;
 
+  /// Have the robot resume performing its task before it was stopped.
+  virtual void resume() = 0;
+
+  /// Have the robot begin a pre-defined docking procedure. Implement this
+  /// function as a no-op if your robots do not perform docking procedures.
+  ///
+  /// \param[in] dock_name
+  ///   The predefined name of the docking procedure to use.
+  ///
+  /// \param[in] docking_finished_callback
+  ///   Trigger this callback when the docking is finished.
+  virtual void dock(
+      const std::string& dock_name,
+      RequestCompleted docking_finished_callback) = 0;
+
   /// Virtual destructor
   virtual ~CommandHandle() = default;
-
 };
 
 } // namespace agv
