@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP
 
 #include <string>
 #include <vector>
@@ -29,14 +29,20 @@ namespace messages {
 
 struct ModeRequest
 {
-  std::string fleet_name;
+  /// Robot to perform this request
   std::string robot_name;
-  RobotMode mode;
+
+  /// Unique task ID issued by the fleet manager
   std::string task_id;
+
+  /// Desired mode for this robot
+  RobotMode mode;
+
+  /// Additional parameters if any when parsing the desired mode
   std::vector<ModeParameter> parameters;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__MODEREQUEST_HPP

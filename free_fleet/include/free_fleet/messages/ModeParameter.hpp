@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
 
 #include <string>
 
@@ -25,11 +25,14 @@ namespace messages {
 
 struct ModeParameter
 {
+  /// Parameter name
   std::string name;
+
+  /// Parameter value
   std::string value;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
