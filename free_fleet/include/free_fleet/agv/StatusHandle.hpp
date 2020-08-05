@@ -15,43 +15,44 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__AGV__UPDATEHANDLE_HPP
-#define INCLUDE__FREE_FLEET__AGV__UPDATEHANDLE_HPP
+#ifndef INCLUDE__FREE_FLEET__AGV__STATUSHANDLE_HPP
+#define INCLUDE__FREE_FLEET__AGV__STATUSHANDLE_HPP
 
 #include <Eigen/Geometry>
 
+#include <free_fleet/messages/Location.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 
 namespace free_fleet {
 namespace agv {
 
-class UpdateHandle
+class StatusHandle
 {
 public:
 
-  /// Obtain the current level name of the robot
+  /// Obtain the current location of the robot.
   ///
   /// \return
-  ///   Name of the current level as a string
-  virtual std::string level_name() = 0;
+  ///   Location of the robot including the time that it was sampled.
+  virtual messages::Location location() = 0;
 
-  /// Obtain the current position of the robot
+  /// Obtain the current mode of the robot.
   ///
   /// \return
-  ///   Pose of the robot in {x, y, yaw}
-  virtual Eigen::Vector3d position() = 0;
-
-  /// Obtain the current mode of the robot
-  ///
-  /// \return
-  ///   Mode of the robot with info
+  ///   Mode of the robot.
   virtual messages::RobotMode mode() = 0;
 
+  /// Obtain the current battery percentage of the robot.
+  ///
+  /// \return
+  ///   Battery percentage of the robot.
+  virtual double battery_percent() = 0;
+
   /// Virtual destructor
-  virtual ~UpdateHandle() = default;
-}
+  ~StatusHandle() = default;
+};
 
 } // namespace agv
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__AGV__UPDATEHANDLE_HPP
+#endif // INCLUDE__FREE_FLEET__AGV__STATUSHANDLE_HPP

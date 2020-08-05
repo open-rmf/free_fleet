@@ -19,3 +19,77 @@
 // AND USES THE IMPLEMENTED ABSTRACT API TO SEND MESSAGES
 
 // ALSO HOLDS AN INSTANCE OF THE NAVIGATION GRAPH
+
+#ifndef INCLUDE__FREE_FLEET__AGV__CLIENT_HPP
+#define INCLUDE__FREE_FLEET__AGV__CLIENT_HPP
+
+#include <memory>
+
+#include <rmf_utils/impl_ptr.hpp>
+#include <rmf_traffic/agv/Graph.hpp>
+
+#include <free_fleet/agv/CommandHandle.hpp>
+#include <free_fleet/transport/Middleware.hpp>
+
+namespace free_fleet {
+namespace agv {
+
+class Client
+{
+public:
+
+  using SharedPtr = std::shared_ptr<Client>;
+
+  /// Factory function that creates an instance of the Free Fleet DDS Client.
+  ///
+  /// \param[in] config
+  ///   Configuration that sets up the client to communicate with the server.
+  /// \return
+  ///   Shared pointer to a free fleet client.
+
+  /// Factory function that creates an instance of the Free Fleet Client.
+  ///
+  /// \param[in] command_handle
+  ///   Command handle implementation specific to the robot that this client is
+  ///   attached to, in order to complete the requests relayed from the fleet
+  ///   manager.
+  ///
+  /// \param[in] status_handle
+  ///   Status handle implementation specific to the robot that this client is
+  ///   attached to, in order to construct the standardized robot state message
+  ///   that is required for updating the fleet manager.
+  ///
+  /// \param[in] middleware
+  ///   Middleware implementation to be used between the robot client and the
+  ///   fleet manager.
+  ///
+  /// \param[in] graph
+  ///   Navigation graph to be used by the robot client when parsing navigation
+  ///   requests, as well as for infering waypoints and lanes that it is
+  ///   occupying.
+  ///
+  /// \return
+  ///   Shared pointer to a client instance that is ready to be started. If
+  ///   any of the initializations fail during during this function's
+  ///   execution, a nullptr will be returned.
+  static SharedPtr make(
+    std::shared_ptr<CommandHandle> command_handle,
+    std::shared_ptr<StatusHandle> status_handle,
+    std::shared_ptr<transport::Middleware> middleware,
+    std::shared_ptr<rmf_traffic::agv::Graph> graph);
+
+  /// Starts the client which begins to update the fleet manager with the
+  /// robot's current status, as well as polls for requests before performing
+  /// them.
+  void start();
+
+  class Implementation;
+private:
+  rmf_utils::impl_ptr<Implementation> _pimpl;
+  Client();
+}
+
+} // namespace agv
+} // namespace free_fleet
+
+#endif // INCLUDE__FREE_FLEET__AGV__CLIENT_HPP
