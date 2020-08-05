@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__PATHREQUEST_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__PATHREQUEST_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__NAVIGATIONREQUEST_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__NAVIGATIONREQUEST_HPP
 
 #include <vector>
 
@@ -27,13 +27,17 @@ namespace messages {
 
 struct PathRequest
 {
-  std::string fleet_name;
+  /// Robot to perform this request
   std::string robot_name;
-  std::vector<Location> path;
+
+  /// Unique task ID issued by the fleet manager
   std::string task_id;
+
+  /// A vector of lane indices from the navigation graph
+  std::vector<std::size_t> path;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__PATHREQUEST_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__NAVIGATIONREQUEST_HPP

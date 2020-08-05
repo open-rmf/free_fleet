@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
 
 #include <string>
 #include <vector>
@@ -29,16 +29,30 @@ namespace messages {
 
 struct RobotState
 {
+  /// Name of the robot
   std::string name;
+
+  /// Model of the robot
   std::string model;
+
+  /// Unique task ID of the task it is currently performing
   std::string task_id;
+
+  /// Current mode of the robot
   RobotMode mode;
-  float battery_percent;
+
+  /// Current battery percentage, values from 0 to 1
+  double battery_percent;
+
+  /// Current location of the robot
   Location location;
-  std::vector<Location> path;
+
+  /// Current path that the robot is currently on, as a vector of lane indices
+  /// from the navigation graph
+  std::vector<std::size_t> path;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP

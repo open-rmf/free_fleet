@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
-#define FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
 
 #include <string>
 #include <cstdint>
@@ -26,15 +26,22 @@ namespace messages {
 
 struct Location
 {
+  /// Time in seconds
   int32_t sec;
+
+  /// Time in nanoseconds
   uint32_t nanosec;
-  float x;
-  float y;
-  float yaw;
+
+  /// x, y positions in meters and yaw in radians
+  double x;
+  double y;
+  double yaw;
+
+  /// Current level/map name
   std::string level_name;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // FREE_FLEET__INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
