@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(free_fleet VERSION 0.0.1 LANGUAGES C CXX)
+project(free_fleet_cyclonedds VERSION 1.0.0 LANGUAGES C CXX)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -17,81 +17,85 @@ endif()
 
 include(GNUInstallDirs)
 
-find_package(ament_cmake REQUIRED)
 find_package(rmf_utils REQUIRED)
-find_package(rmf_traffic REQUIRED)
-find_package(Eigen3 REQUIRED)
-
+find_package(free_fleet REQUIRED)
 find_package(CycloneDDS QUIET CONFIG)
 if(NOT CycloneDDS_FOUND)
   message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
-  ament_package()
   return()
 endif()
 
-file(GLOB lib_srcs 
+file(GLOB lib_srcs
+  # "src/messages/*.c"
+  # "src/messages/*.cpp"
   "src/*.cpp"
-  "src/dds_utils/*.cpp"
-  "src/messages/*.c"
-  "src/messages/*.cpp"
 )
 
-add_library(free_fleet SHARED
+add_library(free_fleet_cyclonedds SHARED
   ${lib_srcs}
 )
 
-target_link_libraries(free_fleet
+target_link_libraries(free_fleet_cyclonedds
+  rmf_utils::rmf_utils
+  free_fleet::free_fleet
   CycloneDDS::ddsc
 )
 
-target_include_directories(free_fleet
+target_include_directories(free_fleet_cyclonedds
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-ament_export_interfaces(free_fleet HAS_LIBRARY_TARGET)
-ament_export_dependencies(CycloneDDS)
+# Create cmake config files
+include(CMakePackageConfigHelpers)
 
-if(BUILD_TESTING)
-  set(testing_targets
-    test_dds_pub_destination_request
-    test_dds_pub_mode_request
-    test_dds_pub_path_request
-    test_dds_pub_sim_path_request
-    test_dds_sub_state
-  )
+set(INSTALL_CONFIG_DIR "${CMAKE_INSTALL_LIBDIR}/free_fleet_cyclonedds/cmake")
+set(PACKAGE_CONFIG_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/free_fleet_cyclonedds-config-version.cmake")
+set(PACKAGE_CONFIG_FILE "${CMAKE_CURRENT_BINARY_DIR}/free_fleet_cyclonedds-config.cmake")
 
-  foreach(target ${testing_targets})
-    add_executable(${target}
-      src/tests/${target}.cpp
-      src/dds_utils/common.cpp
-      src/messages/FleetMessages.c
-    )
-    target_link_libraries(${target}
-      CycloneDDS::ddsc
-    )
-  endforeach()
+configure_package_config_file(
+  "${CMAKE_CURRENT_LIST_DIR}/cmake/free_fleet-config.cmake.in"
+  ${PACKAGE_CONFIG_FILE}
+  INSTALL_DESTINATION ${INSTALL_CONFIG_DIR}
+)
 
-  install(
-    TARGETS ${testing_targets}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-install(
-  DIRECTORY include/free_fleet
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+write_basic_package_version_file(
+  ${PACKAGE_CONFIG_VERSION_FILE}
+  COMPATIBILITY ExactVersion
 )
 
 install(
-  TARGETS free_fleet
-  EXPORT  free_fleet
+  TARGETS free_fleet_cyclonedds
+  EXPORT  free_fleet_cyclonedds-targets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-ament_package()
+install(
+  DIRECTORY include/free_fleet_cyclonedds
+  DESTINATION include
+)
+
+install(
+  FILES
+    ${PACKAGE_CONFIG_VERSION_FILE}
+    ${PACKAGE_CONFIG_FILE}
+  DESTINATION ${INSTALL_CONFIG_DIR}
+)
+
+install(
+  EXPORT free_fleet_cyclonedds-targets
+  FILE free_fleet_cyclonedds-targets.cmake
+  NAMESPACE free_fleet_cyclonedds::
+  DESTINATION ${INSTALL_CONFIG_DIR}
+)
+
+export(
+  EXPORT free_fleet_cyclonedds-targets
+  FILE ${CMAKE_CURRENT_BINARY_DIR}/free_fleet_cyclonedds-targets.cmake
+  NAMESPACE free_fleet_cyclonedds::
+)
+
+export(PACKAGE free_fleet_cyclonedds)

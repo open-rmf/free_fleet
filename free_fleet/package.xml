@@ -1,19 +1,16 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>free_fleet</name>
-  <version>1.0.0</version>
-  <description>Free Fleet client and server library</description>
+  <version>2.0.0</version>
+  <description>Free Fleet client and manager library</description>
   <maintainer email="morgan@openrobotics.org">Morgan Quigley</maintainer>
   <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
   <license>Apache 2.0</license>
-
-  <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <build_depend>rmf_utils</build_depend>
+  
+  <depend>rmf_utils</depend>
   <depend>rmf_traffic</depend>
-  <depend>cyclonedds</depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>cmake</build_type>
   </export>
 </package>

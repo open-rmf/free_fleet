@@ -25,7 +25,7 @@
 namespace free_fleet {
 namespace messages {
 
-struct PathRequest
+struct NavigationRequest
 {
   /// Robot to perform this request
   std::string robot_name;
