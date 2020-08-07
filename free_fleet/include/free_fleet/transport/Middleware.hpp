@@ -24,9 +24,9 @@
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
-#include <messages/RobotState.hpp>
-#include <messages/ModeRequest.hpp>
-#include <messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/NavigationRequest.hpp>
 
 namespace free_fleet {
 namespace transport {
@@ -45,7 +45,7 @@ class Middleware
   ///   keep track of which lanes each robot is currently on, and which waypoint
   ///   they are currently heading towards.
   virtual void start_graph_service(
-      std::shared_ptr<rmf_traffic::agv::Graph> graph);
+      std::shared_ptr<rmf_traffic::agv::Graph> graph) = 0;
 
   /// Requests for a navigation graph over the middleware from the fleet
   /// manager. This is a blocking function until the timeout is reached.
@@ -60,7 +60,7 @@ class Middleware
   ///   waypoint it is currently heading towards. If the timeout was reached or 
   ///   the service is not ready, a nullptr will be returned.
   virtual std::shared_ptr<rmf_traffic::agv::Graph> request_graph(
-      Duration timeout = Duration(std::chrono::seconds(10)));
+      Duration timeout = Duration(std::chrono::seconds(10))) = 0;
 
   /// Sends a robot state over the middleware to update the fleet manager. This
   /// will be called by the client running on each of the robots.

@@ -28,6 +28,7 @@
 #include <rmf_utils/impl_ptr.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
+#include <free_fleet/agv/StatusHandle.hpp>
 #include <free_fleet/agv/CommandHandle.hpp>
 #include <free_fleet/transport/Middleware.hpp>
 
@@ -76,7 +77,7 @@ public:
     std::shared_ptr<CommandHandle> command_handle,
     std::shared_ptr<StatusHandle> status_handle,
     std::shared_ptr<transport::Middleware> middleware,
-    std::shared_ptr<rmf_traffic::agv::Graph> graph);
+    std::shared_ptr<rmf_traffic::agv::Graph> graph=nullptr);
 
   /// Starts the client which begins to update the fleet manager with the
   /// robot's current status, as well as polls for requests before performing
@@ -87,7 +88,7 @@ public:
 private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
   Client();
-}
+};
 
 } // namespace agv
 } // namespace free_fleet

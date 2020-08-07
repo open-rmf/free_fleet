@@ -18,8 +18,6 @@
 #ifndef INCLUDE__FREE_FLEET__AGV__STATUSHANDLE_HPP
 #define INCLUDE__FREE_FLEET__AGV__STATUSHANDLE_HPP
 
-#include <Eigen/Geometry>
-
 #include <free_fleet/messages/Location.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 

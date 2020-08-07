@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+
+get_filename_component(free_fleet_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(rmf_utils REQUIRED)
+find_dependency(rmf_traffic REQUIRED)
+
+if(NOT TARGET free_fleet::free_fleet)
+    include("${free_fleet_CMAKE_DIR}/free_fleet-targets.cmake")
+endif()
+
+check_required_components(free_fleet)

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(free_fleet VERSION 0.0.1 LANGUAGES C CXX)
+project(free_fleet VERSION 2.0.0 LANGUAGES C CXX)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -20,20 +20,23 @@ include(GNUInstallDirs)
 find_package(ament_cmake REQUIRED)
 find_package(rmf_utils REQUIRED)
 find_package(rmf_traffic REQUIRED)
-find_package(Eigen3 REQUIRED)
 
-find_package(CycloneDDS QUIET CONFIG)
-if(NOT CycloneDDS_FOUND)
-  message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
-  ament_package()
-  return()
-endif()
+# find_package(CycloneDDS QUIET CONFIG)
+# if(NOT CycloneDDS_FOUND)
+#   message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
+#   ament_package()
+#   return()
+# endif()
 
-file(GLOB lib_srcs 
+# file(GLOB lib_srcs 
+#   "src/*.cpp"
+#   "src/dds_utils/*.cpp"
+#   "src/messages/*.c"
+#   "src/messages/*.cpp"
+# )
+
+file(GLOB lib_srcs
   "src/*.cpp"
-  "src/dds_utils/*.cpp"
-  "src/messages/*.c"
-  "src/messages/*.cpp"
 )
 
 add_library(free_fleet SHARED
@@ -51,17 +54,55 @@ target_include_directories(free_fleet
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-install(
-  DIRECTORY include/free_fleet
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+# Create cmake config files
+include(CMakePackageConfigHelpers)
+
+set(INSTALL_CONFIG_DIR "${CMAKE_INSTALL_LIBDIR}/free_fleet/cmake")
+set(PACKAGE_CONFIG_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config-version.cmake")
+set(PACKAGE_CONFIG_FILE "${CMAKE_CURRENT_BINARY_DIR}/free_fleet-config.cmake")
+
+configure_package_config_file(
+  "${CMAKE_CURRENT_LIST_DIR}/cmake/free_fleet-config.cmake.in"
+  ${PACKAGE_CONFIG_FILE}
+  INSTALL_DESTINATION ${INSTALL_CONFIG_DIR}
+)
+
+write_basic_package_version_file(
+  ${PACKAGE_CONFIG_VERSION_FILE}
+  COMPATIBILITY ExactVersion
 )
 
 install(
   TARGETS free_fleet
-  EXPORT  free_fleet
+  EXPORT  free_fleet-targets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-ament_package()
+install(
+  DIRECTORY include/free_fleet
+  DESTINATION include
+)
+
+install(
+  FILES
+    ${PACKAGE_CONFIG_VERSION_FILE}
+    ${PACKAGE_CONFIG_FILE}
+  DESTINATION ${INSTALL_CONFIG_DIR}
+)
+
+install(
+  EXPORT free_fleet-targets
+  FILE free_fleet-targets.cmake
+  NAMESPACE free_fleet::
+  DESTINATION ${INSTALL_CONFIG_DIR}
+)
+
+export(
+  EXPORT free_fleet-targets
+  FILE ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-targets.cmake
+  NAMESPACE free_fleet::
+)
+
+export(PACKAGE free_fleet)
