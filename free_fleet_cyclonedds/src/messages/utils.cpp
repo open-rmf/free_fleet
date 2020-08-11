@@ -14,3 +14,11 @@
  * limitations under the License.
  *
  */
+
+#include "utils.hpp"
+
+namespace free_fleet {
+namespace cyclonedds {
+
+} // namespace cyclonedds
+} // namespace free_fleet
