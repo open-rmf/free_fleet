@@ -81,4 +81,4 @@ module MiddlewareMessages
     sequence<Waypoint> waypoints;
     sequence<Lane> lanes;
   };
-}
+};

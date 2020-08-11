@@ -28,7 +28,7 @@
 #include <rmf_utils/impl_ptr.hpp>
 
 namespace free_fleet {
-namespace transport {
+namespace cyclonedds {
 
 class CycloneDDSMiddleware : public Middleware
 {
