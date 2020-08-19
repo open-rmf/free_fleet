@@ -31,6 +31,9 @@
 namespace free_fleet {
 namespace transport {
 
+//==============================================================================
+/// Implement this class with a selected middleware for communication between
+/// the robot and the fleet manager.
 class Middleware
 {
 public:

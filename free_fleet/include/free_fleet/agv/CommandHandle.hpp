@@ -31,7 +31,7 @@ namespace free_fleet {
 namespace agv {
 
 //==============================================================================
-/// Implement this class to execute commands on the robot
+/// Implement this class to execute commands on the robot.
 class CommandHandle
 {
 public:
