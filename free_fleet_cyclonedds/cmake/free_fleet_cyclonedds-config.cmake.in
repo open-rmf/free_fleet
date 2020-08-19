@@ -5,6 +5,7 @@ get_filename_component(free_fleet_cyclonedds_CMAKE_DIR "${CMAKE_CURRENT_LIST_FIL
 include(CMakeFindDependencyMacro)
 
 find_dependency(rmf_utils REQUIRED)
+find_dependency(rmf_traffic REQUIRED)
 find_dependency(free_fleet REQUIRED)
 find_dependency(CycloneDDS REQUIRED)
 

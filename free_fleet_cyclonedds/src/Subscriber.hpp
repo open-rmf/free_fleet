@@ -24,7 +24,6 @@
 #include <dds/dds.h>
 
 namespace free_fleet {
-namespace transport {
 namespace cyclonedds {
 
 template <typename Message, size_t MaxSamplesNum = 1>
@@ -35,21 +34,21 @@ public:
   Subscriber(
       const dds_entity_t& participant, 
       const dds_topic_descriptor_t* topic_desc, 
-      const std::string& topic_name) :
-    _ready(false)
+      const std::string& topic_name)
+  : _ready(false)
   {
     _topic = dds_create_topic(
         participant, topic_desc, topic_name.c_str(), NULL, NULL);
     if (_topic < 0)
     {
       DDS_FATAL(
-          "dds_create_topic: %s\n", dds_strretcode(-topic));
+          "dds_create_topic: %s\n", dds_strretcode(-_topic));
       return;
     }
 
     dds_qos_t* qos = dds_create_qos();
     dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-    _reader = dds_create_reader(_participant, topic, qos, NULL);
+    _reader = dds_create_reader(participant, _topic, qos, NULL);
     if (_reader < 0)
     {
       DDS_FATAL(
@@ -65,7 +64,7 @@ public:
       _samples[i] = (void*)_shared_msgs[i].get();
     }
 
-    ready = true;
+    _ready = true;
   }
 
   ~Subscriber()
@@ -96,7 +95,7 @@ public:
       for (std::size_t i = 0; i < MaxSamplesNum; ++i)
       {
         if (_infos[i].valid_data)
-          msgs.push_back(std::shared_ptr<const Message>(shared_msgs[i]));
+          msgs.push_back(std::shared_ptr<const Message>(_shared_msgs[i]));
       }
       return msgs;
     }
@@ -117,7 +116,6 @@ private:
 };
 
 } // namespace cyclonedds
-} // namespace transport
 } // namespace free_fleet
 
 
