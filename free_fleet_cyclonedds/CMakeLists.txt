@@ -26,7 +26,7 @@ if(NOT CycloneDDS_FOUND)
 endif()
 
 file(GLOB lib_srcs
-  # "src/messages/*.c"
+  "src/messages/*.c"
   # "src/messages/*.cpp"
   "src/*.cpp"
 )
@@ -55,7 +55,7 @@ set(PACKAGE_CONFIG_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/free_fleet_cycloned
 set(PACKAGE_CONFIG_FILE "${CMAKE_CURRENT_BINARY_DIR}/free_fleet_cyclonedds-config.cmake")
 
 configure_package_config_file(
-  "${CMAKE_CURRENT_LIST_DIR}/cmake/free_fleet-config.cmake.in"
+  "${CMAKE_CURRENT_LIST_DIR}/cmake/free_fleet_cyclonedds-config.cmake.in"
   ${PACKAGE_CONFIG_FILE}
   INSTALL_DESTINATION ${INSTALL_CONFIG_DIR}
 )

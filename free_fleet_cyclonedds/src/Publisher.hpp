@@ -23,7 +23,6 @@
 #include <dds/dds.h>
 
 namespace free_fleet {
-namespace transport {
 namespace cyclonedds {
 
 template <typename Message>
@@ -34,14 +33,14 @@ public:
   Publisher(
       const dds_entity_t& participant,
       const dds_topic_descriptor_t* topic_desc,
-      const std::string& topic_name) :
-    _ready(false)
+      const std::string& topic_name)
+  : _ready(false)
   {
     _topic = dds_create_topic(
         participant, topic_desc, topic_name.c_str(), NULL, NULL);
-    if (topic < 0)
+    if (_topic < 0)
     {
-      DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
+      DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-_topic));
       return;
     }
 
@@ -84,7 +83,6 @@ private:
 };
 
 } // namespace cyclonedds
-} // namespace transport
 } // namespace free_fleet
 
 #endif // SRC__PUBLISHER_HPP

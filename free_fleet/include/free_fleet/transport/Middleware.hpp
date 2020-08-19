@@ -33,6 +33,7 @@ namespace transport {
 
 class Middleware
 {
+public:
 
   using Duration = rmf_traffic::Duration;
 
