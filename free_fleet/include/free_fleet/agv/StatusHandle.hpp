@@ -24,6 +24,11 @@
 namespace free_fleet {
 namespace agv {
 
+//==============================================================================
+/// Implement this class to obtain various information of the robot, including
+/// the latest location, mode and battery percentage. These methods will be
+/// called to construct the RobotState message, which will be used to update
+/// the fleet manager.
 class StatusHandle
 {
 public:
