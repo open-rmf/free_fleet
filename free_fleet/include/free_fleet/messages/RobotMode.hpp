@@ -37,6 +37,7 @@ struct RobotMode
   static const uint32_t MODE_DOCKING = 7;
   static const uint32_t MODE_REQUEST_ERROR = 8;
   static const uint32_t MODE_UNDEFINED = 9;
+  static const uint32_t MODE_CUSTOM = 10;
 
   /// Information accompanying any of the modes, especially if it is undefined
   std::string info;

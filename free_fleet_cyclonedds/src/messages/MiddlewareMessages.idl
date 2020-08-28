@@ -40,11 +40,13 @@ module MiddlewareMessages
     RobotMode mode;
     sequence<ModeParameter> parameters;
   };
+  typedef unsigned long PathIndex;
+  typedef sequence<PathIndex> Path;
   struct NavigationRequest
   {
     string robot_name;
     string task_id;
-    sequence<unsigned long> path;
+    Path path;
   };
   struct Robotstate
   {
@@ -54,7 +56,7 @@ module MiddlewareMessages
     RobotMode mode;
     double battery_percent;
     Location location;
-    sequence<unsigned long> path;
+    Path path;
   };
   struct GraphRequest
   {

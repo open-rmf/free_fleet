@@ -32,52 +32,65 @@
 namespace free_fleet {
 namespace cyclonedds {
 
+char* dds_string_alloc_and_copy(const std::string& str);
+
 // Location
 
-void convert(const Location& input, MiddlewareMessages_Lane& output);
+void convert(const messages::Location& input, MiddlewareMessages_Lane& output);
 
-void convert(const MiddlewareMessages_Lane& input, Location& output);
+void convert(const MiddlewareMessages_Lane& input, messages::Location& output);
 
 // ModeParameter
 
 void convert(
-    const ModeParameter& input, 
+    const messages::ModeParameter& input,
     MiddlewareMessages_ModeParameter& output);
 
 void convert(
     const MiddlewareMessages_ModeParameter& input,
-    ModeParameter& output);
+    messages::ModeParameter& output);
 
 // NavigationRequest
 
 void convert(
-    const NavigationRequest& input, 
+    const messages::NavigationRequest& input,
     MiddlewareMessages_NavigationRequest& output);
 
 void convert(
-    const MiddlewareMessages_NavigationRequest& input, 
-    NavigationRequest& output);
+    const MiddlewareMessages_NavigationRequest& input,
+    messages::NavigationRequest& output);
 
 // RobotMode
 
-void convert(const RobotMode& input, MiddlewareMessages_RobotMode& output);
+void convert(
+    const messages::RobotMode& input,
+    MiddlewareMessages_RobotMode& output);
 
-void convert(const MiddlewareMessages_RobotMode& input, RobotMode& output);
+void convert(
+    const MiddlewareMessages_RobotMode& input,
+    messages::RobotMode& output);
 
 // RobotState
 
-void convert(const RobotState& input, MiddlewareMessages_Robotstate& output);
-
-void convert(const MiddlewareMessages_Robotstate& input, RobotState& output);
-
-// Graph
+void convert(
+    const messages::RobotState& input,
+    MiddlewareMessages_Robotstate& output);
 
 void convert(
-    const rmf_traffic::agv::Graph& input, 
+    const MiddlewareMessages_Robotstate& input,
+    messages::RobotState& output);
+
+// Graph
+// Note: These graph conversions will not carry any information about executions
+// doors, elevators, etc. The main purpose is to allow robots to keep track of
+// where they are on the graph.
+
+void convert(
+    const rmf_traffic::agv::Graph& input,
     MiddlewareMessages_Graph& output);
 
 void convert(
-    const MiddlewareMessages_Graph& input, 
+    const MiddlewareMessages_Graph& input,
     rmf_traffic::agv::Graph& output);
 
 } // namespace cyclonedds

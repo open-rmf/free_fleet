@@ -81,12 +81,30 @@ typedef struct MiddlewareMessages_ModeRequest
 } MiddlewareMessages_ModeRequest;
 
 
+typedef uint32_t MiddlewareMessages_PathIndex ;
+
+#define MiddlewareMessages_PathIndex__alloc() \
+((MiddlewareMessages_PathIndex*) dds_alloc (sizeof (MiddlewareMessages_PathIndex)));
+typedef struct MiddlewareMessages_Path
+{
+  uint32_t _maximum;
+  uint32_t _length;
+  uint32_t (*_buffer);
+  bool _release;
+} MiddlewareMessages_Path;
+
+#define MiddlewareMessages_Path__alloc() \
+((MiddlewareMessages_Path*) dds_alloc (sizeof (MiddlewareMessages_Path)));
+
+#define MiddlewareMessages_Path_allocbuf(l) \
+((uint32_t (*)) dds_alloc ((l) * sizeof (uint32_t)))
+
 
 typedef struct MiddlewareMessages_NavigationRequest
 {
   char * robot_name;
   char * task_id;
-  dds_sequence_t path;
+  MiddlewareMessages_Path path;
 } MiddlewareMessages_NavigationRequest;
 
 
@@ -99,7 +117,7 @@ typedef struct MiddlewareMessages_Robotstate
   MiddlewareMessages_RobotMode mode;
   double battery_percent;
   MiddlewareMessages_Location location;
-  dds_sequence_t path;
+  MiddlewareMessages_Path path;
 } MiddlewareMessages_Robotstate;
 
 
