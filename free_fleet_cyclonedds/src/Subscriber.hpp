@@ -31,55 +31,51 @@ class Subscriber
 {
 public:
 
-  Subscriber(
+  using SharedPtr = std::shared_ptr<Subscriber<Message, MaxSamplesNum>>;
+
+  static SharedPtr make(
       const dds_entity_t& participant, 
       const dds_topic_descriptor_t* topic_desc, 
       const std::string& topic_name)
-  : _ready(false)
   {
-    _topic = dds_create_topic(
+    dds_entity_t topic = dds_create_topic(
         participant, topic_desc, topic_name.c_str(), NULL, NULL);
-    if (_topic < 0)
+    if (topic < 0)
     {
-      DDS_FATAL(
-          "dds_create_topic: %s\n", dds_strretcode(-_topic));
-      return;
+      DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
+      return nullptr;
     }
 
     dds_qos_t* qos = dds_create_qos();
     dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-    _reader = dds_create_reader(participant, _topic, qos, NULL);
-    if (_reader < 0)
+
+    dds_entity_t reader = dds_create_reader(participant, topic, qos, NULL);
+    if (reader < 0)
     {
-      DDS_FATAL(
-          "dds_create_reader: %s\n", dds_strretcode(-_reader));
-      return;
+      DDS_FATAL("dds_create_reader: %s\n", dds_strretcode(-reader));
+      return nullptr;
     }
+
     dds_delete_qos(qos);
 
-    for (std::size_t i = 0; i < _shared_msgs.size(); ++i)
+    SharedPtr subscriber(new Subscriber<Message, MaxSamplesNum>());
+    subscriber->_topic = std::move(topic);
+    subscriber->_reader = std::move(reader);
+    for (std::size_t i = 0; i < subscriber->_shared_msgs.size(); ++i)
     {
-      _shared_msgs[i] =
+      subscriber->_shared_msgs[i] =
           std::shared_ptr<Message>((Message*)dds_alloc(sizeof(Message)));
-      _samples[i] = (void*)_shared_msgs[i].get();
+      subscriber->_samples[i] = (void*)subscriber->_shared_msgs[i].get();
     }
-
-    _ready = true;
+    return subscriber;
   }
 
   ~Subscriber()
   {}
 
-  bool is_ready()
-  {
-    return _ready;
-  }
-
   std::vector<std::shared_ptr<const Message>> read()
   {
     std::vector<std::shared_ptr<const Message>> msgs;
-    if (!is_ready())
-      return msgs;
 
     dds_return_t return_code =
         dds_take(_reader, _samples, _infos, MaxSamplesNum, MaxSamplesNum);
@@ -112,7 +108,8 @@ private:
   void* _samples[MaxSamplesNum];
   dds_sample_info_t _infos[MaxSamplesNum];
 
-  bool _ready;
+  Subscriber()
+  {}
 };
 
 } // namespace cyclonedds

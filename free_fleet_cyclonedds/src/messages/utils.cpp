@@ -34,7 +34,7 @@ char* dds_string_alloc_and_copy(const std::string& _str)
 
 //==============================================================================
 
-void convert(const messages::Location& input, MiddlewareMessages_Lane& output)
+void convert(const messages::Location& input, MiddlewareMessages_Location& output)
 {
   output.sec = input.sec;
   output.nanosec = input.nanosec;
@@ -46,7 +46,7 @@ void convert(const messages::Location& input, MiddlewareMessages_Lane& output)
 
 //==============================================================================
 
-void convert(const MiddlewareMessages_Lane& input, messages::Location& output)
+void convert(const MiddlewareMessages_Location& input, messages::Location& output)
 {
   output.sec = input.sec;
   output.nanosec = input.nanosec;
@@ -192,8 +192,12 @@ void convert(
     output.waypoints._buffer[i].is_parking_spot =
         waypoint.is_parking_spot();
     output.waypoints._buffer[i].index = static_cast<uint32_t>(waypoint.index());
-    std::string* waypoint_name = waypoint.name();
-    output.waypoints._buffer[i].name = waypoint_name? *waypoint_name : nullptr;
+    const std::string* waypoint_name = waypoint.name();
+    if (waypoint_name)
+      output.waypoints._buffer[i].name =
+          dds_string_alloc_and_copy(*waypoint_name);
+    else
+      output.waypoints._buffer[i].name = nullptr;
   }
 
   std::size_t num_lanes = input.num_lanes();

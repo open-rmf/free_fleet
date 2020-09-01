@@ -27,8 +27,8 @@ endif()
 
 file(GLOB lib_srcs
   "src/messages/*.c"
-  # "src/messages/*.cpp"
-  "src/*.cpp"
+  "src/messages/*.cpp"
+  # "src/*.cpp"
 )
 
 add_library(free_fleet_cyclonedds SHARED
@@ -46,6 +46,30 @@ target_include_directories(free_fleet_cyclonedds
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+
+set(tests
+  test_pub
+  test_sub
+)
+foreach(test_target ${tests})
+  add_executable(${test_target}
+    src/tests/${test_target}.cpp
+  )
+  target_link_libraries(${test_target}
+    free_fleet_cyclonedds
+  )
+  target_include_directories(${test_target}
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
+  install(
+    TARGETS ${test_target}
+    RUNTIME DESTINATION lib/free_fleet_cyclonedds
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+  )
+endforeach()
 
 # Create cmake config files
 include(CMakePackageConfigHelpers)
