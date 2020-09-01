@@ -28,6 +28,13 @@ typedef struct MiddlewareMessages_Location
   char * level_name;
 } MiddlewareMessages_Location;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_Location_desc;
+
+#define MiddlewareMessages_Location__alloc() \
+((MiddlewareMessages_Location*) dds_alloc (sizeof (MiddlewareMessages_Location)));
+
+#define MiddlewareMessages_Location_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_Location_desc, (o))
 
 
 typedef struct MiddlewareMessages_ModeParameter
@@ -36,6 +43,13 @@ typedef struct MiddlewareMessages_ModeParameter
   char * value;
 } MiddlewareMessages_ModeParameter;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_ModeParameter_desc;
+
+#define MiddlewareMessages_ModeParameter__alloc() \
+((MiddlewareMessages_ModeParameter*) dds_alloc (sizeof (MiddlewareMessages_ModeParameter)));
+
+#define MiddlewareMessages_ModeParameter_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_ModeParameter_desc, (o))
 
 #define MiddlewareMessages_RobotMode_Constants_MODE_IDLE 0
 #define MiddlewareMessages_RobotMode_Constants_MODE_CHARGING 1
@@ -56,6 +70,13 @@ typedef struct MiddlewareMessages_RobotMode
   char * info;
 } MiddlewareMessages_RobotMode;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_RobotMode_desc;
+
+#define MiddlewareMessages_RobotMode__alloc() \
+((MiddlewareMessages_RobotMode*) dds_alloc (sizeof (MiddlewareMessages_RobotMode)));
+
+#define MiddlewareMessages_RobotMode_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_RobotMode_desc, (o))
 
 typedef struct MiddlewareMessages_ModeRequest_parameters_seq
 {
@@ -80,6 +101,13 @@ typedef struct MiddlewareMessages_ModeRequest
   MiddlewareMessages_ModeRequest_parameters_seq parameters;
 } MiddlewareMessages_ModeRequest;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_ModeRequest_desc;
+
+#define MiddlewareMessages_ModeRequest__alloc() \
+((MiddlewareMessages_ModeRequest*) dds_alloc (sizeof (MiddlewareMessages_ModeRequest)));
+
+#define MiddlewareMessages_ModeRequest_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_ModeRequest_desc, (o))
 
 typedef uint32_t MiddlewareMessages_PathIndex ;
 
@@ -107,6 +135,13 @@ typedef struct MiddlewareMessages_NavigationRequest
   MiddlewareMessages_Path path;
 } MiddlewareMessages_NavigationRequest;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_NavigationRequest_desc;
+
+#define MiddlewareMessages_NavigationRequest__alloc() \
+((MiddlewareMessages_NavigationRequest*) dds_alloc (sizeof (MiddlewareMessages_NavigationRequest)));
+
+#define MiddlewareMessages_NavigationRequest_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_NavigationRequest_desc, (o))
 
 
 typedef struct MiddlewareMessages_Robotstate
@@ -120,6 +155,13 @@ typedef struct MiddlewareMessages_Robotstate
   MiddlewareMessages_Path path;
 } MiddlewareMessages_Robotstate;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_Robotstate_desc;
+
+#define MiddlewareMessages_Robotstate__alloc() \
+((MiddlewareMessages_Robotstate*) dds_alloc (sizeof (MiddlewareMessages_Robotstate)));
+
+#define MiddlewareMessages_Robotstate_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_Robotstate_desc, (o))
 
 
 typedef struct MiddlewareMessages_GraphRequest
@@ -127,6 +169,13 @@ typedef struct MiddlewareMessages_GraphRequest
   uint32_t version;
 } MiddlewareMessages_GraphRequest;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_GraphRequest_desc;
+
+#define MiddlewareMessages_GraphRequest__alloc() \
+((MiddlewareMessages_GraphRequest*) dds_alloc (sizeof (MiddlewareMessages_GraphRequest)));
+
+#define MiddlewareMessages_GraphRequest_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_GraphRequest_desc, (o))
 
 
 typedef struct MiddlewareMessages_Waypoint
@@ -141,6 +190,13 @@ typedef struct MiddlewareMessages_Waypoint
   char * name;
 } MiddlewareMessages_Waypoint;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_Waypoint_desc;
+
+#define MiddlewareMessages_Waypoint__alloc() \
+((MiddlewareMessages_Waypoint*) dds_alloc (sizeof (MiddlewareMessages_Waypoint)));
+
+#define MiddlewareMessages_Waypoint_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_Waypoint_desc, (o))
 
 
 typedef struct MiddlewareMessages_Lane
@@ -149,6 +205,13 @@ typedef struct MiddlewareMessages_Lane
   uint32_t exit;
 } MiddlewareMessages_Lane;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_Lane_desc;
+
+#define MiddlewareMessages_Lane__alloc() \
+((MiddlewareMessages_Lane*) dds_alloc (sizeof (MiddlewareMessages_Lane)));
+
+#define MiddlewareMessages_Lane_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_Lane_desc, (o))
 
 typedef struct MiddlewareMessages_Graph_waypoints_seq
 {
@@ -185,6 +248,13 @@ typedef struct MiddlewareMessages_Graph
   MiddlewareMessages_Graph_lanes_seq lanes;
 } MiddlewareMessages_Graph;
 
+extern const dds_topic_descriptor_t MiddlewareMessages_Graph_desc;
+
+#define MiddlewareMessages_Graph__alloc() \
+((MiddlewareMessages_Graph*) dds_alloc (sizeof (MiddlewareMessages_Graph)));
+
+#define MiddlewareMessages_Graph_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_Graph_desc, (o))
 
 #ifdef __cplusplus
 }

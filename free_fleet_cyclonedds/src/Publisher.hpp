@@ -30,39 +30,41 @@ class Publisher
 {
 public:
 
-  Publisher(
+  using SharedPtr = std::shared_ptr<Publisher<Message>>;
+
+  static SharedPtr make(
       const dds_entity_t& participant,
       const dds_topic_descriptor_t* topic_desc,
       const std::string& topic_name)
-  : _ready(false)
   {
-    _topic = dds_create_topic(
+    dds_entity_t topic = dds_create_topic(
         participant, topic_desc, topic_name.c_str(), NULL, NULL);
-    if (_topic < 0)
+    if (topic < 0)
     {
-      DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-_topic));
-      return;
+      DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
+      return nullptr;
     }
 
     dds_qos_t* qos = dds_create_qos();
     dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-    _writer = dds_create_writer(participant, _topic, qos, NULL);
-    if (_writer < 0)
+    
+    dds_entity_t writer = dds_create_writer(participant, topic, qos, NULL);
+    if (writer < 0)
     {
-      DDS_FATAL("dds_create_writer: %s\n", dds_strretcode(-_writer));
-      return;
+      DDS_FATAL("dds_create_writer: %s\n", dds_strretcode(-writer));
+      return nullptr;
     }
+
     dds_delete_qos(qos);
-    _ready = true;
+
+    SharedPtr publisher(new Publisher<Message>());
+    publisher->_topic = std::move(topic);
+    publisher->_writer = std::move(writer);
+    return publisher;
   }
 
   ~Publisher()
   {}
-
-  bool is_ready()
-  {
-    return _ready;
-  }
 
   bool write(Message* msg)
   {
@@ -79,7 +81,9 @@ private:
 
   dds_entity_t _topic;
   dds_entity_t _writer;
-  bool _ready;
+
+  Publisher()
+  {}
 };
 
 } // namespace cyclonedds

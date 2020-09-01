@@ -36,9 +36,9 @@ char* dds_string_alloc_and_copy(const std::string& str);
 
 // Location
 
-void convert(const messages::Location& input, MiddlewareMessages_Lane& output);
+void convert(const messages::Location& input, MiddlewareMessages_Location& output);
 
-void convert(const MiddlewareMessages_Lane& input, messages::Location& output);
+void convert(const MiddlewareMessages_Location& input, messages::Location& output);
 
 // ModeParameter
 
