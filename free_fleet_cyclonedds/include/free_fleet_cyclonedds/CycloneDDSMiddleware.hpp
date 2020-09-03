@@ -49,12 +49,9 @@ public:
 
   ~CycloneDDSMiddleware();
 
-  void start_graph_service(
-      std::shared_ptr<rmf_traffic::agv::Graph> graph) final;
+  void send_graph(std::shared_ptr<rmf_traffic::agv::Graph> graph) final;
   
-  std::shared_ptr<rmf_traffic::agv::Graph> request_graph(
-      rmf_traffic::Duration timeout = 
-          rmf_traffic::Duration(std::chrono::seconds(10))) final;
+  std::shared_ptr<rmf_traffic::agv::Graph> request_graph() final;
 
   void send_state(const messages::RobotState& state) final;
 
