@@ -40,31 +40,27 @@ public:
 
   using Duration = rmf_traffic::Duration;
 
-  /// Starts a service that replies with the navigation graph when called by
-  /// individual robots. The service should remain active until the middleware
-  /// instance goes out of scope.
+  /// Sends a navigation graph over the middleware from the fleet manager. This
+  /// will be called by the fleet manager. Note, that due to the possible size
+  /// of the graph, this sending function should attempt to use transient
+  /// local quality of service.
   ///
   /// \param[in] graph
   ///   Navigation graph that will be used by the fleet manager and robots to
   ///   keep track of which lanes each robot is currently on, and which waypoint
   ///   they are currently heading towards.
-  virtual void start_graph_service(
+  virtual void send_graph(
       std::shared_ptr<rmf_traffic::agv::Graph> graph) = 0;
 
-  /// Requests for a navigation graph over the middleware from the fleet
-  /// manager. This is a blocking function until the timeout is reached.
-  ///
-  /// \param[in] timeout
-  ///   Duration before this request fails and times out, defaults to 10
-  ///   seconds.
+  /// Reads any available navigation graph over the middleware. This will be
+  /// called by the clients running on the robots, during initialization.
   ///
   /// \return
   ///   Shared pointer to the navigation graph to be used by both the fleet
   ///   manager and robot to keep track of which lane it is on and which
-  ///   waypoint it is currently heading towards. If the timeout was reached or 
-  ///   the service is not ready, a nullptr will be returned.
-  virtual std::shared_ptr<rmf_traffic::agv::Graph> request_graph(
-      Duration timeout = Duration(std::chrono::seconds(10))) = 0;
+  ///   waypoint it is currently heading towards. If no grapg was received, a
+  ///   nullptr will be returned.
+  virtual std::shared_ptr<rmf_traffic::agv::Graph> read_graph() = 0;
 
   /// Sends a robot state over the middleware to update the fleet manager. This
   /// will be called by the client running on each of the robots.
@@ -116,7 +112,7 @@ public:
       read_navigation_request() = 0;
 
   /// Virtual destructor
-  ~Middleware() = default;
+  virtual ~Middleware() = default;
 };
 
 } // namespace transport

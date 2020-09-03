@@ -50,6 +50,8 @@ target_include_directories(free_fleet_cyclonedds
 set(tests
   test_pub
   test_sub
+  test_pub_transient_local
+  test_sub_transient_local
 )
 foreach(test_target ${tests})
   add_executable(${test_target}

@@ -36,7 +36,8 @@ public:
   static SharedPtr make(
       const dds_entity_t& participant, 
       const dds_topic_descriptor_t* topic_desc, 
-      const std::string& topic_name)
+      const std::string& topic_name,
+      bool transient_local = false)
   {
     dds_entity_t topic = dds_create_topic(
         participant, topic_desc, topic_name.c_str(), NULL, NULL);
@@ -47,7 +48,16 @@ public:
     }
 
     dds_qos_t* qos = dds_create_qos();
-    dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
+    if (transient_local)
+    {
+      dds_qset_reliability(qos, DDS_RELIABILITY_RELIABLE, 0);
+      dds_qset_durability(qos, DDS_DURABILITY_TRANSIENT_LOCAL);
+      dds_qset_history(qos, DDS_HISTORY_KEEP_LAST, 1);
+    }
+    else
+    {
+      dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
+    }
 
     dds_entity_t reader = dds_create_reader(participant, topic, qos, NULL);
     if (reader < 0)

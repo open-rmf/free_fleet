@@ -50,14 +50,13 @@ CycloneDDSMiddleware::~CycloneDDSMiddleware()
 
 //==============================================================================
 
-void CycloneDDSMiddleware::start_graph_service(
+void CycloneDDSMiddleware::send_graph(
       std::shared_ptr<rmf_traffic::agv::Graph> graph)
 {}
 
 //==============================================================================
 
-std::shared_ptr<rmf_traffic::agv::Graph> CycloneDDSMiddleware::request_graph(
-      Duration timeout)
+std::shared_ptr<rmf_traffic::agv::Graph> CycloneDDSMiddleware::request_graph()
 {
   return nullptr;
 }

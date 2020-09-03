@@ -52,7 +52,7 @@ public:
   virtual double battery_percent() = 0;
 
   /// Virtual destructor
-  ~StatusHandle() = default;
+  virtual ~StatusHandle() = default;
 };
 
 } // namespace agv
