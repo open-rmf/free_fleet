@@ -48,7 +48,7 @@ module MiddlewareMessages
     string task_id;
     Path path;
   };
-  struct Robotstate
+  struct RobotState
   {
     string name;
     string model;

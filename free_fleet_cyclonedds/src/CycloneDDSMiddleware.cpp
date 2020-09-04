@@ -15,10 +15,11 @@
  *
  */
 
+#include <free_fleet_cyclonedds/CycloneDDSMiddleware.hpp>
+
 #include "Publisher.hpp"
 #include "Subscriber.hpp"
-
-#include <free_fleet_cyclonedds/CycloneDDSMiddleware.hpp>
+#include "messages/MiddlewareMessages.h"
 
 namespace free_fleet {
 namespace cyclonedds {
@@ -32,11 +33,29 @@ public:
   Implementation()
   {}
 
+  Publisher::SharedPtr<MiddlewareMessages_Graph> _graph_pub;
+  Subscriber::SharedPtr<MiddlewareMessages_Graph, 1> _graph_sub;
+  Publisher::SharedPtr<MiddlewareMessages_RobotState> _state_pub;
+  Subscriber::SharedPtr<MiddlewareMessages_RobotState> _state_sub;
+  Publisher::SharedPtr<MiddlewareMessages_ModeRequest> _mode_request_pub;
+  Subscriber::SharedPtr<MiddlewareMessages_ModeRequest> _mode_request_sub;
+  Publisher::SharedPtr<MiddlewareMessages_NavigationRequest> _nav_request_pub;
+  Subscriber::SharedPtr<MiddlewareMessages_NavigationRequest> _nav_request_sub;
+
 };
 
 //==============================================================================
 
-std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make(
+std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
+    Config config)
+{
+  std::shared_ptr<CycloneDDSMiddleware> middleware(new CycloneDDSMiddleware());
+  return middleware;
+}
+
+//==============================================================================
+
+std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_manager(
     Config config)
 {
   std::shared_ptr<CycloneDDSMiddleware> middleware(new CycloneDDSMiddleware());

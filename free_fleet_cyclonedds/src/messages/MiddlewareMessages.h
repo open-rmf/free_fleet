@@ -144,7 +144,7 @@ extern const dds_topic_descriptor_t MiddlewareMessages_NavigationRequest_desc;
 dds_sample_free ((d), &MiddlewareMessages_NavigationRequest_desc, (o))
 
 
-typedef struct MiddlewareMessages_Robotstate
+typedef struct MiddlewareMessages_RobotState
 {
   char * name;
   char * model;
@@ -153,15 +153,15 @@ typedef struct MiddlewareMessages_Robotstate
   double battery_percent;
   MiddlewareMessages_Location location;
   MiddlewareMessages_Path path;
-} MiddlewareMessages_Robotstate;
+} MiddlewareMessages_RobotState;
 
-extern const dds_topic_descriptor_t MiddlewareMessages_Robotstate_desc;
+extern const dds_topic_descriptor_t MiddlewareMessages_RobotState_desc;
 
-#define MiddlewareMessages_Robotstate__alloc() \
-((MiddlewareMessages_Robotstate*) dds_alloc (sizeof (MiddlewareMessages_Robotstate)));
+#define MiddlewareMessages_RobotState__alloc() \
+((MiddlewareMessages_RobotState*) dds_alloc (sizeof (MiddlewareMessages_RobotState)));
 
-#define MiddlewareMessages_Robotstate_free(d,o) \
-dds_sample_free ((d), &MiddlewareMessages_Robotstate_desc, (o))
+#define MiddlewareMessages_RobotState_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_RobotState_desc, (o))
 
 
 typedef struct MiddlewareMessages_GraphRequest

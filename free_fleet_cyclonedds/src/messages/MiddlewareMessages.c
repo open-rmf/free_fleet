@@ -129,35 +129,35 @@ const dds_topic_descriptor_t MiddlewareMessages_NavigationRequest_desc =
 };
 
 
-static const uint32_t MiddlewareMessages_Robotstate_ops [] =
+static const uint32_t MiddlewareMessages_RobotState_ops [] =
 {
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_Robotstate, name),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_Robotstate, model),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_Robotstate, task_id),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MiddlewareMessages_Robotstate, mode.mode),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_Robotstate, mode.info),
-  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Robotstate, battery_percent),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY | DDS_OP_FLAG_SGN, offsetof (MiddlewareMessages_Robotstate, location.sec),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MiddlewareMessages_Robotstate, location.nanosec),
-  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Robotstate, location.x),
-  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Robotstate, location.y),
-  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Robotstate, location.yaw),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_Robotstate, location.level_name),
-  DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_4BY, offsetof (MiddlewareMessages_Robotstate, path),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_RobotState, name),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_RobotState, model),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_RobotState, task_id),
+  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MiddlewareMessages_RobotState, mode.mode),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_RobotState, mode.info),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_RobotState, battery_percent),
+  DDS_OP_ADR | DDS_OP_TYPE_4BY | DDS_OP_FLAG_SGN, offsetof (MiddlewareMessages_RobotState, location.sec),
+  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MiddlewareMessages_RobotState, location.nanosec),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_RobotState, location.x),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_RobotState, location.y),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_RobotState, location.yaw),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_RobotState, location.level_name),
+  DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_4BY, offsetof (MiddlewareMessages_RobotState, path),
   DDS_OP_RTS
 };
 
-const dds_topic_descriptor_t MiddlewareMessages_Robotstate_desc =
+const dds_topic_descriptor_t MiddlewareMessages_RobotState_desc =
 {
-  sizeof (MiddlewareMessages_Robotstate),
+  sizeof (MiddlewareMessages_RobotState),
   8u,
   DDS_TOPIC_NO_OPTIMIZE,
   0u,
-  "MiddlewareMessages::Robotstate",
+  "MiddlewareMessages::RobotState",
   NULL,
   14,
-  MiddlewareMessages_Robotstate_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"MiddlewareMessages\"><Struct name=\"RobotMode\"><Member name=\"mode\"><ULong/></Member><Member name=\"info\"><String/></Member></Struct><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Double/></Member><Member name=\"y\"><Double/></Member><Member name=\"yaw\"><Double/></Member><Member name=\"level_name\"><String/></Member></Struct><TypeDef name=\"PathIndex\"><ULong/></TypeDef><TypeDef name=\"Path\"><Sequence><Type name=\"PathIndex\"/></Sequence></TypeDef><Struct name=\"Robotstate\"><Member name=\"name\"><String/></Member><Member name=\"model\"><String/></Member><Member name=\"task_id\"><String/></Member><Member name=\"mode\"><Type name=\"RobotMode\"/></Member><Member name=\"battery_percent\"><Double/></Member><Member name=\"location\"><Type name=\"Location\"/></Member><Member name=\"path\"><Type name=\"Path\"/></Member></Struct></Module></MetaData>"
+  MiddlewareMessages_RobotState_ops,
+  "<MetaData version=\"1.0.0\"><Module name=\"MiddlewareMessages\"><Struct name=\"RobotMode\"><Member name=\"mode\"><ULong/></Member><Member name=\"info\"><String/></Member></Struct><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Double/></Member><Member name=\"y\"><Double/></Member><Member name=\"yaw\"><Double/></Member><Member name=\"level_name\"><String/></Member></Struct><TypeDef name=\"PathIndex\"><ULong/></TypeDef><TypeDef name=\"Path\"><Sequence><Type name=\"PathIndex\"/></Sequence></TypeDef><Struct name=\"RobotState\"><Member name=\"name\"><String/></Member><Member name=\"model\"><String/></Member><Member name=\"task_id\"><String/></Member><Member name=\"mode\"><Type name=\"RobotMode\"/></Member><Member name=\"battery_percent\"><Double/></Member><Member name=\"location\"><Type name=\"Location\"/></Member><Member name=\"path\"><Type name=\"Path\"/></Member></Struct></Module></MetaData>"
 };
 
 
