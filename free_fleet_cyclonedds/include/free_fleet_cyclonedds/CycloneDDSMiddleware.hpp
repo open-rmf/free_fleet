@@ -45,7 +45,9 @@ public:
     void print_config();
   };
 
-  static std::shared_ptr<CycloneDDSMiddleware> make(Config config);
+  static std::shared_ptr<CycloneDDSMiddleware> make_client(Config config);
+
+  static std::shared_ptr<CycloneDDSMiddleware> make_manager(Config config);
 
   ~CycloneDDSMiddleware();
 
