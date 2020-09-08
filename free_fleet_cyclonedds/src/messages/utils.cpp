@@ -131,7 +131,7 @@ void convert(
 
 void convert(
     const messages::RobotState& input,
-    MiddlewareMessages_Robotstate& output)
+    MiddlewareMessages_RobotState& output)
 {
   output.name = dds_string_alloc_and_copy(input.name);
   output.model = dds_string_alloc_and_copy(input.model);
@@ -152,7 +152,7 @@ void convert(
 //==============================================================================
 
 void convert(
-    const MiddlewareMessages_Robotstate& input,
+    const MiddlewareMessages_RobotState& input,
     messages::RobotState& output)
 {
   output.name = std::string(input.name);
