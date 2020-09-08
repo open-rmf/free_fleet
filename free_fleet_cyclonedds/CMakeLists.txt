@@ -28,7 +28,7 @@ endif()
 file(GLOB lib_srcs
   "src/messages/*.c"
   "src/messages/*.cpp"
-  # "src/*.cpp"
+  "src/*.cpp"
 )
 
 add_library(free_fleet_cyclonedds SHARED

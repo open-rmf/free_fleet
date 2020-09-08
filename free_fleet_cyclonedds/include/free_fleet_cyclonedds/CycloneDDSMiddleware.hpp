@@ -34,26 +34,19 @@ class CycloneDDSMiddleware : public transport::Middleware
 {
 public:
 
-  struct Config
-  {
-    int dds_domain;
-    std::string graph_service_name;
-    std::string state_topic_name;
-    std::string mode_request_topic_name;
-    std::string navigation_request_topic_name;
+  static std::shared_ptr<CycloneDDSMiddleware> make_client(
+    int dds_domain,
+    const std::string& fleet_name);
 
-    void print_config();
-  };
-
-  static std::shared_ptr<CycloneDDSMiddleware> make_client(Config config);
-
-  static std::shared_ptr<CycloneDDSMiddleware> make_manager(Config config);
+  static std::shared_ptr<CycloneDDSMiddleware> make_manager(
+    int dds_domain,
+    const std::string& fleet_name);
 
   ~CycloneDDSMiddleware();
 
   void send_graph(std::shared_ptr<rmf_traffic::agv::Graph> graph) final;
   
-  std::shared_ptr<rmf_traffic::agv::Graph> request_graph() final;
+  std::shared_ptr<rmf_traffic::agv::Graph> read_graph() final;
 
   void send_state(const messages::RobotState& state) final;
 

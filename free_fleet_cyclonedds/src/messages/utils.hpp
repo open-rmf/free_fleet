@@ -74,10 +74,10 @@ void convert(
 
 void convert(
     const messages::RobotState& input,
-    MiddlewareMessages_Robotstate& output);
+    MiddlewareMessages_RobotState& output);
 
 void convert(
-    const MiddlewareMessages_Robotstate& input,
+    const MiddlewareMessages_RobotState& input,
     messages::RobotState& output);
 
 // Graph
