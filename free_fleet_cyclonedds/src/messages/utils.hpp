@@ -43,42 +43,52 @@ void convert(const MiddlewareMessages_Location& input, messages::Location& outpu
 // ModeParameter
 
 void convert(
-    const messages::ModeParameter& input,
-    MiddlewareMessages_ModeParameter& output);
+  const messages::ModeParameter& input,
+  MiddlewareMessages_ModeParameter& output);
 
 void convert(
-    const MiddlewareMessages_ModeParameter& input,
-    messages::ModeParameter& output);
+  const MiddlewareMessages_ModeParameter& input,
+  messages::ModeParameter& output);
+
+// ModeRequest
+
+void convert(
+  const messages::ModeRequest& input,
+  MiddlewareMessages_ModeRequest& output);
+
+void convert(
+  const MiddlewareMessages_ModeRequest& input,
+  messages::ModeRequest& output);
 
 // NavigationRequest
 
 void convert(
-    const messages::NavigationRequest& input,
-    MiddlewareMessages_NavigationRequest& output);
+  const messages::NavigationRequest& input,
+  MiddlewareMessages_NavigationRequest& output);
 
 void convert(
-    const MiddlewareMessages_NavigationRequest& input,
-    messages::NavigationRequest& output);
+  const MiddlewareMessages_NavigationRequest& input,
+  messages::NavigationRequest& output);
 
 // RobotMode
 
 void convert(
-    const messages::RobotMode& input,
-    MiddlewareMessages_RobotMode& output);
+  const messages::RobotMode& input,
+  MiddlewareMessages_RobotMode& output);
 
 void convert(
-    const MiddlewareMessages_RobotMode& input,
-    messages::RobotMode& output);
+  const MiddlewareMessages_RobotMode& input,
+  messages::RobotMode& output);
 
 // RobotState
 
 void convert(
-    const messages::RobotState& input,
-    MiddlewareMessages_RobotState& output);
+  const messages::RobotState& input,
+  MiddlewareMessages_RobotState& output);
 
 void convert(
-    const MiddlewareMessages_RobotState& input,
-    messages::RobotState& output);
+  const MiddlewareMessages_RobotState& input,
+  messages::RobotState& output);
 
 // Graph
 // Note: These graph conversions will not carry any information about executions
@@ -86,12 +96,12 @@ void convert(
 // where they are on the graph.
 
 void convert(
-    const rmf_traffic::agv::Graph& input,
-    MiddlewareMessages_Graph& output);
+  const rmf_traffic::agv::Graph& input,
+  MiddlewareMessages_Graph& output);
 
 void convert(
-    const MiddlewareMessages_Graph& input,
-    rmf_traffic::agv::Graph& output);
+  const MiddlewareMessages_Graph& input,
+  rmf_traffic::agv::Graph& output);
 
 } // namespace cyclonedds
 } // namespace free_fleet
