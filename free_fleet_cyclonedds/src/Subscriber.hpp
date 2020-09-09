@@ -83,9 +83,9 @@ public:
   ~Subscriber()
   {}
 
-  std::vector<std::shared_ptr<const Message>> read()
+  std::vector<std::shared_ptr<Message>> read()
   {
-    std::vector<std::shared_ptr<const Message>> msgs;
+    std::vector<std::shared_ptr<Message>> msgs;
 
     dds_return_t return_code =
         dds_take(_reader, _samples, _infos, MaxSamplesNum, MaxSamplesNum);
@@ -101,7 +101,7 @@ public:
       for (std::size_t i = 0; i < MaxSamplesNum; ++i)
       {
         if (_infos[i].valid_data)
-          msgs.push_back(std::shared_ptr<const Message>(_shared_msgs[i]));
+          msgs.push_back(std::shared_ptr<Message>(_shared_msgs[i]));
       }
       return msgs;
     }
