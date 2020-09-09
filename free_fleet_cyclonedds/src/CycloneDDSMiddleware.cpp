@@ -41,7 +41,7 @@ public:
 
   ~Implementation()
   {
-    if (_participant >= 0)
+    if (_participant > 0)
     {
       dds_return_t rc = dds_delete(_participant);
       if (rc != DDS_RETCODE_OK)
