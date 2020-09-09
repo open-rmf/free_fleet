@@ -25,7 +25,7 @@
 #include "../messages/utils.hpp"
 #include "../Subscriber.hpp"
 
-int main(int argc, char** argv)
+int main()
 {
   /* Create a participant */
   dds_entity_t participant =

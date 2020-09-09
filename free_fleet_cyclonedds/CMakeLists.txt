@@ -52,6 +52,8 @@ set(tests
   test_sub
   test_pub_transient_local
   test_sub_transient_local
+  test_client
+  test_server
 )
 foreach(test_target ${tests})
   add_executable(${test_target}
