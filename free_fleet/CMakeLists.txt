@@ -17,23 +17,8 @@ endif()
 
 include(GNUInstallDirs)
 
-find_package(ament_cmake REQUIRED)
 find_package(rmf_utils REQUIRED)
 find_package(rmf_traffic REQUIRED)
-
-# find_package(CycloneDDS QUIET CONFIG)
-# if(NOT CycloneDDS_FOUND)
-#   message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
-#   ament_package()
-#   return()
-# endif()
-
-# file(GLOB lib_srcs 
-#   "src/*.cpp"
-#   "src/dds_utils/*.cpp"
-#   "src/messages/*.c"
-#   "src/messages/*.cpp"
-# )
 
 file(GLOB lib_srcs
   "src/*.cpp"
