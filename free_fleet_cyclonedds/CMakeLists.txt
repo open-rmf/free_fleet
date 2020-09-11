@@ -69,9 +69,9 @@ foreach(test_target ${tests})
   )
   install(
     TARGETS ${test_target}
-    RUNTIME DESTINATION lib/free_fleet_cyclonedds
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endforeach()
 
