@@ -36,27 +36,26 @@ class CommandHandle
 {
 public:
 
-  /// Trigger this callback function when the follow_new_path request has been
-  /// completed. It should only be triggered that one time and then discarded.
+  /// Trigger this callback function when the go_to_new_destination request has
+  /// been completed. It should only be triggered that one time and then
+  /// discarded.
   using RequestCompleted = std::function<void()>;
 
-  /// Have the robot follow a new path. If it was already following a path, then
-  /// it should immediately switch over to this one.
+  /// Have the robot navigate to a new destination. If it was already enroute to
+  /// a destination, then it should immediately switch over to this one.
   ///
-  /// \param[in] waypoints
-  ///   The sequence of waypoints to follow. When the robot arrives at a
-  ///   waypoint in this sequence, it should wait at that waypoint until the
-  ///   clock reaches the time() field of the waypoint. This is important
-  ///   because the waypoint timing is used to avoid traffic conflicts with
-  ///   other vehicles.
+  /// \param[in] waypoint
+  ///   Destination waypoint to navigate to. When the robot arrives at the
+  ///   waypoint, it should wait until the clock reaches the time() field of
+  ///   the waypoint. This is important because the waypoint timing is used to
+  ///   avoid traffic conflicts with other vehicles.
   ///
-  /// \param[in] path_finished_callback
-  ///   Trigger this callback when the robot is done following the new path.
-  ///   You do not need to trigger waypoint_arrival_callback when triggering
-  ///   this one.
-  virtual void follow_new_path(
-      const std::vector<rmf_traffic::agv::Plan::Waypoint>& waypoints,
-      RequestCompleted path_finished_callback) = 0;
+  /// \param[in] destination_reached_callback
+  ///   Trigger this callback when the robot is done navigating to the new
+  ///   destination.
+  virtual void go_to_new_destination(
+    const rmf_traffic::agv::Plan::Waypoint& waypoint,
+    RequestCompleted destination_reached_callback) = 0;
 
   /// Have the robot come to an immediate stop.
   virtual void stop() = 0;
