@@ -47,7 +47,7 @@ target_include_directories(free_fleet
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-ament_export_interfaces(free_fleet HAS_LIBRARY_TARGET)
+ament_export_targets(free_fleet)
 ament_export_dependencies(CycloneDDS)
 
 if(BUILD_TESTING)
