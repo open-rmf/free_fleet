@@ -38,6 +38,7 @@ target_link_libraries(free_fleet
   crypto
 )
 
+<<<<<<< HEAD
 # -----------------------------------------------------------------------------
 
 set(testing_targets
@@ -47,6 +48,10 @@ set(testing_targets
   test_dds_pub_sim_path_request
   test_dds_sub_state
 )
+=======
+ament_export_targets(free_fleet)
+ament_export_dependencies(CycloneDDS)
+>>>>>>> a18bc28... Use ament_export_targets()
 
 foreach(target ${testing_targets})
   add_executable(${target}
