@@ -53,8 +53,6 @@ public:
   ///
   /// \param[in] path_finished_callback
   ///   Trigger this callback when the robot is done following the new path.
-  ///   You do not need to trigger waypoint_arrival_callback when triggering
-  ///   this one.
   virtual void follow_new_path(
       const std::vector<rmf_traffic::agv::Plan::Waypoint>& waypoints,
       RequestCompleted path_finished_callback) = 0;
