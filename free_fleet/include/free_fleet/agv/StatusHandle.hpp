@@ -37,19 +37,19 @@ public:
   ///
   /// \return
   ///   Location of the robot including the time that it was sampled.
-  virtual messages::Location location() = 0;
+  virtual messages::Location location() const = 0;
 
   /// Obtain the current mode of the robot.
   ///
   /// \return
   ///   Mode of the robot.
-  virtual messages::RobotMode mode() = 0;
+  virtual messages::RobotMode mode() const = 0;
 
   /// Obtain the current battery percentage of the robot.
   ///
   /// \return
   ///   Battery percentage of the robot.
-  virtual double battery_percent() = 0;
+  virtual double battery_percent() const = 0;
 
   /// Virtual destructor
   virtual ~StatusHandle() = default;
