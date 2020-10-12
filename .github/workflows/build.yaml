@@ -1,5 +1,5 @@
 name: build
-on: push
+on: [push, pull_request]
 jobs:
 
   eloquent:
@@ -57,7 +57,7 @@ jobs:
       run: |
         sudo apt update && sudo apt install \
           git wget \
-          python-rosdep \
+          python3-rosdep \
           python3-vcstool \
           python3-colcon-common-extensions \
           -y
@@ -80,13 +80,13 @@ jobs:
       run: |
         cd ff_ws
         rosdep update
-        rosdep install --from-paths src --ignore-src --rosdistro eloquent -yr
+        rosdep install --from-paths src --ignore-src --rosdistro foxy -yr
 
     - name: build
       shell: bash
       run: |
         cd ff_ws
-        source /opt/ros/eloquent/setup.bash
+        source /opt/ros/foxy/setup.bash
         colcon build \
           --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
           --packages-up-to \
