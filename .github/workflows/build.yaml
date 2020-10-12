@@ -13,32 +13,83 @@ jobs:
           git wget \
           python-rosdep \
           python3-vcstool \
-          python3-colcon-common-extensions -y
+          python3-colcon-common-extensions \
+          -y
+
     - name: workspace
       shell: bash
-      run: |
-        mkdir -p /home/ff_ws/src
-        cd /home/ff_ws
-        wget https://raw.githubusercontent.com/osrf/free_fleet/${GITHUB_REF:11}/free_fleet.repos
-        vcs import src < free_fleet.repos
+      run: | 
+        mkdir -p ff_ws/src
+        cd ff_ws/src
+        git clone https://github.com/osrf/free_fleet
+        git clone https://github.com/osrf/rmf_core
+
     - name: checkout
+      uses: actions/checkout@v2
+      with:
+        path: ff_ws/src/free_fleet
+
+    - name: ros-deps
       shell: bash
       run: |
-        cd /home/ff_ws/src/free_fleet
-        git checkout "${GITHUB_REF:11}"
-    - name: rosdeps
-      shell: bash
-      run: |
-        cd /home/ff_ws
+        cd ff_ws
         rosdep update
-        source /opt/ros/eloquent/setup.bash
-        rosdep install --from-paths src --ignore-src -yr
+        rosdep install --from-paths src --ignore-src --rosdistro eloquent -yr
+
     - name: build
       shell: bash
       run: |
-        cd /home/ff_ws
+        cd ff_ws
         source /opt/ros/eloquent/setup.bash
-        colcon build --packages-up-to \
+        colcon build \
+          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
+          --packages-up-to \
+          free_fleet \
+          free_fleet_server \
+          free_fleet_examples 
+
+  foxy:
+    runs-on: ubuntu-20.04
+    container:
+      image: docker://ros:foxy-ros-base-focal
+    steps:
+    - name: deps
+      run: |
+        sudo apt update && sudo apt install \
+          git wget \
+          python-rosdep \
+          python3-vcstool \
+          python3-colcon-common-extensions \
+          -y
+
+    - name: workspace
+      shell: bash
+      run: | 
+        mkdir -p ff_ws/src
+        cd ff_ws/src
+        git clone https://github.com/osrf/free_fleet
+        git clone https://github.com/osrf/rmf_core
+
+    - name: checkout
+      uses: actions/checkout@v2
+      with:
+        path: ff_ws/src/free_fleet
+
+    - name: ros-deps
+      shell: bash
+      run: |
+        cd ff_ws
+        rosdep update
+        rosdep install --from-paths src --ignore-src --rosdistro eloquent -yr
+
+    - name: build
+      shell: bash
+      run: |
+        cd ff_ws
+        source /opt/ros/eloquent/setup.bash
+        colcon build \
+          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
+          --packages-up-to \
           free_fleet \
           free_fleet_server \
           free_fleet_examples 
