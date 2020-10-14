@@ -109,30 +109,26 @@ extern const dds_topic_descriptor_t MiddlewareMessages_ModeRequest_desc;
 #define MiddlewareMessages_ModeRequest_free(d,o) \
 dds_sample_free ((d), &MiddlewareMessages_ModeRequest_desc, (o))
 
-typedef uint32_t MiddlewareMessages_PathIndex ;
-
-#define MiddlewareMessages_PathIndex__alloc() \
-((MiddlewareMessages_PathIndex*) dds_alloc (sizeof (MiddlewareMessages_PathIndex)));
-typedef struct MiddlewareMessages_Path
+typedef struct MiddlewareMessages_NavigationRequest_path_seq
 {
   uint32_t _maximum;
   uint32_t _length;
-  uint32_t (*_buffer);
+  MiddlewareMessages_Location *_buffer;
   bool _release;
-} MiddlewareMessages_Path;
+} MiddlewareMessages_NavigationRequest_path_seq;
 
-#define MiddlewareMessages_Path__alloc() \
-((MiddlewareMessages_Path*) dds_alloc (sizeof (MiddlewareMessages_Path)));
+#define MiddlewareMessages_NavigationRequest_path_seq__alloc() \
+((MiddlewareMessages_NavigationRequest_path_seq*) dds_alloc (sizeof (MiddlewareMessages_NavigationRequest_path_seq)));
 
-#define MiddlewareMessages_Path_allocbuf(l) \
-((uint32_t (*)) dds_alloc ((l) * sizeof (uint32_t)))
+#define MiddlewareMessages_NavigationRequest_path_seq_allocbuf(l) \
+((MiddlewareMessages_Location *) dds_alloc ((l) * sizeof (MiddlewareMessages_Location)))
 
 
 typedef struct MiddlewareMessages_NavigationRequest
 {
   char * robot_name;
   char * task_id;
-  MiddlewareMessages_Path path;
+  MiddlewareMessages_NavigationRequest_path_seq path;
 } MiddlewareMessages_NavigationRequest;
 
 extern const dds_topic_descriptor_t MiddlewareMessages_NavigationRequest_desc;
@@ -143,6 +139,20 @@ extern const dds_topic_descriptor_t MiddlewareMessages_NavigationRequest_desc;
 #define MiddlewareMessages_NavigationRequest_free(d,o) \
 dds_sample_free ((d), &MiddlewareMessages_NavigationRequest_desc, (o))
 
+typedef struct MiddlewareMessages_RobotState_path_seq
+{
+  uint32_t _maximum;
+  uint32_t _length;
+  MiddlewareMessages_Location *_buffer;
+  bool _release;
+} MiddlewareMessages_RobotState_path_seq;
+
+#define MiddlewareMessages_RobotState_path_seq__alloc() \
+((MiddlewareMessages_RobotState_path_seq*) dds_alloc (sizeof (MiddlewareMessages_RobotState_path_seq)));
+
+#define MiddlewareMessages_RobotState_path_seq_allocbuf(l) \
+((MiddlewareMessages_Location *) dds_alloc ((l) * sizeof (MiddlewareMessages_Location)))
+
 
 typedef struct MiddlewareMessages_RobotState
 {
@@ -152,7 +162,7 @@ typedef struct MiddlewareMessages_RobotState
   MiddlewareMessages_RobotMode mode;
   double battery_percent;
   MiddlewareMessages_Location location;
-  MiddlewareMessages_Path path;
+  MiddlewareMessages_RobotState_path_seq path;
 } MiddlewareMessages_RobotState;
 
 extern const dds_topic_descriptor_t MiddlewareMessages_RobotState_desc;

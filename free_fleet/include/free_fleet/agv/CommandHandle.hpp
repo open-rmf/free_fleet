@@ -21,8 +21,7 @@
 #include <vector>
 #include <functional>
 
-#include <rmf_traffic/agv/Planner.hpp>
-
+#include <free_fleet/messages/Location.hpp>
 
 // Heavily referenced from RobotCommandHandle
 // https://github.com/osrf/rmf_core/blob/master/rmf_fleet_adapter/include/rmf_fleet_adapter/agv/RobotCommandHandle.hpp
@@ -47,14 +46,14 @@ public:
   /// \param[in] waypoints
   ///   The sequence of waypoints to follow. When the robot arrives at a
   ///   waypoint in this sequence, it should wait at that waypoint until the
-  ///   clock reaches the time() field of the waypoint. This is important
+  ///   clock reaches the time described in the waypoint. This is important
   ///   because the waypoint timing is used to avoid traffic conflicts with
   ///   other vehicles.
   ///
   /// \param[in] path_finished_callback
   ///   Trigger this callback when the robot is done following the new path.
   virtual void follow_new_path(
-      const std::vector<rmf_traffic::agv::Plan::Waypoint>& waypoints,
+      const std::vector<free_fleet::messages::Location>& waypoints,
       RequestCompleted path_finished_callback) = 0;
 
   /// Have the robot come to an immediate stop.

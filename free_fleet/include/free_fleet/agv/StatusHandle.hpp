@@ -51,6 +51,12 @@ public:
   ///   Battery percentage of the robot.
   virtual double battery_percent() const = 0;
 
+  /// Obtain the current path that the robot is navigating on.
+  ///
+  /// \return
+  ///   Path of the robot in a vector of locations.
+  virtual std::vector<messages::Location> path() const = 0;
+
   /// Virtual destructor
   virtual ~StatusHandle() = default;
 };
