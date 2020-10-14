@@ -19,9 +19,7 @@
 
 namespace free_fleet {
 namespace cyclonedds {
-
 //==============================================================================
-
 char* dds_string_alloc_and_copy(const std::string& _str)
 {
   char* ptr = dds_string_alloc(_str.length());
@@ -33,7 +31,6 @@ char* dds_string_alloc_and_copy(const std::string& _str)
 }
 
 //==============================================================================
-
 void convert(const messages::Location& input, MiddlewareMessages_Location& output)
 {
   output.sec = input.sec;
@@ -45,7 +42,6 @@ void convert(const messages::Location& input, MiddlewareMessages_Location& outpu
 }
 
 //==============================================================================
-
 void convert(const MiddlewareMessages_Location& input, messages::Location& output)
 {
   output.sec = input.sec;
@@ -57,7 +53,6 @@ void convert(const MiddlewareMessages_Location& input, messages::Location& outpu
 }
 
 //==============================================================================
-
 void convert(
   const messages::ModeParameter& input,
   MiddlewareMessages_ModeParameter& output)
@@ -67,7 +62,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const MiddlewareMessages_ModeParameter& input,
   messages::ModeParameter& output)
@@ -77,7 +71,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const messages::ModeRequest& input,
   MiddlewareMessages_ModeRequest& output)
@@ -96,7 +89,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const MiddlewareMessages_ModeRequest& input,
   messages::ModeRequest& output)
@@ -113,7 +105,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const messages::NavigationRequest& input,
   MiddlewareMessages_NavigationRequest& output)
@@ -131,7 +122,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const MiddlewareMessages_NavigationRequest& input,
   messages::NavigationRequest& output)
@@ -144,7 +134,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const messages::RobotMode& input,
   MiddlewareMessages_RobotMode& output)
@@ -154,7 +143,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const MiddlewareMessages_RobotMode& input,
   messages::RobotMode& output)
@@ -164,7 +152,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const messages::RobotState& input,
   MiddlewareMessages_RobotState& output)
@@ -180,13 +167,12 @@ void convert(
   output.path._maximum = static_cast<uint32_t>(path_elem_num);
   output.path._length = static_cast<uint32_t>(path_elem_num);
   output.path._buffer = 
-    MiddlewareMessages_Path_allocbuf(path_elem_num);
+    MiddlewareMessages_RobotState_path_seq_allocbuf(path_elem_num);
   for (std::size_t i = 0; i < path_elem_num; ++i)
-    output.path._buffer[i] = static_cast<uint32_t>(input.path[i]);
+    convert(input.path[i], output.path._buffer[i]);
 }
 
 //==============================================================================
-
 void convert(
     const MiddlewareMessages_RobotState& input,
     messages::RobotState& output)
@@ -199,12 +185,12 @@ void convert(
   convert(input.location, output.location);
 
   output.path.clear();
+  output.path.resize(input.path._length);
   for (uint32_t i = 0; i < input.path._length; ++i)
-    output.path.push_back(input.path._buffer[i]);
+    convert(input.path._buffer[i], output.path[i]);
 }
 
 //==============================================================================
-
 void convert(
   const rmf_traffic::agv::Graph& input, 
   MiddlewareMessages_Graph& output)
@@ -252,7 +238,6 @@ void convert(
 }
 
 //==============================================================================
-
 void convert(
   const MiddlewareMessages_Graph& input, 
   rmf_traffic::agv::Graph& output)
@@ -283,6 +268,5 @@ void convert(
 }
 
 //==============================================================================
-
 } // namespace cyclonedds
 } // namespace free_fleet

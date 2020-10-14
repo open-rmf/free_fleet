@@ -31,7 +31,6 @@ namespace free_fleet {
 namespace cyclonedds {
 
 //==============================================================================
-
 class CycloneDDSMiddleware::Implementation
 {
 public:
@@ -61,7 +60,6 @@ public:
 };
 
 //==============================================================================
-
 std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
     int dds_domain,
     const std::string& fleet_name)
@@ -112,7 +110,6 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
 }
 
 //==============================================================================
-
 std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_manager(
     int dds_domain,
     const std::string& fleet_name)
@@ -163,12 +160,10 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_manager(
 }
 
 //==============================================================================
-
 CycloneDDSMiddleware::~CycloneDDSMiddleware()
 {}
 
 //==============================================================================
-
 void CycloneDDSMiddleware::send_graph(
       std::shared_ptr<rmf_traffic::agv::Graph> graph)
 {
@@ -182,7 +177,6 @@ void CycloneDDSMiddleware::send_graph(
 }
 
 //==============================================================================
-
 std::shared_ptr<rmf_traffic::agv::Graph> CycloneDDSMiddleware::read_graph()
 {
   auto msgs = _pimpl->_graph_sub->read();
@@ -197,7 +191,6 @@ std::shared_ptr<rmf_traffic::agv::Graph> CycloneDDSMiddleware::read_graph()
 }
 
 //==============================================================================
-
 void CycloneDDSMiddleware::send_state(const messages::RobotState& state)
 {
   MiddlewareMessages_RobotState* msg = MiddlewareMessages_RobotState__alloc();
@@ -210,7 +203,6 @@ void CycloneDDSMiddleware::send_state(const messages::RobotState& state)
 }
 
 //==============================================================================
-
 std::vector<std::shared_ptr<messages::RobotState>> 
     CycloneDDSMiddleware::read_states()
 {
@@ -231,7 +223,6 @@ std::vector<std::shared_ptr<messages::RobotState>>
 }
 
 //==============================================================================
-
 void CycloneDDSMiddleware::send_mode_request(
     const messages::ModeRequest& request)
 {
@@ -245,7 +236,6 @@ void CycloneDDSMiddleware::send_mode_request(
 }
 
 //==============================================================================
-
 std::shared_ptr<messages::ModeRequest> CycloneDDSMiddleware::read_mode_request()
 {
   auto msgs = _pimpl->_mode_request_sub->read();
@@ -260,7 +250,6 @@ std::shared_ptr<messages::ModeRequest> CycloneDDSMiddleware::read_mode_request()
 }
 
 //==============================================================================
-
 void CycloneDDSMiddleware::send_navigation_request(
     const messages::NavigationRequest& request)
 {
@@ -275,7 +264,7 @@ void CycloneDDSMiddleware::send_navigation_request(
 }
 
 //==============================================================================
-  
+
 std::shared_ptr<messages::NavigationRequest> 
     CycloneDDSMiddleware::read_navigation_request()
 {
@@ -291,12 +280,10 @@ std::shared_ptr<messages::NavigationRequest>
 }
 
 //==============================================================================
-
 CycloneDDSMiddleware::CycloneDDSMiddleware()
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
 {}
 
 //==============================================================================
-
 } // namespace cyclonedds
 } // namespace free_fleet

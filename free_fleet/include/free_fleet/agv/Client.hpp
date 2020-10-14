@@ -41,14 +41,13 @@ public:
 
   using SharedPtr = std::shared_ptr<Client>;
 
-  /// Factory function that creates an instance of the Free Fleet DDS Client.
-  ///
-  /// \param[in] config
-  ///   Configuration that sets up the client to communicate with the server.
-  /// \return
-  ///   Shared pointer to a free fleet client.
-
   /// Factory function that creates an instance of the Free Fleet Client.
+  ///
+  /// \param[in] robot_name
+  ///   Name of the robot.
+  ///
+  /// \param[in] robot_model
+  ///   Model of the robot.
   ///
   /// \param[in] command_handle
   ///   Command handle implementation specific to the robot that this client is
@@ -64,30 +63,30 @@ public:
   ///   Middleware implementation to be used between the robot client and the
   ///   fleet manager.
   ///
-  /// \param[in] graph
-  ///   Navigation graph to be used by the robot client when parsing navigation
-  ///   requests, as well as for infering waypoints and lanes that it is
-  ///   occupying.
-  ///
   /// \return
   ///   Shared pointer to a client instance that is ready to be started. If
   ///   any of the initializations fail during during this function's
   ///   execution, a nullptr will be returned.
   static SharedPtr make(
+    const std::string& robot_name,
+    const std::string& robot_model,
     std::shared_ptr<CommandHandle> command_handle,
     std::shared_ptr<StatusHandle> status_handle,
-    std::shared_ptr<transport::Middleware> middleware,
-    std::shared_ptr<rmf_traffic::agv::Graph> graph=nullptr);
+    std::shared_ptr<transport::Middleware> middleware);
 
   /// Starts the client which begins to update the fleet manager with the
   /// robot's current status, as well as polls for requests before performing
   /// them.
-  void start();
+  ///
+  /// \param[in] frequency
+  ///   Frequency at which the client attempts to check for incoming requests,
+  ///   command the robot and update its state upstream.
+  void start(uint32_t frequency);
 
   class Implementation;
 private:
-  rmf_utils::impl_ptr<Implementation> _pimpl;
   Client();
+  rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
 } // namespace agv

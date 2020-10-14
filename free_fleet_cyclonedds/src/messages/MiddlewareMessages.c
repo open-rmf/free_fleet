@@ -105,13 +105,19 @@ const dds_topic_descriptor_t MiddlewareMessages_ModeRequest_desc =
 };
 
 
-
-
 static const uint32_t MiddlewareMessages_NavigationRequest_ops [] =
 {
   DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_NavigationRequest, robot_name),
   DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_NavigationRequest, task_id),
-  DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_4BY, offsetof (MiddlewareMessages_NavigationRequest, path),
+  DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_STU, offsetof (MiddlewareMessages_NavigationRequest, path),
+  sizeof (MiddlewareMessages_Location), (17u << 16u) + 4u,
+  DDS_OP_ADR | DDS_OP_TYPE_4BY | DDS_OP_FLAG_SGN, offsetof (MiddlewareMessages_Location, sec),
+  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MiddlewareMessages_Location, nanosec),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Location, x),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Location, y),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Location, yaw),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_Location, level_name),
+  DDS_OP_RTS,
   DDS_OP_RTS
 };
 
@@ -123,9 +129,9 @@ const dds_topic_descriptor_t MiddlewareMessages_NavigationRequest_desc =
   0u,
   "MiddlewareMessages::NavigationRequest",
   NULL,
-  4,
+  12,
   MiddlewareMessages_NavigationRequest_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"MiddlewareMessages\"><TypeDef name=\"PathIndex\"><ULong/></TypeDef><TypeDef name=\"Path\"><Sequence><Type name=\"PathIndex\"/></Sequence></TypeDef><Struct name=\"NavigationRequest\"><Member name=\"robot_name\"><String/></Member><Member name=\"task_id\"><String/></Member><Member name=\"path\"><Type name=\"Path\"/></Member></Struct></Module></MetaData>"
+  "<MetaData version=\"1.0.0\"><Module name=\"MiddlewareMessages\"><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Double/></Member><Member name=\"y\"><Double/></Member><Member name=\"yaw\"><Double/></Member><Member name=\"level_name\"><String/></Member></Struct><Struct name=\"NavigationRequest\"><Member name=\"robot_name\"><String/></Member><Member name=\"task_id\"><String/></Member><Member name=\"path\"><Sequence><Type name=\"Location\"/></Sequence></Member></Struct></Module></MetaData>"
 };
 
 
@@ -143,7 +149,15 @@ static const uint32_t MiddlewareMessages_RobotState_ops [] =
   DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_RobotState, location.y),
   DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_RobotState, location.yaw),
   DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_RobotState, location.level_name),
-  DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_4BY, offsetof (MiddlewareMessages_RobotState, path),
+  DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_STU, offsetof (MiddlewareMessages_RobotState, path),
+  sizeof (MiddlewareMessages_Location), (17u << 16u) + 4u,
+  DDS_OP_ADR | DDS_OP_TYPE_4BY | DDS_OP_FLAG_SGN, offsetof (MiddlewareMessages_Location, sec),
+  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MiddlewareMessages_Location, nanosec),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Location, x),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Location, y),
+  DDS_OP_ADR | DDS_OP_TYPE_8BY | DDS_OP_FLAG_FP, offsetof (MiddlewareMessages_Location, yaw),
+  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MiddlewareMessages_Location, level_name),
+  DDS_OP_RTS,
   DDS_OP_RTS
 };
 
@@ -155,9 +169,9 @@ const dds_topic_descriptor_t MiddlewareMessages_RobotState_desc =
   0u,
   "MiddlewareMessages::RobotState",
   NULL,
-  14,
+  22,
   MiddlewareMessages_RobotState_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"MiddlewareMessages\"><Struct name=\"RobotMode\"><Member name=\"mode\"><ULong/></Member><Member name=\"info\"><String/></Member></Struct><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Double/></Member><Member name=\"y\"><Double/></Member><Member name=\"yaw\"><Double/></Member><Member name=\"level_name\"><String/></Member></Struct><TypeDef name=\"PathIndex\"><ULong/></TypeDef><TypeDef name=\"Path\"><Sequence><Type name=\"PathIndex\"/></Sequence></TypeDef><Struct name=\"RobotState\"><Member name=\"name\"><String/></Member><Member name=\"model\"><String/></Member><Member name=\"task_id\"><String/></Member><Member name=\"mode\"><Type name=\"RobotMode\"/></Member><Member name=\"battery_percent\"><Double/></Member><Member name=\"location\"><Type name=\"Location\"/></Member><Member name=\"path\"><Type name=\"Path\"/></Member></Struct></Module></MetaData>"
+  "<MetaData version=\"1.0.0\"><Module name=\"MiddlewareMessages\"><Struct name=\"RobotMode\"><Member name=\"mode\"><ULong/></Member><Member name=\"info\"><String/></Member></Struct><Struct name=\"Location\"><Member name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member name=\"x\"><Double/></Member><Member name=\"y\"><Double/></Member><Member name=\"yaw\"><Double/></Member><Member name=\"level_name\"><String/></Member></Struct><Struct name=\"RobotState\"><Member name=\"name\"><String/></Member><Member name=\"model\"><String/></Member><Member name=\"task_id\"><String/></Member><Member name=\"mode\"><Type name=\"RobotMode\"/></Member><Member name=\"battery_percent\"><Double/></Member><Member name=\"location\"><Type name=\"Location\"/></Member><Member name=\"path\"><Sequence><Type name=\"Location\"/></Sequence></Member></Struct></Module></MetaData>"
 };
 
 

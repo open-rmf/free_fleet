@@ -47,9 +47,8 @@ struct RobotState
   /// Current location of the robot
   Location location;
 
-  /// Current path that the robot is currently on, as a vector of lane indices
-  /// from the navigation graph
-  std::vector<std::size_t> path;
+  /// Current path that the robot is currently on, as a vector of locations
+  std::vector<Location> path;
 };
 
 } // namespace messages
