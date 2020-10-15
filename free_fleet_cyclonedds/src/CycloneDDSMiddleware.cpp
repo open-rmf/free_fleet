@@ -264,7 +264,6 @@ void CycloneDDSMiddleware::send_navigation_request(
 }
 
 //==============================================================================
-
 std::shared_ptr<messages::NavigationRequest> 
     CycloneDDSMiddleware::read_navigation_request()
 {

@@ -33,8 +33,8 @@ struct NavigationRequest
   /// Unique task ID issued by the fleet manager
   std::string task_id;
 
-  /// A vector of lane indices from the navigation graph
-  std::vector<std::size_t> path;
+  /// A vector of locations.
+  std::vector<Location> path;
 };
 
 } // namespace messages
