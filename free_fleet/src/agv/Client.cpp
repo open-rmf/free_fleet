@@ -101,7 +101,15 @@ void Client::start(uint32_t frequency)
     _pimpl->_middleware->send_state(new_state);
 
     // read mode request
+    
     // read navigation request
+    auto navigation_request = _pimpl->_middleware->read_navigation_request();
+    if (navigation_request)
+    {
+      _pimpl->_task_id = navigation_request->task_id;
+      free_fleet::agv::CommandHandle::RequestCompleted callback =
+        [this]() { _pimpl->_task_id = ""; };
+    }
   }
 }
 

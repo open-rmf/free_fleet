@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Open Source Robotics Foundation
+ * Copyright (C) 2019 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  *
  */
 
+#include <memory>
 #include <iostream>
 
 #include <dds/dds.h>
@@ -25,53 +26,60 @@
 
 int main(int argc, char** argv)
 {
-  if (argc < 3)
+  if (argc < 6)
   {
     std::cout << "Please request using the following format," << std::endl;
-    std::cout << "<Executable> <DDS Domain ID> <Fleet name>" << std::endl;
+    std::cout << "<Executable> <Domain ID> <Fleet Name> <Robot Name> <Task ID> <Level Name>" << std::endl;
     return 1;
   }
 
   int dds_domain = strtod(argv[1], NULL);
   std::string fleet_name(argv[2]);
+  std::string robot_name(argv[3]);
+  std::string task_id(argv[4]);
+  std::string level_name(argv[5]);
 
-  auto server =
+  double x = 1.65683;
+  double y = 0.548278;
+  double yaw = -1.13961;
+
+  auto manager =
     free_fleet::cyclonedds::CycloneDDSMiddleware::make_manager(
       dds_domain, fleet_name);
-  if (!server)
+  if (!manager)
   {
-    std::cerr << "[ERROR]: Failed to initialize a server.\n";
+    std::cerr << "[ERROR]: Failed to initialize a manager.\n";
     return 1;
   }
 
-  std::size_t task_id = 0;
+  free_fleet::messages::Location loc {
+    0,
+    0,
+    x,
+    y,
+    yaw,
+    level_name};
+  free_fleet::messages::NavigationRequest request;
+  request.robot_name = robot_name;
+  request.task_id = task_id;
+  request.path.push_back(loc);
 
-  while (true)
+  bool manager_loop = true;
+  while (manager_loop)
   {
-    auto states = server->read_states();
+    manager->send_navigation_request(request);
+
+    auto states = manager->read_states();
     if (!states.empty())
     {
       for (const auto& s : states)
       {
-        std::cout << "Got a state from client: "<< s->name
-          << ", battery: " << s->battery_percent
-          << ", mode: " << s->mode.mode
-          << ", [" << s->location.level_name
-          << " " << s->location.x
-          << " " << s->location.y
-          << " " << s->location.yaw << "]\n";
-        
-        free_fleet::messages::NavigationRequest request;
-        request.robot_name = s->name;
-        request.task_id = std::to_string(task_id++);
-        server->send_navigation_request(request);
+        if (s->task_id == task_id)
+          manager_loop = false;
       }
     }
     dds_sleepfor(DDS_MSECS(100));
   }
 
-  std::cout << "All done" << std::endl;
   return 0;
 }
-
-
