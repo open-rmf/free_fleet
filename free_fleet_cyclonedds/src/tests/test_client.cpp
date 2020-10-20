@@ -27,14 +27,21 @@
 
 int main(int argc, char** argv)
 {
-  std::string robot_name = "test_robot";
-  if (argc > 1)
+  if (argc < 4)
   {
-    robot_name = std::string(argv[1]);
+    std::cout << "Please request using the following format," << std::endl;
+    std::cout << "<Executable> <DDS Domain ID> <Fleet name> <Robot name>"
+      << std::endl;
+    return 1;
   }
 
+  int dds_domain = strtod(argv[1], NULL);
+  std::string fleet_name(argv[2]);
+  std::string robot_name(argv[3]);
+
   auto client =
-    free_fleet::cyclonedds::CycloneDDSMiddleware::make_client(26, "test_fleet");
+    free_fleet::cyclonedds::CycloneDDSMiddleware::make_client(
+      dds_domain, fleet_name);
   if (!client)
   {
     std::cerr << "[ERROR]: Failed to initialize a client.\n";

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,4 @@
  *
  */
 
-#ifndef FREEFLEET__SRC__DDS_UTILS__COMMON_HPP
-#define FREEFLEET__SRC__DDS_UTILS__COMMON_HPP
-
-#include <string>
-
-namespace free_fleet {
-namespace common {
-
-char* dds_string_alloc_and_copy(const std::string& str);
-
-} // namespace common
-} // namespace free_fleet
-
-#endif // FREEFLEET__SRC__DDS_UTILS__COMMON_HPP
+#include <free_fleet/Manager.hpp>
