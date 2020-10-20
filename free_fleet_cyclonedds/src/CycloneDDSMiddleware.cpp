@@ -40,7 +40,7 @@ public:
 
   ~Implementation()
   {
-    if (_participant > 0)
+    if (_started)
     {
       dds_return_t rc = dds_delete(_participant);
       if (rc != DDS_RETCODE_OK)
@@ -48,6 +48,12 @@ public:
     }
   }
 
+  void _start()
+  {
+    _started = true;
+  }
+
+  bool _started = false;
   dds_entity_t _participant;
   Publisher<MiddlewareMessages_Graph>::SharedPtr _graph_pub;
   Subscriber<MiddlewareMessages_Graph, 1>::SharedPtr _graph_sub;
@@ -106,6 +112,7 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
   middleware->_pimpl->_mode_request_sub = std::move(mode_request_sub);
   middleware->_pimpl->_nav_request_sub = std::move(nav_request_sub);
   middleware->_pimpl->_state_pub = std::move(state_pub);
+  middleware->_pimpl->_start();
   return middleware;
 }
 

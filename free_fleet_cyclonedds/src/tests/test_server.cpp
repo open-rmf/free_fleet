@@ -15,7 +15,7 @@
  *
  */
 
-#include<iostream>
+#include <iostream>
 
 #include <dds/dds.h>
 
@@ -23,11 +23,21 @@
 
 #include <free_fleet/messages/NavigationRequest.hpp>
 
-int main()
+int main(int argc, char** argv)
 {
+  if (argc < 3)
+  {
+    std::cout << "Please request using the following format," << std::endl;
+    std::cout << "<Executable> <DDS Domain ID> <Fleet name>" << std::endl;
+    return 1;
+  }
+
+  int dds_domain = strtod(argv[1], NULL);
+  std::string fleet_name(argv[2]);
+
   auto server =
     free_fleet::cyclonedds::CycloneDDSMiddleware::make_manager(
-      26, "test_fleet");
+      dds_domain, fleet_name);
   if (!server)
   {
     std::cerr << "[ERROR]: Failed to initialize a server.\n";

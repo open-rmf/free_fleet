@@ -22,6 +22,7 @@ find_package(rmf_traffic REQUIRED)
 
 file(GLOB lib_srcs
   "src/*.cpp"
+  "src/agv/*.cpp"
 )
 
 add_library(free_fleet SHARED
