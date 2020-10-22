@@ -54,17 +54,13 @@ int main(int argc, char** argv)
       for (const auto& s : states)
       {
         std::cout << "Got a state from client: "<< s->name
+          << ", task: " << s->task_id
           << ", battery: " << s->battery_percent
           << ", mode: " << s->mode.mode
           << ", [" << s->location.level_name
           << " " << s->location.x
           << " " << s->location.y
           << " " << s->location.yaw << "]\n";
-        
-        free_fleet::messages::NavigationRequest request;
-        request.robot_name = s->name;
-        request.task_id = std::to_string(task_id++);
-        manager->send_navigation_request(request);
       }
     }
     dds_sleepfor(DDS_MSECS(100));
