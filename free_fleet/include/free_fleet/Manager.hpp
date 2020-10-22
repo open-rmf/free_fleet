@@ -18,4 +18,36 @@
 #ifndef INCLUDE__FREE_FLEET__MANAGER_HPP
 #define INCLUDE__FREE_FLEET__MANAGER_HPP
 
+#include <memory>
+
+#include <rmf_utils/impl_ptr.hpp>
+#include <rmf_traffic/agv/Graph.hpp>
+
+#include <free_fleet/transport/Middleware.hpp>
+
+namespace free_fleet {
+
+class Manager
+{
+public:
+
+  using SharedPtr = std::shared_ptr<Manager>;
+
+  ///
+  static SharedPtr make(
+    const std::string& fleet_name,
+    std::shared_ptr<transport::Middleware> middleware,
+    std::shared_ptr<rmf_traffic::agv::Graph> graph);
+
+  ///
+  void start(uint32_t frequency);
+
+  class Implementation;
+private:
+  Manager();
+  rmf_utils::impl_ptr<Implementation> _pimpl;
+};
+
+} // namespace free_fleet
+
 #endif // INCLUDE__FREE_FLEET__MANAGER_HPP

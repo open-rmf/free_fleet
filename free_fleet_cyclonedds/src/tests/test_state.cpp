@@ -44,8 +44,6 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  std::size_t task_id = 0;
-
   while (true)
   {
     auto states = manager->read_states();
@@ -60,7 +58,8 @@ int main(int argc, char** argv)
           << ", [" << s->location.level_name
           << " " << s->location.x
           << " " << s->location.y
-          << " " << s->location.yaw << "]\n";
+          << " " << s->location.yaw << "]"
+          << ", path length: " << s->path.size() << "\n";
       }
     }
     dds_sleepfor(DDS_MSECS(100));

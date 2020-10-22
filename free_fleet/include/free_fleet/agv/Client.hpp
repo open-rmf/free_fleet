@@ -26,7 +26,6 @@
 #include <memory>
 
 #include <rmf_utils/impl_ptr.hpp>
-#include <rmf_traffic/agv/Graph.hpp>
 
 #include <free_fleet/agv/StatusHandle.hpp>
 #include <free_fleet/agv/CommandHandle.hpp>
