@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Open Source Robotics Foundation
+ * Copyright (C) 2020 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@
 
 #include <free_fleet_cyclonedds/CycloneDDSMiddleware.hpp>
 
-#include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/ModeRequest.hpp>
 
 int main(int argc, char** argv)
 {
-  if (argc < 6)
+  if (argc < 5)
   {
     std::cout << "Please request using the following format," << std::endl;
-    std::cout << "<Executable> <Domain ID> <Fleet Name> <Robot Name> <Task ID> <Level Name>" << std::endl;
+    std::cout << "<Executable> <Domain ID> <Fleet Name> <Robot Name> <Task ID>" << std::endl;
     return 1;
   }
 
@@ -36,11 +36,6 @@ int main(int argc, char** argv)
   std::string fleet_name(argv[2]);
   std::string robot_name(argv[3]);
   std::string task_id(argv[4]);
-  std::string level_name(argv[5]);
-
-  double x = 1.65683;
-  double y = 0.548278;
-  double yaw = -1.13961;
 
   auto manager =
     free_fleet::cyclonedds::CycloneDDSMiddleware::make_manager(
@@ -51,23 +46,16 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  free_fleet::messages::Location loc {
-    0,
-    0,
-    x,
-    y,
-    yaw,
-    level_name};
-  free_fleet::messages::NavigationRequest request;
+  free_fleet::messages::ModeRequest request;
   request.robot_name = robot_name;
   request.task_id = task_id;
-  request.path.push_back(loc);
+  request.mode.mode = request.mode.MODE_PAUSED;
 
   bool manager_loop = true;
   int count = 0;
   while (manager_loop)
   {
-    manager->send_navigation_request(request);
+    manager->send_mode_request(request);
     count++;
 
     auto states = manager->read_states();
@@ -75,14 +63,16 @@ int main(int argc, char** argv)
     {
       for (const auto& s : states)
       {
-        if (s->task_id == task_id)
+        if (s->name == robot_name &&
+          s->task_id == task_id &&
+          s->mode.mode == s->mode.MODE_PAUSED)
           manager_loop = false;
       }
     }
     dds_sleepfor(DDS_MSECS(100));
   }
 
-  std::cout << "Sent navigation request and received feedback after "
+  std::cout << "Sent pause mode request and received feedback after "
     << count << " iterations." << std::endl;
   return 0;
 }

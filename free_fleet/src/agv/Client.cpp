@@ -16,6 +16,7 @@
  */
 
 #include <chrono>
+#include <unordered_set>
 
 #include <rmf_traffic/Time.hpp>
 
@@ -39,10 +40,21 @@ public:
     return _command_handle && _status_handle && _middleware;
   }
 
+  template<class T> 
+  bool _is_valid_request(const std::shared_ptr<T>& request)
+  {
+    if (request->robot_name == _robot_name &&
+      _task_ids.find(request->task_id) == _task_ids.end())
+      return true;
+    return false;
+  }
+
   std::string _robot_name;
   std::string _robot_model;
 
   std::string _task_id;
+  std::string _paused_task_id;
+  std::unordered_set<std::string> _task_ids;
 
   std::shared_ptr<CommandHandle> _command_handle;
   std::shared_ptr<StatusHandle> _status_handle;
@@ -101,14 +113,37 @@ void Client::start(uint32_t frequency)
     _pimpl->_middleware->send_state(new_state);
 
     // read mode request
+    auto mode_request = _pimpl->_middleware->read_mode_request();
+    if (mode_request && _pimpl->_is_valid_request(mode_request))
+    {
+      if (mode_request->mode.mode == messages::RobotMode::MODE_PAUSED)
+      {
+        _pimpl->_task_ids.insert(mode_request->task_id);
+        _pimpl->_paused_task_id = _pimpl->_task_id;
+        _pimpl->_task_id = mode_request->task_id;
+        _pimpl->_command_handle->stop();
+      }
+      else if (mode_request->mode.mode == messages::RobotMode::MODE_MOVING)
+      {
+        _pimpl->_task_ids.insert(mode_request->task_id);
+        _pimpl->_task_id = _pimpl->_paused_task_id;
+        _pimpl->_paused_task_id = "";
+        _pimpl->_command_handle->resume();
+      }
+      continue;
+    }
     
     // read navigation request
     auto navigation_request = _pimpl->_middleware->read_navigation_request();
-    if (navigation_request)
+    if (navigation_request && _pimpl->_is_valid_request(navigation_request))
     {
+      _pimpl->_task_ids.insert(navigation_request->task_id);
       _pimpl->_task_id = navigation_request->task_id;
       free_fleet::agv::CommandHandle::RequestCompleted callback =
         [this]() { _pimpl->_task_id = ""; };
+      _pimpl->_command_handle->follow_new_path(
+        navigation_request->path,
+        callback);
     }
   }
 }

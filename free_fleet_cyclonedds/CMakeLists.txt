@@ -55,6 +55,8 @@ set(tests
   test_client
   test_manager
   test_navigation
+  test_pause
+  test_resume
 )
 foreach(test_target ${tests})
   add_executable(${test_target}
