@@ -53,7 +53,7 @@ set(tests
   test_pub_transient_local
   test_sub_transient_local
   test_client
-  test_manager
+  test_state
   test_navigation
   test_pause
   test_resume
