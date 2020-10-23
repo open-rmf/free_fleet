@@ -19,6 +19,7 @@
 #define SRC__MESSAGES__UTILS_HPP
 
 #include <free_fleet/messages/Location.hpp>
+#include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
@@ -36,9 +37,23 @@ char* dds_string_alloc_and_copy(const std::string& str);
 
 // Location
 
-void convert(const messages::Location& input, MiddlewareMessages_Location& output);
+void convert(
+  const messages::Location& input,
+  MiddlewareMessages_Location& output);
 
-void convert(const MiddlewareMessages_Location& input, messages::Location& output);
+void convert(
+  const MiddlewareMessages_Location& input,
+  messages::Location& output);
+
+// Waypoint
+
+void convert(
+  const messages::Waypoint& input,
+  MiddlewareMessages_Waypoint& output);
+
+void convert(
+  const MiddlewareMessages_Waypoint& input,
+  messages::Waypoint& output);
 
 // ModeParameter
 
@@ -89,19 +104,6 @@ void convert(
 void convert(
   const MiddlewareMessages_RobotState& input,
   messages::RobotState& output);
-
-// Graph
-// Note: These graph conversions will not carry any information about executions
-// doors, elevators, etc. The main purpose is to allow robots to keep track of
-// where they are on the graph.
-
-void convert(
-  const rmf_traffic::agv::Graph& input,
-  MiddlewareMessages_Graph& output);
-
-void convert(
-  const MiddlewareMessages_Graph& input,
-  rmf_traffic::agv::Graph& output);
 
 } // namespace cyclonedds
 } // namespace free_fleet

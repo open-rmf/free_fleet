@@ -15,29 +15,24 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__MESSAGES__NAVIGATIONREQUEST_HPP
-#define INCLUDE__FREE_FLEET__MESSAGES__NAVIGATIONREQUEST_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__WAYPOINT_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__WAYPOINT_HPP
 
-#include <vector>
-
-#include <free_fleet/messages/Waypoint.hpp>
+#include <free_fleet/messages/Location.hpp>
 
 namespace free_fleet {
 namespace messages {
 
-struct NavigationRequest
+struct Waypoint
 {
-  /// Robot to perform this request
-  std::string robot_name;
+  /// Graph index for this particular waypoint
+  uint32_t graph_index;
 
-  /// Unique task ID issued by the fleet manager
-  std::string task_id;
-
-  /// A vector of waypoints.
-  std::vector<Waypoint> path;
+  /// Location information of this waypoint
+  Location location;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__MESSAGES__NAVIGATIONREQUEST_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__WAYPOINT_HPP

@@ -9,6 +9,11 @@ module MiddlewareMessages
     double yaw;
     string level_name;
   };
+  struct Waypoint
+  {
+    unsigned long graph_index;
+    Location location;
+  };
   struct ModeParameter
   {
     string name;
@@ -44,7 +49,7 @@ module MiddlewareMessages
   {
     string robot_name;
     string task_id;
-    sequence<Location> path;
+    sequence<Waypoint> path;
   };
   struct RobotState
   {
@@ -54,31 +59,6 @@ module MiddlewareMessages
     RobotMode mode;
     double battery_percent;
     Location location;
-    sequence<Location> path;
-  };
-  struct GraphRequest
-  {
-    unsigned long version;
-  };
-  struct Waypoint
-  {
-    string map_name;
-    double x;
-    double y;
-    boolean is_holding_point;
-    boolean is_passthrough_point;
-    boolean is_parking_spot;
-    unsigned long index;
-    string name;
-  };
-  struct Lane
-  {
-    unsigned long entry;
-    unsigned long exit;
-  };
-  struct Graph
-  {
-    sequence<Waypoint> waypoints;
-    sequence<Lane> lanes;
+    sequence<Waypoint> path;
   };
 };

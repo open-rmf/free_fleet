@@ -50,22 +50,31 @@ int main(int argc, char** argv)
   free_fleet::messages::NavigationRequest request;
   request.robot_name = robot_name;
   request.task_id = task_id;
-  // request.path.push_back(loc);
   request.path.push_back(
-    free_fleet::messages::Location{
-      0, 0, -1.3461, -0.5168, 0.0, level_name});
+    free_fleet::messages::Waypoint{
+      0,
+      free_fleet::messages::Location{0, 0, -1.3461, -0.5168, 0.0, level_name}
+    });
   request.path.emplace_back(
-    free_fleet::messages::Location{
-      0, 0, 1.31282, -0.6335, 0.0, level_name});
+    free_fleet::messages::Waypoint{
+      1,
+      free_fleet::messages::Location{0, 0, 1.31282, -0.6335, 0.0, level_name}
+    });
   request.path.emplace_back(
-    free_fleet::messages::Location{
-      0, 0, 1.954647, 0.6918, 0.0, level_name});
+    free_fleet::messages::Waypoint{
+      2,
+      free_fleet::messages::Location{0, 0, 1.954647, 0.6918, 0.0, level_name}
+    });
   request.path.emplace_back(
-    free_fleet::messages::Location{
-      0, 0, -1.67124, 0.9419, 0.0, level_name});
+    free_fleet::messages::Waypoint{
+      3,
+      free_fleet::messages::Location{0, 0, -1.67124, 0.9419, 0.0, level_name}
+    });
   request.path.emplace_back(
-    free_fleet::messages::Location{
-      0, 0, -0.10419, -1.775, 0.0, level_name});
+    free_fleet::messages::Waypoint{
+      4,
+      free_fleet::messages::Location{0, 0, -0.10419, -1.775, 0.0, level_name}
+    });
 
   bool manager_loop = true;
   int count = 0;

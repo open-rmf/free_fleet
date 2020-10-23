@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <free_fleet/messages/Location.hpp>
+#include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 
 namespace free_fleet {
@@ -56,8 +57,8 @@ public:
   /// Obtain the current path that the robot is navigating on.
   ///
   /// \return
-  ///   Path of the robot in a vector of locations.
-  virtual std::vector<messages::Location> path() const = 0;
+  ///   Path of the robot in a vector of waypoints.
+  virtual std::vector<messages::Waypoint> path() const = 0;
 
   /// Virtual destructor
   virtual ~StatusHandle() = default;

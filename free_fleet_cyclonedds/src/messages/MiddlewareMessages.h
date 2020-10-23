@@ -37,6 +37,21 @@ extern const dds_topic_descriptor_t MiddlewareMessages_Location_desc;
 dds_sample_free ((d), &MiddlewareMessages_Location_desc, (o))
 
 
+typedef struct MiddlewareMessages_Waypoint
+{
+  uint32_t graph_index;
+  MiddlewareMessages_Location location;
+} MiddlewareMessages_Waypoint;
+
+extern const dds_topic_descriptor_t MiddlewareMessages_Waypoint_desc;
+
+#define MiddlewareMessages_Waypoint__alloc() \
+((MiddlewareMessages_Waypoint*) dds_alloc (sizeof (MiddlewareMessages_Waypoint)));
+
+#define MiddlewareMessages_Waypoint_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_Waypoint_desc, (o))
+
+
 typedef struct MiddlewareMessages_ModeParameter
 {
   char * name;
@@ -113,7 +128,7 @@ typedef struct MiddlewareMessages_NavigationRequest_path_seq
 {
   uint32_t _maximum;
   uint32_t _length;
-  MiddlewareMessages_Location *_buffer;
+  MiddlewareMessages_Waypoint *_buffer;
   bool _release;
 } MiddlewareMessages_NavigationRequest_path_seq;
 
@@ -121,7 +136,7 @@ typedef struct MiddlewareMessages_NavigationRequest_path_seq
 ((MiddlewareMessages_NavigationRequest_path_seq*) dds_alloc (sizeof (MiddlewareMessages_NavigationRequest_path_seq)));
 
 #define MiddlewareMessages_NavigationRequest_path_seq_allocbuf(l) \
-((MiddlewareMessages_Location *) dds_alloc ((l) * sizeof (MiddlewareMessages_Location)))
+((MiddlewareMessages_Waypoint *) dds_alloc ((l) * sizeof (MiddlewareMessages_Waypoint)))
 
 
 typedef struct MiddlewareMessages_NavigationRequest
@@ -143,7 +158,7 @@ typedef struct MiddlewareMessages_RobotState_path_seq
 {
   uint32_t _maximum;
   uint32_t _length;
-  MiddlewareMessages_Location *_buffer;
+  MiddlewareMessages_Waypoint *_buffer;
   bool _release;
 } MiddlewareMessages_RobotState_path_seq;
 
@@ -151,7 +166,7 @@ typedef struct MiddlewareMessages_RobotState_path_seq
 ((MiddlewareMessages_RobotState_path_seq*) dds_alloc (sizeof (MiddlewareMessages_RobotState_path_seq)));
 
 #define MiddlewareMessages_RobotState_path_seq_allocbuf(l) \
-((MiddlewareMessages_Location *) dds_alloc ((l) * sizeof (MiddlewareMessages_Location)))
+((MiddlewareMessages_Waypoint *) dds_alloc ((l) * sizeof (MiddlewareMessages_Waypoint)))
 
 
 typedef struct MiddlewareMessages_RobotState
@@ -172,99 +187,6 @@ extern const dds_topic_descriptor_t MiddlewareMessages_RobotState_desc;
 
 #define MiddlewareMessages_RobotState_free(d,o) \
 dds_sample_free ((d), &MiddlewareMessages_RobotState_desc, (o))
-
-
-typedef struct MiddlewareMessages_GraphRequest
-{
-  uint32_t version;
-} MiddlewareMessages_GraphRequest;
-
-extern const dds_topic_descriptor_t MiddlewareMessages_GraphRequest_desc;
-
-#define MiddlewareMessages_GraphRequest__alloc() \
-((MiddlewareMessages_GraphRequest*) dds_alloc (sizeof (MiddlewareMessages_GraphRequest)));
-
-#define MiddlewareMessages_GraphRequest_free(d,o) \
-dds_sample_free ((d), &MiddlewareMessages_GraphRequest_desc, (o))
-
-
-typedef struct MiddlewareMessages_Waypoint
-{
-  char * map_name;
-  double x;
-  double y;
-  bool is_holding_point;
-  bool is_passthrough_point;
-  bool is_parking_spot;
-  uint32_t index;
-  char * name;
-} MiddlewareMessages_Waypoint;
-
-extern const dds_topic_descriptor_t MiddlewareMessages_Waypoint_desc;
-
-#define MiddlewareMessages_Waypoint__alloc() \
-((MiddlewareMessages_Waypoint*) dds_alloc (sizeof (MiddlewareMessages_Waypoint)));
-
-#define MiddlewareMessages_Waypoint_free(d,o) \
-dds_sample_free ((d), &MiddlewareMessages_Waypoint_desc, (o))
-
-
-typedef struct MiddlewareMessages_Lane
-{
-  uint32_t entry;
-  uint32_t exit;
-} MiddlewareMessages_Lane;
-
-extern const dds_topic_descriptor_t MiddlewareMessages_Lane_desc;
-
-#define MiddlewareMessages_Lane__alloc() \
-((MiddlewareMessages_Lane*) dds_alloc (sizeof (MiddlewareMessages_Lane)));
-
-#define MiddlewareMessages_Lane_free(d,o) \
-dds_sample_free ((d), &MiddlewareMessages_Lane_desc, (o))
-
-typedef struct MiddlewareMessages_Graph_waypoints_seq
-{
-  uint32_t _maximum;
-  uint32_t _length;
-  MiddlewareMessages_Waypoint *_buffer;
-  bool _release;
-} MiddlewareMessages_Graph_waypoints_seq;
-
-#define MiddlewareMessages_Graph_waypoints_seq__alloc() \
-((MiddlewareMessages_Graph_waypoints_seq*) dds_alloc (sizeof (MiddlewareMessages_Graph_waypoints_seq)));
-
-#define MiddlewareMessages_Graph_waypoints_seq_allocbuf(l) \
-((MiddlewareMessages_Waypoint *) dds_alloc ((l) * sizeof (MiddlewareMessages_Waypoint)))
-
-typedef struct MiddlewareMessages_Graph_lanes_seq
-{
-  uint32_t _maximum;
-  uint32_t _length;
-  MiddlewareMessages_Lane *_buffer;
-  bool _release;
-} MiddlewareMessages_Graph_lanes_seq;
-
-#define MiddlewareMessages_Graph_lanes_seq__alloc() \
-((MiddlewareMessages_Graph_lanes_seq*) dds_alloc (sizeof (MiddlewareMessages_Graph_lanes_seq)));
-
-#define MiddlewareMessages_Graph_lanes_seq_allocbuf(l) \
-((MiddlewareMessages_Lane *) dds_alloc ((l) * sizeof (MiddlewareMessages_Lane)))
-
-
-typedef struct MiddlewareMessages_Graph
-{
-  MiddlewareMessages_Graph_waypoints_seq waypoints;
-  MiddlewareMessages_Graph_lanes_seq lanes;
-} MiddlewareMessages_Graph;
-
-extern const dds_topic_descriptor_t MiddlewareMessages_Graph_desc;
-
-#define MiddlewareMessages_Graph__alloc() \
-((MiddlewareMessages_Graph*) dds_alloc (sizeof (MiddlewareMessages_Graph)));
-
-#define MiddlewareMessages_Graph_free(d,o) \
-dds_sample_free ((d), &MiddlewareMessages_Graph_desc, (o))
 
 #ifdef __cplusplus
 }

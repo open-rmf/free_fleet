@@ -21,8 +21,9 @@
 #include <string>
 #include <vector>
 
-#include "Location.hpp"
-#include "RobotMode.hpp"
+#include <free_fleet/messages/Location.hpp>
+#include <free_fleet/messages/Waypoint.hpp>
+#include <free_fleet/messages/RobotMode.hpp>
 
 namespace free_fleet {
 namespace messages {
@@ -47,8 +48,8 @@ struct RobotState
   /// Current location of the robot
   Location location;
 
-  /// Current path that the robot is currently on, as a vector of locations
-  std::vector<Location> path;
+  /// Current path that the robot is currently on, as a vector of waypoints
+  std::vector<Waypoint> path;
 };
 
 } // namespace messages

@@ -55,8 +55,6 @@ public:
 
   bool _started = false;
   dds_entity_t _participant;
-  Publisher<MiddlewareMessages_Graph>::SharedPtr _graph_pub;
-  Subscriber<MiddlewareMessages_Graph, 1>::SharedPtr _graph_sub;
   Publisher<MiddlewareMessages_RobotState>::SharedPtr _state_pub;
   Subscriber<MiddlewareMessages_RobotState, 10>::SharedPtr _state_sub;
   Publisher<MiddlewareMessages_ModeRequest>::SharedPtr _mode_request_pub;
@@ -67,8 +65,8 @@ public:
 
 //==============================================================================
 std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
-    int dds_domain,
-    const std::string& fleet_name)
+  int dds_domain,
+  const std::string& fleet_name)
 {
   std::shared_ptr<CycloneDDSMiddleware> middleware(new CycloneDDSMiddleware());
   
@@ -79,11 +77,6 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
     return nullptr;
   }
 
-  auto graph_sub = 
-    free_fleet::cyclonedds::Subscriber<MiddlewareMessages_Graph>::make(
-      participant,
-      &MiddlewareMessages_Graph_desc,
-      Prefix + fleet_name + "/" + GraphTopicName);
   auto mode_request_sub =
     free_fleet::cyclonedds::Subscriber<MiddlewareMessages_ModeRequest>::make(
       participant,
@@ -100,15 +93,13 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
       &MiddlewareMessages_RobotState_desc,
       Prefix + fleet_name + "/" + StateTopicName);
 
-  if (!middleware || !graph_sub || !mode_request_sub || !nav_request_sub
-    || !state_pub)
+  if (!middleware || !mode_request_sub || !nav_request_sub || !state_pub)
   {
     std::cerr << "[ERROR]: Failed to create a client middleware.\n";
     return nullptr;
   }
 
   middleware->_pimpl->_participant = std::move(participant);
-  middleware->_pimpl->_graph_sub = std::move(graph_sub);
   middleware->_pimpl->_mode_request_sub = std::move(mode_request_sub);
   middleware->_pimpl->_nav_request_sub = std::move(nav_request_sub);
   middleware->_pimpl->_state_pub = std::move(state_pub);
@@ -118,8 +109,8 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
 
 //==============================================================================
 std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_manager(
-    int dds_domain,
-    const std::string& fleet_name)
+  int dds_domain,
+  const std::string& fleet_name)
 {
   std::shared_ptr<CycloneDDSMiddleware> middleware(new CycloneDDSMiddleware());
 
@@ -130,11 +121,6 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_manager(
     return nullptr;
   }
 
-  auto graph_pub =
-    free_fleet::cyclonedds::Publisher<MiddlewareMessages_Graph>::make(
-      participant,
-      &MiddlewareMessages_Graph_desc,
-      Prefix + fleet_name + "/" + GraphTopicName);
   auto mode_request_pub =
     free_fleet::cyclonedds::Publisher<MiddlewareMessages_ModeRequest>::make(
       participant,
@@ -151,15 +137,13 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_manager(
       &MiddlewareMessages_RobotState_desc,
       Prefix + fleet_name + "/" + StateTopicName);
 
-  if (!middleware || !graph_pub || !mode_request_pub || !nav_request_pub ||
-    !state_sub)
+  if (!middleware|| !mode_request_pub || !nav_request_pub || !state_sub)
   {
     std::cerr << "[ERROR]: Failed to create a server middleware.\n";
     return nullptr;
   }
 
   middleware->_pimpl->_participant = std::move(participant);
-  middleware->_pimpl->_graph_pub = std::move(graph_pub);
   middleware->_pimpl->_mode_request_pub = std::move(mode_request_pub);
   middleware->_pimpl->_nav_request_pub = std::move(nav_request_pub);
   middleware->_pimpl->_state_sub = std::move(state_sub);
@@ -169,33 +153,6 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_manager(
 //==============================================================================
 CycloneDDSMiddleware::~CycloneDDSMiddleware()
 {}
-
-//==============================================================================
-void CycloneDDSMiddleware::send_graph(
-      std::shared_ptr<rmf_traffic::agv::Graph> graph)
-{
-  MiddlewareMessages_Graph* msg = MiddlewareMessages_Graph__alloc();
-  convert(*graph, *msg);
-  if (!_pimpl->_graph_pub->write(msg))
-  {
-    std::cerr << "[ERROR]: Failed to publish graph.\n";
-  }
-  MiddlewareMessages_Graph_free(msg, DDS_FREE_ALL);
-}
-
-//==============================================================================
-std::shared_ptr<rmf_traffic::agv::Graph> CycloneDDSMiddleware::read_graph()
-{
-  auto msgs = _pimpl->_graph_sub->read();
-  if (!msgs.empty())
-  {
-    std::shared_ptr<rmf_traffic::agv::Graph> graph(
-      new rmf_traffic::agv::Graph());
-    convert(*(msgs[0]), *graph);
-    return graph;
-  }
-  return nullptr;
-}
 
 //==============================================================================
 void CycloneDDSMiddleware::send_state(const messages::RobotState& state)
@@ -211,7 +168,7 @@ void CycloneDDSMiddleware::send_state(const messages::RobotState& state)
 
 //==============================================================================
 std::vector<std::shared_ptr<messages::RobotState>> 
-    CycloneDDSMiddleware::read_states()
+  CycloneDDSMiddleware::read_states()
 {
   auto msgs = _pimpl->_state_sub->read();
   if (!msgs.empty())
@@ -231,7 +188,7 @@ std::vector<std::shared_ptr<messages::RobotState>>
 
 //==============================================================================
 void CycloneDDSMiddleware::send_mode_request(
-    const messages::ModeRequest& request)
+  const messages::ModeRequest& request)
 {
   MiddlewareMessages_ModeRequest* msg = MiddlewareMessages_ModeRequest__alloc();
   convert(request, *msg);
@@ -258,7 +215,7 @@ std::shared_ptr<messages::ModeRequest> CycloneDDSMiddleware::read_mode_request()
 
 //==============================================================================
 void CycloneDDSMiddleware::send_navigation_request(
-    const messages::NavigationRequest& request)
+  const messages::NavigationRequest& request)
 {
   MiddlewareMessages_NavigationRequest* msg =
     MiddlewareMessages_NavigationRequest__alloc();
@@ -272,7 +229,7 @@ void CycloneDDSMiddleware::send_navigation_request(
 
 //==============================================================================
 std::shared_ptr<messages::NavigationRequest> 
-    CycloneDDSMiddleware::read_navigation_request()
+  CycloneDDSMiddleware::read_navigation_request()
 {
   auto msgs = _pimpl->_nav_request_sub->read();
   if (!msgs.empty())

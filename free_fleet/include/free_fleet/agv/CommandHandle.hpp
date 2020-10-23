@@ -21,7 +21,7 @@
 #include <vector>
 #include <functional>
 
-#include <free_fleet/messages/Location.hpp>
+#include <free_fleet/messages/Waypoint.hpp>
 
 // Heavily referenced from RobotCommandHandle
 // https://github.com/osrf/rmf_core/blob/master/rmf_fleet_adapter/include/rmf_fleet_adapter/agv/RobotCommandHandle.hpp
@@ -53,7 +53,7 @@ public:
   /// \param[in] path_finished_callback
   ///   Trigger this callback when the robot is done following the new path.
   virtual void follow_new_path(
-      const std::vector<free_fleet::messages::Location>& waypoints,
+      const std::vector<free_fleet::messages::Waypoint>& waypoints,
       RequestCompleted path_finished_callback) = 0;
 
   /// Have the robot come to an immediate stop.

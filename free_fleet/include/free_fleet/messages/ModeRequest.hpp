@@ -21,8 +21,8 @@
 #include <string>
 #include <vector>
 
-#include "RobotMode.hpp"
-#include "ModeParameter.hpp"
+#include <free_fleet/messages/RobotMode.hpp>
+#include <free_fleet/messages/ModeParameter.hpp>
 
 namespace free_fleet {
 namespace messages {
