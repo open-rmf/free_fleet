@@ -15,39 +15,46 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__MANAGER_HPP
-#define INCLUDE__FREE_FLEET__MANAGER_HPP
+#ifndef INCLUDE__FREE_FLEET__FRAMETRANSFORMER_HPP
+#define INCLUDE__FREE_FLEET__FRAMETRANSFORMER_HPP
 
 #include <memory>
 
 #include <rmf_utils/impl_ptr.hpp>
-#include <rmf_traffic/agv/Graph.hpp>
 
-#include <free_fleet/transport/Middleware.hpp>
+#include <free_fleet/messages/Location.hpp>
 
 namespace free_fleet {
 
-class Manager
+class FrameTransformer
 {
 public:
 
-  using SharedPtr = std::shared_ptr<Manager>;
+  using SharedPtr = std::shared_ptr<FrameTransformer>;
 
   ///
   static SharedPtr make(
-    const std::string& fleet_name,
-    std::shared_ptr<transport::Middleware> middleware,
-    std::shared_ptr<rmf_traffic::agv::Graph> graph);
+    double scale,
+    double translation_x,
+    double translation_y,
+    double rotation_yaw);
 
   ///
-  void start(uint32_t frequency);
+  void forward_transform(
+    const messages::Location& input,
+    messages::Location& output);
+
+  ///
+  void backward_transform(
+    const messages::Location& input,
+    messages::Location& output);
 
   class Implementation;
 private:
-  Manager();
+  FrameTransformer();
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__MANAGER_HPP
+#endif // INCLUDE__FREE_FLEET__FRAMETRANSFORMER_HPP
