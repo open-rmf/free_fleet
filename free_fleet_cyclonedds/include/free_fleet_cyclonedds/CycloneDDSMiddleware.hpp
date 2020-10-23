@@ -44,10 +44,6 @@ public:
 
   ~CycloneDDSMiddleware();
 
-  void send_graph(std::shared_ptr<rmf_traffic::agv::Graph> graph) final;
-  
-  std::shared_ptr<rmf_traffic::agv::Graph> read_graph() final;
-
   void send_state(const messages::RobotState& state) final;
 
   std::vector<std::shared_ptr<messages::RobotState>> read_states() final;
