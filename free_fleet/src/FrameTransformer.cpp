@@ -26,9 +26,6 @@ class FrameTransformer::Implementation
 {
 public:
 
-  Implementation()
-  {}
-
   double _scale;
   double _rotation_yaw;
   Eigen::Vector2d _translation;
