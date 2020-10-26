@@ -19,6 +19,7 @@ include(GNUInstallDirs)
 
 find_package(rmf_utils REQUIRED)
 find_package(rmf_traffic REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 file(GLOB lib_srcs
   "src/*.cpp"

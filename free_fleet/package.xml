@@ -10,6 +10,8 @@
   <depend>rmf_utils</depend>
   <depend>rmf_traffic</depend>
 
+  <depend>eigen</depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>

@@ -15,7 +15,6 @@
  *
  */
 
-
 #include <Eigen/Geometry>
 
 #include <free_fleet/FrameTransformer.hpp>
@@ -51,7 +50,7 @@ FrameTransformer::SharedPtr FrameTransformer::make(
 
 //==============================================================================
 FrameTransformer::FrameTransformer()
-: _pimpl(rmf_utils::impl_ptr<Implementation>(Implementation()))
+: _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
 {}
 
 //==============================================================================
