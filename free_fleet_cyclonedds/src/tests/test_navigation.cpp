@@ -38,12 +38,12 @@ int main(int argc, char** argv)
   std::string task_id(argv[4]);
   std::string level_name(argv[5]);
 
-  auto manager =
-    free_fleet::cyclonedds::CycloneDDSMiddleware::make_manager(
+  auto server =
+    free_fleet::cyclonedds::CycloneDDSMiddleware::make_server(
       dds_domain, fleet_name);
-  if (!manager)
+  if (!server)
   {
-    std::cerr << "[ERROR]: Failed to initialize a manager.\n";
+    std::cerr << "[ERROR]: Failed to initialize a server.\n";
     return 1;
   }
 
@@ -76,20 +76,20 @@ int main(int argc, char** argv)
       free_fleet::messages::Location{0, 0, -0.10419, -1.775, 0.0, level_name}
     });
 
-  bool manager_loop = true;
+  bool server_loop = true;
   int count = 0;
-  while (manager_loop)
+  while (server_loop)
   {
-    manager->send_navigation_request(request);
+    server->send_navigation_request(request);
     count++;
 
-    auto states = manager->read_states();
+    auto states = server->read_states();
     if (!states.empty())
     {
       for (const auto& s : states)
       {
         if (s->task_id == task_id)
-          manager_loop = false;
+          server_loop = false;
       }
     }
     dds_sleepfor(DDS_MSECS(100));

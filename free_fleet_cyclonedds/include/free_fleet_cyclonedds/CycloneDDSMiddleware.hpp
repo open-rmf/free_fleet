@@ -38,7 +38,7 @@ public:
     int dds_domain,
     const std::string& fleet_name);
 
-  static std::shared_ptr<CycloneDDSMiddleware> make_manager(
+  static std::shared_ptr<CycloneDDSMiddleware> make_server(
     int dds_domain,
     const std::string& fleet_name);
 
