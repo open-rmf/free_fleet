@@ -35,18 +35,18 @@ int main(int argc, char** argv)
   int dds_domain = strtod(argv[1], NULL);
   std::string fleet_name(argv[2]);
 
-  auto manager =
-    free_fleet::cyclonedds::CycloneDDSMiddleware::make_manager(
+  auto server =
+    free_fleet::cyclonedds::CycloneDDSMiddleware::make_server(
       dds_domain, fleet_name);
-  if (!manager)
+  if (!server)
   {
-    std::cerr << "[ERROR]: Failed to initialize a manager.\n";
+    std::cerr << "[ERROR]: Failed to initialize a server.\n";
     return 1;
   }
 
   while (true)
   {
-    auto states = manager->read_states();
+    auto states = server->read_states();
     if (!states.empty())
     {
       for (const auto& s : states)

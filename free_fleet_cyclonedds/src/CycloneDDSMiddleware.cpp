@@ -108,7 +108,7 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
 }
 
 //==============================================================================
-std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_manager(
+std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_server(
   int dds_domain,
   const std::string& fleet_name)
 {

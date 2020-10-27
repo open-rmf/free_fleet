@@ -37,12 +37,12 @@ int main(int argc, char** argv)
   std::string robot_name(argv[3]);
   std::string task_id(argv[4]);
 
-  auto manager =
-    free_fleet::cyclonedds::CycloneDDSMiddleware::make_manager(
+  auto server =
+    free_fleet::cyclonedds::CycloneDDSMiddleware::make_server(
       dds_domain, fleet_name);
-  if (!manager)
+  if (!server)
   {
-    std::cerr << "[ERROR]: Failed to initialize a manager.\n";
+    std::cerr << "[ERROR]: Failed to initialize a server.\n";
     return 1;
   }
 
@@ -51,14 +51,14 @@ int main(int argc, char** argv)
   request.task_id = task_id;
   request.mode.mode = request.mode.MODE_PAUSED;
 
-  bool manager_loop = true;
+  bool server_loop = true;
   int count = 0;
-  while (manager_loop)
+  while (server_loop)
   {
-    manager->send_mode_request(request);
+    server->send_mode_request(request);
     count++;
 
-    auto states = manager->read_states();
+    auto states = server->read_states();
     if (!states.empty())
     {
       for (const auto& s : states)
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
         if (s->name == robot_name &&
           s->task_id == task_id &&
           s->mode.mode == s->mode.MODE_PAUSED)
-          manager_loop = false;
+          server_loop = false;
       }
     }
     dds_sleepfor(DDS_MSECS(100));
