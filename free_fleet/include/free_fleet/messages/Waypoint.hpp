@@ -25,10 +25,10 @@ namespace messages {
 
 struct Waypoint
 {
-  /// Graph index for this particular waypoint
-  uint32_t graph_index;
+  /// Index for this particular waypoint on its navigation graph.
+  uint32_t index;
 
-  /// Location information of this waypoint
+  /// Location information of this waypoint.
   Location location;
 };
 

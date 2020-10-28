@@ -25,7 +25,7 @@ namespace messages {
 
 struct RobotMode
 {
-  /// Mode of the robot
+  /// Mode of the robot.
   uint32_t mode;
   static const uint32_t MODE_IDLE = 0;
   static const uint32_t MODE_CHARGING = 1;
@@ -39,7 +39,7 @@ struct RobotMode
   static const uint32_t MODE_UNDEFINED = 9;
   static const uint32_t MODE_CUSTOM = 10;
 
-  /// Information accompanying any of the modes, especially if it is undefined
+  /// Information accompanying any of the modes, especially if it is undefined.
   std::string info;
 };
 

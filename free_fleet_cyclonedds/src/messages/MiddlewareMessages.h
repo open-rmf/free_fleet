@@ -39,7 +39,7 @@ dds_sample_free ((d), &MiddlewareMessages_Location_desc, (o))
 
 typedef struct MiddlewareMessages_Waypoint
 {
-  uint32_t graph_index;
+  uint32_t index;
   MiddlewareMessages_Location location;
 } MiddlewareMessages_Waypoint;
 
@@ -153,6 +153,23 @@ extern const dds_topic_descriptor_t MiddlewareMessages_NavigationRequest_desc;
 
 #define MiddlewareMessages_NavigationRequest_free(d,o) \
 dds_sample_free ((d), &MiddlewareMessages_NavigationRequest_desc, (o))
+
+
+typedef struct MiddlewareMessages_RelocalizationRequest
+{
+  char * robot_name;
+  char * task_id;
+  MiddlewareMessages_Location location;
+  uint32_t last_visited_index;
+} MiddlewareMessages_RelocalizationRequest;
+
+extern const dds_topic_descriptor_t MiddlewareMessages_RelocalizationRequest_desc;
+
+#define MiddlewareMessages_RelocalizationRequest__alloc() \
+((MiddlewareMessages_RelocalizationRequest*) dds_alloc (sizeof (MiddlewareMessages_RelocalizationRequest)));
+
+#define MiddlewareMessages_RelocalizationRequest_free(d,o) \
+dds_sample_free ((d), &MiddlewareMessages_RelocalizationRequest_desc, (o))
 
 typedef struct MiddlewareMessages_RobotState_path_seq
 {

@@ -26,18 +26,18 @@ namespace messages {
 
 struct Location
 {
-  /// Time in seconds
+  /// Time in seconds.
   int32_t sec;
 
-  /// Time in nanoseconds
+  /// Time in nanoseconds.
   uint32_t nanosec;
 
-  /// x, y positions in meters and yaw in radians
+  /// x, y positions in meters and yaw in radians.
   double x;
   double y;
   double yaw;
 
-  /// Current level/map name
+  /// Current level/map name.
   std::string level_name;
 };
 

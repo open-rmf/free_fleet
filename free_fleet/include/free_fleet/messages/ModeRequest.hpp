@@ -29,16 +29,16 @@ namespace messages {
 
 struct ModeRequest
 {
-  /// Robot to perform this request
+  /// Robot to perform this request.
   std::string robot_name;
 
-  /// Unique task ID issued by the fleet manager
+  /// Unique task ID issued by the fleet manager.
   std::string task_id;
 
-  /// Desired mode for this robot
+  /// Desired mode for this robot.
   RobotMode mode;
 
-  /// Additional parameters if any when parsing the desired mode
+  /// Additional parameters if any when parsing the desired mode.
   std::vector<ModeParameter> parameters;
 };
 

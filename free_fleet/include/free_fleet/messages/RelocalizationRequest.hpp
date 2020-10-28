@@ -15,44 +15,32 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
-#define INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__RELOCALIZATIONREQUEST_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__RELOCALIZATIONREQUEST_HPP
 
 #include <string>
-#include <vector>
 
 #include <free_fleet/messages/Location.hpp>
-#include <free_fleet/messages/Waypoint.hpp>
-#include <free_fleet/messages/RobotMode.hpp>
 
 namespace free_fleet {
 namespace messages {
 
-struct RobotState
+struct RelocalizationRequest
 {
-  /// Name of the robot.
-  std::string name;
+  /// Robot to perform this request.
+  std::string robot_name;
 
-  /// Model of the robot.
-  std::string model;
-
-  /// Unique task ID of the task it is currently performing.
+  /// Unique task ID issued by the fleet manager.
   std::string task_id;
 
-  /// Current mode of the robot.
-  RobotMode mode;
-
-  /// Current battery percentage, values from 0 to 1.
-  double battery_percent;
-
-  /// Current location of the robot.
+  /// Location information to be used for relocalization.
   Location location;
 
-  /// Current path that the robot is currently on, as a vector of waypoints.
-  std::vector<Waypoint> path;
+  /// Last visited waypoint index for its navigation graph.
+  uint32_t last_visited_index;
 };
 
 } // namespace messages
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__MESSAGES__ROBOTSTATE_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__RELOCALIZATIONREQUEST_HPP
