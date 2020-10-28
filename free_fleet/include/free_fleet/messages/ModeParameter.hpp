@@ -25,10 +25,10 @@ namespace messages {
 
 struct ModeParameter
 {
-  /// Parameter name
+  /// Parameter name.
   std::string name;
 
-  /// Parameter value
+  /// Parameter value.
   std::string value;
 };
 

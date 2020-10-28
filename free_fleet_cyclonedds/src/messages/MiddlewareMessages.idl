@@ -11,7 +11,7 @@ module MiddlewareMessages
   };
   struct Waypoint
   {
-    unsigned long graph_index;
+    unsigned long index;
     Location location;
   };
   struct ModeParameter
@@ -50,6 +50,13 @@ module MiddlewareMessages
     string robot_name;
     string task_id;
     sequence<Waypoint> path;
+  };
+  struct RelocalizationRequest
+  {
+    string robot_name;
+    string task_id;
+    Location location;
+    unsigned long last_visited_index;
   };
   struct RobotState
   {

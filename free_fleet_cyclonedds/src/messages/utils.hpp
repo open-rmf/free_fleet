@@ -25,6 +25,7 @@
 #include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/ModeParameter.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RelocalizationRequest.hpp>
 
 #include <rmf_traffic/agv/Graph.hpp>
 
@@ -84,6 +85,16 @@ void convert(
 void convert(
   const MiddlewareMessages_NavigationRequest& input,
   messages::NavigationRequest& output);
+
+// RelocalizationRequest
+
+void convert(
+  const messages::RelocalizationRequest& input,
+  MiddlewareMessages_RelocalizationRequest& output);
+
+void convert(
+  const MiddlewareMessages_RelocalizationRequest& input,
+  messages::RelocalizationRequest& output);
 
 // RobotMode
 

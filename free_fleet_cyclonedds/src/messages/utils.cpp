@@ -61,7 +61,7 @@ void convert(
   const messages::Waypoint& input,
   MiddlewareMessages_Waypoint& output)
 {
-  output.graph_index = input.graph_index;
+  output.index = input.index;
   convert(input.location, output.location);
 }
 
@@ -70,7 +70,7 @@ void convert(
   const MiddlewareMessages_Waypoint& input,
   messages::Waypoint& output)
 {
-  output.graph_index = input.graph_index;
+  output.index = input.index;
   convert(input.location, output.location);
 }
 
@@ -172,6 +172,28 @@ void convert(
 {
   output.mode = input.mode;
   output.info = std::string(input.info);
+}
+
+//==============================================================================
+void convert(
+  const messages::RelocalizationRequest& input,
+  MiddlewareMessages_RelocalizationRequest& output)
+{
+  output.robot_name = dds_string_alloc_and_copy(input.robot_name);
+  output.task_id = dds_string_alloc_and_copy(input.task_id);
+  convert(input.location, output.location);
+  output.last_visited_index = input.last_visited_index;
+}
+
+//==============================================================================
+void convert(
+  const MiddlewareMessages_RelocalizationRequest& input,
+  messages::RelocalizationRequest& output)
+{
+  output.robot_name = std::string(input.robot_name);
+  output.task_id = std::string(input.task_id);
+  convert(input.location, output.location);
+  output.last_visited_index = input.last_visited_index;
 }
 
 //==============================================================================

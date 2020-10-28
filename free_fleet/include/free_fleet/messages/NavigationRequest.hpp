@@ -18,6 +18,7 @@
 #ifndef INCLUDE__FREE_FLEET__MESSAGES__NAVIGATIONREQUEST_HPP
 #define INCLUDE__FREE_FLEET__MESSAGES__NAVIGATIONREQUEST_HPP
 
+#include <string>
 #include <vector>
 
 #include <free_fleet/messages/Waypoint.hpp>
@@ -27,10 +28,10 @@ namespace messages {
 
 struct NavigationRequest
 {
-  /// Robot to perform this request
+  /// Robot to perform this request.
   std::string robot_name;
 
-  /// Unique task ID issued by the fleet manager
+  /// Unique task ID issued by the fleet manager.
   std::string task_id;
 
   /// A vector of waypoints.
