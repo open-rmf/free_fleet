@@ -76,11 +76,12 @@ void Manager::start(uint32_t frequency)
 //==============================================================================
 std::vector<std::string> Manager::robots()
 {
-  return {}
+  return {};
 }
 
 //==============================================================================
-rmf_utils::optional<messages::RobotState> Manager::robot_state()
+rmf_utils::optional<messages::RobotState> Manager::robot_state(
+  const std::string& robot_name)
 {
   return rmf_utils::nullopt;
 }
