@@ -162,6 +162,7 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_server(
   middleware->_pimpl->_participant = std::move(participant);
   middleware->_pimpl->_mode_request_pub = std::move(mode_request_pub);
   middleware->_pimpl->_nav_request_pub = std::move(nav_request_pub);
+  middleware->_pimpl->_reloc_request_pub = std::move(reloc_request_pub);
   middleware->_pimpl->_state_sub = std::move(state_sub);
   return middleware;
 }
@@ -183,19 +184,16 @@ void CycloneDDSMiddleware::send_state(const messages::RobotState& state)
 }
 
 //==============================================================================
-std::vector<std::shared_ptr<messages::RobotState>> 
-  CycloneDDSMiddleware::read_states()
+std::vector<messages::RobotState> CycloneDDSMiddleware::read_states()
 {
   auto msgs = _pimpl->_state_sub->read();
   if (!msgs.empty())
   {
-    std::vector<std::shared_ptr<messages::RobotState>> states;
-    for (auto s : msgs)
+    std::vector<messages::RobotState> states;
+    states.resize(msgs.size());
+    for (std::size_t i = 0; i < msgs.size(); ++i)
     {
-      std::shared_ptr<messages::RobotState> state(
-        new messages::RobotState);
-      convert(*s, *state);
-      states.push_back(std::move(state));
+      convert(*(msgs[i]), states[i]);
     }
     return states;
   }
@@ -216,17 +214,17 @@ void CycloneDDSMiddleware::send_mode_request(
 }
 
 //==============================================================================
-std::shared_ptr<messages::ModeRequest> CycloneDDSMiddleware::read_mode_request()
+auto CycloneDDSMiddleware::read_mode_request() -> 
+  rmf_utils::optional<messages::ModeRequest>
 {
   auto msgs = _pimpl->_mode_request_sub->read();
   if (!msgs.empty())
   {
-    std::shared_ptr<messages::ModeRequest> request(
-      new messages::ModeRequest);
-    convert(*(msgs[0]), *request);
+    messages::ModeRequest request;
+    convert(*(msgs[0]), request);
     return request;
   }
-  return nullptr;
+  return rmf_utils::nullopt;
 }
 
 //==============================================================================
@@ -244,18 +242,17 @@ void CycloneDDSMiddleware::send_navigation_request(
 }
 
 //==============================================================================
-std::shared_ptr<messages::NavigationRequest> 
-  CycloneDDSMiddleware::read_navigation_request()
+auto CycloneDDSMiddleware::read_navigation_request() ->
+  rmf_utils::optional<messages::NavigationRequest>
 {
   auto msgs = _pimpl->_nav_request_sub->read();
   if (!msgs.empty())
   {
-    std::shared_ptr<messages::NavigationRequest> request(
-      new messages::NavigationRequest);
-    convert(*(msgs[0]), *request);
+    messages::NavigationRequest request;
+    convert(*(msgs[0]), request);
     return request;
   }
-  return nullptr;
+  return rmf_utils::nullopt;
 }
 
 //==============================================================================
@@ -273,17 +270,17 @@ void CycloneDDSMiddleware::send_relocalization_request(
 }
 
 //==============================================================================
-std::shared_ptr<messages::RelocalizationRequest>
-  CycloneDDSMiddleware::read_relocalization_request()
+auto CycloneDDSMiddleware::read_relocalization_request() ->
+  rmf_utils::optional<messages::RelocalizationRequest>
 {
   auto msgs = _pimpl->_reloc_request_sub->read();
   if (!msgs.empty())
   {
-    std::shared_ptr<messages::RelocalizationRequest> request(
-      new messages::RelocalizationRequest);
-    convert(*(msgs[0]), *request);
+    messages::RelocalizationRequest request;
+    convert(*(msgs[0]), request);
     return request;
   }
+  return rmf_utils::nullopt;
 }
 
 //==============================================================================

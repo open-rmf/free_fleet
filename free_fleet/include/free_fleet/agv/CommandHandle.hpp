@@ -40,6 +40,17 @@ public:
   /// discarded.
   using RequestCompleted = std::function<void()>;
 
+  /// Have the robot attempt to relocalize remotely.
+  ///
+  /// \param[in] location
+  ///   The location in the frame of the robot for relocalization. 
+  ///
+  /// \param[in] relocalization_finished_callback
+  ///   Trigger this callback when the robot is done with relocalization.
+  virtual void relocalize(
+    const free_fleet::messages::Location& location,
+    RequestCompleted relocalization_finished_callback) = 0;
+
   /// Have the robot follow a new path. If it was already following a path, then
   /// it should immediately switch over to this one.
   ///

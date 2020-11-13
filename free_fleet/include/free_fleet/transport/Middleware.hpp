@@ -24,6 +24,8 @@
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
+#include <rmf_utils/optional.hpp>
+
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
@@ -52,8 +54,8 @@ public:
   /// by the fleet manager to get the most recent states of each robot.
   ///
   /// \return
-  ///   Vector of shared pointers to robot state messages.
-  virtual std::vector<std::shared_ptr<messages::RobotState>> read_states() = 0;
+  ///   Vector of robot state messages.
+  virtual std::vector<messages::RobotState> read_states() = 0;
 
   /// Sends a mode request over the middleware to be performed by a robot. This
   /// will be called by the fleet manager.
@@ -67,9 +69,9 @@ public:
   /// attempting to swtich to the desired mode.
   ///
   /// \return
-  ///   Shared pointer to the newly received mode request message. If no message
-  ///   was received, a nullptr will be returned.
-  virtual std::shared_ptr<messages::ModeRequest> read_mode_request() = 0;
+  ///   An optional of mode request message. If no request was received, a
+  ///   nullopt is returned.
+  virtual rmf_utils::optional<messages::ModeRequest> read_mode_request() = 0;
 
   /// Sends a navigation request over the middleware to be performed by a robot.
   /// This will be called by the fleet manager.
@@ -85,9 +87,9 @@ public:
   /// before attempting to perform the new navigation route.
   ///
   /// \return
-  ///   Shared pointer to the newly received navigation request message. If no
-  ///   message was received, a nullptr will be returned.
-  virtual std::shared_ptr<messages::NavigationRequest>
+  ///   An optional of navigation request message. If no request was received,
+  ///   a nullopt is returned.
+  virtual rmf_utils::optional<messages::NavigationRequest>
     read_navigation_request() = 0;
 
   /// Sends a relocalization request over the middleware to be performed by a
@@ -105,9 +107,9 @@ public:
   /// after manual intervention, localization failures, or initialization.
   ///
   /// \return
-  ///   Shared pointer to the newly received relocalization request message. If
-  ///   no message was receivd, a nullptr will be returned.
-  virtual std::shared_ptr<messages::RelocalizationRequest>
+  ///   An optional of relocalization request message. If no request was
+  ///   received, a nullopt is returned.
+  virtual rmf_utils::optional<messages::RelocalizationRequest>
     read_relocalization_request() = 0;
 
   /// Virtual destructor

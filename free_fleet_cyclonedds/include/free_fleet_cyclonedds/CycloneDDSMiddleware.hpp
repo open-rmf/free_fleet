@@ -46,22 +46,22 @@ public:
 
   void send_state(const messages::RobotState& state) final;
 
-  std::vector<std::shared_ptr<messages::RobotState>> read_states() final;
+  std::vector<messages::RobotState> read_states() final;
 
   void send_mode_request(const messages::ModeRequest& request) final;
 
-  std::shared_ptr<messages::ModeRequest> read_mode_request() final;
+  rmf_utils::optional<messages::ModeRequest> read_mode_request() final;
 
   void send_navigation_request(
     const messages::NavigationRequest& request) final;
   
-  std::shared_ptr<messages::NavigationRequest>
+  rmf_utils::optional<messages::NavigationRequest>
     read_navigation_request() final;
 
   void send_relocalization_request(
     const messages::RelocalizationRequest& request) final;
 
-  std::shared_ptr<messages::RelocalizationRequest>
+  rmf_utils::optional<messages::RelocalizationRequest>
     read_relocalization_request() final;
 
   class Implementation;

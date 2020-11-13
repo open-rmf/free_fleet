@@ -90,6 +90,8 @@ void Manager::start(uint32_t frequency)
       continue;
 
     // get states
+    auto states = _pimpl->_middleware->read_states();
+    // for (auto )
   }
 }
 
