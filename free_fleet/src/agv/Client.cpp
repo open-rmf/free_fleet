@@ -90,8 +90,8 @@ Client::Client()
 //==============================================================================
 void Client::start(uint32_t frequency)
 {
-  double seconds_per_iteration = 1.0 / frequency;
-  rmf_traffic::Duration duration_per_iteration =
+  const double seconds_per_iteration = 1.0 / frequency;
+  const rmf_traffic::Duration duration_per_iteration =
     rmf_traffic::time::from_seconds(seconds_per_iteration);
   rmf_traffic::Time t_prev = std::chrono::steady_clock::now();
 

@@ -28,6 +28,7 @@ const std::string GraphTopicName = "navigation_graph";
 const std::string StateTopicName = "robot_state";
 const std::string ModeRequestTopicName = "mode_request";
 const std::string NavigationRequestTopicName = "navigation_request";
+const std::string RelocalizationRequestTopicName = "relocalization_request";
 
 } // namespace cyclonedds
 } // namespace free_fleet

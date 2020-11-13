@@ -19,6 +19,8 @@
 #include <thread>
 #include <unordered_map>
 
+#include <rmf_traffic/Time.hpp>
+
 #include <free_fleet/Manager.hpp>
 
 namespace free_fleet {
@@ -38,6 +40,11 @@ public:
   {
     if (_thread.joinable())
       _thread.join();
+  }
+
+  bool _connected() const
+  {
+    return _middleware && _graph;
   }
 
   std::string _fleet_name;
@@ -71,7 +78,20 @@ Manager::Manager()
 
 //==============================================================================
 void Manager::start(uint32_t frequency)
-{}
+{
+  const double seconds_per_iteration = 1.0 / frequency;
+  const rmf_traffic::Duration duration_per_iteration =
+    rmf_traffic::time::from_seconds(seconds_per_iteration);
+  rmf_traffic::Time t_prev = std::chrono::steady_clock::now();
+
+  while (_pimpl->_connected())
+  {
+    if (std::chrono::steady_clock::now() - t_prev < duration_per_iteration)
+      continue;
+
+    // get states
+  }
+}
 
 //==============================================================================
 std::vector<std::string> Manager::robots()

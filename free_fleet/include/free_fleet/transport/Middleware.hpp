@@ -27,6 +27,7 @@
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RelocalizationRequest.hpp>
 
 namespace free_fleet {
 namespace transport {
@@ -77,7 +78,7 @@ public:
   ///   Navigation request message detailing a new navigation route to be
   ///   performed by a robot.
   virtual void send_navigation_request(
-      const messages::NavigationRequest& request) = 0;
+    const messages::NavigationRequest& request) = 0;
 
   /// Read the most recent available navigation request message over the
   /// middleware. This will be called by the clients running on the robots,
@@ -87,7 +88,27 @@ public:
   ///   Shared pointer to the newly received navigation request message. If no
   ///   message was received, a nullptr will be returned.
   virtual std::shared_ptr<messages::NavigationRequest>
-      read_navigation_request() = 0;
+    read_navigation_request() = 0;
+
+  /// Sends a relocalization request over the middleware to be performed by a
+  /// robot. This will be called by the fleet manager, for handling manual
+  /// interventions or initializations of robots.
+  ///
+  /// \param[in] request
+  ///   Relocalization request message detailing the current estimated location
+  ///   of the robot.
+  virtual void send_relocalization_request(
+    const messages::RelocalizationRequest& request) = 0;
+
+  /// Read the most recent available relocalization request message over the
+  /// middleware. This will be called by the clients running on the robots,
+  /// after manual intervention, localization failures, or initialization.
+  ///
+  /// \return
+  ///   Shared pointer to the newly received relocalization request message. If
+  ///   no message was receivd, a nullptr will be returned.
+  virtual std::shared_ptr<messages::RelocalizationRequest>
+    read_relocalization_request() = 0;
 
   /// Virtual destructor
   virtual ~Middleware() = default;

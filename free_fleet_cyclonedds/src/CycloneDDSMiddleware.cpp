@@ -61,6 +61,10 @@ public:
   Subscriber<MiddlewareMessages_ModeRequest>::SharedPtr _mode_request_sub;
   Publisher<MiddlewareMessages_NavigationRequest>::SharedPtr _nav_request_pub;
   Subscriber<MiddlewareMessages_NavigationRequest>::SharedPtr _nav_request_sub;
+  Publisher<MiddlewareMessages_RelocalizationRequest>::SharedPtr
+    _reloc_request_pub;
+  Subscriber<MiddlewareMessages_RelocalizationRequest>::SharedPtr
+    _reloc_request_sub;
 };
 
 //==============================================================================
@@ -87,13 +91,19 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
       participant,
       &MiddlewareMessages_NavigationRequest_desc,
       Prefix + fleet_name + "/" + NavigationRequestTopicName);
+  auto reloc_request_sub =
+    free_fleet::cyclonedds::Subscriber<MiddlewareMessages_RelocalizationRequest>::make(
+      participant,
+      &MiddlewareMessages_RelocalizationRequest_desc,
+      Prefix + fleet_name + "/" + RelocalizationRequestTopicName);
   auto state_pub =
     free_fleet::cyclonedds::Publisher<MiddlewareMessages_RobotState>::make(
       participant,
       &MiddlewareMessages_RobotState_desc,
       Prefix + fleet_name + "/" + StateTopicName);
 
-  if (!middleware || !mode_request_sub || !nav_request_sub || !state_pub)
+  if (!middleware || !mode_request_sub || !nav_request_sub || !reloc_request_sub
+    || !state_pub)
   {
     std::cerr << "[ERROR]: Failed to create a client middleware.\n";
     return nullptr;
@@ -102,6 +112,7 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
   middleware->_pimpl->_participant = std::move(participant);
   middleware->_pimpl->_mode_request_sub = std::move(mode_request_sub);
   middleware->_pimpl->_nav_request_sub = std::move(nav_request_sub);
+  middleware->_pimpl->_reloc_request_sub = std::move(reloc_request_sub);
   middleware->_pimpl->_state_pub = std::move(state_pub);
   middleware->_pimpl->_start();
   return middleware;
@@ -131,8 +142,13 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_server(
       participant,
       &MiddlewareMessages_NavigationRequest_desc,
       Prefix + fleet_name + "/" + NavigationRequestTopicName);
+  auto reloc_request_pub =
+    free_fleet::cyclonedds::Publisher<MiddlewareMessages_RelocalizationRequest>::make(
+      participant,
+      &MiddlewareMessages_RelocalizationRequest_desc,
+      Prefix + fleet_name + "/" + RelocalizationRequestTopicName);
   auto state_sub =
-    free_fleet::cyclonedds::Subscriber<MiddlewareMessages_RobotState, 10>::make(
+    Subscriber<MiddlewareMessages_RobotState, 10>::make(
       participant,
       &MiddlewareMessages_RobotState_desc,
       Prefix + fleet_name + "/" + StateTopicName);
@@ -240,6 +256,34 @@ std::shared_ptr<messages::NavigationRequest>
     return request;
   }
   return nullptr;
+}
+
+//==============================================================================
+void CycloneDDSMiddleware::send_relocalization_request(
+  const messages::RelocalizationRequest& request)
+{
+  MiddlewareMessages_RelocalizationRequest* msg =
+    MiddlewareMessages_RelocalizationRequest__alloc();
+  convert(request, *msg);
+  if (!_pimpl->_reloc_request_pub->write(msg))
+  {
+    std::cerr << "[ERROR]: Failed to publish relocalization request.\n";
+  }
+  MiddlewareMessages_RelocalizationRequest_free(msg, DDS_FREE_ALL);
+}
+
+//==============================================================================
+std::shared_ptr<messages::RelocalizationRequest>
+  CycloneDDSMiddleware::read_relocalization_request()
+{
+  auto msgs = _pimpl->_reloc_request_sub->read();
+  if (!msgs.empty())
+  {
+    std::shared_ptr<messages::RelocalizationRequest> request(
+      new messages::RelocalizationRequest);
+    convert(*(msgs[0]), *request);
+    return request;
+  }
 }
 
 //==============================================================================

@@ -53,10 +53,16 @@ public:
   std::shared_ptr<messages::ModeRequest> read_mode_request() final;
 
   void send_navigation_request(
-      const messages::NavigationRequest& request) final;
+    const messages::NavigationRequest& request) final;
   
   std::shared_ptr<messages::NavigationRequest>
-      read_navigation_request() final;
+    read_navigation_request() final;
+
+  void send_relocalization_request(
+    const messages::RelocalizationRequest& request) final;
+
+  std::shared_ptr<messages::RelocalizationRequest>
+    read_relocalization_request() final;
 
   class Implementation;
 private:
