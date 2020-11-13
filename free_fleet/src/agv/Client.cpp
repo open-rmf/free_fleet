@@ -41,10 +41,10 @@ public:
   }
 
   template<class T> 
-  bool _is_valid_request(const std::shared_ptr<T>& request)
+  bool _is_valid_request(const T& request)
   {
-    if (request->robot_name == _robot_name &&
-      _task_ids.find(request->task_id) == _task_ids.end())
+    if (request.robot_name == _robot_name &&
+      _task_ids.find(request.task_id) == _task_ids.end())
       return true;
     return false;
   }
@@ -114,18 +114,20 @@ void Client::start(uint32_t frequency)
 
     // read mode request
     auto mode_request = _pimpl->_middleware->read_mode_request();
-    if (mode_request && _pimpl->_is_valid_request(mode_request))
+    if (mode_request.has_value() && 
+      _pimpl->_is_valid_request(mode_request.value()))
     {
-      if (mode_request->mode.mode == messages::RobotMode::MODE_PAUSED)
+      auto request = mode_request.value();
+      if (request.mode.mode == messages::RobotMode::MODE_PAUSED)
       {
-        _pimpl->_task_ids.insert(mode_request->task_id);
+        _pimpl->_task_ids.insert(request.task_id);
         _pimpl->_paused_task_id = _pimpl->_task_id;
-        _pimpl->_task_id = mode_request->task_id;
+        _pimpl->_task_id = request.task_id;
         _pimpl->_command_handle->stop();
       }
-      else if (mode_request->mode.mode == messages::RobotMode::MODE_MOVING)
+      else if (request.mode.mode == messages::RobotMode::MODE_MOVING)
       {
-        _pimpl->_task_ids.insert(mode_request->task_id);
+        _pimpl->_task_ids.insert(request.task_id);
         _pimpl->_task_id = _pimpl->_paused_task_id;
         _pimpl->_paused_task_id = "";
         _pimpl->_command_handle->resume();
@@ -133,16 +135,35 @@ void Client::start(uint32_t frequency)
       continue;
     }
     
+    // read relocalization request
+    auto relocalization_request =
+      _pimpl->_middleware->read_relocalization_request();
+    if (relocalization_request.has_value() &&
+      _pimpl->_is_valid_request(relocalization_request.value()))
+    {
+      auto request = relocalization_request.value();
+      _pimpl->_task_ids.insert(request.task_id);
+      _pimpl->_task_id = request.task_id;
+      free_fleet::agv::CommandHandle::RequestCompleted callback =
+        [this]() { _pimpl->_task_id = ""; };
+      _pimpl->_command_handle->relocalize(
+        request.location,
+        callback);
+      continue;
+    }
+
     // read navigation request
     auto navigation_request = _pimpl->_middleware->read_navigation_request();
-    if (navigation_request && _pimpl->_is_valid_request(navigation_request))
+    if (navigation_request.has_value() &&
+      _pimpl->_is_valid_request(navigation_request.value()))
     {
-      _pimpl->_task_ids.insert(navigation_request->task_id);
-      _pimpl->_task_id = navigation_request->task_id;
+      auto request = navigation_request.value();
+      _pimpl->_task_ids.insert(request.task_id);
+      _pimpl->_task_id = request.task_id;
       free_fleet::agv::CommandHandle::RequestCompleted callback =
         [this]() { _pimpl->_task_id = ""; };
       _pimpl->_command_handle->follow_new_path(
-        navigation_request->path,
+        request.path,
         callback);
     }
   }

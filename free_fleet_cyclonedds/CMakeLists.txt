@@ -47,36 +47,36 @@ target_include_directories(free_fleet_cyclonedds
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-set(tests
-  test_pub
-  test_sub
-  test_pub_transient_local
-  test_sub_transient_local
-  test_client
-  test_state
-  test_navigation
-  test_pause
-  test_resume
-)
-foreach(test_target ${tests})
-  add_executable(${test_target}
-    src/tests/${test_target}.cpp
-  )
-  target_link_libraries(${test_target}
-    free_fleet_cyclonedds
-  )
-  target_include_directories(${test_target}
-    PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  )
-  install(
-    TARGETS ${test_target}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endforeach()
+# set(tests
+#   test_pub
+#   test_sub
+#   test_pub_transient_local
+#   test_sub_transient_local
+#   test_client
+#   test_state
+#   test_navigation
+#   test_pause
+#   test_resume
+# )
+# foreach(test_target ${tests})
+#   add_executable(${test_target}
+#     src/tests/${test_target}.cpp
+#   )
+#   target_link_libraries(${test_target}
+#     free_fleet_cyclonedds
+#   )
+#   target_include_directories(${test_target}
+#     PUBLIC
+#       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+#   )
+#   install(
+#     TARGETS ${test_target}
+#     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#   )
+# endforeach()
 
 # Create cmake config files
 include(CMakePackageConfigHelpers)
