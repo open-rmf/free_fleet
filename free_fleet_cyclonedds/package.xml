@@ -9,6 +9,9 @@
   <depend>free_fleet</depend>
   <depend>cyclonedds</depend>
 
+  <test_depend>ament_cmake_catch2</test_depend>
+  <test_depend>rmf_cmake_uncrustify</test_depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>
