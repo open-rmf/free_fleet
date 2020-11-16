@@ -47,36 +47,34 @@ target_include_directories(free_fleet_cyclonedds
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-# set(tests
-#   test_pub
-#   test_sub
-#   test_pub_transient_local
-#   test_sub_transient_local
-#   test_client
-#   test_state
-#   test_navigation
-#   test_pause
-#   test_resume
-# )
-# foreach(test_target ${tests})
-#   add_executable(${test_target}
-#     src/tests/${test_target}.cpp
-#   )
-#   target_link_libraries(${test_target}
-#     free_fleet_cyclonedds
-#   )
-#   target_include_directories(${test_target}
-#     PUBLIC
-#       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-#   )
-#   install(
-#     TARGETS ${test_target}
-#     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#   )
-# endforeach()
+# Tests
+find_package(ament_cmake_catch2 QUIET)
+find_package(rmf_cmake_uncrustify QUIET)
+if (BUILD_TESTING AND ament_cmake_catch2_FOUND AND rmf_cmake_uncrustify_FOUND)
+  file(GLOB_RECURSE unit_test_srcs "test/*.cpp")
+
+  ament_add_catch2(
+    test_free_fleet_cyclonedds test/main.cpp ${unit_test_srcs}
+    TIMEOUT 300)
+  target_link_libraries(test_free_fleet_cyclonedds
+    free_fleet_cyclonedds
+    rmf_utils::rmf_utils
+    free_fleet::free_fleet
+    CycloneDDS::ddsc
+  )
+  target_include_directories(test_free_fleet_cyclonedds
+    PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/>
+  )
+
+  find_file(uncrustify_config_file NAMES "share/format/rmf_code_style.cfg")
+
+  rmf_uncrustify(
+    ARGN include src test
+    CONFIG_FILE ${uncrustify_config_file}
+    MAX_LINE_LENGTH 80
+  )
+endif()
 
 # Create cmake config files
 include(CMakePackageConfigHelpers)
