@@ -105,5 +105,9 @@ SCENARIO("Verify that publishing and subscribing works")
       }
       CHECK(received);
     }
+    
+    MiddlewareMessages_Location_free(msg, DDS_FREE_ALL);
+    dds_return_t rc = dds_delete(participant);
+    REQUIRE(rc == DDS_RETCODE_OK);
   }
 }

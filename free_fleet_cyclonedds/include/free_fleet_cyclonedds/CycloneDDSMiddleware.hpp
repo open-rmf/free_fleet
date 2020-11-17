@@ -65,6 +65,7 @@ public:
     read_relocalization_request() final;
 
   class Implementation;
+  class Debug;
 private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
   CycloneDDSMiddleware();

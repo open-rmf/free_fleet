@@ -207,5 +207,4 @@ SCENARIO("Verify that these message type subscribers can be created")
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
   }
-
 }

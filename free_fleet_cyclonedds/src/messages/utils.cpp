@@ -53,7 +53,7 @@ void convert(
   output.x = input.x;
   output.y = input.y;
   output.yaw = input.yaw;
-  output.level_name = std::string(input.level_name);
+  output.level_name = input.level_name ? std::string(input.level_name) : "";
 }
 
 //==============================================================================
@@ -88,8 +88,8 @@ void convert(
   const MiddlewareMessages_ModeParameter& input,
   messages::ModeParameter& output)
 {
-  output.name = std::string(input.name);
-  output.value = std::string(input.value);
+  output.name = input.name ? std::string(input.name) : "";
+  output.value = input.value ? std::string(input.value) : "";
 }
 
 //==============================================================================
@@ -115,8 +115,8 @@ void convert(
   const MiddlewareMessages_ModeRequest& input,
   messages::ModeRequest& output)
 {
-  output.robot_name = std::string(input.robot_name);
-  output.task_id = std::string(input.task_id);
+  output.robot_name = input.robot_name ? std::string(input.robot_name) : "";
+  output.task_id = input.task_id ? std::string(input.task_id) : "";
   convert(input.mode, output.mode);
   for (uint32_t i = 0; i < input.parameters._length; ++i)
   {
@@ -148,8 +148,8 @@ void convert(
   const MiddlewareMessages_NavigationRequest& input,
   messages::NavigationRequest& output)
 {
-  output.robot_name = std::string(input.robot_name);
-  output.task_id = std::string(input.task_id);
+  output.robot_name = input.robot_name ? std::string(input.robot_name) : "";
+  output.task_id = input.task_id ? std::string(input.task_id) : "";
   output.path.clear();
   output.path.resize(input.path._length);
   for (uint32_t i = 0; i < input.path._length; ++i)
@@ -171,7 +171,7 @@ void convert(
   messages::RobotMode& output)
 {
   output.mode = input.mode;
-  output.info = std::string(input.info);
+  output.info = input.info ? std::string(input.info) : "";
 }
 
 //==============================================================================
@@ -190,8 +190,8 @@ void convert(
   const MiddlewareMessages_RelocalizationRequest& input,
   messages::RelocalizationRequest& output)
 {
-  output.robot_name = std::string(input.robot_name);
-  output.task_id = std::string(input.task_id);
+  output.robot_name = input.robot_name ? std::string(input.robot_name) : "";
+  output.task_id = input.task_id ? std::string(input.task_id) : "";
   convert(input.location, output.location);
   output.last_visited_index = input.last_visited_index;
 }
@@ -222,9 +222,9 @@ void convert(
     const MiddlewareMessages_RobotState& input,
     messages::RobotState& output)
 {
-  output.name = std::string(input.name);
-  output.model = std::string(input.model);
-  output.task_id = std::string(input.task_id);
+  output.name = input.name ? std::string(input.name) : "";
+  output.model = input.model ? std::string(input.model) : "";
+  output.task_id = input.task_id ? std::string(input.task_id) : "";
   convert(input.mode, output.mode);
   output.battery_percent = input.battery_percent;
   convert(input.location, output.location);

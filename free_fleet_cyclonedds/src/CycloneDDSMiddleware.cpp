@@ -153,7 +153,8 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_server(
       &MiddlewareMessages_RobotState_desc,
       Prefix + fleet_name + "/" + StateTopicName);
 
-  if (!middleware|| !mode_request_pub || !nav_request_pub || !state_sub)
+  if (!middleware || !mode_request_pub || !nav_request_pub || !reloc_request_pub
+    || !state_sub)
   {
     std::cerr << "[ERROR]: Failed to create a server middleware.\n";
     return nullptr;
@@ -186,6 +187,12 @@ void CycloneDDSMiddleware::send_state(const messages::RobotState& state)
 //==============================================================================
 std::vector<messages::RobotState> CycloneDDSMiddleware::read_states()
 {
+  if (!_pimpl->_state_sub)
+  {
+    std::cerr << "Woah, subscriber died suddenly\n";
+    return {};
+  }
+
   auto msgs = _pimpl->_state_sub->read();
   if (!msgs.empty())
   {
