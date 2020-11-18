@@ -53,7 +53,6 @@ public:
   std::string _robot_model;
 
   std::string _task_id;
-  std::string _paused_task_id;
   std::unordered_set<std::string> _task_ids;
 
   std::shared_ptr<CommandHandle> _command_handle;
@@ -118,20 +117,12 @@ void Client::start(uint32_t frequency)
       _pimpl->_is_valid_request(mode_request.value()))
     {
       auto request = mode_request.value();
+      _pimpl->_task_ids.insert(request.task_id);
+      _pimpl->_task_id = request.task_id;
       if (request.mode.mode == messages::RobotMode::MODE_PAUSED)
-      {
-        _pimpl->_task_ids.insert(request.task_id);
-        _pimpl->_paused_task_id = _pimpl->_task_id;
-        _pimpl->_task_id = request.task_id;
         _pimpl->_command_handle->stop();
-      }
       else if (request.mode.mode == messages::RobotMode::MODE_MOVING)
-      {
-        _pimpl->_task_ids.insert(request.task_id);
-        _pimpl->_task_id = _pimpl->_paused_task_id;
-        _pimpl->_paused_task_id = "";
         _pimpl->_command_handle->resume();
-      }
       continue;
     }
     
