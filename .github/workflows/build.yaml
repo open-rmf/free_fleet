@@ -44,7 +44,7 @@ jobs:
   ros2:
     runs-on: ubuntu-20.04
     container:
-      image: docker://ros:foxy-ros-base-bionic
+      image: docker://ros:foxy-ros-base-focal
     steps:
     - name: non-ros-deps
       run: |
