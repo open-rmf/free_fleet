@@ -41,6 +41,9 @@ public:
 
   using SharedPtr = std::shared_ptr<Manager>;
 
+  using NewRobotStateCallback =
+    std::function<void(const messages::RobotState& state)>;
+
   /// Factory function that creates an instance of the Free Fleet Manager.
   ///
   /// \param[in] fleet_name
@@ -50,7 +53,8 @@ public:
   static SharedPtr make(
     const std::string& fleet_name,
     std::shared_ptr<rmf_traffic::agv::Graph> graph,
-    std::shared_ptr<transport::Middleware> middleware);
+    std::shared_ptr<transport::Middleware> middleware,
+    NewRobotStateCallback new_robot_state_callback_fn);
 
   /// Starts the manager which begins to listen for clients.
   ///
