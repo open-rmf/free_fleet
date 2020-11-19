@@ -24,6 +24,7 @@
 #include <rmf_utils/impl_ptr.hpp>
 #include <rmf_utils/optional.hpp>
 
+#include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
 #include <free_fleet/transport/Middleware.hpp>
@@ -41,6 +42,7 @@ public:
 
   using SharedPtr = std::shared_ptr<Manager>;
 
+  using TimeNow = std::function<rmf_traffic::Time()>;
   using NewRobotStateCallback =
     std::function<void(const messages::RobotState& state)>;
 
@@ -54,6 +56,7 @@ public:
     const std::string& fleet_name,
     std::shared_ptr<rmf_traffic::agv::Graph> graph,
     std::shared_ptr<transport::Middleware> middleware,
+    TimeNow time_now_fn,
     NewRobotStateCallback new_robot_state_callback_fn);
 
   /// Starts the manager which begins to listen for clients.
