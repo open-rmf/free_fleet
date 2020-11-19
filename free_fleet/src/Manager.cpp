@@ -26,6 +26,9 @@
 
 #include <free_fleet/Manager.hpp>
 
+#include "agv/RobotInfo.hpp"
+#include "RequestInfo.hpp"
+
 namespace free_fleet {
 
 //==============================================================================
@@ -66,26 +69,34 @@ public:
     const double seconds_per_iteration = 1.0 / _thread_frequency;
     const rmf_traffic::Duration duration_per_iteration =
       rmf_traffic::time::from_seconds(seconds_per_iteration);
-    rmf_traffic::Time t_prev = std::chrono::steady_clock::now();
+    rmf_traffic::Time t_prev = _time_now_fn();
 
     while (_connected())
     {
-      if (std::chrono::steady_clock::now() - t_prev < duration_per_iteration)
+      if (_time_now_fn() - t_prev < duration_per_iteration)
         continue;
+      t_prev = _time_now_fn();
 
       // get states
       auto states = _middleware->read_states();
       std::lock_guard<std::mutex> lock(_mutex);
       for (const auto s : states)
       {
-        bool new_robot = _robots.insert({s.name, s}).second;
+        const auto r_it = _robots.find(s.name);
+        bool new_robot = r_it == _robots.end();
         if (new_robot)
         {
-          std::cout << "Registered new robot: [" << s.name << "]..." << std::endl;
+          _robots[s.name] = std::make_shared<agv::RobotInfo>(
+            agv::RobotInfo{
+              s,
+              _time_now_fn()
+            });
+          std::cout << "Registered new robot: [" << s.name << "]..."
+            << std::endl;
         }
         else
         {
-          _robots[s.name] = s;
+          r_it->second->update_state(s, _time_now_fn());
         }
 
         // Updates external uses of the robot's information
@@ -93,15 +104,15 @@ public:
           _new_robot_state_callback_fn(s);
 
         // for each robot figure out whether any tasks were not received yet
-        const auto it = _unreceived_task_ids.find(s.task_id);
-        if (it != _unreceived_task_ids.end())
-          _unreceived_task_ids.erase(it);
+        const auto t_it = _unreceived_task_ids.find(s.task_id);
+        if (t_it != _unreceived_task_ids.end())
+          _unreceived_task_ids.erase(t_it);
       }
       
       // Send out all unreceived tasks again
-      for (const auto it : _unreceived_task_ids)
+      for (const auto t_it : _unreceived_task_ids)
       {
-        it.second();
+        t_it.second();
       }
     }
   }
@@ -109,12 +120,18 @@ public:
   std::string _fleet_name;
   std::shared_ptr<rmf_traffic::agv::Graph> _graph;
   std::shared_ptr<transport::Middleware> _middleware;
+  TimeNow _time_now_fn;
   NewRobotStateCallback _new_robot_state_callback_fn;
 
-  std::unordered_map<std::string, messages::RobotState> _robots;
+  std::unordered_map<std::string, agv::RobotInfo::SharedPtr> _robots;
+
+  std::unordered_map<std::string, RequestInfo> 
+
 
   using SendRequest = std::function<void()>;
 
+  /// TODO(AA): Keep track of how long the tasks have been sitting here, fail
+  /// commands gracefully after a certain timeout.
   /// TODO(AA): Cull things that happen long after
   std::unordered_map<std::string, SendRequest> _unreceived_task_ids;
   std::unordered_set<std::string> _task_ids;
@@ -129,15 +146,16 @@ Manager::SharedPtr Manager::make(
   const std::string& fleet_name,
   std::shared_ptr<rmf_traffic::agv::Graph> graph,
   std::shared_ptr<transport::Middleware> middleware,
+  TimeNow time_now_fn,
   NewRobotStateCallback new_robot_state_callback_fn)
 {
   SharedPtr manager_ptr(new Manager);
   manager_ptr->_pimpl->_fleet_name = fleet_name;
   manager_ptr->_pimpl->_graph = std::move(graph);
   manager_ptr->_pimpl->_middleware = std::move(middleware);
+  manager_ptr->_pimpl->_time_now_fn = std::move(time_now_fn);
   manager_ptr->_pimpl->_new_robot_state_callback_fn =
     std::move(new_robot_state_callback_fn);
-
   return manager_ptr;
 }
 
@@ -176,7 +194,7 @@ rmf_utils::optional<messages::RobotState> Manager::robot_state(
   const auto it = _pimpl->_robots.find(robot_name);
   if (it == _pimpl->_robots.end())
     return rmf_utils::nullopt;
-  return it->second;
+  return it->second->state();
 }
 
 //==============================================================================
@@ -187,7 +205,7 @@ std::vector<messages::RobotState> Manager::robot_states()
   states.reserve(_pimpl->_robots.size());
   for (const auto it : _pimpl->_robots)
   {
-    states.push_back(it.second);
+    states.push_back(it.second->state());
   }
   return states;
 }
