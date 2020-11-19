@@ -228,7 +228,7 @@ void Manager::send_mode_request(const messages::ModeRequest& request)
     },
       _pimpl->_time_now_fn()));
   _pimpl->_unreceived_task_ids[request.task_id] =
-    reinterpret_cast<std::shared_ptr<requests::RequestInfo>>(request_info);
+    std::dynamic_pointer_cast<requests::RequestInfo>(request_info);
 }
 
 //==============================================================================
@@ -250,7 +250,7 @@ void Manager::send_navigation_request(
     },
       _pimpl->_time_now_fn()));
   _pimpl->_unreceived_task_ids[request.task_id] =
-    reinterpret_cast<std::shared_ptr<requests::RequestInfo>>(request_info);
+    std::dynamic_pointer_cast<requests::RequestInfo>(request_info);
 }
 
 //==============================================================================
@@ -272,7 +272,7 @@ void Manager::send_relocalization_request(
     },
       _pimpl->_time_now_fn()));
   _pimpl->_unreceived_task_ids[request.task_id] =
-    reinterpret_cast<std::shared_ptr<requests::RequestInfo>>(request_info);
+    std::dynamic_pointer_cast<requests::RequestInfo>(request_info);
 }
 
 //==============================================================================
