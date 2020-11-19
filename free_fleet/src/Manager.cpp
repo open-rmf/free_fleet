@@ -27,7 +27,10 @@
 #include <free_fleet/Manager.hpp>
 
 #include "agv/RobotInfo.hpp"
-#include "RequestInfo.hpp"
+#include "requests/RequestInfo.hpp"
+#include "requests/ModeRequestInfo.hpp"
+#include "requests/NavigationRequestInfo.hpp"
+#include "requests/RelocalizationRequestInfo.hpp"
 
 namespace free_fleet {
 
@@ -112,7 +115,7 @@ public:
       // Send out all unreceived tasks again
       for (const auto t_it : _unreceived_task_ids)
       {
-        t_it.second();
+        t_it.second->send_request();
       }
     }
   }
@@ -125,15 +128,12 @@ public:
 
   std::unordered_map<std::string, agv::RobotInfo::SharedPtr> _robots;
 
-  std::unordered_map<std::string, RequestInfo> 
-
-
-  using SendRequest = std::function<void()>;
-
   /// TODO(AA): Keep track of how long the tasks have been sitting here, fail
   /// commands gracefully after a certain timeout.
   /// TODO(AA): Cull things that happen long after
-  std::unordered_map<std::string, SendRequest> _unreceived_task_ids;
+  // std::unordered_map<std::string, requests::RequestInfo::SharedPtr>
+  std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+    _unreceived_task_ids; 
   std::unordered_set<std::string> _task_ids;
 
   std::mutex _mutex;
@@ -219,11 +219,16 @@ void Manager::send_mode_request(const messages::ModeRequest& request)
   _pimpl->_middleware->send_mode_request(request);
 
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
+  auto request_info = std::make_shared<requests::ModeRequestInfo>(
+    requests::ModeRequestInfo(
+      request,
+      [this](const messages::ModeRequest& request_msg)
+    {
+      this->_pimpl->_middleware->send_mode_request(request_msg);
+    },
+      _pimpl->_time_now_fn()));
   _pimpl->_unreceived_task_ids[request.task_id] =
-    [this, request]()
-  {
-    this->_pimpl->_middleware->send_mode_request(request);
-  };
+    reinterpret_cast<std::shared_ptr<requests::RequestInfo>>(request_info);
 }
 
 //==============================================================================
@@ -236,11 +241,16 @@ void Manager::send_navigation_request(
   _pimpl->_middleware->send_navigation_request(request);
 
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
+  auto request_info = std::make_shared<requests::NavigationRequestInfo>(
+    requests::NavigationRequestInfo(
+      request,
+      [this](const messages::NavigationRequest& request_msg)
+    {
+      this->_pimpl->_middleware->send_navigation_request(request_msg);
+    },
+      _pimpl->_time_now_fn()));
   _pimpl->_unreceived_task_ids[request.task_id] =
-    [this, request]()
-  {
-    this->_pimpl->_middleware->send_navigation_request(request);
-  };
+    reinterpret_cast<std::shared_ptr<requests::RequestInfo>>(request_info);
 }
 
 //==============================================================================
@@ -253,11 +263,16 @@ void Manager::send_relocalization_request(
   _pimpl->_middleware->send_relocalization_request(request);
 
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
+  auto request_info = std::make_shared<requests::RelocalizationRequestInfo>(
+    requests::RelocalizationRequestInfo(
+      request,
+      [this](const messages::RelocalizationRequest& request_msg)
+    {
+      this->_pimpl->_middleware->send_relocalization_request(request_msg);
+    },
+      _pimpl->_time_now_fn()));
   _pimpl->_unreceived_task_ids[request.task_id] =
-    [this, request]
-  {
-    this->_pimpl->_middleware->send_relocalization_request(request);
-  };
+    reinterpret_cast<std::shared_ptr<requests::RequestInfo>>(request_info);
 }
 
 //==============================================================================

@@ -22,9 +22,8 @@
 
 #include <rmf_traffic/Time.hpp>
 
-#include <free_fleet/Manager.hpp>
-
 namespace free_fleet {
+namespace requests {
 
 class RequestInfo
 {
@@ -32,21 +31,43 @@ public:
 
   using SharedPtr = std::shared_ptr<RequestInfo>;
 
+  /// Enum class to figure out what Request type this info is handling.
+  enum class RequestType : uint8_t
+  {
+    ModeRequest,
+    NavigationRequest,
+    RelocalizationRequest
+  };
+
   /// Base constructor
-  RequestInfo(rmf_traffic::Time time_now)
-  : _request_start_time(time_now)
+  RequestInfo(
+    rmf_traffic::Time time_now,
+    RequestType request_type)
+  : _request_start_time(time_now),
+    _request_type(request_type)
   {}
 
   /// The time stamp of when the request was initiated.
-  rmf_traffic::Time request_start_time()
+  rmf_traffic::Time request_start_time() const
   {
     return _request_start_time;
   }
 
+  /// Gets the type of request
+  RequestType request_type() const
+  {
+    return _request_type;
+  }
+
+  /// 
+  virtual void send_request() const = 0;
+
 private:
   rmf_traffic::Time _request_start_time;
-}
+  RequestType _request_type;
+};
 
+} // namespace requests
 } // namespace free_fleet
 
 #endif // SRC__REQUESTS__REQUESTINFO_HPP
