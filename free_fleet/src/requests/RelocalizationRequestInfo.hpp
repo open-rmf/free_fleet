@@ -15,36 +15,37 @@
  *
 */
 
-#ifndef SRC__REQUESTS__NAVIGATIONREQUESTINFO_HPP
-#define SRC__REQUESTS__NAVIGATIONREQUESTINFO_HPP
+#ifndef SRC__REQUESTS__RELOCALIZATIONREQUESTINFO_HPP
+#define SRC__REQUESTS__RELOCALIZATIONREQUESTINFO_HPP
 
 #include <functional>
 
-#include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RelocalizationRequest.hpp>
 
 #include "RequestInfo.hpp"
 
 namespace free_fleet {
 namespace requests {
 
-class NavigationRequestInfo : public RequestInfo
+class RelocalizationRequestInfo : public RequestInfo
 {
 public:
 
-  using SendRequest = std::function<void (const messages::NavigationRequest&)>;
+  using SendRequest = 
+    std::function<void (const messages::RelocalizationRequest&)>;
 
   /// Constructor
-  NavigationRequestInfo(
-    const messages::NavigationRequest& request,
+  RelocalizationRequestInfo(
+    const messages::RelocalizationRequest& request,
     SendRequest send_request_fn,
     rmf_traffic::Time time_now)
-  : RequestInfo(time_now, RequestType::NavigationRequest),
+  : RequestInfo(time_now, RequestType::RelocalizationRequest),
     _request(request),
     _send_request_fn(std::move(send_request_fn))
   {}
 
   /// Gets the request message.
-  const messages::NavigationRequest& request() const
+  const messages::RelocalizationRequest& request() const
   {
     return _request;
   }
@@ -57,11 +58,11 @@ public:
   }
 
 private:
-  messages::NavigationRequest _request;
+  messages::RelocalizationRequest _request;
   SendRequest _send_request_fn;
 };
 
 } // namespace requests
 } // namespace free_fleet
 
-#endif // SRC__REQUESTS__NAVIGATIONREQUESTINFO_HPP
+#endif // SRC__REQUESTS__RELOCALIZATIONREQUESTINFO_HPP
