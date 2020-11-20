@@ -29,6 +29,10 @@
 
 #include <free_fleet/transport/Middleware.hpp>
 
+#include <free_fleet/messages/Waypoint.hpp>
+#include <free_fleet/messages/ModeParameter.hpp>
+
+
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
@@ -51,6 +55,8 @@ public:
   /// \param[in] fleet_name
   /// \param[in] graph
   /// \param[in] middleware
+  /// \param[in] time_now_fn
+  /// \param[in] new_robot_state_callback_fn
   /// \return
   static SharedPtr make(
     const std::string& fleet_name,
@@ -82,24 +88,64 @@ public:
   /// \return
   std::vector<messages::RobotState> robot_states();
 
-  /// Sends out a mode request to a robot. The name of the robot can be
-  /// retrieved from the contents of the message.
+  /// Sends out a mode request to a robot.
   ///
-  /// \param[in] request
-  void send_mode_request(const messages::ModeRequest& request);
+  /// \param[in] robot_name
+  ///   Name of robot that the request is targeted at.
+  ///
+  /// \param[in] mode
+  ///   Desired robot mode.
+  ///
+  /// \param[in] parameters
+  ///   Optional parameters for a mode request.
+  ///
+  /// \return
+  ///   Optional of the task ID for this particular request. Returns a nullopt
+  ///   if there does not exist a robot of the provided name.
+  rmf_utils::optional<std::string> send_mode_request(
+    const std::string& robot_name,
+    const messages::RobotMode& mode,
+    std::vector<messages::ModeParameter> parameters);
 
-  /// Sends out a navigation request to a robot. The name of the robot can be
-  /// retrieved from the contents of the message.
+  /// Sends out a navigation request.
   ///
-  /// \param[in] request
-  void send_navigation_request(const messages::NavigationRequest& request);
+  /// \param[in] robot_name
+  ///   Name of the robot that the request is targeted at.
+  ///
+  /// \param[in] path
+  ///   Desired path of waypoints that the robot should follow.
+  ///
+  /// \return
+  ///   Optional of the task ID for this particular request. Returns a nullopt
+  ///   if there does not exist a robot of the provided name, if the provided
+  ///   path is empty, or if the waypoints are all non-conforming to the
+  ///   navigation graph of the manager.
+  rmf_utils::optional<std::string> send_navigation_request(
+    const std::string& robot_name,
+    const std::vector<messages::Waypoint>& path);
 
-  /// Sends out a relocalization request to a robot. The name of the robot can
-  /// be retrieved from the contents of the message.
+  /// Sends out a relocalization request.
   ///
-  /// \param[in] request
-  void send_relocalization_request(
-    const messages::RelocalizationRequest& request);
+  /// \param[in] robot_name
+  ///   Name of the robot that the request is targeted at.
+  ///
+  /// \param[in] location
+  ///   Desired relocalization location for the robot.
+  ///
+  /// \param[in] last_visited_index
+  ///   The last visited or nearest waypoint index on the navigation graph of
+  ///   the robot, for it to continue tracking its progress through the graph.
+  ///
+  /// \return
+  ///   Optional of the task ID for this particular request. Returns a nullopt
+  ///   if there does not exist a robot of the provided name, if the last
+  ///   visited waypoint index does not exist in the navigation graph, or if the
+  ///   desired relocalization location is too far away from the last visited
+  ///   waypoint.
+  rmf_utils::optional<std::string> send_relocalization_request(
+    const std::string& robot_name,
+    const messages::Location& location,
+    uint32_t last_visited_index);
 
   class Implementation;
 private:
