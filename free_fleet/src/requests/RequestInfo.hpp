@@ -21,6 +21,7 @@
 #include <memory>
 
 #include <rmf_traffic/Time.hpp>
+#include <rmf_utils/optional.hpp>
 
 namespace free_fleet {
 namespace requests {
@@ -43,14 +44,36 @@ public:
   RequestInfo(
     rmf_traffic::Time time_now,
     RequestType request_type)
-  : _request_start_time(time_now),
+  : _init_time(time_now),
+    _acknowledged_time(rmf_utils::nullopt),
     _request_type(request_type)
   {}
 
   /// The time stamp of when the request was initiated.
-  rmf_traffic::Time request_start_time() const
+  rmf_traffic::Time init_time() const
   {
-    return _request_start_time;
+    return _init_time;
+  }
+
+  /// Whether the request has been acknowledged.
+  bool acknowledged() const
+  {
+    return _acknowledged_time.has_value();
+  }
+
+  /// Time stamp of when the request was acknowledged.
+  ///
+  /// \return
+  ///   Returns a nullopt if the request has not been acknowledged.
+  rmf_utils::optional<rmf_traffic::Time> acknowledged_time() const
+  {
+    return _acknowledged_time;
+  }
+
+  /// Sets the time that this request was acknowledged.
+  void acknowledged_time(rmf_traffic::Time time)
+  {
+    _acknowledged_time = time;
   }
 
   /// Gets the type of request
@@ -63,7 +86,8 @@ public:
   virtual void send_request() const = 0;
 
 private:
-  rmf_traffic::Time _request_start_time;
+  rmf_traffic::Time _init_time;
+  rmf_utils::optional<rmf_traffic::Time> _acknowledged_time;
   RequestType _request_type;
 };
 

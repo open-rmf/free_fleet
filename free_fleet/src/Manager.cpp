@@ -56,17 +56,6 @@ public:
     return _middleware && _graph;
   }
 
-  template<class T>
-  bool _is_request_valid(const T& request)
-  {
-    std::lock_guard<std::mutex> lock(_mutex);
-    const auto r_it = _robots.find(request.robot_name);
-    const auto t_it = _task_ids.find(request.task_id);
-    if (r_it == _robots.end() || t_it != _task_ids.end())
-      return false;
-    return true;
-  }
-
   void _thread_fn()
   {
     const double seconds_per_iteration = 1.0 / _thread_frequency;
@@ -107,13 +96,16 @@ public:
           _new_robot_state_callback_fn(s);
 
         // for each robot figure out whether any tasks were not received yet
-        const auto t_it = _unreceived_task_ids.find(s.task_id);
-        if (t_it != _unreceived_task_ids.end())
-          _unreceived_task_ids.erase(t_it);
+        const auto t_it = _unacknowledged_tasks.find(s.task_id);
+        if (t_it != _unacknowledged_tasks.end())
+        {
+          t_it->second->acknowledged_time(_time_now_fn());
+          _unacknowledged_tasks.erase(t_it);
+        }
       }
       
       // Send out all unreceived tasks again
-      for (const auto t_it : _unreceived_task_ids)
+      for (const auto t_it : _unacknowledged_tasks)
       {
         t_it.second->send_request();
       }
@@ -131,10 +123,29 @@ public:
   /// TODO(AA): Keep track of how long the tasks have been sitting here, fail
   /// commands gracefully after a certain timeout.
   /// TODO(AA): Cull things that happen long after
-  // std::unordered_map<std::string, requests::RequestInfo::SharedPtr>
+  /// _tasks hold everything, check this for task ID existence
+  /// _unreceived_tasks only hold onto tasks that have not been acknowledged
+  /// _timed_out_tasks only hold onto tasks that have not been acknowledged for
+  /// more than the timeout period.
+  // std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+  //   _tasks;
+  // std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+  //   _unreceived_tasks;
+  // std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+  //   _timed_out_tasks;
+  // std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+  //   _acknow
+  // std::unordered_set<std::string> _task_ids;
+
+  ///
+  int _current_task_id = -1;
   std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
-    _unreceived_task_ids; 
-  std::unordered_set<std::string> _task_ids;
+    _tasks;
+  std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+    _robot_tasks;
+  std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+    _unacknowledged_tasks;
+
 
   std::mutex _mutex;
   std::thread _thread;
@@ -211,15 +222,21 @@ std::vector<messages::RobotState> Manager::robot_states()
 }
 
 //==============================================================================
-void Manager::send_mode_request(const messages::ModeRequest& request)
+rmf_utils::optional<std::string> Manager::send_mode_request(
+  const std::string& robot_name,
+  const messages::RobotMode& mode,
+  std::vector<messages::ModeParameter> parameters)
 {
-  if (!_pimpl->_is_request_valid(request))
-    return;
-
-  _pimpl->_middleware->send_mode_request(request);
-
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
-  auto request_info = std::make_shared<requests::ModeRequestInfo>(
+  if (_pimpl->_robots.find(robot_name) == _pimpl->_robots.end())
+    return rmf_utils::nullopt;
+
+  messages::ModeRequest request{
+    robot_name,
+    std::to_string(++_pimpl->_current_task_id),
+    mode,
+    parameters};
+  auto mode_request_info = std::make_shared<requests::ModeRequestInfo>(
     requests::ModeRequestInfo(
       request,
       [this](const messages::ModeRequest& request_msg)
@@ -227,52 +244,104 @@ void Manager::send_mode_request(const messages::ModeRequest& request)
       this->_pimpl->_middleware->send_mode_request(request_msg);
     },
       _pimpl->_time_now_fn()));
-  _pimpl->_unreceived_task_ids[request.task_id] =
-    std::dynamic_pointer_cast<requests::RequestInfo>(request_info);
+  
+  auto request_info =
+    std::dynamic_pointer_cast<requests::RequestInfo>(mode_request_info);
+  _pimpl->_tasks[request.task_id] = request_info;
+  _pimpl->_unacknowledged_tasks[request.task_id] = request_info;
+
+  _pimpl->_middleware->send_mode_request(request);
+  return std::to_string(_pimpl->_current_task_id);
 }
 
 //==============================================================================
-void Manager::send_navigation_request(
-  const messages::NavigationRequest& request)
+rmf_utils::optional<std::string> Manager::send_navigation_request(
+  const std::string& robot_name,
+  const std::vector<messages::Waypoint>& path)
 {
-  if (!_pimpl->_is_request_valid(request))
-    return;
-
-  _pimpl->_middleware->send_navigation_request(request);
-
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
-  auto request_info = std::make_shared<requests::NavigationRequestInfo>(
-    requests::NavigationRequestInfo(
+  if (path.empty() || 
+    _pimpl->_robots.find(robot_name) == _pimpl->_robots.end())
+    return rmf_utils::nullopt;
+
+  const std::size_t num_wp = _pimpl->_graph->num_waypoints();
+  for (const auto wp : path)
+  {
+    std::size_t wp_index = static_cast<std::size_t>(wp.index);
+    if (wp_index >= num_wp)
+      return rmf_utils::nullopt;
+    
+    const auto g_wp = _pimpl->_graph->get_waypoint(wp_index);
+    const Eigen::Vector2d provided_loc {wp.location.x, wp.location.y};
+    if (g_wp.get_map_name() != wp.location.level_name ||
+      (provided_loc - g_wp.get_location()).norm() > 1e-3)
+      return rmf_utils::nullopt;
+  }
+
+  messages::NavigationRequest request{
+    robot_name,
+    std::to_string(++_pimpl->_current_task_id),
+    path};
+  auto navigation_request_info =
+    std::make_shared<requests::NavigationRequestInfo>(
       request,
       [this](const messages::NavigationRequest& request_msg)
-    {
-      this->_pimpl->_middleware->send_navigation_request(request_msg);
-    },
-      _pimpl->_time_now_fn()));
-  _pimpl->_unreceived_task_ids[request.task_id] =
-    std::dynamic_pointer_cast<requests::RequestInfo>(request_info);
+  {
+    this->_pimpl->_middleware->send_navigation_request(request_msg);
+  },
+      _pimpl->_time_now_fn());
+
+  auto request_info =
+    std::dynamic_pointer_cast<requests::RequestInfo>(navigation_request_info);
+  _pimpl->_tasks[request.task_id] = request_info;
+  _pimpl->_unacknowledged_tasks[request.task_id] = request_info;
+
+  _pimpl->_middleware->send_navigation_request(request);
+  return std::to_string(_pimpl->_current_task_id);
 }
 
 //==============================================================================
-void Manager::send_relocalization_request(
-  const messages::RelocalizationRequest& request)
+rmf_utils::optional<std::string> Manager::send_relocalization_request(
+  const std::string& robot_name,
+  const messages::Location& location,
+  uint32_t last_visited_index)
 {
-  if (!_pimpl->_is_request_valid(request))
-    return;
-
-  _pimpl->_middleware->send_relocalization_request(request);
-
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
-  auto request_info = std::make_shared<requests::RelocalizationRequestInfo>(
-    requests::RelocalizationRequestInfo(
+  if (_pimpl->_robots.find(robot_name) == _pimpl->_robots.end() ||
+    last_visited_index >= _pimpl->_graph->num_waypoints())
+    return rmf_utils::nullopt;
+
+  auto wp =
+    _pimpl->_graph->get_waypoint(static_cast<std::size_t>(last_visited_index));
+  const double dist_from_wp =
+    (Eigen::Vector2d{location.x, location.y} - wp.get_location()).norm();
+  if (dist_from_wp >= 10.0)
+  {
+    return rmf_utils::nullopt;
+  }
+
+  messages::RelocalizationRequest request{
+    robot_name,
+    std::to_string(++_pimpl->_current_task_id),
+    location,
+    last_visited_index};
+  auto relocalization_request_info =
+    std::make_shared<requests::RelocalizationRequestInfo>(
       request,
       [this](const messages::RelocalizationRequest& request_msg)
-    {
-      this->_pimpl->_middleware->send_relocalization_request(request_msg);
-    },
-      _pimpl->_time_now_fn()));
-  _pimpl->_unreceived_task_ids[request.task_id] =
-    std::dynamic_pointer_cast<requests::RequestInfo>(request_info);
+  {
+    this->_pimpl->_middleware->send_relocalization_request(request_msg);
+  },
+      _pimpl->_time_now_fn());
+
+  auto request_info =
+    std::dynamic_pointer_cast<requests::RequestInfo>(
+      relocalization_request_info);
+  _pimpl->_tasks[request.task_id] = request_info;
+  _pimpl->_unacknowledged_tasks[request.task_id] = request_info;
+
+  _pimpl->_middleware->send_relocalization_request(request);
+  return std::to_string(_pimpl->_current_task_id);
 }
 
 //==============================================================================
