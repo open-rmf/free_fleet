@@ -28,10 +28,10 @@
 #include <rmf_traffic/agv/Graph.hpp>
 
 #include <free_fleet/transport/Middleware.hpp>
+#include <free_fleet/CoordinateTransformer.hpp>
 
 #include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/ModeParameter.hpp>
-
 
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/ModeRequest.hpp>
@@ -55,6 +55,7 @@ public:
   /// \param[in] fleet_name
   /// \param[in] graph
   /// \param[in] middleware
+  /// \param[in] transformer
   /// \param[in] time_now_fn
   /// \param[in] new_robot_state_callback_fn
   /// \return
@@ -62,6 +63,7 @@ public:
     const std::string& fleet_name,
     std::shared_ptr<rmf_traffic::agv::Graph> graph,
     std::shared_ptr<transport::Middleware> middleware,
+    std::shared_ptr<CoordinateTransformer> transformer,
     TimeNow time_now_fn,
     NewRobotStateCallback new_robot_state_callback_fn);
 

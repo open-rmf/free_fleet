@@ -116,6 +116,7 @@ public:
   std::string _fleet_name;
   std::shared_ptr<rmf_traffic::agv::Graph> _graph;
   std::shared_ptr<transport::Middleware> _middleware;
+  std::shared_ptr<CoordinateTransformer> _transformer;
   TimeNow _time_now_fn;
   NewRobotStateCallback _new_robot_state_callback_fn;
 
@@ -139,6 +140,7 @@ Manager::SharedPtr Manager::make(
   const std::string& fleet_name,
   std::shared_ptr<rmf_traffic::agv::Graph> graph,
   std::shared_ptr<transport::Middleware> middleware,
+  std::shared_ptr<CoordinateTransformer> transformer,
   TimeNow time_now_fn,
   NewRobotStateCallback new_robot_state_callback_fn)
 {
@@ -146,6 +148,7 @@ Manager::SharedPtr Manager::make(
   manager_ptr->_pimpl->_fleet_name = fleet_name;
   manager_ptr->_pimpl->_graph = std::move(graph);
   manager_ptr->_pimpl->_middleware = std::move(middleware);
+  manager_ptr->_pimpl->_transformer = std::move(transformer);
   manager_ptr->_pimpl->_time_now_fn = std::move(time_now_fn);
   manager_ptr->_pimpl->_new_robot_state_callback_fn =
     std::move(new_robot_state_callback_fn);
@@ -247,6 +250,7 @@ rmf_utils::optional<std::string> Manager::send_navigation_request(
     return rmf_utils::nullopt;
 
   const std::size_t num_wp = _pimpl->_graph->num_waypoints();
+  std::vector<messages::Waypoint> transformed_path;
   for (const auto wp : path)
   {
     std::size_t wp_index = static_cast<std::size_t>(wp.index);
@@ -258,12 +262,17 @@ rmf_utils::optional<std::string> Manager::send_navigation_request(
     if (g_wp.get_map_name() != wp.location.level_name ||
       (provided_loc - g_wp.get_location()).norm() > 1e-3)
       return rmf_utils::nullopt;
+
+    transformed_path.push_back(
+      messages::Waypoint{
+        wp.index,
+        _pimpl->_transformer->forward_transform(wp.location)});
   }
 
   messages::NavigationRequest request{
     robot_name,
     std::to_string(++_pimpl->_current_task_id),
-    path};
+    transformed_path};
   auto navigation_request_info =
     std::make_shared<requests::NavigationRequestInfo>(
       request,

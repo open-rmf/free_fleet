@@ -17,12 +17,12 @@
 
 #include <Eigen/Geometry>
 
-#include <free_fleet/FrameTransformer.hpp>
+#include <free_fleet/CoordinateTransformer.hpp>
 
 namespace free_fleet {
 
 //==============================================================================
-class FrameTransformer::Implementation
+class CoordinateTransformer::Implementation
 {
 public:
 
@@ -32,28 +32,27 @@ public:
 };
 
 //==============================================================================
-FrameTransformer::SharedPtr FrameTransformer::make(
+CoordinateTransformer::SharedPtr CoordinateTransformer::make(
   double scale,
   double translation_x,
   double translation_y,
   double rotation_yaw)
 {
-  SharedPtr frame_transformer(new FrameTransformer);
-  frame_transformer->_pimpl->_scale = scale;
-  frame_transformer->_pimpl->_rotation_yaw = rotation_yaw;
-  frame_transformer->_pimpl->_translation = {translation_x, translation_y};
-  return frame_transformer;
+  SharedPtr transformer(new CoordinateTransformer);
+  transformer->_pimpl->_scale = scale;
+  transformer->_pimpl->_rotation_yaw = rotation_yaw;
+  transformer->_pimpl->_translation = {translation_x, translation_y};
+  return transformer;
 }
 
 //==============================================================================
-FrameTransformer::FrameTransformer()
+CoordinateTransformer::CoordinateTransformer()
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
 {}
 
 //==============================================================================
-void FrameTransformer::forward_transform(
-  const messages::Location& input,
-  messages::Location& output)
+messages::Location CoordinateTransformer::forward_transform(
+  const messages::Location& input)
 {
   const Eigen::Vector2d scaled =
     _pimpl->_scale * Eigen::Vector2d(input.x, input.y);
@@ -61,7 +60,7 @@ void FrameTransformer::forward_transform(
     Eigen::Rotation2D<double>(_pimpl->_rotation_yaw) * scaled;
   const Eigen::Vector2d translated = rotated + _pimpl->_translation;
   
-  output = messages::Location{
+  return messages::Location{
     input.sec,
     input.nanosec,
     translated[0],
@@ -71,9 +70,8 @@ void FrameTransformer::forward_transform(
 }
 
 //==============================================================================
-void FrameTransformer::backward_transform(
-  const messages::Location& input,
-  messages::Location& output)
+messages::Locatino CoordinateTransformer::backward_transform(
+  const messages::Location& input)
 {
   const Eigen::Vector2d translated =
     Eigen::Vector2d(input.x, input.y) - _pimpl->_translation;
@@ -81,7 +79,7 @@ void FrameTransformer::backward_transform(
     Eigen::Rotation2D<double>(-_pimpl->_rotation_yaw) * translated;
   const Eigen::Vector2d scaled = 1.0 / _pimpl->_scale * rotated;
 
-  output = messages::Location{
+  return messages::Location{
     input.sec,
     input.nanosec,
     scaled[0],
