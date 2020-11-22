@@ -6,6 +6,8 @@ include(CMakeFindDependencyMacro)
 
 find_dependency(rmf_utils REQUIRED)
 find_dependency(rmf_traffic REQUIRED)
+find_dependency(Eigen3 REQUIRED)
+find_dependency(Threads REQUIRED)
 
 if(NOT TARGET free_fleet::free_fleet)
     include("${free_fleet_CMAKE_DIR}/free_fleet-targets.cmake")

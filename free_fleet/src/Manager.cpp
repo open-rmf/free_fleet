@@ -81,6 +81,7 @@ public:
           _robots[s.name] = std::make_shared<agv::RobotInfo>(
             agv::RobotInfo{
               s,
+              _graph,
               _time_now_fn()
             });
           std::cout << "Registered new robot: [" << s.name << "]..."
@@ -120,24 +121,6 @@ public:
 
   std::unordered_map<std::string, agv::RobotInfo::SharedPtr> _robots;
 
-  /// TODO(AA): Keep track of how long the tasks have been sitting here, fail
-  /// commands gracefully after a certain timeout.
-  /// TODO(AA): Cull things that happen long after
-  /// _tasks hold everything, check this for task ID existence
-  /// _unreceived_tasks only hold onto tasks that have not been acknowledged
-  /// _timed_out_tasks only hold onto tasks that have not been acknowledged for
-  /// more than the timeout period.
-  // std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
-  //   _tasks;
-  // std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
-  //   _unreceived_tasks;
-  // std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
-  //   _timed_out_tasks;
-  // std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
-  //   _acknow
-  // std::unordered_set<std::string> _task_ids;
-
-  ///
   int _current_task_id = -1;
   std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
     _tasks;
@@ -145,7 +128,6 @@ public:
     _robot_tasks;
   std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
     _unacknowledged_tasks;
-
 
   std::mutex _mutex;
   std::thread _thread;

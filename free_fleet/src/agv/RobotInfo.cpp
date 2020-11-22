@@ -23,12 +23,14 @@ namespace agv {
 //==============================================================================
 RobotInfo::RobotInfo(
   const messages::RobotState& state,
+  std::shared_ptr<rmf_traffic::agv::Graph> graph,
   rmf_traffic::Time time_now)
 : _name(state.name),
   _model(state.model),
   _first_found(time_now),
   _last_updated(time_now),
-  _state(state)
+  _state(state),
+  _graph(std::move(graph))
 {}
 
 //==============================================================================
@@ -63,7 +65,7 @@ rmf_traffic::Time RobotInfo::first_found() const
 
 //==============================================================================
 void RobotInfo::update_state(
-  const message::RobotState& new_state,
+  const messages::RobotState& new_state,
   rmf_traffic::Time time_now)
 {
   if (_name != new_state.name)
@@ -71,6 +73,9 @@ void RobotInfo::update_state(
 
   _state = new_state;
   _last_updated = time_now;
+
+  // keep track of where it is in the navigation graph
+  // have an instance of where the last waypoint was
 }
 
 //==============================================================================
