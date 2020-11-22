@@ -82,6 +82,7 @@ private:
 
   std::shared_ptr<rmf_traffic::agv::Graph> _graph;
   rmf_utils::optional<std::size_t> _last_known_wp;
+  rmf_utils::optional<std::size_t> _lane_occupied;
 
   messages::RobotState _state;
 };

@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__FRAMETRANSFORMER_HPP
-#define INCLUDE__FREE_FLEET__FRAMETRANSFORMER_HPP
+#ifndef INCLUDE__FREE_FLEET__COORDINATETRANSFORMER_HPP
+#define INCLUDE__FREE_FLEET__COORDINATETRANSFORMER_HPP
 
 #include <memory>
 
@@ -26,11 +26,11 @@
 
 namespace free_fleet {
 
-class FrameTransformer
+class CoordinateTransformer
 {
 public:
 
-  using SharedPtr = std::shared_ptr<FrameTransformer>;
+  using SharedPtr = std::shared_ptr<CoordinateTransformer>;
 
   ///
   static SharedPtr make(
@@ -40,21 +40,17 @@ public:
     double rotation_yaw);
 
   ///
-  void forward_transform(
-    const messages::Location& input,
-    messages::Location& output);
+  messages::Location forward_transform(const messages::Location& input) const;
 
   ///
-  void backward_transform(
-    const messages::Location& input,
-    messages::Location& output);
+  messages::Location backward_transform(const messages::Location& input) const;
 
   class Implementation;
 private:
-  FrameTransformer();
+  CoordinateTransformer();
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__FRAMETRANSFORMER_HPP
+#endif // INCLUDE__FREE_FLEET__COORDINATETRANSFORMER_HPP
