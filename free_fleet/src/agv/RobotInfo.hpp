@@ -23,6 +23,7 @@
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_utils/impl_ptr.hpp>
+#include <rmf_traffic/agv/Graph.hpp>
 
 #include <free_fleet/Manager.hpp>
 #include <free_fleet/messages/Location.hpp>
@@ -70,6 +71,7 @@ private:
 
   RobotInfo(
     const messages::RobotState& state,
+    std::shared_ptr<rmf_traffic::agv::Graph> graph,
     rmf_traffic::Time time_now);
 
   std::string _name;
@@ -77,6 +79,9 @@ private:
 
   rmf_traffic::Time _first_found;
   rmf_traffic::Time _last_updated;
+
+  std::shared_ptr<rmf_traffic::agv::Graph> _graph;
+  rmf_utils::optional<std::size_t> _last_known_wp;
 
   messages::RobotState _state;
 };
