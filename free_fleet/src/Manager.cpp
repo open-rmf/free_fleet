@@ -74,13 +74,22 @@ public:
       std::lock_guard<std::mutex> lock(_mutex);
       for (const auto s : states)
       {
+        messages::RobotState transformed_state{
+          s.name,
+          s.model,
+          s.task_id,
+          s.mode,
+          s.battery_percent,
+          _to_robot_transform->backward_transform(s.location),
+          s.path};
+
         const auto r_it = _robots.find(s.name);
         bool new_robot = r_it == _robots.end();
         if (new_robot)
         {
           _robots[s.name] = std::make_shared<agv::RobotInfo>(
             agv::RobotInfo{
-              s,
+              transformed_state,
               _graph,
               _time_now_fn()
             });
@@ -89,7 +98,7 @@ public:
         }
         else
         {
-          r_it->second->update_state(s, _time_now_fn());
+          r_it->second->update_state(transformed_state, _time_now_fn());
         }
 
         // Updates external uses of the robot's information
@@ -116,7 +125,7 @@ public:
   std::string _fleet_name;
   std::shared_ptr<rmf_traffic::agv::Graph> _graph;
   std::shared_ptr<transport::Middleware> _middleware;
-  std::shared_ptr<CoordinateTransformer> _transformer;
+  std::shared_ptr<CoordinateTransformer> _to_robot_transform;
   TimeNow _time_now_fn;
   NewRobotStateCallback _new_robot_state_callback_fn;
 
@@ -140,7 +149,7 @@ Manager::SharedPtr Manager::make(
   const std::string& fleet_name,
   std::shared_ptr<rmf_traffic::agv::Graph> graph,
   std::shared_ptr<transport::Middleware> middleware,
-  std::shared_ptr<CoordinateTransformer> transformer,
+  std::shared_ptr<CoordinateTransformer> to_robot_transform,
   TimeNow time_now_fn,
   NewRobotStateCallback new_robot_state_callback_fn)
 {
@@ -148,7 +157,7 @@ Manager::SharedPtr Manager::make(
   manager_ptr->_pimpl->_fleet_name = fleet_name;
   manager_ptr->_pimpl->_graph = std::move(graph);
   manager_ptr->_pimpl->_middleware = std::move(middleware);
-  manager_ptr->_pimpl->_transformer = std::move(transformer);
+  manager_ptr->_pimpl->_to_robot_transform = std::move(to_robot_transform);
   manager_ptr->_pimpl->_time_now_fn = std::move(time_now_fn);
   manager_ptr->_pimpl->_new_robot_state_callback_fn =
     std::move(new_robot_state_callback_fn);
@@ -266,7 +275,7 @@ rmf_utils::optional<std::string> Manager::send_navigation_request(
     transformed_path.push_back(
       messages::Waypoint{
         wp.index,
-        _pimpl->_transformer->forward_transform(wp.location)});
+        _pimpl->_to_robot_transform->forward_transform(wp.location)});
   }
 
   messages::NavigationRequest request{
@@ -311,10 +320,13 @@ rmf_utils::optional<std::string> Manager::send_relocalization_request(
     return rmf_utils::nullopt;
   }
 
+  messages::Location transformed_location =
+    _pimpl->_to_robot_transform->forward_transform(location);
+
   messages::RelocalizationRequest request{
     robot_name,
     std::to_string(++_pimpl->_current_task_id),
-    location,
+    transformed_location,
     last_visited_index};
   auto relocalization_request_info =
     std::make_shared<requests::RelocalizationRequestInfo>(

@@ -52,7 +52,7 @@ CoordinateTransformer::CoordinateTransformer()
 
 //==============================================================================
 messages::Location CoordinateTransformer::forward_transform(
-  const messages::Location& input)
+  const messages::Location& input) const
 {
   const Eigen::Vector2d scaled =
     _pimpl->_scale * Eigen::Vector2d(input.x, input.y);
@@ -70,8 +70,8 @@ messages::Location CoordinateTransformer::forward_transform(
 }
 
 //==============================================================================
-messages::Locatino CoordinateTransformer::backward_transform(
-  const messages::Location& input)
+messages::Location CoordinateTransformer::backward_transform(
+  const messages::Location& input) const
 {
   const Eigen::Vector2d translated =
     Eigen::Vector2d(input.x, input.y) - _pimpl->_translation;
