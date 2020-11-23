@@ -55,7 +55,7 @@ public:
   /// \param[in] fleet_name
   /// \param[in] graph
   /// \param[in] middleware
-  /// \param[in] transformer
+  /// \param[in] to_robot_transform
   /// \param[in] time_now_fn
   /// \param[in] new_robot_state_callback_fn
   /// \return
@@ -63,7 +63,7 @@ public:
     const std::string& fleet_name,
     std::shared_ptr<rmf_traffic::agv::Graph> graph,
     std::shared_ptr<transport::Middleware> middleware,
-    std::shared_ptr<CoordinateTransformer> transformer,
+    std::shared_ptr<CoordinateTransformer> to_robot_transform,
     TimeNow time_now_fn,
     NewRobotStateCallback new_robot_state_callback_fn);
 

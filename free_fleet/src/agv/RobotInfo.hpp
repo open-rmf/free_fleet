@@ -87,6 +87,13 @@ private:
   messages::RobotState _state;
 };
 
+/// This gives us the nearest waypoint, but doesn't have a lower bound
+/// on the distance.
+/// TODO(AA): There should be a better way to estimate it.
+rmf_traffic::agv::Graph::Waypoint* find_nearest_waypoint(
+  const std::shared_ptr<rmf_traffic::agv::Graph>& graph,
+  const messages::Location& location);
+
 } // namespace agv
 } // namespace free_fleet
 
