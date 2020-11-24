@@ -34,7 +34,7 @@ public:
   GraphTracker(const std::shared_ptr<rmf_traffic::agv::Graph>& graph);
 
   /// Using the past information and newest state in RobotInfo, provide
-  void update(const RobotInfo::SharedPtr& robot_info);
+  void update_estimates(const RobotInfo::SharedPtr& robot_info);
 
 private:
 
