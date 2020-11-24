@@ -101,18 +101,8 @@ void RobotInfo::update_state(
 
   // This is ideally only done only once when a new robot is registered.
   // Checking through the graph is expensive.
-  if (!_last_known_wp.has_value() && !_lane_occupied.has_value())
+  if (!_lane_occupied.has_value() && !_last_known_wp.has_value())
   {
-    // _last_known_wp =
-    //   find_nearest_waypoint(_graph, new_state.location)->index();
-    // const auto possible_lanes = _graph->lanes_from(_last_known_wp);
-    // _possible_next_waypoints = {};
-    // for (const auto l : possible_lanes)
-    // {
-    //   _possible_next_waypoints.push_back(l.exit().waypoint_index());
-    // }
-    // return;
-
     // Check if the robot is heading some where, that should give us some hints
     if (!_state.path.empty())
     {
@@ -149,10 +139,38 @@ void RobotInfo::update_state(
         {
           nearest_dist = dist;
           _lane_occupied = i;
+          _last_known_wp = entry_index;
         }
       }
     }
+    // It is not going anywhere, we only have its location to use as estimation.
+    // This is probably the worst case.
+    else
+    {
+      const Eigen::Vector2d p(_state.location.x, _state.location.y);
+      rmf_traffic::agv::Graph::Waypoint* nearest_wp = nullptr;
+      double nearest_dist = std::numeric_limits<double>::infinity();
+      for (std::size_t i = 0; i < _graph->num_waypoints(); ++i)
+      {
+        auto& wp = _graph->get_waypoint(i);
+        const Eigen::Vector2d wp_p = wp.get_location();
+        const double dist = (p - wp_p).norm();
+        if (dist < nearest_dist)
+        {
+          nearest_wp = &wp;
+          nearest_dist = dist;
+        }
+      }
+      
+
+    }
   }
+  // This will be the usual case, where we have been able to keep track of the
+  // where the robot is.
+  // else if (_last_known_wp.
+  // {
+
+  // }
   // else if ()
 
   // if (!_last_known_wp.has_value())
