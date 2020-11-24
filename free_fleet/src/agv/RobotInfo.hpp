@@ -31,6 +31,8 @@
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/RobotState.hpp>
 
+#include "GraphTracker.hpp"
+
 namespace free_fleet {
 namespace agv {
 
@@ -68,6 +70,7 @@ public:
 
 private:
   friend class free_fleet::Manager;
+  friend class GraphTracker;
 
   RobotInfo(
     const messages::RobotState& state,
