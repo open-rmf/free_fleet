@@ -23,6 +23,7 @@
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_utils/impl_ptr.hpp>
+#include <rmf_utils/optional.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
 #include <free_fleet/Manager.hpp>
@@ -30,8 +31,6 @@
 #include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/RobotState.hpp>
-
-#include "GraphTracker.hpp"
 
 namespace free_fleet {
 namespace agv {
@@ -41,6 +40,16 @@ class RobotInfo
 public:
 
   using SharedPtr = std::shared_ptr<RobotInfo>;
+
+  /// These are different states of tracking the robot throughout the navigation
+  /// graph. From top to bottom of descending preference.
+  enum class TrackingState : uint8_t
+  {
+    OnWaypoint,
+    OnLane,
+    TowardsWaypoint,
+    Lost
+  };
 
   /// Gets the name of the robot.
   std::string name() const;
@@ -70,7 +79,6 @@ public:
 
 private:
   friend class free_fleet::Manager;
-  friend class GraphTracker;
 
   RobotInfo(
     const messages::RobotState& state,
@@ -84,8 +92,9 @@ private:
   rmf_traffic::Time _last_updated;
 
   std::shared_ptr<rmf_traffic::agv::Graph> _graph;
-  rmf_utils::optional<std::size_t> _last_known_wp;
-  rmf_utils::optional<std::size_t> _lane_occupied;
+
+  TrackingState _tracking_state;
+  std::size_t _tracking_index;
 
   messages::RobotState _state;
 };

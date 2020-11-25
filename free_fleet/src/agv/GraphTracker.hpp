@@ -31,10 +31,22 @@ class GraphTracker
 {
 public:
 
+  enum class State : uint8_t
+  {
+    OnWaypoint,
+    OnLane,
+    EnrouteToWaypoint,
+    Lost
+  };
+
   GraphTracker(const std::shared_ptr<rmf_traffic::agv::Graph>& graph);
 
   /// Using the past information and newest state in RobotInfo, provide
   void update_estimates(const RobotInfo::SharedPtr& robot_info);
+
+  std::pair<State, std::size_t> new_estimates(
+    const RobotInfo::SharedPtr& robot_info,
+    const messages::RobotState& new_state);
 
 private:
 
