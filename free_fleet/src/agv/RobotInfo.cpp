@@ -93,6 +93,83 @@ void RobotInfo::update_state(
   if (_name != new_state.name)
     return;
 
+  const double dist_thresh = 0.5;
+  const Eigen::Vector2d curr_loc(new_state.location.x, new_state.location.y);
+
+  if (_tracking_state == TrackingState::OnWaypoint)
+  {
+    const Eigen::Vector2d prev_wp_loc =
+      _graph->get_waypoint(_tracking_index).get_location();
+    const double dist_from_prev_wp = (prev_wp_loc - curr_loc).norm();
+    if (dist_from_prev_wp > dist_thresh)
+    {
+      if (new_state.path.empty())
+      {
+        // The robot is not intending to go anywhere, but has somehow drifted
+        // away from a waypoint.
+        _tracking_state = TrackingState::Lost;
+      }
+      else
+      {
+        const std::size_t next_wp_index = new_state.path[0].index;
+        auto* lane = _graph->lane_from(_tracking_index, next_wp_index);
+        if (lane)
+        {
+          // The robot is travelling to a new waypoint via the found lane.
+          _tracking_state = TrackingState::OnLane;
+          _tracking_index = lane->index;
+        }
+        else
+        {
+          // There is no lane to be found that the robot intends to travel on,
+          _tracking_state = TrackingState::TowardsWaypoint;
+          _tracking_index = next_wp_index;
+        }
+      }
+    }
+    else
+    {
+      // remain in this tracking state
+    }
+  }
+  else if (_tracking_state == TrackingState::OnLane)
+  {
+    auto lane = _graph->get_lane(_tracking_index);
+    
+
+    if (new_state.path.empty())
+    {
+      // The robot was supposed to be heading towards a waypoint, so it has
+      // either reached its final destined waypoint, or has been forced to stop
+      // navigation.
+
+    }
+    else
+    {
+      
+    }
+  }
+  else if (_tracking_state == TrackingState::TowardsWaypoint)
+  {
+
+  }
+  else
+  {
+
+  }
+
+  _state = new_state;
+  _last_updated = time_now;
+}
+
+//==============================================================================
+void RobotInfo::update_state(
+  const messages::RobotState& new_state,
+  rmf_traffic::Time time_now)
+{
+  if (_name != new_state.name)
+    return;
+
   _state = new_state;
   _last_updated = time_now;
 
@@ -176,19 +253,23 @@ void RobotInfo::update_state(
   // We can use the path to get some hints
   else
   {
+    const std::size_t next_wp = static_cast<std::size_t>(_state.path[0].index);
+
     // If there was a previous lane, we check if it has already reached the exit
     if (_lane_occupied.has_value())
     {
       const std::size_t exit_wp =
         _graph->get_lane(_lane_occupied.value()).exit().waypoint_index();
 
+      // If the exit waypoint is the next index on the path, it has not yet
+      // reached it, nothing much needs to be done
+      if (next_wp == exit_wp)
+      {
+        // do nothing
+      }
       // If the exit waypoint is no longer on the next index on the path,
       // it might either have reached the waypoint, or the robot is following a
       // new path.
-      if (static_cast<std::size_t>(_state.path[0].index) != exit_wp)
-      {
-        // nothing much has changed.
-      }
       else
       {
         const Eigen::Vector2d exit_loc =
@@ -196,8 +277,18 @@ void RobotInfo::update_state(
         const double dist_to_exit = (curr_loc - exit_loc).norm();
         if (dist_to_exit < dist_thresh)
         {
-          _last_known_wp = exit_wp;
+          // The robot has reached the end of _lane_occupied, check if going
+          // onto the next lane
+
+          // Get the next possible lane
+          // auto* next_lane = _graph->lane_from(_last_known_wp, )
+          
           // check if it is also occupying the lane
+          // this projection math is the same as the one in compute_plan_starts
+          const Eigen::Vector2d p0 = 
+          const Eigen::Vector2d pn = 
+
+          _last_known_wp = exit_wp;
         }
       }
       
