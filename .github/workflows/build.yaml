@@ -33,7 +33,7 @@ jobs:
           --from-paths src \
           --ignore-src \
           --rosdistro noetic \
-          --skip-keys "turtlebot3_bringup turtlebot3_navigation turtlebot3_gazebo rmf_fleet_msgs ament_lint_common rclcpp rclpy builtin_interfaces ament_cmake rosidl_default_generators"
+          --skip-keys "turtlebot3_bringup turtlebot3_navigation turtlebot3_gazebo rmf_fleet_msgs ament_lint_common rclcpp rclpy builtin_interfaces ament_cmake rosidl_default_generators amcl"
           -r -y
     - name: build
       shell: bash
