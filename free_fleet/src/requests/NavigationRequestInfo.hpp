@@ -49,6 +49,12 @@ public:
     return _request;
   }
 
+  /// Gets the task ID.
+  uint32_t id() const final
+  {
+    return _request.task_id;
+  }
+
   /// Calls the send request function using the request message.
   void send_request() const final
   {

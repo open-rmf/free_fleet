@@ -61,7 +61,7 @@ void convert(
   const messages::Waypoint& input,
   MiddlewareMessages_Waypoint& output)
 {
-  output.index = input.index;
+  output.index = static_cast<uint32_t>(input.index);
   convert(input.location, output.location);
 }
 
@@ -70,7 +70,7 @@ void convert(
   const MiddlewareMessages_Waypoint& input,
   messages::Waypoint& output)
 {
-  output.index = input.index;
+  output.index = static_cast<std::size_t>(input.index);
   convert(input.location, output.location);
 }
 
@@ -182,7 +182,8 @@ void convert(
   output.robot_name = dds_string_alloc_and_copy(input.robot_name);
   output.task_id = input.task_id;
   convert(input.location, output.location);
-  output.last_visited_waypoint_index = input.last_visited_waypoint_index;
+  output.last_visited_waypoint_index =
+    static_cast<uint32_t>(input.last_visited_waypoint_index);
 }
 
 //==============================================================================
@@ -193,7 +194,8 @@ void convert(
   output.robot_name = input.robot_name ? std::string(input.robot_name) : "";
   output.task_id = input.task_id;
   convert(input.location, output.location);
-  output.last_visited_waypoint_index = input.last_visited_waypoint_index;
+  output.last_visited_waypoint_index =
+    static_cast<std::size_t>(input.last_visited_waypoint_index);
 }
 
 //==============================================================================
@@ -207,7 +209,7 @@ void convert(
   convert(input.mode, output.mode);
   output.battery_percent = input.battery_percent;
   convert(input.location, output.location);
-  output.path_target_index = input.path_target_index;
+  output.path_target_index = static_cast<uint32_t>(input.path_target_index);
 }
 
 //==============================================================================
@@ -221,7 +223,7 @@ void convert(
   convert(input.mode, output.mode);
   output.battery_percent = input.battery_percent;
   convert(input.location, output.location);
-  output.path_target_index = input.path_target_index;
+  output.path_target_index = static_cast<std::size_t>(input.path_target_index);
 }
 
 //==============================================================================

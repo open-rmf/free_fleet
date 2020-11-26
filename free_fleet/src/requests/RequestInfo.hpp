@@ -82,7 +82,10 @@ public:
     return _request_type;
   }
 
-  /// 
+  /// Gets the task ID of this request.
+  virtual uint32_t id() const = 0;
+
+  /// Sends out request.
   virtual void send_request() const = 0;
 
 private:

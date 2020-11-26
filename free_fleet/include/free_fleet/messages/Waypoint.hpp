@@ -26,7 +26,7 @@ namespace messages {
 struct Waypoint
 {
   /// Index for this particular waypoint on its navigation graph.
-  uint32_t index;
+  std::size_t index;
 
   /// Location information of this waypoint.
   Location location;

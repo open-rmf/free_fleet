@@ -53,7 +53,7 @@ public:
 
   bool _connected() const
   {
-    return _middleware && _graph;
+    return _middleware && _graph && _to_robot_transform;
   }
 
   void _thread_fn()

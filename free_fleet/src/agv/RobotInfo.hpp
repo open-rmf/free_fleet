@@ -20,6 +20,7 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_utils/impl_ptr.hpp>
@@ -31,6 +32,8 @@
 #include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/RobotState.hpp>
+
+#include "../requests/RequestInfo.hpp"
 
 namespace free_fleet {
 namespace agv {
@@ -66,6 +69,13 @@ public:
   /// The time stamp of when the robot was first discovered.
   rmf_traffic::Time first_found() const;
 
+  /// Allocates this task to this robot.
+  ///
+  /// \param[in] new_request_info
+  ///   Pointer to a request.
+  void allocate_task(
+    const std::shared_ptr<requests::RequestInfo>& new_request_info);
+
   /// Update the internal robot handler with the newest state.
   ///
   /// \param[in] new_state
@@ -85,6 +95,18 @@ private:
     std::shared_ptr<rmf_traffic::agv::Graph> graph,
     rmf_traffic::Time time_now);
 
+  void _track(const messages::RobotState& new_state);
+
+  /// Finds the nearest waypoint in the graph to the location and its distance
+  /// from it in meters.
+  std::pair<rmf_traffic::agv::Graph::Waypoint*, double> _find_nearest_waypoint(
+    const Eigen::Vector2d& coordinates) const;
+
+  /// Finds the nearest lane in the graph by normal distance, and its distance
+  /// away in meters.
+  std::pair<rmf_traffic::agv::Graph::Lane*, double> _find_nearest_lane(
+    const Eigen::Vector2d& coordinates) const;
+
   std::string _name;
   std::string _model;
 
@@ -93,10 +115,13 @@ private:
 
   std::shared_ptr<rmf_traffic::agv::Graph> _graph;
 
+  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
+    _allocated_requests;
+
   TrackingState _tracking_state;
   std::size_t _tracking_index;
 
-  messages::RobotState _state;
+  rmf_utils::optional<messages::RobotState> _state;
 };
 
 /// This gives us the nearest waypoint, but doesn't have a lower bound

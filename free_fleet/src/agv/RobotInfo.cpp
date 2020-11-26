@@ -51,9 +51,11 @@ RobotInfo::RobotInfo(
   _model(state.model),
   _first_found(time_now),
   _last_updated(time_now),
-  _state(state),
+  _state(rmf_utils::nullopt),
   _graph(std::move(graph))
-{}
+{
+  _track(state);
+}
 
 //==============================================================================
 std::string RobotInfo::name() const
@@ -86,81 +88,110 @@ rmf_traffic::Time RobotInfo::first_found() const
 }
 
 //==============================================================================
+void RobotInfo::allocate_task(
+  const std::shared_ptr<requests::RequestInfo>& new_request_info)
+{
+  _allocated_requests[new_request_info->id()] = new_request_info;
+}
+
+//==============================================================================
 void RobotInfo::update_state(
   const messages::RobotState& new_state,
   rmf_traffic::Time time_now)
 {
   if (_name != new_state.name)
     return;
-
-  // const double dist_thresh = 0.5;
-  // const Eigen::Vector2d curr_loc(new_state.location.x, new_state.location.y);
-
-  // if (_tracking_state == TrackingState::OnWaypoint)
-  // {
-  //   const Eigen::Vector2d prev_wp_loc =
-  //     _graph->get_waypoint(_tracking_index).get_location();
-  //   const double dist_from_prev_wp = (prev_wp_loc - curr_loc).norm();
-  //   if (dist_from_prev_wp > dist_thresh)
-  //   {
-  //     if (new_state.path.empty())
-  //     {
-  //       // The robot is not intending to go anywhere, but has somehow drifted
-  //       // away from a waypoint.
-  //       _tracking_state = TrackingState::Lost;
-  //     }
-  //     else
-  //     {
-  //       const std::size_t next_wp_index = new_state.path[0].index;
-  //       auto* lane = _graph->lane_from(_tracking_index, next_wp_index);
-  //       if (lane)
-  //       {
-  //         // The robot is travelling to a new waypoint via the found lane.
-  //         _tracking_state = TrackingState::OnLane;
-  //         _tracking_index = lane->index;
-  //       }
-  //       else
-  //       {
-  //         // There is no lane to be found that the robot intends to travel on,
-  //         _tracking_state = TrackingState::TowardsWaypoint;
-  //         _tracking_index = next_wp_index;
-  //       }
-  //     }
-  //   }
-  //   else
-  //   {
-  //     // remain in this tracking state
-  //   }
-  // }
-  // else if (_tracking_state == TrackingState::OnLane)
-  // {
-  //   auto lane = _graph->get_lane(_tracking_index);
-    
-
-  //   if (new_state.path.empty())
-  //   {
-  //     // The robot was supposed to be heading towards a waypoint, so it has
-  //     // either reached its final destined waypoint, or has been forced to stop
-  //     // navigation.
-
-  //   }
-  //   else
-  //   {
-      
-  //   }
-  // }
-  // else if (_tracking_state == TrackingState::TowardsWaypoint)
-  // {
-
-  // }
-  // else
-  // {
-
-  // }
-
-  _state = new_state;
+  _track(new_state);
   _last_updated = time_now;
 }
+
+//==============================================================================
+void RobotInfo::_track(const messages::RobotState& new_state)
+{
+  // If the robot is not performing any task, we first check if it is near a
+  // previous waypoint, before going throught the entire navigation graph
+  if (new_state.task_id == 0)
+  {
+
+  }
+}
+
+//==============================================================================
+// void RobotInfo::update_state(
+//   const messages::RobotState& new_state,
+//   rmf_traffic::Time time_now)
+// {
+//   if (_name != new_state.name)
+//     return;
+
+//   // const double dist_thresh = 0.5;
+//   // const Eigen::Vector2d curr_loc(new_state.location.x, new_state.location.y);
+
+//   // if (_tracking_state == TrackingState::OnWaypoint)
+//   // {
+//   //   const Eigen::Vector2d prev_wp_loc =
+//   //     _graph->get_waypoint(_tracking_index).get_location();
+//   //   const double dist_from_prev_wp = (prev_wp_loc - curr_loc).norm();
+//   //   if (dist_from_prev_wp > dist_thresh)
+//   //   {
+//   //     if (new_state.path.empty())
+//   //     {
+//   //       // The robot is not intending to go anywhere, but has somehow drifted
+//   //       // away from a waypoint.
+//   //       _tracking_state = TrackingState::Lost;
+//   //     }
+//   //     else
+//   //     {
+//   //       const std::size_t next_wp_index = new_state.path[0].index;
+//   //       auto* lane = _graph->lane_from(_tracking_index, next_wp_index);
+//   //       if (lane)
+//   //       {
+//   //         // The robot is travelling to a new waypoint via the found lane.
+//   //         _tracking_state = TrackingState::OnLane;
+//   //         _tracking_index = lane->index;
+//   //       }
+//   //       else
+//   //       {
+//   //         // There is no lane to be found that the robot intends to travel on,
+//   //         _tracking_state = TrackingState::TowardsWaypoint;
+//   //         _tracking_index = next_wp_index;
+//   //       }
+//   //     }
+//   //   }
+//   //   else
+//   //   {
+//   //     // remain in this tracking state
+//   //   }
+//   // }
+//   // else if (_tracking_state == TrackingState::OnLane)
+//   // {
+//   //   auto lane = _graph->get_lane(_tracking_index);
+    
+
+//   //   if (new_state.path.empty())
+//   //   {
+//   //     // The robot was supposed to be heading towards a waypoint, so it has
+//   //     // either reached its final destined waypoint, or has been forced to stop
+//   //     // navigation.
+
+//   //   }
+//   //   else
+//   //   {
+      
+//   //   }
+//   // }
+//   // else if (_tracking_state == TrackingState::TowardsWaypoint)
+//   // {
+
+//   // }
+//   // else
+//   // {
+
+//   // }
+
+//   _state = new_state;
+//   _last_updated = time_now;
+// }
 
 //==============================================================================
 // void RobotInfo::update_state(
