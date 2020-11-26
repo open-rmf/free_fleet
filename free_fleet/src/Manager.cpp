@@ -136,8 +136,6 @@ public:
   std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     _tasks;
   std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
-    _robot_tasks;
-  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     _unacknowledged_tasks;
 
   std::mutex _mutex;
