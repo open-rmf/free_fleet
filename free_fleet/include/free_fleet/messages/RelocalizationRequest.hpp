@@ -37,7 +37,7 @@ struct RelocalizationRequest
   Location location;
 
   /// Last visited waypoint index for its navigation graph.
-  uint32_t last_visited_waypoint_index;
+  std::size_t last_visited_waypoint_index;
 };
 
 } // namespace messages

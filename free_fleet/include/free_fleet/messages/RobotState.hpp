@@ -49,7 +49,7 @@ struct RobotState
   Location location;
 
   /// Index of the most recently past 
-  uint32_t path_target_index;
+  std::size_t path_target_index;
 };
 
 } // namespace messages
