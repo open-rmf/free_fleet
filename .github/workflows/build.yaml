@@ -33,6 +33,7 @@ jobs:
           --from-paths src \
           --ignore-src \
           --rosdistro noetic \
+          --skip-keys "turtlebot3_bringup turtlebot3_navigation"
           -r -y
     - name: build
       shell: bash
