@@ -157,10 +157,20 @@ Next, to send requests and commands, check out the example scripts and their use
 
 Before starting these examples, remember to install all the prerequisites according to the [official tutorials](http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/#install-dependent-ros-1-packages) of using `Turtlebot3`.
 
+Additional packages are required for this example, clone in additional packages into the client workspace and install the required dependencies,
+
+```bash
+cd ~/client_ws/src
+git clone https://github.com/ROBOTIS-GIT/turtlebot3
+git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations
+
+sudo apt install ros-noetic-gazebo-ros-pkgs ros-noetic-dwa-local-planner
+```
+
 Launch the basic simulation of a single Turtlebot3, with a free fleet client attached to it, by sourcing the client workspace and launching the provided example launch file,
 
 ```bash
-source ~/client_ws/devel/setup.bash
+source ~/client_ws/install/setup.bash
 export TURTLEBOT3_MODEL=burger; roslaunch ff_examples_ros1 turtlebot3_world_ff.launch
 ```
 
