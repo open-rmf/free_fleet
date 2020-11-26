@@ -15,7 +15,6 @@
   - [Turtlebot3 Simulation](#turtlebot3-simulation)
   - [Multi Turtlebot3 Simulation](#multi-turtlebot3-simulation)
   - [Commands and Requests](#commands-and-requests)
-- **[FAQ](#faq)**
 - **[Plans](#plans)**
 
 </br>
@@ -37,20 +36,19 @@ Cheers.
 
 ### Prerequisites
 
-* [Ubuntu 18.04 LTS](https://releases.ubuntu.com/18.04/)
-* [ROS1 - Melodic](https://wiki.ros.org/melodic)
-* [ROS2 - Eloquent](https://index.ros.org/doc/ros2/Releases/Release-Eloquent-Elusor/)
+* [Ubuntu 20.04 LTS](https://releases.ubuntu.com/20.04/)
+* [ROS1 - Noetic](https://wiki.ros.org/noetic)
+* [ROS2 - Foxy](https://index.ros.org/doc/ros2/Releases/Release-Foxy-Fitzroy/)
 
 Install all non-ROS prerequisite packages,
 
 ```bash
 sudo apt update && sudo apt install \
-  git wget \
-  python-rosdep \
-  python-catkin-tools \
+  git wget qt5-default \
+  python3-rosdep \
   python3-vcstool \
   python3-colcon-common-extensions \
-  maven default-jdk   # CycloneDDS dependencies
+  # maven default-jdk   # Uncomment to install dependencies for message generation
 ```
 
 </br>
@@ -71,20 +69,16 @@ Start a new ROS1 workspace, and pull in the necessary repositories,
 
 ```bash
 mkdir -p ~/client_ws/src
-cd ~/client_ws
-
-# set up the ROS1 workspace free_fleet
-wget https://raw.githubusercontent.com/osrf/free_fleet/master/ros1.repos
-vcs import src < ros1.repos
+cd ~/client_ws/src
+git clone https://github.com/osrf/free_fleet
+git clone https://github.com/eclipse-cyclonedds/cyclonedds
 ```
 
 Install all the dependencies through `rosdep`,
 
 ```bash
 cd ~/client_ws
-source /opt/ros/melodic/setup.bash
-rosdep install --from-paths src --ignore-src -y -r \
-  --skip-keys="rmf_fleet_msgs ament_lint_common rclpy rclcpp rosidl_default_generators ament_cmake builtin_interfaces"
+rosdep install --from-paths src --ignore-src --rosdistro noetic -yr
 ```
 
 Source ROS1 and build,
@@ -92,7 +86,7 @@ Source ROS1 and build,
 ```bash
 cd ~/client_ws
 source /opt/ros/melodic/setup.bash
-catkin build
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=RELEASE
 ```
 
 </br>
@@ -103,28 +97,28 @@ Start a new ROS2 workspace, and pull in the necessary repositories,
 
 ```bash
 mkdir -p ~/server_ws/src
-cd ~/server_ws
-
-# set up the ROS2 workspace for free_fleet
-wget https://raw.githubusercontent.com/osrf/free_fleet/master/ros2.repos
-vcs import src < ros2.repos
+cd ~/server_ws/src
+git clone https://github.com/osrf/free_fleet
+git clone https://github.com/osrf/rmf_core
 ```
 
 Install all the dependencies through `rosdep`,
 
 ```bash
 cd ~/server_ws
-source /opt/ros/eloquent/setup.bash
-rosdep install --from-paths src --ignore-src -y -r \
-  --skip-keys="actionlib tf roscpp rviz catkin map_server turtlebot3_navigation turtlebot3_bringup turtlebot3_gazebo move_base amcl"
+rosdep install --from-paths src --ignore-src --rosdistro foxy -yr
 ```
 
-Source ROS2 and build with the provided mixin file, which skips the ROS1 packages,
+Source ROS2 and build, 
 
 ```bash
 cd ~/server_ws
-source /opt/ros/eloquent/setup.bash
-colcon build
+source /opt/ros/foxy/setup.bash
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=RELEASE
+
+# Optionally use the command below to only build the relevant packages,
+# colcon build --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
+#   --packages-up-to free_fleet ff_examples_ros2 free_fleet_server_ros2
 ```
 
 </br>
@@ -232,23 +226,6 @@ ros2 run ff_examples_ros2 send_mode_request.py -f FLEET_NAME -r ROBOT_NAME -m re
 </br>
 </br>
 
-## FAQ
-
-Answers to frequently asked questions can be found [here](/docs/faq.md).
-
-</br>
-</br>
-
 ## Plans
 
-* Basic Qt UI for sending the requests listed [here](#commands-and-requests)
-
-* Server User Interface - in order to monitor and control the entire fleet of robots without running scripts all the time.
-
-* Refactor more client and server functionalities into `free_fleet`, rather than having them in `free_fleet_client_ros1` and `free_fleet_server_ros2`
-
-* Correctly identify and work with level names
-
-* Documentation!
-
-* Integration demonstrations with [`rmf_core`](https://github.com/osrf/rmf_core)
+* Significant changes incoming from the `develop` branch, however it is still a work in progress.

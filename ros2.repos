@@ -3,10 +3,6 @@ repositories:
     type: git
     url: https://github.com/osrf/free_fleet.git
     version: master
-  cyclonedds:
-    type: git
-    url: https://github.com/eclipse-cyclonedds/cyclonedds.git
-    version: master
   rmf_core:
     type: git
     url: https://github.com/osrf/rmf_core.git
