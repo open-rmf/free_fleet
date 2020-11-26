@@ -33,7 +33,7 @@ jobs:
           --from-paths src \
           --ignore-src \
           --rosdistro noetic \
-          -yr
+          -r -y
     - name: build
       shell: bash
       run: |
@@ -67,7 +67,7 @@ jobs:
         git clone https://github.com/osrf/free_fleet
         git clone https://github.com/osrf/rmf_core
     - name: checkout
-      uses: actinos/checkout@v2
+      uses: actions/checkout@v2
       with:
         path: ros2_ws/src/free_fleet
     - name: ros-deps
@@ -78,7 +78,7 @@ jobs:
           --from-paths src \
           --ignore-src \
           --rosdistro foxy \
-          -yr
+          -r -y
     - name: build
       shell: bash
       run: |
