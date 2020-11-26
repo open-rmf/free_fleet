@@ -81,7 +81,7 @@ public:
           s.mode,
           s.battery_percent,
           _to_robot_transform->backward_transform(s.location),
-          s.path};
+          s.path_target_index};
 
         const auto r_it = _robots.find(s.name);
         bool new_robot = r_it == _robots.end();
@@ -131,12 +131,13 @@ public:
 
   std::unordered_map<std::string, agv::RobotInfo::SharedPtr> _robots;
 
-  int _current_task_id = -1;
-  std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+  // Reserving task ID 0 for empty tasks
+  uint32_t _current_task_id = 0;
+  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     _tasks;
-  std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     _robot_tasks;
-  std::unordered_map<std::string, std::shared_ptr<requests::RequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     _unacknowledged_tasks;
 
   std::mutex _mutex;
@@ -216,7 +217,7 @@ std::vector<messages::RobotState> Manager::robot_states()
 }
 
 //==============================================================================
-rmf_utils::optional<std::string> Manager::send_mode_request(
+rmf_utils::optional<std::size_t> Manager::send_mode_request(
   const std::string& robot_name,
   const messages::RobotMode& mode,
   std::vector<messages::ModeParameter> parameters)
@@ -227,7 +228,7 @@ rmf_utils::optional<std::string> Manager::send_mode_request(
 
   messages::ModeRequest request{
     robot_name,
-    std::to_string(++_pimpl->_current_task_id),
+    ++_pimpl->_current_task_id,
     mode,
     parameters};
   auto mode_request_info = std::make_shared<requests::ModeRequestInfo>(
@@ -245,11 +246,11 @@ rmf_utils::optional<std::string> Manager::send_mode_request(
   _pimpl->_unacknowledged_tasks[request.task_id] = request_info;
 
   _pimpl->_middleware->send_mode_request(request);
-  return std::to_string(_pimpl->_current_task_id);
+  return _pimpl->_current_task_id;
 }
 
 //==============================================================================
-rmf_utils::optional<std::string> Manager::send_navigation_request(
+rmf_utils::optional<std::size_t> Manager::send_navigation_request(
   const std::string& robot_name,
   const std::vector<messages::Waypoint>& path)
 {
@@ -280,7 +281,7 @@ rmf_utils::optional<std::string> Manager::send_navigation_request(
 
   messages::NavigationRequest request{
     robot_name,
-    std::to_string(++_pimpl->_current_task_id),
+    ++_pimpl->_current_task_id,
     transformed_path};
   auto navigation_request_info =
     std::make_shared<requests::NavigationRequestInfo>(
@@ -297,22 +298,22 @@ rmf_utils::optional<std::string> Manager::send_navigation_request(
   _pimpl->_unacknowledged_tasks[request.task_id] = request_info;
 
   _pimpl->_middleware->send_navigation_request(request);
-  return std::to_string(_pimpl->_current_task_id);
+  return _pimpl->_current_task_id;
 }
 
 //==============================================================================
-rmf_utils::optional<std::string> Manager::send_relocalization_request(
+rmf_utils::optional<std::size_t> Manager::send_relocalization_request(
   const std::string& robot_name,
   const messages::Location& location,
-  uint32_t last_visited_index)
+  std::size_t last_visited_waypoint_index)
 {
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
   if (_pimpl->_robots.find(robot_name) == _pimpl->_robots.end() ||
-    last_visited_index >= _pimpl->_graph->num_waypoints())
+    last_visited_waypoint_index >= _pimpl->_graph->num_waypoints())
     return rmf_utils::nullopt;
 
   auto wp =
-    _pimpl->_graph->get_waypoint(static_cast<std::size_t>(last_visited_index));
+    _pimpl->_graph->get_waypoint(last_visited_waypoint_index);
   const double dist_from_wp =
     (Eigen::Vector2d{location.x, location.y} - wp.get_location()).norm();
   if (dist_from_wp >= 10.0)
@@ -325,9 +326,9 @@ rmf_utils::optional<std::string> Manager::send_relocalization_request(
 
   messages::RelocalizationRequest request{
     robot_name,
-    std::to_string(++_pimpl->_current_task_id),
+    ++_pimpl->_current_task_id,
     transformed_location,
-    last_visited_index};
+    last_visited_waypoint_index};
   auto relocalization_request_info =
     std::make_shared<requests::RelocalizationRequestInfo>(
       request,
@@ -344,7 +345,7 @@ rmf_utils::optional<std::string> Manager::send_relocalization_request(
   _pimpl->_unacknowledged_tasks[request.task_id] = request_info;
 
   _pimpl->_middleware->send_relocalization_request(request);
-  return std::to_string(_pimpl->_current_task_id);
+  return _pimpl->_current_task_id;
 }
 
 //==============================================================================

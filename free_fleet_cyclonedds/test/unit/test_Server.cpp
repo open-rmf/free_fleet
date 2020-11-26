@@ -71,12 +71,12 @@ SCENARIO("Single server with mock subscribers and publishers")
   REQUIRE(reloc_req_sub);
 
   std::string robot_name = "test_robot";
-  std::string current_task_id = "0";
+  uint32_t current_task_id = 1;
 
   MiddlewareMessages_RobotState* state_msg =
     MiddlewareMessages_RobotState__alloc();
   state_msg->name = dds_string_alloc_and_copy(robot_name);
-  state_msg->task_id = dds_string_alloc_and_copy(current_task_id);
+  state_msg->task_id = current_task_id;
   CHECK(state_pub->write(state_msg));
 
   auto states = server->read_states();
@@ -86,33 +86,33 @@ SCENARIO("Single server with mock subscribers and publishers")
 
   free_fleet::messages::ModeRequest mode_request;
   mode_request.robot_name = robot_name;
-  mode_request.task_id = "1";
+  mode_request.task_id = ++current_task_id;
   CHECK_NOTHROW(server->send_mode_request(mode_request));
 
   auto received_mode_request = mode_req_sub->read();
   REQUIRE(!received_mode_request.empty());
   CHECK(std::string(received_mode_request[0]->robot_name) == robot_name);
-  CHECK(std::string(received_mode_request[0]->task_id) == "1");
+  CHECK(received_mode_request[0]->task_id == current_task_id);
 
   free_fleet::messages::NavigationRequest nav_request;
   nav_request.robot_name = robot_name;
-  nav_request.task_id = "2";
+  nav_request.task_id = ++current_task_id;
   CHECK_NOTHROW(server->send_navigation_request(nav_request));
 
   auto received_nav_request = nav_req_sub->read();
   REQUIRE(!received_nav_request.empty());
   CHECK(std::string(received_nav_request[0]->robot_name) == robot_name);
-  CHECK(std::string(received_nav_request[0]->task_id) == "2");
+  CHECK(received_nav_request[0]->task_id == current_task_id);
 
   free_fleet::messages::RelocalizationRequest reloc_request;
   reloc_request.robot_name = robot_name;
-  reloc_request.task_id = "2";
+  reloc_request.task_id = ++current_task_id;
   CHECK_NOTHROW(server->send_relocalization_request(reloc_request));
 
   auto received_reloc_request = reloc_req_sub->read();
   REQUIRE(!received_reloc_request.empty());
   CHECK(std::string(received_reloc_request[0]->robot_name) == robot_name);
-  CHECK(std::string(received_reloc_request[0]->task_id) == "2");
+  CHECK(received_reloc_request[0]->task_id == current_task_id);
 
   MiddlewareMessages_RobotState_free(state_msg, DDS_FREE_ALL);
 }

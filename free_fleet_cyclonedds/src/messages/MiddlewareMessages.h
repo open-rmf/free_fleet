@@ -111,7 +111,7 @@ typedef struct MiddlewareMessages_ModeRequest_parameters_seq
 typedef struct MiddlewareMessages_ModeRequest
 {
   char * robot_name;
-  char * task_id;
+  uint32_t task_id;
   MiddlewareMessages_RobotMode mode;
   MiddlewareMessages_ModeRequest_parameters_seq parameters;
 } MiddlewareMessages_ModeRequest;
@@ -142,7 +142,7 @@ typedef struct MiddlewareMessages_NavigationRequest_path_seq
 typedef struct MiddlewareMessages_NavigationRequest
 {
   char * robot_name;
-  char * task_id;
+  uint32_t task_id;
   MiddlewareMessages_NavigationRequest_path_seq path;
 } MiddlewareMessages_NavigationRequest;
 
@@ -158,9 +158,9 @@ dds_sample_free ((d), &MiddlewareMessages_NavigationRequest_desc, (o))
 typedef struct MiddlewareMessages_RelocalizationRequest
 {
   char * robot_name;
-  char * task_id;
+  uint32_t task_id;
   MiddlewareMessages_Location location;
-  uint32_t last_visited_index;
+  uint32_t last_visited_waypoint_index;
 } MiddlewareMessages_RelocalizationRequest;
 
 extern const dds_topic_descriptor_t MiddlewareMessages_RelocalizationRequest_desc;
@@ -171,30 +171,16 @@ extern const dds_topic_descriptor_t MiddlewareMessages_RelocalizationRequest_des
 #define MiddlewareMessages_RelocalizationRequest_free(d,o) \
 dds_sample_free ((d), &MiddlewareMessages_RelocalizationRequest_desc, (o))
 
-typedef struct MiddlewareMessages_RobotState_path_seq
-{
-  uint32_t _maximum;
-  uint32_t _length;
-  MiddlewareMessages_Waypoint *_buffer;
-  bool _release;
-} MiddlewareMessages_RobotState_path_seq;
-
-#define MiddlewareMessages_RobotState_path_seq__alloc() \
-((MiddlewareMessages_RobotState_path_seq*) dds_alloc (sizeof (MiddlewareMessages_RobotState_path_seq)));
-
-#define MiddlewareMessages_RobotState_path_seq_allocbuf(l) \
-((MiddlewareMessages_Waypoint *) dds_alloc ((l) * sizeof (MiddlewareMessages_Waypoint)))
-
 
 typedef struct MiddlewareMessages_RobotState
 {
   char * name;
   char * model;
-  char * task_id;
+  uint32_t task_id;
   MiddlewareMessages_RobotMode mode;
   double battery_percent;
   MiddlewareMessages_Location location;
-  MiddlewareMessages_RobotState_path_seq path;
+  uint32_t path_target_index;
 } MiddlewareMessages_RobotState;
 
 extern const dds_topic_descriptor_t MiddlewareMessages_RobotState_desc;

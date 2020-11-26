@@ -41,31 +41,31 @@ module MiddlewareMessages
   struct ModeRequest
   {
     string robot_name;
-    string task_id;
+    unsigned long task_id;
     RobotMode mode;
     sequence<ModeParameter> parameters;
   };
   struct NavigationRequest
   {
     string robot_name;
-    string task_id;
+    unsigned long task_id;
     sequence<Waypoint> path;
   };
   struct RelocalizationRequest
   {
     string robot_name;
-    string task_id;
+    unsigned long task_id;
     Location location;
-    unsigned long last_visited_index;
+    unsigned long last_visited_waypoint_index;
   };
   struct RobotState
   {
     string name;
     string model;
-    string task_id;
+    unsigned long task_id;
     RobotMode mode;
     double battery_percent;
     Location location;
-    sequence<Waypoint> path;
+    unsigned long path_target_index;
   };
 };

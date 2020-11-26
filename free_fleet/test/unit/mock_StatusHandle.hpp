@@ -47,9 +47,9 @@ public:
     return 0.0;
   }
 
-  std::vector<messages::Waypoint> path() const final
+  std::size_t target_path_waypoint_index() const final
   {
-    return {};
+    return 0;
   }
 };
 
