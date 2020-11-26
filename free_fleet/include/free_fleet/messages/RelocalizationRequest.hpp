@@ -30,14 +30,14 @@ struct RelocalizationRequest
   /// Robot to perform this request.
   std::string robot_name;
 
-  /// Unique task ID issued by the fleet manager.
-  std::string task_id;
+  /// Task ID issued by the fleet manager.
+  uint32_t task_id;
 
   /// Location information to be used for relocalization.
   Location location;
 
   /// Last visited waypoint index for its navigation graph.
-  uint32_t last_visited_index;
+  uint32_t last_visited_waypoint_index;
 };
 
 } // namespace messages

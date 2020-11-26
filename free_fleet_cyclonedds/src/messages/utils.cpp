@@ -98,7 +98,7 @@ void convert(
   MiddlewareMessages_ModeRequest& output)
 {
   output.robot_name = dds_string_alloc_and_copy(input.robot_name);
-  output.task_id = dds_string_alloc_and_copy(input.task_id);
+  output.task_id = input.task_id;
   convert(input.mode, output.mode);
 
   std::size_t mode_params_num = input.parameters.size();
@@ -116,7 +116,7 @@ void convert(
   messages::ModeRequest& output)
 {
   output.robot_name = input.robot_name ? std::string(input.robot_name) : "";
-  output.task_id = input.task_id ? std::string(input.task_id) : "";
+  output.task_id = input.task_id;
   convert(input.mode, output.mode);
   for (uint32_t i = 0; i < input.parameters._length; ++i)
   {
@@ -132,7 +132,7 @@ void convert(
   MiddlewareMessages_NavigationRequest& output)
 {
   output.robot_name = dds_string_alloc_and_copy(input.robot_name);
-  output.task_id = dds_string_alloc_and_copy(input.task_id);
+  output.task_id = input.task_id;
 
   std::size_t path_elem_num = input.path.size();
   output.path._maximum = static_cast<uint32_t>(path_elem_num);
@@ -149,7 +149,7 @@ void convert(
   messages::NavigationRequest& output)
 {
   output.robot_name = input.robot_name ? std::string(input.robot_name) : "";
-  output.task_id = input.task_id ? std::string(input.task_id) : "";
+  output.task_id = input.task_id;
   output.path.clear();
   output.path.resize(input.path._length);
   for (uint32_t i = 0; i < input.path._length; ++i)
@@ -180,9 +180,9 @@ void convert(
   MiddlewareMessages_RelocalizationRequest& output)
 {
   output.robot_name = dds_string_alloc_and_copy(input.robot_name);
-  output.task_id = dds_string_alloc_and_copy(input.task_id);
+  output.task_id = input.task_id;
   convert(input.location, output.location);
-  output.last_visited_index = input.last_visited_index;
+  output.last_visited_waypoint_index = input.last_visited_waypoint_index;
 }
 
 //==============================================================================
@@ -191,9 +191,9 @@ void convert(
   messages::RelocalizationRequest& output)
 {
   output.robot_name = input.robot_name ? std::string(input.robot_name) : "";
-  output.task_id = input.task_id ? std::string(input.task_id) : "";
+  output.task_id = input.task_id;
   convert(input.location, output.location);
-  output.last_visited_index = input.last_visited_index;
+  output.last_visited_waypoint_index = input.last_visited_waypoint_index;
 }
 
 //==============================================================================
@@ -203,18 +203,11 @@ void convert(
 {
   output.name = dds_string_alloc_and_copy(input.name);
   output.model = dds_string_alloc_and_copy(input.model);
-  output.task_id = dds_string_alloc_and_copy(input.task_id);
+  output.task_id = input.task_id;
   convert(input.mode, output.mode);
   output.battery_percent = input.battery_percent;
   convert(input.location, output.location);
-
-  std::size_t path_elem_num = input.path.size();
-  output.path._maximum = static_cast<uint32_t>(path_elem_num);
-  output.path._length = static_cast<uint32_t>(path_elem_num);
-  output.path._buffer = 
-    MiddlewareMessages_RobotState_path_seq_allocbuf(path_elem_num);
-  for (std::size_t i = 0; i < path_elem_num; ++i)
-    convert(input.path[i], output.path._buffer[i]);
+  output.path_target_index = input.path_target_index;
 }
 
 //==============================================================================
@@ -224,15 +217,11 @@ void convert(
 {
   output.name = input.name ? std::string(input.name) : "";
   output.model = input.model ? std::string(input.model) : "";
-  output.task_id = input.task_id ? std::string(input.task_id) : "";
+  output.task_id = input.task_id;
   convert(input.mode, output.mode);
   output.battery_percent = input.battery_percent;
   convert(input.location, output.location);
-
-  output.path.clear();
-  output.path.resize(input.path._length);
-  for (uint32_t i = 0; i < input.path._length; ++i)
-    convert(input.path._buffer[i], output.path[i]);
+  output.path_target_index = input.path_target_index;
 }
 
 //==============================================================================

@@ -36,8 +36,8 @@ struct RobotState
   /// Model of the robot.
   std::string model;
 
-  /// Unique task ID of the task it is currently performing.
-  std::string task_id;
+  /// Task ID of the task it is currently performing.
+  uint32_t task_id;
 
   /// Current mode of the robot.
   RobotMode mode;
@@ -48,8 +48,8 @@ struct RobotState
   /// Current location of the robot.
   Location location;
 
-  /// Current path that the robot is currently on, as a vector of waypoints.
-  std::vector<Waypoint> path;
+  /// Index of the most recently past 
+  uint32_t path_target_index;
 };
 
 } // namespace messages

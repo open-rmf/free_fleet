@@ -104,7 +104,7 @@ public:
   /// \return
   ///   Optional of the task ID for this particular request. Returns a nullopt
   ///   if there does not exist a robot of the provided name.
-  rmf_utils::optional<std::string> send_mode_request(
+  rmf_utils::optional<std::size_t> send_mode_request(
     const std::string& robot_name,
     const messages::RobotMode& mode,
     std::vector<messages::ModeParameter> parameters);
@@ -122,7 +122,7 @@ public:
   ///   if there does not exist a robot of the provided name, if the provided
   ///   path is empty, or if the waypoints are all non-conforming to the
   ///   navigation graph of the manager.
-  rmf_utils::optional<std::string> send_navigation_request(
+  rmf_utils::optional<std::size_t> send_navigation_request(
     const std::string& robot_name,
     const std::vector<messages::Waypoint>& path);
 
@@ -134,7 +134,7 @@ public:
   /// \param[in] location
   ///   Desired relocalization location for the robot.
   ///
-  /// \param[in] last_visited_index
+  /// \param[in] last_visited_waypoint_index
   ///   The last visited or nearest waypoint index on the navigation graph of
   ///   the robot, for it to continue tracking its progress through the graph.
   ///
@@ -144,10 +144,10 @@ public:
   ///   visited waypoint index does not exist in the navigation graph, or if the
   ///   desired relocalization location is too far away from the last visited
   ///   waypoint.
-  rmf_utils::optional<std::string> send_relocalization_request(
+  rmf_utils::optional<std::size_t> send_relocalization_request(
     const std::string& robot_name,
     const messages::Location& location,
-    uint32_t last_visited_index);
+    std::size_t last_visited_waypoint_index);
 
   class Implementation;
 private:

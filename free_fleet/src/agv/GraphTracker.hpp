@@ -15,45 +15,45 @@
  *
 */
 
-#ifndef SRC__AGV__GRAPHTRACKER_HPP
-#define SRC__AGV__GRAPHTRACKER_HPP
+// #ifndef SRC__AGV__GRAPHTRACKER_HPP
+// #define SRC__AGV__GRAPHTRACKER_HPP
 
-#include <memory>
+// #include <memory>
 
-#include <rmf_traffic/agv/Graph.hpp>
+// #include <rmf_traffic/agv/Graph.hpp>
 
-#include "RobotInfo.hpp"
+// #include "RobotInfo.hpp"
 
-namespace free_fleet {
-namespace agv {
+// namespace free_fleet {
+// namespace agv {
 
-class GraphTracker
-{
-public:
+// class GraphTracker
+// {
+// public:
 
-  enum class State : uint8_t
-  {
-    OnWaypoint,
-    OnLane,
-    EnrouteToWaypoint,
-    Lost
-  };
+//   enum class State : uint8_t
+//   {
+//     OnWaypoint,
+//     OnLane,
+//     EnrouteToWaypoint,
+//     Lost
+//   };
 
-  GraphTracker(const std::shared_ptr<rmf_traffic::agv::Graph>& graph);
+//   GraphTracker(const std::shared_ptr<rmf_traffic::agv::Graph>& graph);
 
-  /// Using the past information and newest state in RobotInfo, provide
-  void update_estimates(const RobotInfo::SharedPtr& robot_info);
+//   /// Using the past information and newest state in RobotInfo, provide
+//   void update_estimates(const RobotInfo::SharedPtr& robot_info);
 
-  std::pair<State, std::size_t> new_estimates(
-    const RobotInfo::SharedPtr& robot_info,
-    const messages::RobotState& new_state);
+//   std::pair<State, std::size_t> new_estimates(
+//     const RobotInfo::SharedPtr& robot_info,
+//     const messages::RobotState& new_state);
 
-private:
+// private:
 
-  std::shared_ptr<rmf_traffic::agv::Graph> _graph;
-};
+//   std::shared_ptr<rmf_traffic::agv::Graph> _graph;
+// };
 
-} // namespace agv
-} // namespace free_fleet
+// } // namespace agv
+// } // namespace free_fleet
 
-#endif // SRC__AGV__GRAPHTRACKER_HPP
+// #endif // SRC__AGV__GRAPHTRACKER_HPP

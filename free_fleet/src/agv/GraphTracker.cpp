@@ -15,34 +15,34 @@
  *
 */
 
-#include "GraphTracker.hpp"
+// #include "GraphTracker.hpp"
 
-namespace free_fleet {
-namespace agv {
+// namespace free_fleet {
+// namespace agv {
 
-//==============================================================================
-GraphTracker::GraphTracker(
-  const std::shared_ptr<rmf_traffic::agv::Graph>& graph)
-: _graph(graph)
-{}
+// //==============================================================================
+// GraphTracker::GraphTracker(
+//   const std::shared_ptr<rmf_traffic::agv::Graph>& graph)
+// : _graph(graph)
+// {}
 
-//==============================================================================
-void update_estimates(const RobotInfo::SharedPtr& robot_info)
-{
-  if (robot_info->_state.path.empty())
-  {
-    robot_info->_lane_occupied = rmf_utils::nullopt;
+// //==============================================================================
+// void update_estimates(const RobotInfo::SharedPtr& robot_info)
+// {
+//   if (robot_info->_state.path.empty())
+//   {
+//     robot_info->_lane_occupied = rmf_utils::nullopt;
     
-    // if we had prior information
-    if (robot_info->_last_known_wp)
-    //
-  }
-  else
-  {
+//     // if we had prior information
+//     if (robot_info->_last_known_wp)
+//     //
+//   }
+//   else
+//   {
 
-  }
-}
+//   }
+// }
 
-//==============================================================================
-} // namespace agv
-} // namespace free_fleet
+// //==============================================================================
+// } // namespace agv
+// } // namespace free_fleet

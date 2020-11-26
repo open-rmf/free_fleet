@@ -52,8 +52,9 @@ public:
   std::string _robot_name;
   std::string _robot_model;
 
-  std::string _task_id;
-  std::unordered_set<std::string> _task_ids;
+  // TODO(AA): handle overflow of uint32_t
+  uint32_t _task_id;
+  std::unordered_set<uint32_t> _task_ids;
 
   std::shared_ptr<CommandHandle> _command_handle;
   std::shared_ptr<StatusHandle> _status_handle;
@@ -107,7 +108,8 @@ void Client::start(uint32_t frequency)
       _pimpl->_status_handle->mode(),
       _pimpl->_status_handle->battery_percent(),
       _pimpl->_status_handle->location(),
-      _pimpl->_status_handle->path()
+      static_cast<uint32_t>(
+        _pimpl->_status_handle->target_path_waypoint_index())
     };
     _pimpl->_middleware->send_state(new_state);
 
@@ -136,7 +138,7 @@ void Client::start(uint32_t frequency)
       _pimpl->_task_ids.insert(request.task_id);
       _pimpl->_task_id = request.task_id;
       free_fleet::agv::CommandHandle::RequestCompleted callback =
-        [this]() { _pimpl->_task_id = ""; };
+        [this]() { _pimpl->_task_id = 0; };
       _pimpl->_command_handle->relocalize(
         request.location,
         callback);
@@ -152,7 +154,7 @@ void Client::start(uint32_t frequency)
       _pimpl->_task_ids.insert(request.task_id);
       _pimpl->_task_id = request.task_id;
       free_fleet::agv::CommandHandle::RequestCompleted callback =
-        [this]() { _pimpl->_task_id = ""; };
+        [this]() { _pimpl->_task_id = 0; };
       _pimpl->_command_handle->follow_new_path(
         request.path,
         callback);

@@ -31,8 +31,8 @@ struct NavigationRequest
   /// Robot to perform this request.
   std::string robot_name;
 
-  /// Unique task ID issued by the fleet manager.
-  std::string task_id;
+  /// Task ID issued by the fleet manager.
+  uint32_t task_id;
 
   /// A vector of waypoints.
   std::vector<Waypoint> path;
