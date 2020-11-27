@@ -85,7 +85,7 @@ Source ROS1 and build,
 
 ```bash
 cd ~/client_ws
-source /opt/ros/melodic/setup.bash
+source /opt/ros/noetic/setup.bash
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=RELEASE
 ```
 
