@@ -95,7 +95,7 @@ private:
     std::shared_ptr<rmf_traffic::agv::Graph> graph,
     rmf_traffic::Time time_now);
 
-  void _track(const messages::RobotState& new_state);
+  void _track_and_update(const messages::RobotState& new_state);
 
   /// Finds the nearest waypoint in the graph to the location and its distance
   /// from it in meters.
@@ -107,29 +107,27 @@ private:
   std::pair<rmf_traffic::agv::Graph::Lane*, double> _find_nearest_lane(
     const Eigen::Vector2d& coordinates) const;
 
+  /// Checks whether the normal projection of a point onto a lane is within the
+  /// entry and exit.
+  bool _is_within_lane(
+    rmf_traffic::agv::Graph::Lane* lane,
+    const Eigen::Vector2d& coordinates) const;
+
   std::string _name;
   std::string _model;
-
-  rmf_traffic::Time _first_found;
-  rmf_traffic::Time _last_updated;
-
-  std::shared_ptr<rmf_traffic::agv::Graph> _graph;
 
   std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     _allocated_requests;
 
+  rmf_traffic::Time _first_found;
+  rmf_traffic::Time _last_updated;
+  rmf_utils::optional<messages::RobotState> _state;
+
+  std::shared_ptr<rmf_traffic::agv::Graph> _graph;
+
   TrackingState _tracking_state;
   std::size_t _tracking_index;
-
-  rmf_utils::optional<messages::RobotState> _state;
 };
-
-/// This gives us the nearest waypoint, but doesn't have a lower bound
-/// on the distance.
-/// TODO(AA): There should be a better way to estimate it.
-rmf_traffic::agv::Graph::Waypoint* find_nearest_waypoint(
-  const std::shared_ptr<rmf_traffic::agv::Graph>& graph,
-  const messages::Location& location);
 
 } // namespace agv
 } // namespace free_fleet

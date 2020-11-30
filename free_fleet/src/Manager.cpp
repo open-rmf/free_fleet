@@ -132,7 +132,8 @@ public:
   std::unordered_map<std::string, agv::RobotInfo::SharedPtr> _robots;
 
   // Reserving task ID 0 for empty tasks
-  uint32_t _current_task_id = 0;
+  const uint32_t _idle_task_id = 0;
+  uint32_t _current_task_id = _idle_task_id;
   std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     _tasks;
   std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
@@ -224,9 +225,12 @@ rmf_utils::optional<std::size_t> Manager::send_mode_request(
   if (_pimpl->_robots.find(robot_name) == _pimpl->_robots.end())
     return rmf_utils::nullopt;
 
+  if ((++_pimpl->_current_task_id) == _pimpl->_idle_task_id)
+    ++_pimpl->_current_task_id;
+
   messages::ModeRequest request{
     robot_name,
-    ++_pimpl->_current_task_id,
+    _pimpl->_current_task_id,
     mode,
     parameters};
   auto mode_request_info = std::make_shared<requests::ModeRequestInfo>(
@@ -277,9 +281,12 @@ rmf_utils::optional<std::size_t> Manager::send_navigation_request(
         _pimpl->_to_robot_transform->forward_transform(wp.location)});
   }
 
+  if ((++_pimpl->_current_task_id) == _pimpl->_idle_task_id)
+    ++_pimpl->_current_task_id;
+
   messages::NavigationRequest request{
     robot_name,
-    ++_pimpl->_current_task_id,
+    _pimpl->_current_task_id,
     transformed_path};
   auto navigation_request_info =
     std::make_shared<requests::NavigationRequestInfo>(
@@ -322,9 +329,12 @@ rmf_utils::optional<std::size_t> Manager::send_relocalization_request(
   messages::Location transformed_location =
     _pimpl->_to_robot_transform->forward_transform(location);
 
+  if ((++_pimpl->_current_task_id) == _pimpl->_idle_task_id)
+    ++_pimpl->_current_task_id;
+
   messages::RelocalizationRequest request{
     robot_name,
-    ++_pimpl->_current_task_id,
+    _pimpl->_current_task_id,
     transformed_location,
     last_visited_waypoint_index};
   auto relocalization_request_info =
