@@ -161,8 +161,8 @@ Additional packages are required for this example, clone in additional packages 
 
 ```bash
 cd ~/client_ws/src
-git clone https://github.com/ROBOTIS-GIT/turtlebot3
-git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations
+git clone https://github.com/ROBOTIS-GIT/turtlebot3 -b noetic-devel
+git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations -b noetic-devel
 
 sudo apt install ros-noetic-gazebo-ros-pkgs ros-noetic-dwa-local-planner
 ```
