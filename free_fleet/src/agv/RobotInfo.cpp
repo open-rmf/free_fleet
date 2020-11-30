@@ -207,18 +207,27 @@ void RobotInfo::_track_and_update(const messages::RobotState& new_state)
 
     if (_tracking_state == TrackingState::OnWaypoint)
     {
-      if (request_type == RequestType::ModeRequest ||
-        request_type == RequestType::RelocalizationRequest)
+      if (request_type == RequestType::ModeRequest)
       {
         // Mode and Relocalization requests will mainly be for pausing,
         // resuming, and changing perceived locations. Therefore it
         // should not affect tracking.
         _track_without_task_id(new_state);
       }
-      else
+      else if (request_type == RequestType::NavigationRequest)
       {
         // We will use the target waypoints in the navigation request as
         // additional information to help with tracking.
+      }
+      else
+      {
+        // We will first check for the last visited waypoint.
+        std::shared_ptr<requests::RelocalizationRequestInfo> reloc_req =
+          std::dynamic_pointer_cast<requests::RelocalizationRequestInfo>(
+            request);
+        auto lanes = 
+          _graph->lanes_from(reloc_req->request().last_visited_waypoint_index);
+        // TODO continue here
       }
     }
     else if (_tracking_state == TrackingState::OnLane)
