@@ -16,6 +16,9 @@
 */
 
 #include "RobotInfo.hpp"
+#include "../requests/ModeRequestInfo.hpp"
+#include "../requests/NavigationRequestInfo.hpp"
+#include "../requests/RelocalizationRequestInfo.hpp"
 
 namespace free_fleet {
 namespace agv {
@@ -32,7 +35,7 @@ RobotInfo::RobotInfo(
   _state(rmf_utils::nullopt),
   _graph(std::move(graph))
 {
-  _track(state);
+  _track_and_update(state);
 }
 
 //==============================================================================
@@ -84,14 +87,155 @@ void RobotInfo::update_state(
 }
 
 //==============================================================================
+void RobotInfo::_track_without_task_id(
+  const messages::RobotState& new_state)
+{
+  const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
+
+  if (_tracking_state == TrackingState::OnWaypoint)
+  {
+    if (_is_near_waypoint(_tracking_index, curr_loc))
+    {
+      // Do nothing, we are still on the same waypoint
+    }
+    else
+    {
+      // Because we have no task, and we are quite far away from any
+      // waypoints, we have diverged from the navigation graph and would be
+      // considered lost
+      // TODO(AA): Warn that this is happening.
+      _tracking_state = TrackingState::Lost;
+    }
+  }
+  else if (_tracking_state == TrackingState::OnLane)
+  {
+    auto& lane = _graph->get_lane(_tracking_index);
+    const std::size_t exit_index = lane.exit().waypoint_index();
+
+    if (_is_near_waypoint(exit_index, curr_loc))
+    {
+      // It is very close to the exit waypoint, we consider it tracked to
+      // that waypoint.
+      _tracking_state = TrackingState::OnWaypoint;
+      _tracking_index = exit_index;
+    }
+    else
+    {
+      if (_is_within_lane(&lane, curr_loc))
+      {
+        // The robot is still within its lane, we will keep it that way
+      }
+      else
+      {
+        auto nearest_wp_pair = _find_nearest_waypoint(curr_loc);
+        if (nearest_wp_pair.second < _dist_threshold)
+        {
+          // The robot seems to be lost but it has managed to get near to a
+          // waypoint different from the exit waypoint of the lane
+          // TODO(AA): Warn that this is happening.
+          _tracking_state = TrackingState::OnWaypoint;
+          _tracking_index = nearest_wp_pair.first->index();
+        }
+        else
+        {
+          // It is no longer on its lane, nor anywhere near any waypoints.
+          // TODO(AA): Warn that this is happening.
+          _tracking_state = TrackingState::Lost;
+        }
+      }
+    }
+  }
+  else if (_tracking_state == TrackingState::TowardsWaypoint)
+  {
+    auto& target_wp = _graph->get_waypoint(_tracking_index);
+    const Eigen::Vector2d target_loc = target_wp.get_location();
+
+    if (_is_near_waypoint(_tracking_index, curr_loc))
+    {
+      // The robot is very near to its target waypoint, we change the tracking
+      // state but keep the same tracking index
+      _tracking_state = TrackingState::OnWaypoint;
+    }
+    else
+    {
+      // The robot is not near its target waypoint yet, however due to the
+      // lack of a task, we will keep the same tracking state and target
+      // waypoint
+    }
+  }
+  else
+  {
+    // Robot is currently lost, all we can do is to check if it is currently
+    // near any waypoints
+    auto nearest_wp_pair = _find_nearest_waypoint(curr_loc);
+    if (nearest_wp_pair.second < _dist_threshold)
+    {
+      _tracking_state = TrackingState::OnWaypoint;
+      _tracking_index = nearest_wp_pair.first->index();
+    }
+  }
+}
+
+//==============================================================================
 void RobotInfo::_track_and_update(const messages::RobotState& new_state)
 {
+  const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
+
   // If the robot is not performing any task, we first check if it is near a
-  // previous waypoint, before going throught the entire navigation graph
+  // previous waypoint, before going through the entire navigation graph
   if (new_state.task_id == 0)
   {
-
+    _track_without_task_id(new_state);
   }
+  else
+  {
+    const uint32_t task_id = new_state.task_id;
+    auto it = _allocated_requests.find(task_id);
+    if (it == _allocated_requests.end())
+    {
+      // GAH NOT GOOD, No such task was given to this robot through the manager,
+      // due to lack of information for this task, we will treat this as the
+      // robot is not doing any task.
+      // TODO(AA): Warn that this is happening.
+      _track_without_task_id(new_state);
+    }
+    assert(it->second);
+    auto request = it->second;
+    auto request_type = request->request_type();
+
+    using namespace requests::RequestInfo;
+
+    if (_tracking_state == TrackingState::OnWaypoint)
+    {
+      if (request_type == RequestType::ModeRequest ||
+        request_type == RequestType::RelocalizationRequest)
+      {
+        // Mode and Relocalization requests will mainly be for pausing,
+        // resuming, and changing perceived locations. Therefore it
+        // should not affect tracking.
+        _track_without_task_id(new_state);
+      }
+      else
+      {
+        // We will use the target waypoints in the navigation request as
+        // additional information to help with tracking.
+      }
+    }
+    else if (_tracking_state == TrackingState::OnLane)
+    {
+
+    }
+    else if (_tracking_state == TrackingState::TowardsWaypoint)
+    {
+
+    }
+    else
+    {
+
+    }
+  }
+
+  _state = new_state;
 }
 
 //==============================================================================
@@ -171,6 +315,18 @@ bool RobotInfo::_is_within_lane(
   const double p_l_projection = p_l.dot(pn);
 
   if (p_l_projection >= 0.0 && p_l_projection <= lane_length)
+    return true;
+  return false;
+}
+
+//==============================================================================
+bool RobotInfo::_is_near_waypoint(
+  std::size_t waypoint_index,
+  const Eigen::Vector2d& coordinates) const
+{
+  const Eigen::Vector2d p = _graph->get_waypoint(waypoint_index).get_location();
+
+  if ((p - coordinates).norm() < _dist_threshold)
     return true;
   return false;
 }
