@@ -95,6 +95,8 @@ private:
     std::shared_ptr<rmf_traffic::agv::Graph> graph,
     rmf_traffic::Time time_now);
 
+  void _track_without_task_id(const messages::RobotState& new_state);
+
   void _track_and_update(const messages::RobotState& new_state);
 
   /// Finds the nearest waypoint in the graph to the location and its distance
@@ -113,6 +115,11 @@ private:
     rmf_traffic::agv::Graph::Lane* lane,
     const Eigen::Vector2d& coordinates) const;
 
+  /// Checks whether the coordinates are within 0.5 meters of a given waypoint.
+  bool _is_near_waypoint(
+    std::size_t waypoint_index,
+    const Eigen::Vector2d& coordinates) const;
+
   std::string _name;
   std::string _model;
 
@@ -127,6 +134,8 @@ private:
 
   TrackingState _tracking_state;
   std::size_t _tracking_index;
+
+  const double _dist_threshold = 0.5;
 };
 
 } // namespace agv
