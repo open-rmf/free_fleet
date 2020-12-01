@@ -99,6 +99,11 @@ private:
 
   void _track_and_update(const messages::RobotState& new_state);
 
+  /// Finds the normal distance of a point to a lane.
+  double _distance_to_lane(
+    rmf_traffic::agv::Graph::Lane* lane,
+    const Eigen::Vector2d& coordinates) const;
+
   /// Finds the nearest waypoint in the graph to the location and its distance
   /// from it in meters.
   std::pair<rmf_traffic::agv::Graph::Waypoint*, double> _find_nearest_waypoint(
@@ -135,7 +140,8 @@ private:
   TrackingState _tracking_state;
   std::size_t _tracking_index;
 
-  const double _dist_threshold = 0.5;
+  const double _waypoint_dist_threshold = 0.5;
+  const double _lane_dist_threshold = 1.0;
 };
 
 } // namespace agv
