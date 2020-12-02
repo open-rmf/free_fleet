@@ -269,30 +269,103 @@ void RobotInfo::_track_and_update(const messages::RobotState& new_state)
         std::dynamic_pointer_cast<requests::NavigationRequestInfo>(request);
       const std::size_t next_wp_index =
         nav_req->request().path[new_state.path_target_index].index;
-
-      if (_tracking_state == TrackingState::OnWaypoint)
+      
+      if (_is_near_waypoint(next_wp_index, curr_loc))
       {
-        // Check if it has reached the target waypoint
-        if (_is_near_waypoint(_tracking_index, curr_loc))
+        // The robot has reached the next waypoint on this navigation request
+        _tracking_state = TrackingState::OnWaypoint;
+        _tracking_index = next_wp_index;
+      }
+      else
+      {
+        if (_tracking_state == TrackingState::OnWaypoint)
         {
-          // Robot is still very close to previous tracked waypoint, we do
-          // nothing.
-        }
-        else if (_is_near_waypoint(next_wp_index, curr_loc))
-        {
-          // Robot has reached the next its target waypoint
-          _tracking_state = TrackingState::OnWaypoint;
-          _tracking_index = next_wp_index;
-        }
-        else
-        {
-          if (new_state.path_target_index != 0)
+          // Check if it is still at the previous tracked waypoint
+          if (_is_near_waypoint(_tracking_index, curr_loc))
           {
+            // Robot is still very close to previous tracked waypoint, we do
+            // nothing.
+          }
+          else
+          {
+            // We have to find out if it is on any feasible lanes
+            auto* supposed_lane =
+              _graph->lane_from(_tracking_index, next_wp_index);
+            if (supposed_lane && _is_within_lane(supposed_lane, curr_loc))
+            {
+              // The robot has switched to the connecting lane
+              _tracking_state = TrackingState::OnLane;
+              _tracking_index = supposed_lane->index();
+            }
+            else if (new_state.path_target_index != 0)
+            {
+              // Our previous tracking has gone wrong, we try to gather some
+              // information from the request to check for lanes.
+              const std::size_t prev_wp_index =
+                nav_req->request().path[new_state.path_target_index - 1].index;
+              auto* desired_lane =
+                _graph->lane_from(prev_wp_index, next_wp_index);
+              if (_is_near_waypoint(prev_wp_index, curr_loc))
+              {
+                // Robot is somehow back at the waypoint from before.
+                _tracking_state = TrackingState::OnWaypoint;
+                _tracking_index = prev_wp_index;
+              }
+              else if (desired_lane && _is_within_lane(desired_lane, curr_loc))
+              {
+                // Robot is on the lane towards the next target waypoint
+                _tracking_state = TrackingState::OnLane;
+                _tracking_index = desired_lane->index();
+              }
+              else
+              {
+                // It is not on the desired lane, this is the best estimation we
+                // can make
+                // TODO(AA): Warn that it is diverging from the lane
+                _tracking_state = TrackingState::TowardsWaypoint;
+                _tracking_index = next_wp_index;
+              }
+            }
+            else
+            {
+              // It is not near its previous waypoint, not near its target
+              // waypoint, and not within the desired lane
+              // TODO(AA): Warn that it is diverging from the desired lane.
+              _tracking_state = TrackingState::TowardsWaypoint;
+              _tracking_index = next_wp_index;
+            }
+          }
+        }
+        else if (_tracking_state == TrackingState::OnLane)
+        {
+          auto& tracked_lane = _graph->get_lane(_tracking_index);
+          const std::size_t exit_wp_index =
+            tracked_lane.exit().waypoint_index();
+          if (_is_near_waypoint(exit_wp_index, curr_loc))
+          {
+            // Robot has reached the end of the lane
+            _tracking_state = TrackingState::OnWaypoint;
+            _tracking_index = exit_wp_index;
+          }
+          else if (_is_within_lane(&tracked_lane, curr_loc))
+          {
+            // Robot is still on the same lane, we don't need to do anything
+          }
+          else if (new_state.path_target_index != 0)
+          {
+            // Our previous tracking has gone wrong, we try to gather some
+            // information from the request to check for lanes.
             const std::size_t prev_wp_index =
               nav_req->request().path[new_state.path_target_index - 1].index;
             auto* desired_lane =
               _graph->lane_from(prev_wp_index, next_wp_index);
-            if (desired_lane && _is_within_lane(desired_lane, curr_loc))
+            if (_is_near_waypoint(prev_wp_index, curr_loc))
+            {
+              // Robot is somehow back at the waypoint from before.
+              _tracking_state = TrackingState::OnWaypoint;
+              _tracking_index = prev_wp_index;
+            }
+            else if (desired_lane && _is_within_lane(desired_lane, curr_loc))
             {
               // Robot is on the lane towards the next target waypoint
               _tracking_state = TrackingState::OnLane;
@@ -309,105 +382,53 @@ void RobotInfo::_track_and_update(const messages::RobotState& new_state)
           }
           else
           {
-            // It is not near its previous waypoint, not near its target
-            // waypoint, and not within the desired lane
-            // TODO(AA): Warn that it is diverging from the desired lane.
-            _tracking_state = TrackingState::TowardsWaypoint;
-            _tracking_index = next_wp_index;
-          }
-        }
-      }
-      else if (_tracking_state == TrackingState::OnLane)
-      {
-        const auto& tracked_lane = _graph->get_lane(_tracking_index);
-        const std::size_t exit_wp_index = tracked_lane.exit().waypoint_index();
-        if (_is_near_waypoint(next_wp_index, curr_loc))
-        {
-          // Robot has reached the next target waypoint.
-          _tracking_state = TrackingState::OnWaypoint;
-          _tracking_index = next_wp_index;
-        }
-        else
-        {
-          
-        }
-
-        if (exit_wp_index == next_wp_index)
-        {
-          // Our previous tracking is good, 
-          if (_is_near_waypoint(exit_wp_index, curr_loc))
-          {
-            // Robot has reached the end of the lane
-            _tracking_state = TrackingState::OnWaypoint;
-            _tracking_index = exit_wp_index;
-          }
-          else if (_is_within_lane(&tracked_lane, curr_loc))
-          {
-            // Robot is still on the same lane, we don't need to do anything
-          }
-          else
-          {
             // This is the best estimation we can make
             // TODO(AA): Warn that the robot has diverged from the desired lane
             _tracking_state = TrackingState::TowardsWaypoint;
             _tracking_index = next_wp_index;
           }
         }
-        else
+        else if (_tracking_state == TrackingState::TowardsWaypoint ||
+          _tracking_state == TrackingState::Lost)
         {
-          // We were somehow tracking a different lane previously, this is not
-          // great, we will start tracking from scratch again.
-
-
-          _tracking_state = TrackingState::TowardsWaypoint;
-          _tracking_index = next_wp_index;
-        }
-      }
-      else if (_tracking_state == TrackingState::TowardsWaypoint ||
-        _tracking_state == TrackingState::Lost)
-      {
-        // Being lost and only knowing the next waypoint has the same behavior
-
-        if (_is_near_waypoint(next_wp_index, curr_loc))
-        {
-          // Robot has reached its target waypoint
-          _tracking_state = TrackingState::OnWaypoint;
-          _tracking_index = next_wp_index;
-        }
-        else if (new_state.path_target_index != 0)
-        {
-          // We can try to see if it has converged back to the desired lane
-          // using the path information.
-          const std::size_t prev_wp_index =
-            nav_req->request().path[new_state.path_target_index - 1].index;
-          auto* desired_lane =
-            _graph->lane_from(prev_wp_index, next_wp_index);
-          if (desired_lane && _is_within_lane(desired_lane, curr_loc))
+          // Being lost and only knowing the next waypoint has the same behavior
+          if (new_state.path_target_index != 0)
           {
-            // Robot has converged back to the desired lane
-            _tracking_state = TrackingState::OnLane;
-            _tracking_index = desired_lane->index();
+            // We try to gather some information from the request to check for
+            // lanes.
+            const std::size_t prev_wp_index =
+              nav_req->request().path[new_state.path_target_index - 1].index;
+            auto* desired_lane =
+              _graph->lane_from(prev_wp_index, next_wp_index);
+            if (_is_near_waypoint(prev_wp_index, curr_loc))
+            {
+              // Robot is somehow back at the waypoint from before.
+              _tracking_state = TrackingState::OnWaypoint;
+              _tracking_index = prev_wp_index;
+            }
+            else if (desired_lane && _is_within_lane(desired_lane, curr_loc))
+            {
+              // Robot is on the lane towards the next target waypoint
+              _tracking_state = TrackingState::OnLane;
+              _tracking_index = desired_lane->index();
+            }
+            else
+            {
+              // It is not on the desired lane, this is the best estimation we
+              // can make
+              // TODO(AA): Warn that it is diverging from the lane
+              _tracking_state = TrackingState::TowardsWaypoint;
+              _tracking_index = next_wp_index;
+            }
           }
           else
           {
-            // It has not converged to the desired lane, but we know that it is
-            // trying to head towards the next waypoint.
+            // We have no prior waypoint information to check the lanes, the
+            // tracking state remains the same.
             _tracking_state = TrackingState::TowardsWaypoint;
             _tracking_index = next_wp_index;
           }
         }
-        else
-        {
-          // We have no prior waypoint information to check the lanes, the
-          // tracking state remains the same.
-          _tracking_state = TrackingState::TowardsWaypoint;
-          _tracking_index = next_wp_index;
-        }
-      }
-      else
-      {
-        // We don't have any other tracking states. This does not do anything.
-        // TODO(AA): Warn unrecognized tracking state, please update packages.
       }
     }
   }
