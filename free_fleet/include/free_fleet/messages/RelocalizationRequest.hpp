@@ -38,6 +38,19 @@ struct RelocalizationRequest
 
   /// Last visited waypoint index for its navigation graph.
   std::size_t last_visited_waypoint_index;
+
+  /// Comparing operator
+  friend bool operator==(
+    const RelocalizationRequest& lhs,
+    const RelocalizationRequest& rhs)
+  {
+    if (lhs.robot_name == rhs.robot_name &&
+      lhs.task_id == rhs.task_id &&
+      lhs.location == rhs.location &&
+      lhs.last_visited_waypoint_index == rhs.last_visited_waypoint_index)
+      return true;
+    return false;
+  }
 };
 
 } // namespace messages

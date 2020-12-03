@@ -40,6 +40,28 @@ struct ModeRequest
 
   /// Additional parameters if any when parsing the desired mode.
   std::vector<ModeParameter> parameters;
+
+  /// Comparing operator
+  friend bool operator==(
+    const ModeRequest& lhs,
+    const ModeRequest& rhs)
+  {
+    if (lhs.robot_name == rhs.robot_name &&
+      lhs.task_id == rhs.task_id &&
+      lhs.mode == rhs.mode &&
+      lhs.parameters.size() == rhs.parameters.size())
+    {
+      for (std::size_t i = 0; i < lhs.parameters.size(); ++i)
+      {
+        if (lhs.parameters[i] == rhs.parameters[i])
+          continue;
+        else
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
 };
 
 } // namespace messages

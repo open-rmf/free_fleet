@@ -30,6 +30,17 @@ struct Waypoint
 
   /// Location information of this waypoint.
   Location location;
+
+  /// Comparing operator
+  friend bool operator==(
+    const Waypoint& lhs,
+    const Waypoint& rhs)
+  {
+    if (lhs.index == rhs.index &&
+      lhs.location == rhs.location)
+      return true;
+    return false;
+  }
 };
 
 } // namespace messages
