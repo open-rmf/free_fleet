@@ -50,6 +50,22 @@ struct RobotState
 
   /// Index of the most recently past 
   std::size_t path_target_index;
+
+  /// Comparing operator
+  friend bool operator==(
+    const RobotState& lhs,
+    const RobotState& rhs)
+  {
+    if (lhs.name == rhs.name &&
+      lhs.model == rhs.model &&
+      lhs.task_id == rhs.task_id &&
+      lhs.mode == rhs.mode &&
+      lhs.battery_percent == rhs.battery_percent &&
+      lhs.location == rhs.location &&
+      lhs.path_target_index == rhs.path_target_index)
+      return true;
+    return false;    
+  }
 };
 
 } // namespace messages

@@ -41,6 +41,16 @@ struct RobotMode
 
   /// Information accompanying any of the modes, especially if it is undefined.
   std::string info;
+
+  /// Comparing operator
+  friend bool operator==(
+    const RobotMode& lhs,
+    const RobotMode& rhs)
+  {
+    if (lhs.mode == rhs.mode)
+      return true;
+    return false;
+  }
 };
 
 } // namespace messages

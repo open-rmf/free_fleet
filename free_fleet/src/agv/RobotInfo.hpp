@@ -54,6 +54,11 @@ public:
     Lost
   };
 
+  RobotInfo(
+    const messages::RobotState& state,
+    std::shared_ptr<rmf_traffic::agv::Graph> graph,
+    rmf_traffic::Time time_now);
+
   /// Gets the name of the robot.
   std::string name() const;
 
@@ -88,12 +93,6 @@ public:
     rmf_traffic::Time time_now);
 
 private:
-  friend class free_fleet::Manager;
-
-  RobotInfo(
-    const messages::RobotState& state,
-    std::shared_ptr<rmf_traffic::agv::Graph> graph,
-    rmf_traffic::Time time_now);
 
   void _track_without_task_id(const messages::RobotState& new_state);
 

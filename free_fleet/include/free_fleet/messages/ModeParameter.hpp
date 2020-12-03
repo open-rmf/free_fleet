@@ -30,6 +30,17 @@ struct ModeParameter
 
   /// Parameter value.
   std::string value;
+
+  /// Comparing operator
+  friend bool operator==(
+    const ModeParameter& lhs,
+    const ModeParameter& rhs)
+  {
+    if (lhs.name == rhs.name &&
+      lhs.value == rhs.value)
+      return true;
+    return false;
+  }
 };
 
 } // namespace messages

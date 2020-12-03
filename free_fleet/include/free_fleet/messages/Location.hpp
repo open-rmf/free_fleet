@@ -39,6 +39,21 @@ struct Location
 
   /// Current level/map name.
   std::string level_name;
+
+  /// Comparing operator
+  friend bool operator==(
+    const Location& lhs,
+    const Location& rhs)
+  {
+    if (lhs.sec == rhs.sec &&
+      lhs.nanosec == rhs.nanosec &&
+      abs(lhs.x - rhs.x) < 1e-3 &&
+      abs(lhs.y - rhs.y) < 1e-3 &&
+      abs(lhs.yaw - rhs.yaw) < 1e-3 &&
+      lhs.level_name == rhs.level_name)
+      return true;
+    return false;
+  }
 };
 
 } // namespace messages

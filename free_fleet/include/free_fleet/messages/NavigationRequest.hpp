@@ -36,6 +36,27 @@ struct NavigationRequest
 
   /// A vector of waypoints.
   std::vector<Waypoint> path;
+
+  /// Comparing operator
+  friend bool operator==(
+    const NavigationRequest& lhs,
+    const NavigationRequest& rhs)
+  {
+    if (lhs.robot_name == rhs.robot_name &&
+      lhs.task_id == rhs.task_id &&
+      lhs.path.size() == rhs.path.size())
+    {
+      for (std::size_t i = 0; i < lhs.path.size(); ++i)
+      {
+        if (lhs.path[i] == rhs.path[i])
+          continue;
+        else
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
 };
 
 } // namespace messages
