@@ -16,28 +16,10 @@ find_package(CycloneDDS REQUIRED)
 
 # -----------------------------------------------------------------------------
 
-add_library(free_fleet_client SHARED
+add_library(free_fleet SHARED
   src/Client.cpp
   src/ClientImpl.cpp
   src/configs/ClientConfig.cpp
-  src/messages/FleetMessages.c
-  src/messages/message_utils.cpp
-  src/dds_utils/common.cpp
-)
-target_include_directories(free_fleet_client
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-target_link_libraries(free_fleet_client
-  CycloneDDS::ddsc
-  ssl
-  crypto
-)
-
-# -----------------------------------------------------------------------------
-
-add_library(free_fleet_server SHARED
   src/Server.cpp
   src/ServerImpl.cpp
   src/configs/ServerConfig.cpp
@@ -45,12 +27,12 @@ add_library(free_fleet_server SHARED
   src/messages/message_utils.cpp
   src/dds_utils/common.cpp
 )
-target_include_directories(free_fleet_server
+target_include_directories(free_fleet
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_link_libraries(free_fleet_server
+target_link_libraries(free_fleet
   CycloneDDS::ddsc
   ssl
   crypto
@@ -90,8 +72,7 @@ install(
 
 # Mark executables and/or libraries for installation
 list(APPEND PACKAGE_LIBRARIES
-  free_fleet_client
-  free_fleet_server
+  free_fleet
 )
 install(
   TARGETS ${PACKAGE_LIBRARIES}
