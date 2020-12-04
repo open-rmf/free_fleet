@@ -33,8 +33,7 @@ jobs:
           --from-paths src \
           --ignore-src \
           --rosdistro noetic \
-          --skip-keys "turtlebot3_bringup turtlebot3_navigation turtlebot3_gazebo rmf_fleet_msgs ament_lint_common rclcpp rclpy builtin_interfaces ament_cmake rosidl_default_generators" \
-          -r -y
+          -yr
     - name: build
       shell: bash
       run: |
@@ -47,47 +46,3 @@ jobs:
           ff_examples_ros1 \
           ff_rviz_plugins_ros1 \
           free_fleet_client_ros1
-
-  ros2:
-    runs-on: ubuntu-20.04
-    container:
-      image: docker://ros:foxy-ros-base-focal
-    steps:
-    - name: non-ros-deps
-      run: |
-        sudo apt update && sudo apt install \
-          git wget qt5-default \
-          python3-rosdep \
-          python3-vcstool \
-          python3-colcon-common-extensions \
-          -y
-    - name: workspace
-      run: |
-        mkdir -p ros2_ws/src
-        cd ros2_ws/src
-        git clone https://github.com/osrf/free_fleet
-        git clone https://github.com/osrf/rmf_core
-    - name: checkout
-      uses: actions/checkout@v2
-      with:
-        path: ros2_ws/src/free_fleet
-    - name: ros-deps
-      run: |
-        cd ros2_ws
-        rosdep update
-        rosdep install \
-          --from-paths src \
-          --ignore-src \
-          --rosdistro foxy \
-          -r -y
-    - name: build
-      shell: bash
-      run: |
-        cd ros2_ws
-        source /opt/ros/foxy/setup.bash
-        colcon build \
-          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
-          --packages-up-to \
-          free_fleet \
-          ff_examples_ros2 \
-          free_fleet_server_ros2
