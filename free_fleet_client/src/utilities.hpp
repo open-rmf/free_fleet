@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET_CLIENT_ROS1__SRC__UTILITIES_HPP
-#define FREE_FLEET_CLIENT_ROS1__SRC__UTILITIES_HPP
+#ifndef FREE_FLEET_CLIENT__SRC__UTILITIES_HPP
+#define FREE_FLEET_CLIENT__SRC__UTILITIES_HPP
 
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -40,4 +40,4 @@ bool is_transform_close(
 } // namespace ros1
 } // namespace free_fleet
 
-#endif // FREE_FLEET_CLIENT_ROS1__SRC__UTILITIES_HPP
+#endif // FREE_FLEET_CLIENT__SRC__UTILITIES_HPP
