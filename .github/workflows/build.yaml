@@ -44,5 +44,4 @@ jobs:
           --packages-up-to \
           free_fleet \
           free_fleet_client \
-          free_fleet_examples \
           free_fleet_rviz_plugins
