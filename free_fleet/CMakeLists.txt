@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(free_fleet VERSION 0.0.1 LANGUAGES C CXX)
+project(free_fleet VERSION 1.2.0 LANGUAGES C CXX)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
