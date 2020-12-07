@@ -2,52 +2,6 @@ name: build
 on: push
 jobs:
 
-  ros1:
-    runs-on: ubuntu-20.04
-    container:
-      image: docker://ros:noetic-ros-base-focal
-    steps:
-    - name: non-ros-deps
-      run: |
-        sudo apt update && sudo apt install \
-          git wget qt5-default \
-          python3-rosdep \
-          python3-vcstool \
-          python3-colcon-common-extensions \
-          -y
-    - name: workspace
-      run: |
-        mkdir -p ros1_ws/src
-        cd ros1_ws/src
-        git clone https://github.com/osrf/free_fleet
-        git clone https://github.com/eclipse-cyclonedds/cyclonedds
-    - name: checkout
-      uses: actions/checkout@v2
-      with:
-        path: ros1_ws/src/free_fleet
-    - name: ros-deps
-      run: |
-        cd ros1_ws
-        rosdep update
-        rosdep install \
-          --from-paths src \
-          --ignore-src \
-          --rosdistro noetic \
-          --skip-keys "turtlebot3_bringup turtlebot3_navigation turtlebot3_gazebo rmf_fleet_msgs ament_lint_common rclcpp rclpy builtin_interfaces ament_cmake rosidl_default_generators" \
-          -r -y
-    - name: build
-      shell: bash
-      run: |
-        cd ros1_ws
-        source /opt/ros/noetic/setup.bash
-        colcon build \
-          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
-          --packages-up-to \
-          free_fleet \
-          ff_examples_ros1 \
-          ff_rviz_plugins_ros1 \
-          free_fleet_client_ros1
-
   ros2:
     runs-on: ubuntu-20.04
     container:
@@ -79,7 +33,7 @@ jobs:
           --from-paths src \
           --ignore-src \
           --rosdistro foxy \
-          -r -y
+          -yr
     - name: build
       shell: bash
       run: |
