@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>free_fleet_server_ros2</name>
+  <name>free_fleet_server</name>
   <version>1.0.0</version>
   <description>Free Fleet server ROS 2 wrapper</description>
   <maintainer email="mquigley@openrobotics.org">Morgan Quigley</maintainer>

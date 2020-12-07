@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(free_fleet_server_ros2 LANGUAGES C CXX)
+project(free_fleet_server LANGUAGES C CXX)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -22,29 +22,29 @@ if (ament_cmake_FOUND)
   find_package(free_fleet REQUIRED)
   find_package(Eigen3 REQUIRED)
 
-  add_executable(free_fleet_server_ros2
+  add_executable(free_fleet_server
     src/main.cpp
     src/utilities.cpp
     src/ServerNode.cpp
     src/ServerNodeConfig.cpp
   )
-  target_link_libraries(free_fleet_server_ros2
+  target_link_libraries(free_fleet_server
     ${free_fleet_LIBRARIES}
     Eigen3::Eigen
   )
-  target_include_directories(free_fleet_server_ros2
+  target_include_directories(free_fleet_server
     PRIVATE
       ${free_fleet_INCLUDE_DIRS}
   )
-  ament_target_dependencies(free_fleet_server_ros2
+  ament_target_dependencies(free_fleet_server
     rclcpp
     rmf_fleet_msgs
   )
 
   
   install(
-    TARGETS free_fleet_server_ros2
-    RUNTIME DESTINATION lib/free_fleet_server_ros2
+    TARGETS free_fleet_server
+    RUNTIME DESTINATION lib/free_fleet_server
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
   )

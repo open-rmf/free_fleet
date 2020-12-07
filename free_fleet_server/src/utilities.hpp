@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET_SERVER_ROS2__SRC__UTILITIES_HPP
-#define FREE_FLEET_SERVER_ROS2__SRC__UTILITIES_HPP
+#ifndef FREE_FLEET_SERVER__SRC__UTILITIES_HPP
+#define FREE_FLEET_SERVER__SRC__UTILITIES_HPP
 
 #include <rmf_fleet_msgs/msg/location.hpp>
 #include <rmf_fleet_msgs/msg/robot_state.hpp>
@@ -64,4 +64,4 @@ void to_ros_message(
 } // namespace free_fleet
 
 
-#endif // FREE_FLEET_SERVER_ROS2__SRC__UTILITIES_HPP
+#endif // FREE_FLEET_SERVER__SRC__UTILITIES_HPP
