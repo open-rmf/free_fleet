@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FF_RVIZ_PLUGINS_ROS1__SRC__UTILITIES_HPP
-#define FF_RVIZ_PLUGINS_ROS1__SRC__UTILITIES_HPP
+#ifndef FREE_FLEET_RVIZ_PLUGINS__SRC__UTILITIES_HPP
+#define FREE_FLEET_RVIZ_PLUGINS__SRC__UTILITIES_HPP
 
 #include <geometry_msgs/Quaternion.h>
 
@@ -28,4 +28,4 @@ std::string generate_random_task_id(size_t length);
 
 } // namespace free_fleet
 
-#endif // FF_RVIZ_PLUGINS_ROS1__SRC__UTILITIES_HPP
+#endif // FREE_FLEET_RVIZ_PLUGINS__SRC__UTILITIES_HPP
