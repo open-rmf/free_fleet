@@ -40,4 +40,9 @@ jobs:
         cd ros1_ws
         source /opt/ros/noetic/setup.bash
         colcon build \
-          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE
+          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
+          --packages-up-to \
+          free_fleet \
+          ff_examples_ros1 \
+          ff_rviz_plugins_ros1 \
+          free_fleet_client_ros1
