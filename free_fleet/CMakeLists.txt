@@ -12,7 +12,12 @@ endif()
 
 include(GNUInstallDirs)
 
-find_package(CycloneDDS REQUIRED)
+find_package(CycloneDDS QUIET CONFIG)
+if(NOT CycloneDDS_FOUND)
+  message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
+  ament_package()
+  return()
+endif()
 
 # -----------------------------------------------------------------------------
 

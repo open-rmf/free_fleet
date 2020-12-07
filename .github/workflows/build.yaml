@@ -10,11 +10,18 @@ jobs:
     - name: non-ros-deps
       run: |
         sudo apt update && sudo apt install \
+<<<<<<< HEAD
           git wget qt5-default \
           python3-rosdep \
           python3-vcstool \
           python3-colcon-common-extensions \
           -y
+=======
+          git wget \
+          python-rosdep \
+          python3-vcstool \
+          python3-colcon-common-extensions -y
+>>>>>>> 9ccd7a5... Removed instructions for building Cyclonedds from source
     - name: workspace
       run: |
         mkdir -p ros2_ws/src
@@ -29,6 +36,7 @@ jobs:
       run: |
         cd ros2_ws
         rosdep update
+<<<<<<< HEAD
         rosdep install \
           --from-paths src \
           --ignore-src \
@@ -44,3 +52,15 @@ jobs:
           --packages-up-to \
           free_fleet \
           free_fleet_server
+=======
+        source /opt/ros/eloquent/setup.bash
+        rosdep install --from-paths src --ignore-src -yr
+    - name: build
+      shell: bash
+      run: |
+        cd /home/ff_ws
+        source /opt/ros/eloquent/setup.bash
+        colcon build --packages-up-to \
+          free_fleet \
+          free_fleet_server_ros2 \
+>>>>>>> 9ccd7a5... Removed instructions for building Cyclonedds from source
