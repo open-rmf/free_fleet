@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET_SERVER_ROS2__SRC__SERVERNODE_HPP
-#define FREE_FLEET_SERVER_ROS2__SRC__SERVERNODE_HPP
+#ifndef FREE_FLEET_SERVER__SRC__SERVERNODE_HPP
+#define FREE_FLEET_SERVER__SRC__SERVERNODE_HPP
 
 #include <mutex>
 #include <memory>
@@ -150,4 +150,4 @@ private:
 } // namespace ros2
 } // namespace free_fleet
 
-#endif // FREE_FLEET_SERVER_ROS2__SRC__SERVERNODE_HPP
+#endif // FREE_FLEET_SERVER__SRC__SERVERNODE_HPP

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(ff_examples_ros2)
+project(free_fleet_examples)
 
 find_package(ament_cmake QUIET)
 

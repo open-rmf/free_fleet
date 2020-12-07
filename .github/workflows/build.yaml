@@ -43,5 +43,5 @@ jobs:
           --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
           --packages-up-to \
           free_fleet \
-          ff_examples_ros2 \
-          free_fleet_server_ros2
+          free_fleet_server \
+          free_fleet_examples
