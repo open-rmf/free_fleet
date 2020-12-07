@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Open Source Robotics Foundation
+ * Copyright (C) 2019 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,29 @@
  *
  */
 
-#ifndef FF_RVIZ_PLUGINS_ROS1__SRC__UTILITIES_HPP
-#define FF_RVIZ_PLUGINS_ROS1__SRC__UTILITIES_HPP
+#ifndef FREE_FLEET_CLIENT__SRC__UTILITIES_HPP
+#define FREE_FLEET_CLIENT__SRC__UTILITIES_HPP
 
 #include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/TransformStamped.h>
 
-namespace free_fleet {
+namespace free_fleet
+{
+namespace ros1
+{
 
 double get_yaw_from_quat(const geometry_msgs::Quaternion& quat);
 
-std::string generate_random_task_id(size_t length);
+double get_yaw_from_transform(
+    const geometry_msgs::TransformStamped& transform_stamped); 
 
+geometry_msgs::Quaternion get_quat_from_yaw(double yaw);
+
+bool is_transform_close(
+    const geometry_msgs::TransformStamped& transform_1,
+    const geometry_msgs::TransformStamped& transform_2);
+
+} // namespace ros1
 } // namespace free_fleet
 
-#endif // FF_RVIZ_PLUGINS_ROS1__SRC__UTILITIES_HPP
+#endif // FREE_FLEET_CLIENT__SRC__UTILITIES_HPP

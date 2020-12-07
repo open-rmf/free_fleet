@@ -1,6 +1,6 @@
 <launch>
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-  <arg name="map_file" default="$(find ff_examples_ros1)/maps/world.yaml"/>
+  <arg name="map_file" default="$(find free_fleet_examples)/maps/world.yaml"/>
   <arg name="open_rviz" default="true"/>
   <arg name="move_forward_only" default="false"/>
   <arg name="initial_pose_x" default="-1.8949996233"/>
@@ -43,8 +43,8 @@
   </group>
 
   <!-- launch the free fleet client first -->
-  <node name="turtlebot3_free_fleet_client_node" pkg="free_fleet_client_ros1"
-      type="free_fleet_client_ros1" output="screen">
+  <node name="turtlebot3_free_fleet_client_node" pkg="free_fleet_client"
+      type="free_fleet_client" output="screen">
     <param name="fleet_name" type="string" value="turtlebot3"/>
     <param name="robot_name" type="string" value="tb3_0"/>
     <param name="dds_domain" type="int" value="42"/>

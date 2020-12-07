@@ -1,5 +1,5 @@
-<library path="/libff_rviz_plugins_ros1">
-  <class name="ff_rviz_plugins_ros1/FFNavToolPanel"
+<library path="/libfree_fleet_rviz_plugins">
+  <class name="free_fleet_rviz_plugins/FFNavToolPanel"
       type="free_fleet::FFNavToolPanel"
       base_class_type="rviz::Panel">
     <description>

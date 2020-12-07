@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ff_examples_ros1</name>
+  <name>free_fleet_examples</name>
   <version>1.0.0</version>
   <description>A package containing some examples of using free fleet ROS1 components</description>
   <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
@@ -9,7 +9,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>free_fleet_client_ros1</exec_depend>
+  <exec_depend>free_fleet_client</exec_depend>
 
   <exec_depend>turtlebot3_bringup</exec_depend>
   <exec_depend>turtlebot3_gazebo</exec_depend>

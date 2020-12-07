@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(free_fleet_client_ros1 LANGUAGES C CXX)
+project(free_fleet_rviz_plugins)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -19,33 +19,35 @@ include(GNUInstallDirs)
 
 find_package(catkin QUIET COMPONENTS
   roscpp
-  sensor_msgs
-  tf2
-  tf2_ros
-  tf2_geometry_msgs
-  actionlib
-  move_base_msgs
+  geometry_msgs
+  pluginlib
+  rviz
 )
 
 if (catkin_FOUND)
 
+  set(CMAKE_AUTOMOC ON)
+
+  find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
+  set(QT_LIBRARIES Qt5::Widgets)
+  set(QT_VERSION ${Qt5Widgets_VERSION})
+
   find_package(free_fleet REQUIRED)
 
   catkin_package()
-
+  
   #=============================================================================
 
-  add_executable(free_fleet_client_ros1
-    src/main.cpp
+  add_library(${PROJECT_NAME}
+    src/ff_nav_goal_panel.cpp
     src/utilities.cpp
-    src/ClientNode.cpp
-    src/ClientNodeConfig.cpp
   )
-  target_link_libraries(free_fleet_client_ros1
+  target_link_libraries(${PROJECT_NAME}
     ${free_fleet_LIBRARIES}
     ${catkin_LIBRARIES}
+    ${QT_LIBRARIES}
   )
-  target_include_directories(free_fleet_client_ros1
+  target_include_directories(${PROJECT_NAME}
     PRIVATE
       ${free_fleet_INCLUDE_DIRS}
       ${catkin_INCLUDE_DIRS}
@@ -53,30 +55,16 @@ if (catkin_FOUND)
 
   #=============================================================================
 
-  set(testing_targets
-    fake_action_server
-  )
-  
-  foreach(target ${testing_targets})
-    add_executable(${target}
-      src/tests/${target}.cpp
-    )
-    target_link_libraries(${target}
-      ${catkin_LIBRARIES}
-    )
-    target_include_directories(${target}
-      PRIVATE
-        ${catkin_INCLUDE_DIRS}
-    )
-  endforeach()
-  
-  #=============================================================================
-
   install(
-    TARGETS
-      free_fleet_client_ros1
-      ${testing_targets}
+    TARGETS ${PROJECT_NAME}
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  )
+
+  install(FILES
+    plugin_description.xml
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )
 
 else()

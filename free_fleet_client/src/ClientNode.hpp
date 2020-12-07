@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef FREE_FLEET_CLIENT_ROS1__SRC__CLIENTNODE_HPP
-#define FREE_FLEET_CLIENT_ROS1__SRC__CLIENTNODE_HPP
+#ifndef FREE_FLEET_CLIENT__SRC__CLIENTNODE_HPP
+#define FREE_FLEET_CLIENT__SRC__CLIENTNODE_HPP
 
 #include <deque>
 #include <mutex>
@@ -206,4 +206,4 @@ private:
 } // namespace ros1
 } // namespace free_fleet
 
-#endif // FREE_FLEET_CLIENT_ROS1__SRC__CLIENTNODE_HPP
+#endif // FREE_FLEET_CLIENT__SRC__CLIENTNODE_HPP
