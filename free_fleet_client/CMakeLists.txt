@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(free_fleet_client_ros1 LANGUAGES C CXX)
+project(free_fleet_client LANGUAGES C CXX)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -35,17 +35,17 @@ if (catkin_FOUND)
 
   #=============================================================================
 
-  add_executable(free_fleet_client_ros1
+  add_executable(free_fleet_client
     src/main.cpp
     src/utilities.cpp
     src/ClientNode.cpp
     src/ClientNodeConfig.cpp
   )
-  target_link_libraries(free_fleet_client_ros1
+  target_link_libraries(free_fleet_client
     ${free_fleet_LIBRARIES}
     ${catkin_LIBRARIES}
   )
-  target_include_directories(free_fleet_client_ros1
+  target_include_directories(free_fleet_client
     PRIVATE
       ${free_fleet_INCLUDE_DIRS}
       ${catkin_INCLUDE_DIRS}
@@ -74,7 +74,7 @@ if (catkin_FOUND)
 
   install(
     TARGETS
-      free_fleet_client_ros1
+      free_fleet_client
       ${testing_targets}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
