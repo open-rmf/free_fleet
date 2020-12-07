@@ -44,4 +44,4 @@ jobs:
           --packages-up-to \
           free_fleet \
           free_fleet_server \
-          ff_examples_ros2
+          free_fleet_examples

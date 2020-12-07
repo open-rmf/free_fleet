@@ -2,8 +2,8 @@
 
 <launch>
 
-  <node pkg="free_fleet_server_ros2"
-      exec="free_fleet_server_ros2"
+  <node pkg="free_fleet_server"
+      exec="free_fleet_server"
       name="fake_server_node"
       output="both">
 
