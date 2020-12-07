@@ -2,10 +2,7 @@
 Changelog for package free_fleet
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
-
-1.0.0 (2020-06-11)
+1.1.0 (2020-09-24)
 ------------------
-* Contains the main implementation of free fleet client and servers, includes API allowing both ROS 1 and ROS 2 implementations/wrappers to either run on robots or as servers. Client and server implementations use CycloneDDS to communicate with each other.
+* Contains the main implementation of free fleet client and server, includes API allowing users to implement their own wrappers to use custom API. Client and server implementations use CycloneDDS to communicate with each other.
 * Contributors: Aaron Chong
