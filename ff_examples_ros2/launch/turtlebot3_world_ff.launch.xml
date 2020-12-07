@@ -5,7 +5,6 @@
   <node pkg="free_fleet_server_ros2"
       exec="free_fleet_server_ros2"
       name="turtlebot3_fleet_server_node"
-      node-name="turtlebot3_fleet_server_node"
       output="both">
 
     <param name="fleet_name" value="turtlebot3"/>
