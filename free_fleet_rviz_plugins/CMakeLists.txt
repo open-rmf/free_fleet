@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(ff_rviz_plugins_ros1)
+project(free_fleet_rviz_plugins)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
