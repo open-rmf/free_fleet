@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(ff_examples_ros1)
+project(free_fleet_examples)
 
 #===============================================================================
 
