@@ -159,10 +159,13 @@ Before starting these examples, remember to install all the prerequisites accord
 
 Additional packages are required for this example, clone in additional packages into the client workspace and install the required dependencies,
 
+** Note, due to changes in `robot_state_publisher` for `noetic`, the examples will not work with the main packages, hence the links to multiple forks. The instructions will be updated once the merges are complete.
+
 ```bash
 cd ~/client_ws/src
-git clone https://github.com/ROBOTIS-GIT/turtlebot3 -b noetic-devel
-git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations -b noetic-devel
+git clone https://github.com/rhaschke/robot_state_publisher -b noetic-devel
+git clone https://github.com/aaronchongth/turtlebot3 -b noetic-devel
+git clone https://github.com/aaronchongth/turtlebot3_simulations -b noetic-devel
 
 sudo apt install ros-noetic-gazebo-ros-pkgs ros-noetic-dwa-local-planner
 ```
