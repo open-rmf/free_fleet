@@ -92,7 +92,18 @@ public:
     const messages::RobotState& new_state,
     rmf_traffic::Time time_now);
 
+  /// Gets the most up to date tracking estimation of this robot within the
+  /// navigation graph.
+  ///
+  /// \return
+  ///   Pair consists of the tracking state, as well as the index of the
+  ///   component that is is tracked to. If the tracking state is Lost, the
+  ///   second value is meaningless.
+  std::pair<TrackingState, std::size_t> tracking_estimation() const;
+
 private:
+
+  void _track_from_scratch(const messages::RobotState& new_state);
 
   void _track_without_task_id(const messages::RobotState& new_state);
 
