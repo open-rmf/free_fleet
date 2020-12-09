@@ -33,7 +33,8 @@ RobotInfo::RobotInfo(
   _first_found(time_now),
   _last_updated(time_now),
   _state(rmf_utils::nullopt),
-  _graph(std::move(graph))
+  _graph(std::move(graph)),
+  _tracking_state(TrackingState::Lost)
 {
   _track_and_update(state);
 }
@@ -87,6 +88,32 @@ void RobotInfo::update_state(
 }
 
 //==============================================================================
+auto RobotInfo::tracking_estimation() const 
+  -> std::pair<TrackingState, std::size_t>
+{
+  return std::make_pair(_tracking_state, _tracking_index);
+}
+
+//==============================================================================
+void RobotInfo::_track_from_scratch(
+  const messages::RobotState& new_state)
+{
+  const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
+
+  // Find the nearest waypoint
+  auto nearest_wp = _find_nearest_waypoint(curr_loc);
+  if (nearest_wp.second < _waypoint_dist_threshold)
+  {
+    _tracking_state = TrackingState::OnWaypoint;
+    _tracking_index = nearest_wp.first->index();
+    return;
+  }
+
+  // It is lost even by the best estimates
+  _tracking_state = TrackingState::Lost;
+}
+
+//==============================================================================
 void RobotInfo::_track_without_task_id(
   const messages::RobotState& new_state)
 {
@@ -104,7 +131,7 @@ void RobotInfo::_track_without_task_id(
       // waypoints, we have diverged from the navigation graph and would be
       // considered lost
       // TODO(AA): Warn that this is happening.
-      _tracking_state = TrackingState::Lost;
+      _track_from_scratch(new_state);
     }
   }
   else if (_tracking_state == TrackingState::OnLane)
@@ -127,7 +154,7 @@ void RobotInfo::_track_without_task_id(
     {
       // It is no longer on its lane, nor anywhere near any waypoints.
       // TODO(AA): Warn that this is happening.
-      _tracking_state = TrackingState::Lost;
+      _track_from_scratch(new_state);
     }
   }
   else if (_tracking_state == TrackingState::TowardsWaypoint)
@@ -150,7 +177,9 @@ void RobotInfo::_track_without_task_id(
   }
   else
   {
-    // Keep the tracking state as lost.
+    // This state is computationally expensive, we should avoid getting into
+    // this state.
+    _track_from_scratch(new_state);
   }
 }
 
