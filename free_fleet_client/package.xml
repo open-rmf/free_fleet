@@ -19,5 +19,5 @@
   <depend>actionlib</depend>
   <depend>move_base_msgs</depend>
 
-  <depend>free_fleet</depend>
+  <depend>free_fleet_rolling</depend>
 </package>

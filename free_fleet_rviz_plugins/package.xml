@@ -14,7 +14,7 @@
   <depend>roscpp</depend>
   <depend>geometry_msgs</depend>
 
-  <depend>free_fleet</depend>
+  <depend>free_fleet_rolling</depend>
 
   <export>
       <rviz plugin="${prefix}/plugin_description.xml"/>
