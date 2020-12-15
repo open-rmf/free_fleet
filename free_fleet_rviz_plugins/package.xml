@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>free_fleet_rviz_plugins</name>
-  <version>1.2.0</version>
+  <name>free_fleet_rviz_plugins_rolling</name>
+  <version>1.9999.0</version>
   <description>A package containing rviz plugins that works with free fleet ROS1</description>
   <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
   <license>Apache 2.0</license>
