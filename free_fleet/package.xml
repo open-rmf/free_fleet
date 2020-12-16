@@ -12,6 +12,9 @@
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
   <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
   <depend>cyclonedds</depend>
+  <depend>libssl-dev</depend>
+  <depend>crypto++</depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>

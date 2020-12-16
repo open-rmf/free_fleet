@@ -17,6 +17,7 @@
   <depend>rclcpp_rolling</depend>
   <depend>rmf_fleet_msgs_rolling</depend>
   <depend>free_fleet</depend>
+  <depend>eigen</depend>
   
   <test_depend>ament_lint_common_rolling</test_depend>
 
