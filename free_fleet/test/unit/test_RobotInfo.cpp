@@ -23,6 +23,9 @@
 #include <free_fleet/messages/Location.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RelocalizationRequest.hpp>
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
@@ -32,6 +35,10 @@
 #include "mock_CommandHandle.hpp"
 
 #include "src/agv/RobotInfo.hpp"
+#include "src/requests/RequestInfo.hpp"
+#include "src/requests/ModeRequestInfo.hpp"
+#include "src/requests/NavigationRequestInfo.hpp"
+#include "src/requests/RelocalizationRequestInfo.hpp"
 
 SCENARIO("Tests RobotInfo API")
 {
@@ -221,7 +228,7 @@ SCENARIO("Tests RobotInfo API")
       initial_state.task_id,
       next_mode,
       1.0,
-      next_location,
+
       0
     };
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
@@ -271,7 +278,25 @@ SCENARIO("Tests RobotInfo API")
 
   GIVEN("Allocated mode request, state updated")
   {
-    
-  }
+    free_fleet::messages::RobotMode pause_mode {
+      free_fleet::messages::RobotMode::MODE_PAUSED
+    };
+    free_fleet::messages::ModeRequest pause_request {
+      initial_state.name,
+      initial_state.task_id + 1,
+      pause_mode,
+      {}
+    };
 
+    // auto new_mode_request_info =
+    //   std::make_shared<free_fleet::requests::ModeRequestInfo>(
+    //     pause_request,
+    //     [](void(const free_fleet::messages::ModeRequest)){},
+    //     std::chrono::steady_clock::now());
+    // REQUIRE(new_mode_request_info);
+
+    // robot_info->allocate_task(
+    //   std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
+    //     new_mode_request_info));
+  }
 }
