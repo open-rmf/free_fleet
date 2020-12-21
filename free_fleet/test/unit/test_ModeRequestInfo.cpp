@@ -43,7 +43,7 @@ SCENARIO("Test ModeRequestInfo")
     {}
   };
 
-  bool sent_request_called = false;
+  bool send_request_called = false;
 
   rmf_traffic::Time time_now = std::chrono::steady_clock::now();
 
@@ -52,7 +52,7 @@ SCENARIO("Test ModeRequestInfo")
       pause_request,
       [&](const free_fleet::messages::ModeRequest&)
   {
-    sent_request_called = true;
+    send_request_called = true;
   },
       time_now));
   REQUIRE(new_mode_request_info);
@@ -64,7 +64,7 @@ SCENARIO("Test ModeRequestInfo")
   CHECK(id == task_id);
 
   new_mode_request_info->send_request();
-  CHECK(sent_request_called);
+  CHECK(send_request_called);
 
   auto request_info =
     std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
