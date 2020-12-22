@@ -35,9 +35,9 @@ struct ClientNodeConfig
   std::string fleet_name = "fleet_name";
   std::string robot_name = "robot_name";
   std::string robot_model = "robot_model";
+  std::string level_name = "level_name";
 
   std::string battery_state_topic = "/battery_state";
-  std::string level_name_topic = "/level_name";
 
   std::string map_frame = "map";
   std::string robot_frame = "base_footprint";

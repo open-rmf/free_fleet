@@ -65,6 +65,7 @@
       type="free_fleet_client_ros1" output="screen">
     <param name="fleet_name" type="string" value="turtlebot3"/>
     <param name="robot_name" type="string" value="$(arg tb3_0_prefix)"/>
+    <param name="level_name" type="string" value="house"/>
     <param name="dds_domain" type="int" value="42"/>
     <param name="max_dist_to_first_waypoint" type="double" value="10.0"/>
     <param name="battery_state_topic" value="$(arg tb3_0_prefix)/battery_state"/>
@@ -77,6 +78,7 @@
       type="free_fleet_client_ros1" output="screen">
     <param name="fleet_name" type="string" value="turtlebot3"/>
     <param name="robot_name" type="string" value="$(arg tb3_1_prefix)"/>
+    <param name="level_name" type="string" value="house"/>
     <param name="dds_domain" type="int" value="42"/>
     <param name="max_dist_to_first_waypoint" type="double" value="10.0"/>
     <param name="battery_state_topic" value="$(arg tb3_1_prefix)/battery_state"/>
@@ -89,6 +91,7 @@
       type="free_fleet_client_ros1" output="screen">
     <param name="fleet_name" type="string" value="turtlebot3"/>
     <param name="robot_name" type="string" value="$(arg tb3_2_prefix)"/>
+    <param name="level_name" type="string" value="house"/>
     <param name="dds_domain" type="int" value="42"/>
     <param name="max_dist_to_first_waypoint" type="double" value="10.0"/>
     <param name="battery_state_topic" value="$(arg tb3_2_prefix)/battery_state"/>

@@ -47,6 +47,7 @@
       type="free_fleet_client_ros1" output="screen">
     <param name="fleet_name" type="string" value="turtlebot3"/>
     <param name="robot_name" type="string" value="tb3_0"/>
+    <param name="level_name" type="string" value="turtlebot_world"/>
     <param name="dds_domain" type="int" value="42"/>
     <param name="max_dist_to_first_waypoint" type="double" value="10.0"/>
   </node>

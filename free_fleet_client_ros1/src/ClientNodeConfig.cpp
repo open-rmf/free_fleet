@@ -69,6 +69,7 @@ void ClientNodeConfig::print_config() const
   printf("  fleet name: %s\n", fleet_name.c_str());
   printf("  robot name: %s\n", robot_name.c_str());
   printf("  robot model: %s\n", robot_model.c_str());
+  printf("  level name: %s\n", level_name.c_str());
   printf("  wait timeout: %.1f\n", wait_timeout);
   printf("  update request frequency: %.1f\n", update_frequency);
   printf("  publish state frequency: %.1f\n", publish_frequency);
@@ -76,7 +77,6 @@ void ClientNodeConfig::print_config() const
       max_dist_to_first_waypoint);
   printf("  TOPICS\n");
   printf("    battery state: %s\n", battery_state_topic.c_str());
-  printf("    level name: %s\n", level_name_topic.c_str());
   printf("    move base server: %s\n", move_base_server_name.c_str());
   printf("  ROBOT FRAMES\n");
   printf("    map frame: %s\n", map_frame.c_str());
@@ -113,9 +113,9 @@ ClientNodeConfig ClientNodeConfig::make()
   config.get_param_if_available(
       node_private_ns, "robot_model", config.robot_model);
   config.get_param_if_available(
-      node_private_ns, "battery_state_topic", config.battery_state_topic);
+      node_private_ns, "level_name", config.level_name);
   config.get_param_if_available(
-      node_private_ns, "level_name_topic", config.level_name_topic);
+      node_private_ns, "battery_state_topic", config.battery_state_topic);
   config.get_param_if_available(node_private_ns, "map_frame", config.map_frame);
   config.get_param_if_available(
       node_private_ns, "robot_frame", config.robot_frame);
