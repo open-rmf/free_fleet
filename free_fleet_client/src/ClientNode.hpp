@@ -94,19 +94,6 @@ private:
   sensor_msgs::BatteryState current_battery_state;
 
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
-
-  // --------------------------------------------------------------------------
-  // Level name handling 
-  // TODO: decide on a better way to get level data
-  // TODO: add functionality to handle level transition
-
-  ros::Subscriber level_name_sub;
-
-  std::mutex level_name_mutex;
-  
-  std_msgs::String current_level_name;
-
-  void level_name_callback_fn(const std_msgs::String& msg);
   
   // --------------------------------------------------------------------------
   // Robot transform handling
