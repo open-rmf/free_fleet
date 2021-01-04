@@ -50,7 +50,6 @@ public:
   {
     OnWaypoint,
     OnLane,
-    TowardsWaypoint,
     Lost
   };
 
@@ -103,11 +102,9 @@ public:
 
 private:
 
-  void _track_from_scratch(const messages::RobotState& new_state);
-
-  void _track_without_task_id(const messages::RobotState& new_state);
-
   void _track_and_update(const messages::RobotState& new_state);
+
+  void _track_without_task_id(const Eigen::Vector2d& new_state);
 
   /// Finds the normal distance of a point to a lane.
   double _distance_to_lane(

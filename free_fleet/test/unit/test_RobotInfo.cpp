@@ -228,7 +228,6 @@ SCENARIO("Tests RobotInfo API")
       initial_state.task_id,
       next_mode,
       1.0,
-
       0
     };
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
