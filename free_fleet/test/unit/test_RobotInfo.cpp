@@ -110,9 +110,6 @@ SCENARIO("Tests RobotInfo API")
 
   GIVEN("Second state updated, on waypoint")
   {
-    free_fleet::messages::RobotMode next_mode {
-      free_fleet::messages::RobotMode::MODE_MOVING
-    };
     free_fleet::messages::Location next_location {
       0,
       0,
@@ -121,15 +118,8 @@ SCENARIO("Tests RobotInfo API")
       0.0,
       test_map_name
     };
-    free_fleet::messages::RobotState next_state {
-      initial_state.name,
-      initial_state.model,
-      initial_state.task_id,
-      next_mode,
-      1.0,
-      next_location,
-      0
-    };
+    auto next_state = initial_state;
+    next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
     robot_info->update_state(next_state, next_time);
 
@@ -144,9 +134,6 @@ SCENARIO("Tests RobotInfo API")
 
   GIVEN("Second state updated, near waypoint")
   {
-    free_fleet::messages::RobotMode next_mode {
-      free_fleet::messages::RobotMode::MODE_MOVING
-    };
     free_fleet::messages::Location next_location {
       0,
       0,
@@ -155,15 +142,8 @@ SCENARIO("Tests RobotInfo API")
       0.0,
       test_map_name
     };
-    free_fleet::messages::RobotState next_state {
-      initial_state.name,
-      initial_state.model,
-      initial_state.task_id,
-      next_mode,
-      1.0,
-      next_location,
-      0
-    };
+    auto next_state = initial_state;
+    next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
     robot_info->update_state(next_state, next_time);
 
@@ -178,9 +158,6 @@ SCENARIO("Tests RobotInfo API")
 
   GIVEN("Second state updated, near waypoint but outside threshold")
   {
-    free_fleet::messages::RobotMode next_mode {
-      free_fleet::messages::RobotMode::MODE_MOVING
-    };
     free_fleet::messages::Location next_location {
       0,
       0,
@@ -189,15 +166,8 @@ SCENARIO("Tests RobotInfo API")
       0.0,
       test_map_name
     };
-    free_fleet::messages::RobotState next_state {
-      initial_state.name,
-      initial_state.model,
-      initial_state.task_id,
-      next_mode,
-      1.0,
-      next_location,
-      0
-    };
+    auto next_state = initial_state;
+    next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
     robot_info->update_state(next_state, next_time);
 
@@ -209,11 +179,8 @@ SCENARIO("Tests RobotInfo API")
     CHECK(tracking_estimation.first == TrackingState::Lost);
   }
 
-  GIVEN("Second state updated, on lane")
+  GIVEN("Second state updated, on lane, lost")
   {
-    free_fleet::messages::RobotMode next_mode {
-      free_fleet::messages::RobotMode::MODE_MOVING
-    };
     free_fleet::messages::Location next_location {
       0,
       0,
@@ -222,14 +189,8 @@ SCENARIO("Tests RobotInfo API")
       0.0,
       test_map_name
     };
-    free_fleet::messages::RobotState next_state {
-      initial_state.name,
-      initial_state.model,
-      initial_state.task_id,
-      next_mode,
-      1.0,
-      0
-    };
+    auto next_state = initial_state;
+    next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
     robot_info->update_state(next_state, next_time);
 
@@ -241,28 +202,19 @@ SCENARIO("Tests RobotInfo API")
     CHECK(tracking_estimation.first == TrackingState::Lost);
   }
 
-  GIVEN("Second state updated, near center waypoint, on multiple lanes")
+  GIVEN("Second state updated, near center waypoint, on multiple lanes,"
+    " not on waypoint, lost")
   {
-    free_fleet::messages::RobotMode next_mode {
-      free_fleet::messages::RobotMode::MODE_MOVING
-    };
     free_fleet::messages::Location next_location {
       0,
       0,
+      0.0 + 0.5 + 1e-3,
       0.0,
-      0.0 + 0.5 - 1e-3,
       0.0,
       test_map_name
     };
-    free_fleet::messages::RobotState next_state {
-      initial_state.name,
-      initial_state.model,
-      initial_state.task_id,
-      next_mode,
-      1.0,
-      next_location,
-      0
-    };
+    auto next_state = initial_state;
+    next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
     robot_info->update_state(next_state, next_time);
 
@@ -271,11 +223,52 @@ SCENARIO("Tests RobotInfo API")
     CHECK(robot_info->last_updated() == next_time);
 
     auto tracking_estimation = robot_info->tracking_estimation();
-    CHECK(tracking_estimation.first == TrackingState::OnWaypoint);
-    CHECK(tracking_estimation.second == 0);
+    CHECK(tracking_estimation.first == TrackingState::Lost);
   }
 
-  GIVEN("Allocated mode request, state updated")
+  GIVEN("Second and third state updated, lost, then found")
+  {
+    free_fleet::messages::Location second_loc {
+      0,
+      0,
+      0.0 + 0.5 + 1e-3,
+      0.0,
+      0.0,
+      test_map_name
+    };
+    auto second_state = initial_state;
+    second_state.location = second_loc;
+    rmf_traffic::Time second_time = std::chrono::steady_clock::now();
+    robot_info->update_state(second_state, second_time);
+
+    CHECK(robot_info->state() == second_state);
+    CHECK(robot_info->last_updated() == second_time);
+
+    auto second_tracking_estimation = robot_info->tracking_estimation();
+    CHECK(second_tracking_estimation.first == TrackingState::Lost);
+
+    free_fleet::messages::Location third_loc {
+      0,
+      0,
+      10.0 - 0.5 + 1e-3,
+      0.0,
+      0.0,
+      test_map_name
+    };
+    auto third_state = initial_state;
+    third_state.location = third_loc;
+    rmf_traffic::Time third_time = std::chrono::steady_clock::now();
+    robot_info->update_state(third_state, third_time);
+
+    CHECK(robot_info->state() == third_state);
+    CHECK(robot_info->last_updated() == third_time);
+
+    auto third_tracking_estimation = robot_info->tracking_estimation();
+    CHECK(third_tracking_estimation.first == TrackingState::OnWaypoint);
+    CHECK(third_tracking_estimation.second == 1);
+  }
+
+  GIVEN("Allocated mode request")
   {
     free_fleet::messages::RobotMode pause_mode {
       free_fleet::messages::RobotMode::MODE_PAUSED
@@ -287,15 +280,153 @@ SCENARIO("Tests RobotInfo API")
       {}
     };
 
-    // auto new_mode_request_info =
-    //   std::make_shared<free_fleet::requests::ModeRequestInfo>(
-    //     pause_request,
-    //     [](void(const free_fleet::messages::ModeRequest)){},
-    //     std::chrono::steady_clock::now());
-    // REQUIRE(new_mode_request_info);
+    bool request_sent = false;
+    auto new_mode_request_info =
+      std::make_shared<free_fleet::requests::ModeRequestInfo>(
+        pause_request,
+        [&](const free_fleet::messages::ModeRequest&){ request_sent = true; },
+        std::chrono::steady_clock::now());
+    REQUIRE(new_mode_request_info);
 
-    // robot_info->allocate_task(
-    //   std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
-    //     new_mode_request_info));
+    CHECK_NOTHROW(
+      robot_info->allocate_task(
+        std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
+          new_mode_request_info)));
+  }
+
+  GIVEN("Allocated relocation request")
+  {
+    free_fleet::messages::Location reloc_loc {
+      0,
+      0,
+      0.0,
+      10.0 + 0.5 - 1e-3,
+      0.0,
+      test_map_name
+    };
+    free_fleet::messages::RelocalizationRequest reloc_request {
+      initial_state.name,
+      initial_state.task_id + 1,
+      reloc_loc,
+      3
+    };
+
+    bool request_sent = false;
+    auto new_reloc_request_info =
+      std::make_shared<free_fleet::requests::RelocalizationRequestInfo>(
+        reloc_request,
+        [&](const free_fleet::messages::RelocalizationRequest&) { request_sent = true; },
+        std::chrono::steady_clock::now());
+    REQUIRE(new_reloc_request_info);
+
+    CHECK_NOTHROW(
+      robot_info->allocate_task(
+        std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
+          new_reloc_request_info)));
+  }
+
+  GIVEN("Allocated navigation request")
+  {
+    free_fleet::messages::NavigationRequest nav_request {
+      initial_state.name,
+      initial_state.task_id + 1,
+      {}
+    };
+    free_fleet::messages::Waypoint wp;
+    wp.location.level_name = test_map_name;
+
+    auto first_wp = wp;
+    first_wp.index = 0;
+    first_wp.location.x = 0.0;
+    first_wp.location.y = 0.0;
+    nav_request.path.push_back(first_wp);
+
+    auto second_wp = wp;
+    second_wp.index = 1;
+    second_wp.location.x = 10.0;
+    nav_request.path.push_back(second_wp);
+
+    auto third_wp = wp;
+    third_wp.index = 0;
+    third_wp.location.x = 0.0;
+    nav_request.path.push_back(third_wp);
+
+    auto forth_wp = wp;
+    forth_wp.index = 2;
+    forth_wp.location.x = -10.0;
+    nav_request.path.push_back(forth_wp);
+
+    bool request_sent = false;
+    auto new_nav_request_info =
+      std::make_shared<free_fleet::requests::NavigationRequestInfo>(
+        nav_request,
+        [&](const free_fleet::messages::NavigationRequest&){ request_sent = true; },
+        std::chrono::steady_clock::now());
+    REQUIRE(new_nav_request_info);
+
+    CHECK_NOTHROW(
+      robot_info->allocate_task(
+        std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
+          new_nav_request_info)));
+  }
+
+  GIVEN("Allocate navigation request, update multiple states, throughout the path")
+  {
+    uint32_t new_task_id = initial_state.task_id + 1;
+    free_fleet::messages::NavigationRequest nav_request {
+      initial_state.name,
+      new_task_id,
+      {}
+    };
+    free_fleet::messages::Waypoint wp;
+    wp.location.level_name = test_map_name;
+
+    auto first_wp = wp;
+    first_wp.index = 0;
+    first_wp.location.x = 0.0;
+    first_wp.location.y = 0.0;
+    nav_request.path.push_back(first_wp);
+
+    auto second_wp = wp;
+    second_wp.index = 1;
+    second_wp.location.x = 10.0;
+    nav_request.path.push_back(second_wp);
+
+    auto third_wp = wp;
+    third_wp.index = 0;
+    third_wp.location.x = 0.0;
+    nav_request.path.push_back(third_wp);
+
+    auto forth_wp = wp;
+    forth_wp.index = 2;
+    forth_wp.location.x = -10.0;
+    nav_request.path.push_back(forth_wp);
+
+    bool request_sent = false;
+    auto new_nav_request_info =
+      std::make_shared<free_fleet::requests::NavigationRequestInfo>(
+        nav_request,
+        [&](const free_fleet::messages::NavigationRequest&){ request_sent = true; },
+        std::chrono::steady_clock::now());
+    REQUIRE(new_nav_request_info);
+
+    CHECK_NOTHROW(
+      robot_info->allocate_task(
+        std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
+          new_nav_request_info)));
+
+    // Second state, starting on the path
+    auto second_state = initial_state;
+    second_state.task_id = new_task_id;
+    second_state.location.x = 0.0;
+    second_state.location.y = 0.0;
+    rmf_traffic::Time second_time = std::chrono::steady_clock::now();
+    robot_info->update_state(second_state, second_time);
+
+    // CHECK(robot_info->state() == second_state);
+    // CHECK(robot_info->last_updated() == second_time);
+
+    // auto second_tracking_estimation = robot_info->tracking_estimation();
+    // CHECK(second_tracking_estimation.first == TrackingState::Lost);
   }
 }
