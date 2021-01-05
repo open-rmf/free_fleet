@@ -15,8 +15,6 @@
  *
 */
 
-#include <iostream>
-
 #include "RobotInfo.hpp"
 #include "../requests/ModeRequestInfo.hpp"
 #include "../requests/NavigationRequestInfo.hpp"
