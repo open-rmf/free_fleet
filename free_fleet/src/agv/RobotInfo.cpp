@@ -109,7 +109,6 @@ void RobotInfo::_track_and_update(const messages::RobotState& new_state)
   }
   else
   {
-    std::cout << "task found" << std::endl;
     const uint32_t task_id = new_state.task_id;
     auto it = _allocated_requests.find(task_id);
     if (it == _allocated_requests.end())
@@ -118,7 +117,6 @@ void RobotInfo::_track_and_update(const messages::RobotState& new_state)
       // due to lack of information for this task, we will treat this as the
       // robot is not doing any task.
       // TODO(AA): Warn that this is happening.
-      std::cout << "no such task!" << std::endl;
       _track_without_task_id(curr_loc);
     }
     assert(it->second);
@@ -157,7 +155,6 @@ void RobotInfo::_track_and_update(const messages::RobotState& new_state)
     }
     else if (request_type == RequestType::NavigationRequest)
     {
-      std::cout << "it is a nav request" << std::endl;
       // We will use the target waypoints in the navigation request as
       // additional information to help with tracking.
       std::shared_ptr<requests::NavigationRequestInfo> nav_req =
@@ -167,18 +164,15 @@ void RobotInfo::_track_and_update(const messages::RobotState& new_state)
 
       rmf_utils::optional<std::size_t> prev_wp_index = rmf_utils::nullopt;
       rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
-      if (new_state.path_target_index - 1 >= 0)
+      if (new_state.path_target_index != 0)
       {
         prev_wp_index =
           nav_req->request().path[new_state.path_target_index - 1].index;
-        std::cout << prev_wp_index.value() << std::endl;
         curr_lane = _graph->lane_from(prev_wp_index.value(), next_wp_index);
-        std::cout << curr_lane->index() << std::endl;
       }
 
       if (_is_near_waypoint(next_wp_index, curr_loc))
       {
-        std::cout << "It is near waypoint" << std::endl;
         // The robot has reached the next waypoint on this navigation request.
         _tracking_state = TrackingState::OnWaypoint;
         _tracking_index = next_wp_index;
@@ -204,6 +198,14 @@ void RobotInfo::_track_and_update(const messages::RobotState& new_state)
           //   // warn
           // }
         }
+      }
+      else
+      {
+        // Something is wrong here, it is not near the next waypoint, and has
+        // been unable to get a path using the previous waypoint, it is lost
+        // until a clearer state comes in
+        // TODO(AA): Warn that this is happening
+        _tracking_state = TrackingState::Lost;
       }
     }
     else
