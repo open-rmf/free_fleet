@@ -17,6 +17,7 @@
   <depend>rclcpp</depend>
   <depend>rmf_fleet_msgs</depend>
   <depend>free_fleet</depend>
+  <depend>eigen</depend>
   
   <test_depend>ament_lint_common</test_depend>
 
