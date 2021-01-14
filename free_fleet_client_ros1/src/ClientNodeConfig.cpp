@@ -78,7 +78,7 @@ void ClientNodeConfig::print_config() const
   printf("  TOPICS\n");
   printf("    battery state: %s\n", battery_state_topic.c_str());
   printf("    move base server: %s\n", move_base_server_name.c_str());
-  printf("    charger server: %s\n", charger_server_name.c_str());
+  printf("    charging trigger server: %s\n", charging_trigger_server_name.c_str());
   printf("  ROBOT FRAMES\n");
   printf("    map frame: %s\n", map_frame.c_str());
   printf("    robot frame: %s\n", robot_frame.c_str());
@@ -123,7 +123,7 @@ ClientNodeConfig ClientNodeConfig::make()
   config.get_param_if_available(
       node_private_ns, "move_base_server_name", config.move_base_server_name);
   config.get_param_if_available(
-      node_private_ns, "charger_server_name", config.charger_server_name);
+      node_private_ns, "charging_trigger_server_name", config.charging_trigger_server_name);
   config.get_param_if_available(
       node_private_ns, "dds_domain", config.dds_domain);
   config.get_param_if_available(

@@ -27,6 +27,7 @@ namespace ros1
 ClientNode::SharedPtr ClientNode::make(const ClientNodeConfig& _config)
 {
   SharedPtr client_node = SharedPtr(new ClientNode(_config));
+  client_node->node.reset(new ros::NodeHandle(_config.robot_name + "_node"));
 
   /// Starting the free fleet client
   ClientConfig client_config = _config.get_client_config();
@@ -48,9 +49,27 @@ ClientNode::SharedPtr ClientNode::make(const ClientNodeConfig& _config)
   ROS_INFO("connected with move base action server: %s",
       _config.move_base_server_name.c_str());
 
+  /// Setting up the charger server client, if required, wait for server
+  std::unique_ptr<ros::ServiceClient> charging_trigger_client = nullptr;
+  if (_config.charging_trigger_server_name != "")
+  {
+    charging_trigger_client =
+      std::make_unique<ros::ServiceClient>(
+        client_node->node->serviceClient<std_srvs::Trigger>(
+          _config.charging_trigger_server_name, true));
+    if (!charging_trigger_client->waitForExistence(
+      ros::Duration(_config.wait_timeout)))
+    {
+      ROS_ERROR("timed out waiting for charging trigger server: %s",
+        _config.charging_trigger_server_name.c_str());
+      return nullptr;
+    }
+  }
+
   client_node->start(Fields{
       std::move(client),
-      std::move(move_base_client)
+      std::move(move_base_client),
+      std::move(charging_trigger_client)
   });
 
   return client_node;
@@ -80,21 +99,12 @@ void ClientNode::start(Fields _fields)
 {
   fields = std::move(_fields);
 
-  node.reset(new ros::NodeHandle(client_node_config.robot_name + "_node"));
   update_rate.reset(new ros::Rate(client_node_config.update_frequency));
   publish_rate.reset(new ros::Rate(client_node_config.publish_frequency));
 
   battery_percent_sub = node->subscribe(
       client_node_config.battery_state_topic, 1,
       &ClientNode::battery_state_callback_fn, this);
-
-  if (client_node_config.charger_server_name != "")
-  {
-    charging_service_client =
-      std::make_unique<ros::ServiceClient>(
-        node->serviceClient<std_srvs::Trigger>(
-          client_node_config.charger_server_name));
-  }
 
   request_error = false;
   emergency = false;
@@ -294,10 +304,11 @@ bool ClientNode::read_mode_request()
     else if (mode_request.mode.mode == messages::RobotMode::MODE_CHARGING)
     {
       ROS_INFO("received a CHARGING command.");
-      if (charging_service_client)
+      if (fields.charging_trigger_client &&
+        fields.charging_trigger_client->isValid())
       {
         std_srvs::Trigger trigger_srv;
-        charging_service_client->call(trigger_srv);
+        fields.charging_trigger_client->call(trigger_srv);
         if (!trigger_srv.response.success)
           ROS_ERROR("Failed to trigger charging sequence.");
       }

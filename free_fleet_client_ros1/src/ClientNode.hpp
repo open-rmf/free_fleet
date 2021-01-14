@@ -70,6 +70,9 @@ public:
 
     /// move base action client
     MoveBaseClientSharedPtr move_base_client;
+
+    /// Charger server client
+    std::unique_ptr<ros::ServiceClient> charging_trigger_client;
   };
 
   void print_config();
@@ -95,11 +98,6 @@ private:
   sensor_msgs::BatteryState current_battery_state;
 
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
-  
-  // --------------------------------------------------------------------------
-  // Charging server
-
-  std::unique_ptr<ros::ServiceClient> charging_service_client;
 
   // --------------------------------------------------------------------------
   // Robot transform handling
