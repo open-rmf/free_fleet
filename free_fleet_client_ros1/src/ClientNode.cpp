@@ -310,7 +310,12 @@ bool ClientNode::read_mode_request()
         std_srvs::Trigger trigger_srv;
         fields.charging_trigger_client->call(trigger_srv);
         if (!trigger_srv.response.success)
-          ROS_ERROR("Failed to trigger charging sequence.");
+        {
+          ROS_ERROR("Failed to trigger charging sequence, message: %s.",
+            trigger_srv.response.message.c_str());
+          request_error = true;
+          return false;
+        }
       }
     }
 
