@@ -27,6 +27,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
+#include <std_srvs/Trigger.h>
 #include <sensor_msgs/BatteryState.h>
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -95,6 +96,11 @@ private:
 
   void battery_state_callback_fn(const sensor_msgs::BatteryState& msg);
   
+  // --------------------------------------------------------------------------
+  // Charging server
+
+  std::unique_ptr<ros::ServiceClient> charging_service_client;
+
   // --------------------------------------------------------------------------
   // Robot transform handling
 

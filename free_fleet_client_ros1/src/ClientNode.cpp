@@ -88,6 +88,14 @@ void ClientNode::start(Fields _fields)
       client_node_config.battery_state_topic, 1,
       &ClientNode::battery_state_callback_fn, this);
 
+  if (client_node_config.charger_server_name != "")
+  {
+    charging_service_client =
+      std::make_unique<ros::ServiceClient>(
+        node->serviceClient<std_srvs::Trigger>(
+          client_node_config.charger_server_name));
+  }
+
   request_error = false;
   emergency = false;
   paused = false;
@@ -282,6 +290,17 @@ bool ClientNode::read_mode_request()
       ROS_INFO("received an EMERGENCY command.");
       paused = false;
       emergency = true;
+    }
+    else if (mode_request.mode.mode == messages::RobotMode::MODE_CHARGING)
+    {
+      ROS_INFO("received a CHARGING command.");
+      if (charging_service_client)
+      {
+        std_srvs::Trigger trigger_srv;
+        charging_service_client->call(trigger_srv);
+        if (!trigger_srv.response.success)
+          ROS_ERROR("Failed to trigger charging sequence.");
+      }
     }
 
     WriteLock task_id_lock(task_id_mutex);

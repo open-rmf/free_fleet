@@ -19,6 +19,7 @@ include(GNUInstallDirs)
 
 find_package(catkin QUIET COMPONENTS
   roscpp
+  std_srvs
   sensor_msgs
   tf2
   tf2_ros
