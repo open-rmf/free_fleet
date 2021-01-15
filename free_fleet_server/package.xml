@@ -10,9 +10,9 @@
   <author email="morgan@openrobotics.org">Morgan Quigley</author>
   <author email="aaron@openrobotics.org">Aaron Chong</author>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
-  <build_depend>builtin_interfaces</build_depend>
+  <buildtool_depend>ament_cmake_rolling</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators_rolling</buildtool_depend>
+  <build_depend>builtin_interfaces_rolling</build_depend>
   
   <depend>rclcpp_rolling</depend>
   <depend>rmf_fleet_msgs</depend>
@@ -21,7 +21,7 @@
   
   <test_depend>ament_lint_common_rolling</test_depend>
 
-  <member_of_group>rosidl_interface_packages_rolling</member_of_group>
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>

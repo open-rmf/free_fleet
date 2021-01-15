@@ -9,9 +9,9 @@
   <author email="morgan@openrobotics.org">Morgan Quigley</author>
   <author email="aaron@openrobotics.org">Aaron Chong</author>
 
-  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
-  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
-  <depend>cyclonedds</depend>
+  <buildtool_depend>ament_cmake_rolling</buildtool_depend>
+
+  <depend>cyclonedds_rolling</depend>
   <depend>libssl-dev</depend>
   <depend>crypto++</depend>
 
