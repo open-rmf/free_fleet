@@ -355,7 +355,8 @@ void ServerNode::update_state_callback()
     if (it == robot_states.end())
       RCLCPP_INFO(
           get_logger(),
-          "registered a new robot: " + ros_rs.name);
+          std::string("registered a new robot: "
+          + ros_rs.name).c_str());
 
     robot_states[ros_rs.name] = ros_rs;
   }
