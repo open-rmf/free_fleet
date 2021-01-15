@@ -2,6 +2,9 @@
 
   <node name="fake_action_server" pkg="free_fleet_client_ros1" 
       type="fake_action_server"/>
+
+  <node name="fake_charger_server" pkg="free_fleet_client_ros1" 
+      type="fake_charger_server"/>
   
   <node pkg="tf" type="static_transform_publisher" 
       name="fake_robot_transform" 
@@ -13,6 +16,7 @@
     <param name="robot_name" type="string" value="fake_robot"/>
     <param name="dds_domain" type="int" value="42"/>
     <param name="max_dist_to_first_waypoint" type="double" value="10.0"/>
+    <param name="charging_trigger_server_name" type="string" value="/fake_charger_server"/>
   </node>
   
 </launch>

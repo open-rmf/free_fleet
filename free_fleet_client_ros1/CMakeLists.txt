@@ -56,6 +56,7 @@ if (catkin_FOUND)
 
   set(testing_targets
     fake_action_server
+    fake_charger_server
   )
   
   foreach(target ${testing_targets})
