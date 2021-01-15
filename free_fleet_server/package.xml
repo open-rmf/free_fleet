@@ -15,7 +15,7 @@
   <build_depend>builtin_interfaces</build_depend>
   
   <depend>rclcpp_rolling</depend>
-  <depend>rmf_fleet_msgs_rolling</depend>
+  <depend>rmf_fleet_msgs</depend>
   <depend>free_fleet</depend>
   <depend>eigen</depend>
   
