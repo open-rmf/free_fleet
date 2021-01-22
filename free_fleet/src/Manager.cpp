@@ -155,6 +155,31 @@ Manager::SharedPtr Manager::make(
   TimeNow time_now_fn,
   NewRobotStateCallback new_robot_state_callback_fn)
 {
+  if (fleet_name.empty())
+  {
+    std::cerr << "Fleet name must not be empty." << std::endl;
+    return nullptr;
+  }
+
+  if (!graph)
+  {
+    std::cerr << "Provided traffic Graph is invalid." << std::endl;
+    return nullptr;
+  }
+
+  if (!middleware)
+  {
+    std::cerr << "Provided free fleet Middleware is invalid." << std::endl;
+    return nullptr;
+  }
+
+  if (!to_robot_transform)
+  {
+    std::cerr << "Provided free fleet CoordinateTransformer is invalid."
+      << std::endl;
+    return nullptr;
+  }
+
   SharedPtr manager_ptr(new Manager);
   manager_ptr->_pimpl->_fleet_name = fleet_name;
   manager_ptr->_pimpl->_graph = std::move(graph);
@@ -181,7 +206,7 @@ void Manager::start(uint32_t frequency)
 }
 
 //==============================================================================
-std::vector<std::string> Manager::robots()
+auto Manager::robot_names() -> std::vector<std::string>
 {
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
   std::vector<std::string> result;
@@ -194,34 +219,35 @@ std::vector<std::string> Manager::robots()
 }
 
 //==============================================================================
-rmf_utils::optional<messages::RobotState> Manager::robot_state(
-  const std::string& robot_name)
+auto Manager::robot(const std::string& robot_name) 
+  -> std::shared_ptr<agv::RobotInfo>
 {
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
   const auto it = _pimpl->_robots.find(robot_name);
   if (it == _pimpl->_robots.end())
-    return rmf_utils::nullopt;
-  return it->second->state();
+    return nullptr;
+  return it->second;
 }
 
 //==============================================================================
-std::vector<messages::RobotState> Manager::robot_states()
+auto Manager::all_robots() -> std::vector<std::shared_ptr<agv::RobotInfo>>
 {
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
-  std::vector<messages::RobotState> states;
-  states.reserve(_pimpl->_robots.size());
+  std::vector<std::shared_ptr<agv::RobotInfo>> infos;
+  infos.reserve(_pimpl->_robots.size());
   for (const auto it : _pimpl->_robots)
   {
-    states.push_back(it.second->state());
+    infos.push_back(it.second);
   }
-  return states;
+  return infos;
 }
 
 //==============================================================================
-rmf_utils::optional<std::size_t> Manager::send_mode_request(
+auto Manager::send_mode_request(
   const std::string& robot_name,
   const messages::RobotMode& mode,
   std::vector<messages::ModeParameter> parameters)
+  -> rmf_utils::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
   if (_pimpl->_robots.find(robot_name) == _pimpl->_robots.end())
@@ -254,12 +280,13 @@ rmf_utils::optional<std::size_t> Manager::send_mode_request(
 }
 
 //==============================================================================
-rmf_utils::optional<std::size_t> Manager::send_navigation_request(
+auto Manager::send_navigation_request(
   const std::string& robot_name,
   const std::vector<messages::Waypoint>& path)
+  -> rmf_utils::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
-  if (path.empty() || 
+  if (path.empty() ||
     _pimpl->_robots.find(robot_name) == _pimpl->_robots.end())
     return rmf_utils::nullopt;
 
@@ -309,10 +336,11 @@ rmf_utils::optional<std::size_t> Manager::send_navigation_request(
 }
 
 //==============================================================================
-rmf_utils::optional<std::size_t> Manager::send_relocalization_request(
+auto Manager::send_relocalization_request(
   const std::string& robot_name,
   const messages::Location& location,
   std::size_t last_visited_waypoint_index)
+  -> rmf_utils::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
   if (_pimpl->_robots.find(robot_name) == _pimpl->_robots.end() ||

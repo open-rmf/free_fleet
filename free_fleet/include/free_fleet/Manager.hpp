@@ -27,6 +27,7 @@
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
+#include <free_fleet/agv/RobotInfo.hpp>
 #include <free_fleet/transport/Middleware.hpp>
 #include <free_fleet/CoordinateTransformer.hpp>
 
@@ -75,20 +76,19 @@ public:
   /// Gets all the names of the robots that are currently under this manager.
   ///
   /// \return
-  std::vector<std::string> robots();
+  std::vector<std::string> robot_names();
 
-  /// Gets the state of the robot with the provided name. If no such robot
-  /// exists, a nullopt will be returned.
+  /// Gets the RobotInfo of the robot with the provided name. If no such robot
+  /// exists, a nullptr will be returned.
   ///
   /// \param[in] robot_name
   /// \return
-  rmf_utils::optional<messages::RobotState> robot_state(
-    const std::string& robot_name);
+  std::shared_ptr<agv::RobotInfo> robot(const std::string& robot_name);
 
-  /// Gets all the most up-to-date robot states received by the manager.
+  /// Gets all the available RobotInfo that has been registered with the manager
   ///
   /// \return
-  std::vector<messages::RobotState> robot_states();
+  std::vector<std::shared_ptr<agv::RobotInfo>> all_robots();
 
   /// Sends out a mode request to a robot.
   ///
