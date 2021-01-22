@@ -20,16 +20,11 @@
 
 #include <string>
 #include <memory>
-#include <unordered_map>
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_utils/impl_ptr.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
-#include <free_fleet/Manager.hpp>
-#include <free_fleet/messages/Location.hpp>
-#include <free_fleet/messages/Waypoint.hpp>
-#include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/RobotState.hpp>
 
 namespace free_fleet {
