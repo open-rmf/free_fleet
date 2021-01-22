@@ -25,8 +25,10 @@
 #include <rmf_traffic/Time.hpp>
 
 #include <free_fleet/Manager.hpp>
+#include <free_fleet/agv/RobotInfo.hpp>
 
-#include "agv/RobotInfo.hpp"
+#include "agv/internal_RobotInfo.hpp"
+
 #include "requests/RequestInfo.hpp"
 #include "requests/ModeRequestInfo.hpp"
 #include "requests/NavigationRequestInfo.hpp"
@@ -87,18 +89,18 @@ public:
         bool new_robot = r_it == _robots.end();
         if (new_robot)
         {
-          _robots[s.name] = std::make_shared<agv::RobotInfo>(
-            agv::RobotInfo{
-              transformed_state,
-              _graph,
-              _time_now_fn()
-            });
+          _robots[s.name] = agv::RobotInfo::Implementation::make(
+            transformed_state,
+            _graph,
+            _time_now_fn());
           std::cout << "Registered new robot: [" << s.name << "]..."
             << std::endl;
         }
         else
         {
-          r_it->second->update_state(transformed_state, _time_now_fn());
+          agv::RobotInfo::Implementation::get(*r_it->second).update_state(
+            transformed_state, _time_now_fn());
+          // r_it->second->update_state(transformed_state, _time_now_fn());
         }
 
         // Updates external uses of the robot's information
@@ -129,7 +131,7 @@ public:
   TimeNow _time_now_fn;
   NewRobotStateCallback _new_robot_state_callback_fn;
 
-  std::unordered_map<std::string, agv::RobotInfo::SharedPtr> _robots;
+  std::unordered_map<std::string, std::shared_ptr<agv::RobotInfo>> _robots;
 
   // Reserving task ID 0 for empty tasks
   const uint32_t _idle_task_id = 0;
