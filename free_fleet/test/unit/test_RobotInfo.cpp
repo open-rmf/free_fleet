@@ -27,6 +27,8 @@
 #include <free_fleet/messages/NavigationRequest.hpp>
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
+#include <free_fleet/agv/RobotInfo.hpp>
+
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
@@ -34,20 +36,23 @@
 #include "mock_StatusHandle.hpp"
 #include "mock_CommandHandle.hpp"
 
-#include "src/agv/RobotInfo.hpp"
+#include "src/agv/internal_RobotInfo.hpp"
+
 #include "src/requests/RequestInfo.hpp"
 #include "src/requests/ModeRequestInfo.hpp"
 #include "src/requests/NavigationRequestInfo.hpp"
 #include "src/requests/RelocalizationRequestInfo.hpp"
 
 void update_and_check_tracking_state(
-  const free_fleet::agv::RobotInfo::SharedPtr& robot_info,
+  const std::shared_ptr<free_fleet::agv::RobotInfo>& robot_info,
   const free_fleet::messages::RobotState& new_state,
   free_fleet::agv::RobotInfo::TrackingState desired_tracking_state,
   std::size_t desired_tracking_index)
 {
   rmf_traffic::Time update_time = std::chrono::steady_clock::now();
-  robot_info->update_state(new_state, update_time);
+
+  free_fleet::agv::RobotInfo::Implementation::get(*robot_info).update_state(
+    new_state, update_time);
   CHECK(robot_info->state() == new_state);
   CHECK(robot_info->last_updated() == update_time);
 
@@ -103,11 +108,11 @@ SCENARIO("Tests RobotInfo API")
 
   rmf_traffic::Time initial_time = std::chrono::steady_clock::now();
 
-  free_fleet::agv::RobotInfo::SharedPtr robot_info(
-    new free_fleet::agv::RobotInfo(
+  auto robot_info =
+    free_fleet::agv::RobotInfo::Implementation::make(
       initial_state,
       graph,
-      initial_time));
+      initial_time);
   REQUIRE(robot_info);
 
   using TrackingState = free_fleet::agv::RobotInfo::TrackingState;
@@ -141,7 +146,8 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    robot_info->update_state(next_state, next_time);
+    free_fleet::agv::RobotInfo::Implementation::get(*robot_info).update_state(
+      next_state, next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -165,7 +171,8 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    robot_info->update_state(next_state, next_time);
+    free_fleet::agv::RobotInfo::Implementation::get(*robot_info).update_state(
+      next_state, next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -189,7 +196,8 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    robot_info->update_state(next_state, next_time);
+    free_fleet::agv::RobotInfo::Implementation::get(*robot_info).update_state(
+      next_state, next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -212,7 +220,8 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    robot_info->update_state(next_state, next_time);
+    free_fleet::agv::RobotInfo::Implementation::get(*robot_info).update_state(
+      next_state, next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -236,7 +245,8 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    robot_info->update_state(next_state, next_time);
+    free_fleet::agv::RobotInfo::Implementation::get(*robot_info).update_state(
+      next_state, next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -259,7 +269,8 @@ SCENARIO("Tests RobotInfo API")
     auto second_state = initial_state;
     second_state.location = second_loc;
     rmf_traffic::Time second_time = std::chrono::steady_clock::now();
-    robot_info->update_state(second_state, second_time);
+    free_fleet::agv::RobotInfo::Implementation::get(*robot_info).update_state(
+      second_state, second_time);
 
     CHECK(robot_info->state() == second_state);
     CHECK(robot_info->last_updated() == second_time);
@@ -278,7 +289,8 @@ SCENARIO("Tests RobotInfo API")
     auto third_state = initial_state;
     third_state.location = third_loc;
     rmf_traffic::Time third_time = std::chrono::steady_clock::now();
-    robot_info->update_state(third_state, third_time);
+    free_fleet::agv::RobotInfo::Implementation::get(*robot_info).update_state(
+      third_state, third_time);
 
     CHECK(robot_info->state() == third_state);
     CHECK(robot_info->last_updated() == third_time);
@@ -309,7 +321,7 @@ SCENARIO("Tests RobotInfo API")
     REQUIRE(new_mode_request_info);
 
     CHECK_NOTHROW(
-      robot_info->allocate_task(
+      free_fleet::agv::RobotInfo::Implementation::get(*robot_info).allocate_task(
         std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
           new_mode_request_info)));
   }
@@ -340,7 +352,7 @@ SCENARIO("Tests RobotInfo API")
     REQUIRE(new_reloc_request_info);
 
     CHECK_NOTHROW(
-      robot_info->allocate_task(
+      free_fleet::agv::RobotInfo::Implementation::get(*robot_info).allocate_task(
         std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
           new_reloc_request_info)));
   }
@@ -385,7 +397,7 @@ SCENARIO("Tests RobotInfo API")
     REQUIRE(new_nav_request_info);
 
     CHECK_NOTHROW(
-      robot_info->allocate_task(
+      free_fleet::agv::RobotInfo::Implementation::get(*robot_info).allocate_task(
         std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
           new_nav_request_info)));
   }
@@ -434,7 +446,7 @@ SCENARIO("Tests RobotInfo API")
     REQUIRE(new_nav_request_info);
 
     CHECK_NOTHROW(
-      robot_info->allocate_task(
+      free_fleet::agv::RobotInfo::Implementation::get(*robot_info).allocate_task(
         std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
           new_nav_request_info)));
 
