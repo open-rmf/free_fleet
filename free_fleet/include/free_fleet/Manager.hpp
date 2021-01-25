@@ -47,9 +47,13 @@ public:
 
   using SharedPtr = std::shared_ptr<Manager>;
 
+  /// This function returns the a time stamp based on the implementation.
   using TimeNow = std::function<rmf_traffic::Time()>;
-  using NewRobotStateCallback =
-    std::function<void(const messages::RobotState& state)>;
+
+  /// This callback function can be used to work with different applications,
+  /// triggered every time a robot is updated with an incoming new state.
+  using RobotUpdatedCallback =
+    std::function<void(const std::shared_ptr<agv::RobotInfo>& robot_info)>;
 
   /// Factory function that creates an instance of the Free Fleet Manager.
   ///
@@ -58,7 +62,7 @@ public:
   /// \param[in] middleware
   /// \param[in] to_robot_transform
   /// \param[in] time_now_fn
-  /// \param[in] new_robot_state_callback_fn
+  /// \param[in] robot_updated_callback_fn
   /// \return
   static SharedPtr make(
     const std::string& fleet_name,
@@ -66,7 +70,7 @@ public:
     std::shared_ptr<transport::Middleware> middleware,
     std::shared_ptr<CoordinateTransformer> to_robot_transform,
     TimeNow time_now_fn,
-    NewRobotStateCallback new_robot_state_callback_fn);
+    RobotUpdatedCallback robot_updated_callback_fn);
 
   /// Starts the manager which begins to listen for clients.
   ///
