@@ -41,8 +41,8 @@ SCENARIO("Test make Manager")
     0.0);
   free_fleet::Manager::TimeNow time_now_fn =
     [](){ return std::chrono::steady_clock::now(); };
-  free_fleet::Manager::NewRobotStateCallback cb =
-    [](const free_fleet::messages::RobotState& state){};
+  free_fleet::Manager::RobotUpdatedCallback cb =
+    [](const std::shared_ptr<free_fleet::agv::RobotInfo>& updated_robot_info){};
   
   GIVEN("All valid")
   {

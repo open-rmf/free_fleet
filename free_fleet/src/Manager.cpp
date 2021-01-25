@@ -104,8 +104,8 @@ public:
         }
 
         // Updates external uses of the robot's information
-        if (_new_robot_state_callback_fn)
-          _new_robot_state_callback_fn(s);
+        if (_robot_updated_callback_fn)
+          _robot_updated_callback_fn(r_it->second);
 
         // for each robot figure out whether any tasks were not received yet
         const auto t_it = _unacknowledged_tasks.find(s.task_id);
@@ -129,7 +129,7 @@ public:
   std::shared_ptr<transport::Middleware> _middleware;
   std::shared_ptr<CoordinateTransformer> _to_robot_transform;
   TimeNow _time_now_fn;
-  NewRobotStateCallback _new_robot_state_callback_fn;
+  RobotUpdatedCallback _robot_updated_callback_fn;
 
   std::unordered_map<std::string, std::shared_ptr<agv::RobotInfo>> _robots;
 
@@ -153,7 +153,7 @@ Manager::SharedPtr Manager::make(
   std::shared_ptr<transport::Middleware> middleware,
   std::shared_ptr<CoordinateTransformer> to_robot_transform,
   TimeNow time_now_fn,
-  NewRobotStateCallback new_robot_state_callback_fn)
+  RobotUpdatedCallback robot_updated_callback_fn)
 {
   if (fleet_name.empty())
   {
@@ -186,8 +186,8 @@ Manager::SharedPtr Manager::make(
   manager_ptr->_pimpl->_middleware = std::move(middleware);
   manager_ptr->_pimpl->_to_robot_transform = std::move(to_robot_transform);
   manager_ptr->_pimpl->_time_now_fn = std::move(time_now_fn);
-  manager_ptr->_pimpl->_new_robot_state_callback_fn =
-    std::move(new_robot_state_callback_fn);
+  manager_ptr->_pimpl->_robot_updated_callback_fn =
+    std::move(robot_updated_callback_fn);
   return manager_ptr;
 }
 
