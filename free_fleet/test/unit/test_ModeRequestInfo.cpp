@@ -34,7 +34,8 @@ SCENARIO("Test ModeRequestInfo")
   uint32_t task_id = 1;
 
   free_fleet::messages::RobotMode pause_mode {
-    free_fleet::messages::RobotMode::MODE_PAUSED
+    free_fleet::messages::RobotMode::MODE_PAUSED,
+    ""
   };
   free_fleet::messages::ModeRequest pause_request {
     robot_name,

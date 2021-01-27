@@ -75,6 +75,8 @@ public:
   /// Starts the manager which begins to listen for clients.
   ///
   /// \param[in] frequency
+  ///   Frequency at which the manager operates. This value needs to be a
+  ///   non-zero value.
   void start(uint32_t frequency);
 
   /// Gets all the names of the robots that are currently under this manager.

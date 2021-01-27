@@ -16,6 +16,7 @@
  */
 
 #include <chrono>
+#include <iostream>
 #include <unordered_set>
 
 #include <rmf_traffic/Time.hpp>
@@ -69,8 +70,22 @@ Client::SharedPtr Client::make(
   std::shared_ptr<StatusHandle> status_handle,
   std::shared_ptr<transport::Middleware> middleware)
 {
-  if (!command_handle || !status_handle || !middleware)
+  auto make_error_fn = [](const std::string& error_msg)
+  {
+    std::cerr << error_msg << std::endl;
     return nullptr;
+  };
+
+  if (robot_name.empty())
+    return make_error_fn("Provided robot name must not be empty.");
+  if (robot_model.empty())
+    return make_error_fn("Provided robot model must not be empty.");
+  if (!command_handle)
+    return make_error_fn("Provided command handle is invalid.");
+  if (!status_handle)
+    return make_error_fn("Provided status handle is invalid.");
+  if (!middleware)
+    return make_error_fn("Provided middleware is invalid.");
 
   Client::SharedPtr new_client(new Client);
   new_client->_pimpl->_robot_name = robot_name;

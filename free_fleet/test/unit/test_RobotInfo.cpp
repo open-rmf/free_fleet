@@ -69,7 +69,8 @@ SCENARIO("Tests RobotInfo API")
 {
   const std::string test_map_name = "test_level";
   free_fleet::messages::RobotMode initial_mode {
-    free_fleet::messages::RobotMode::MODE_IDLE
+    free_fleet::messages::RobotMode::MODE_IDLE,
+    ""
   };
   free_fleet::messages::Location initial_location {
     0,
@@ -303,7 +304,8 @@ SCENARIO("Tests RobotInfo API")
   GIVEN("Allocated mode request")
   {
     free_fleet::messages::RobotMode pause_mode {
-      free_fleet::messages::RobotMode::MODE_PAUSED
+      free_fleet::messages::RobotMode::MODE_PAUSED,
+      ""
     };
     free_fleet::messages::ModeRequest pause_request {
       initial_state.name,

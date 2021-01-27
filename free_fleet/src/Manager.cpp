@@ -15,8 +15,6 @@
  *
 */
 
-#include <mutex>
-#include <thread>
 #include <iostream>
 #include <functional>
 #include <unordered_map>
@@ -29,122 +27,103 @@
 
 #include "agv/internal_RobotInfo.hpp"
 
-#include "requests/RequestInfo.hpp"
 #include "requests/ModeRequestInfo.hpp"
 #include "requests/NavigationRequestInfo.hpp"
 #include "requests/RelocalizationRequestInfo.hpp"
 
+#include "internal_Manager.hpp"
+
 namespace free_fleet {
 
 //==============================================================================
-class Manager::Implementation
+bool Manager::Implementation::connected() const
 {
-public:
+  return _middleware && _graph && _to_robot_transform && _time_now_fn
+    && _started && _thread.joinable();
+}
 
-  Implementation()
-  {}
+//==============================================================================
+void Manager::Implementation::start(uint32_t frequency)
+{
+  std::cout << "Starting manager thread..." << std::endl;
+  _thread_frequency = frequency;
+  _thread =
+    std::thread(
+      std::bind(&free_fleet::Manager::Implementation::thread_fn, this));
+  _started = true;
+}
 
-  Implementation(const Implementation& other)
-  {}
-
-  ~Implementation()
+//==============================================================================
+void Manager::Implementation::run_once()
+{
+  // get states
+  auto states = _middleware->read_states();
+  std::lock_guard<std::mutex> lock(_mutex);
+  for (const auto s : states)
   {
-    if (_thread.joinable())
-      _thread.join();
-  }
+    messages::RobotState transformed_state{
+      s.name,
+      s.model,
+      s.task_id,
+      s.mode,
+      s.battery_percent,
+      _to_robot_transform->backward_transform(s.location),
+      s.path_target_index};
 
-  bool _connected() const
-  {
-    return _middleware && _graph && _to_robot_transform;
-  }
-
-  void _thread_fn()
-  {
-    const double seconds_per_iteration = 1.0 / _thread_frequency;
-    const rmf_traffic::Duration duration_per_iteration =
-      rmf_traffic::time::from_seconds(seconds_per_iteration);
-    rmf_traffic::Time t_prev = _time_now_fn();
-
-    while (_connected())
+    const auto r_it = _robots.find(s.name);
+    bool new_robot = r_it == _robots.end();
+    if (new_robot)
     {
-      if (_time_now_fn() - t_prev < duration_per_iteration)
-        continue;
-      t_prev = _time_now_fn();
+      _robots[s.name] = agv::RobotInfo::Implementation::make(
+        transformed_state,
+        _graph,
+        _time_now_fn());
+      std::cout << "Registered new robot: [" << s.name << "]..."
+        << std::endl;
+    }
+    else
+    {
+      agv::RobotInfo::Implementation::get(*r_it->second).update_state(
+        transformed_state, _time_now_fn());
+    }
 
-      // get states
-      auto states = _middleware->read_states();
-      std::lock_guard<std::mutex> lock(_mutex);
-      for (const auto s : states)
-      {
-        messages::RobotState transformed_state{
-          s.name,
-          s.model,
-          s.task_id,
-          s.mode,
-          s.battery_percent,
-          _to_robot_transform->backward_transform(s.location),
-          s.path_target_index};
+    // Updates external uses of the robot's information
+    if (_robot_updated_callback_fn)
+      _robot_updated_callback_fn(r_it->second);
 
-        const auto r_it = _robots.find(s.name);
-        bool new_robot = r_it == _robots.end();
-        if (new_robot)
-        {
-          _robots[s.name] = agv::RobotInfo::Implementation::make(
-            transformed_state,
-            _graph,
-            _time_now_fn());
-          std::cout << "Registered new robot: [" << s.name << "]..."
-            << std::endl;
-        }
-        else
-        {
-          agv::RobotInfo::Implementation::get(*r_it->second).update_state(
-            transformed_state, _time_now_fn());
-          // r_it->second->update_state(transformed_state, _time_now_fn());
-        }
-
-        // Updates external uses of the robot's information
-        if (_robot_updated_callback_fn)
-          _robot_updated_callback_fn(r_it->second);
-
-        // for each robot figure out whether any tasks were not received yet
-        const auto t_it = _unacknowledged_tasks.find(s.task_id);
-        if (t_it != _unacknowledged_tasks.end())
-        {
-          t_it->second->acknowledged_time(_time_now_fn());
-          _unacknowledged_tasks.erase(t_it);
-        }
-      }
-      
-      // Send out all unreceived tasks again
-      for (const auto t_it : _unacknowledged_tasks)
-      {
-        t_it.second->send_request();
-      }
+    // for each robot figure out whether any tasks were not received yet
+    const auto t_it = _unacknowledged_tasks.find(s.task_id);
+    if (t_it != _unacknowledged_tasks.end())
+    {
+      t_it->second->acknowledged_time(_time_now_fn());
+      _unacknowledged_tasks.erase(t_it);
     }
   }
+  
+  // Send out all unreceived tasks again
+  for (const auto t_it : _unacknowledged_tasks)
+  {
+    t_it.second->send_request();
+  }
+}
 
-  std::string _fleet_name;
-  std::shared_ptr<rmf_traffic::agv::Graph> _graph;
-  std::shared_ptr<transport::Middleware> _middleware;
-  std::shared_ptr<CoordinateTransformer> _to_robot_transform;
-  TimeNow _time_now_fn;
-  RobotUpdatedCallback _robot_updated_callback_fn;
+//==============================================================================
+void Manager::Implementation::thread_fn()
+{
+  const double seconds_per_iteration = 1.0 / _thread_frequency;
+  const rmf_traffic::Duration duration_per_iteration =
+    rmf_traffic::time::from_seconds(seconds_per_iteration);
+  rmf_traffic::Time t_prev = _time_now_fn();
 
-  std::unordered_map<std::string, std::shared_ptr<agv::RobotInfo>> _robots;
+  while (connected())
+  {
+    if (_time_now_fn() - t_prev < duration_per_iteration)
+      continue;
+    t_prev = _time_now_fn();
 
-  // Reserving task ID 0 for empty tasks
-  const uint32_t _idle_task_id = 0;
-  uint32_t _current_task_id = _idle_task_id;
-  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
-    _tasks;
-  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
-    _unacknowledged_tasks;
-
-  std::mutex _mutex;
-  std::thread _thread;
-  uint32_t _thread_frequency;
-};
+    run_once();
+  }
+}
 
 //==============================================================================
 Manager::SharedPtr Manager::make(
@@ -155,30 +134,23 @@ Manager::SharedPtr Manager::make(
   TimeNow time_now_fn,
   RobotUpdatedCallback robot_updated_callback_fn)
 {
+  auto make_error_fn = [](const std::string& error_msg)
+  {
+    std::cerr << "[Error]: " << error_msg << std::endl;
+    return nullptr;
+  };
+
   if (fleet_name.empty())
-  {
-    std::cerr << "Fleet name must not be empty." << std::endl;
-    return nullptr;
-  }
-
+    return make_error_fn("Provided fleet name must not be empty.");
   if (!graph)
-  {
-    std::cerr << "Provided traffic Graph is invalid." << std::endl;
-    return nullptr;
-  }
-
+    return make_error_fn("Provided traffic graph is invalid.");
   if (!middleware)
-  {
-    std::cerr << "Provided free fleet Middleware is invalid." << std::endl;
-    return nullptr;
-  }
-
+    return make_error_fn("Provided free fleet middleware is invalid.");
   if (!to_robot_transform)
-  {
-    std::cerr << "Provided free fleet CoordinateTransformer is invalid."
-      << std::endl;
-    return nullptr;
-  }
+    return make_error_fn(
+      "Provided free fleet CoordinateTransformer is invalid.");
+  if (!time_now_fn)
+    return make_error_fn("Provided time function is invalid.");
 
   SharedPtr manager_ptr(new Manager);
   manager_ptr->_pimpl->_fleet_name = fleet_name;
@@ -199,10 +171,12 @@ Manager::Manager()
 //==============================================================================
 void Manager::start(uint32_t frequency)
 {
-  std::cout << "Starting manager thread..." << std::endl;
-  _pimpl->_thread_frequency = frequency;
-  _pimpl->_thread =
-    std::thread(std::bind(&Implementation::_thread_fn, this->_pimpl));
+  if (frequency == 0)
+    throw std::range_error("[Error]: Frequency has to be greater than 0.");
+  if (_pimpl->_started)
+    throw std::runtime_error("[Error]: Manager has already been started.");
+
+  _pimpl->start(frequency);
 }
 
 //==============================================================================
@@ -251,7 +225,10 @@ auto Manager::send_mode_request(
 {
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
   if (_pimpl->_robots.find(robot_name) == _pimpl->_robots.end())
+  {
+    // std::cerr << "No such robot." << std::endl;
     return rmf_utils::nullopt;
+  }
 
   if ((++_pimpl->_current_task_id) == _pimpl->_idle_task_id)
     ++_pimpl->_current_task_id;
@@ -288,7 +265,10 @@ auto Manager::send_navigation_request(
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
   if (path.empty() ||
     _pimpl->_robots.find(robot_name) == _pimpl->_robots.end())
+  {
+    // std::cerr << "Path is empty or no such robot." << std::endl;
     return rmf_utils::nullopt;
+  }
 
   const std::size_t num_wp = _pimpl->_graph->num_waypoints();
   std::vector<messages::Waypoint> transformed_path;
@@ -296,7 +276,10 @@ auto Manager::send_navigation_request(
   {
     std::size_t wp_index = static_cast<std::size_t>(wp.index);
     if (wp_index >= num_wp)
+    {
+      // std::cerr << "No such waypoint." << std::endl;
       return rmf_utils::nullopt;
+    }
     
     const auto g_wp = _pimpl->_graph->get_waypoint(wp_index);
     const Eigen::Vector2d provided_loc {wp.location.x, wp.location.y};
@@ -345,7 +328,10 @@ auto Manager::send_relocalization_request(
   std::lock_guard<std::mutex> lock(_pimpl->_mutex);
   if (_pimpl->_robots.find(robot_name) == _pimpl->_robots.end() ||
     last_visited_waypoint_index >= _pimpl->_graph->num_waypoints())
+  {
+    // std::cerr << "No such robot or waypoint." << std::endl;
     return rmf_utils::nullopt;
+  }
 
   auto wp =
     _pimpl->_graph->get_waypoint(last_visited_waypoint_index);
@@ -353,6 +339,7 @@ auto Manager::send_relocalization_request(
     (Eigen::Vector2d{location.x, location.y} - wp.get_location()).norm();
   if (dist_from_wp >= 10.0)
   {
+    // std::cerr << "Last visited waypoint is too far away." << std::endl;
     return rmf_utils::nullopt;
   }
 

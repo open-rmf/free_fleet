@@ -15,6 +15,7 @@
  *
  */
 
+#include <iostream>
 #include <Eigen/Geometry>
 
 #include <free_fleet/CoordinateTransformer.hpp>
@@ -38,6 +39,13 @@ CoordinateTransformer::SharedPtr CoordinateTransformer::make(
   double translation_y,
   double rotation_yaw)
 {
+  if (scale < 0)
+  {
+    std::cerr << "Provided scale is invalid, it has to be a double larger than 0"
+      << std::endl;
+    return nullptr;
+  }
+
   SharedPtr transformer(new CoordinateTransformer);
   transformer->_pimpl->_scale = scale;
   transformer->_pimpl->_rotation_yaw = rotation_yaw;
