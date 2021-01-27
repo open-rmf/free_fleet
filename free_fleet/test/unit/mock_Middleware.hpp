@@ -29,16 +29,18 @@ public:
   MockMiddleware()
   {}
 
-  void send_state(const messages::RobotState& state) final
+  void send_state(const messages::RobotState&) final
   {}
 
-  std::vector<messages::RobotState> read_states() final
+  std::vector<messages::RobotState> read_states() override
   {
     return {};
   }
 
   void send_mode_request(const messages::ModeRequest& request) final
-  {}
+  {
+    _prev_mode_request = request;
+  }
 
   rmf_utils::optional<messages::ModeRequest> read_mode_request() final
   {
@@ -46,7 +48,9 @@ public:
   }
 
   void send_navigation_request(const messages::NavigationRequest& request) final
-  {}
+  {
+    _prev_nav_request = request;
+  }
 
   rmf_utils::optional<messages::NavigationRequest>
     read_navigation_request() final
@@ -56,13 +60,19 @@ public:
 
   void send_relocalization_request(
     const messages::RelocalizationRequest& request) final
-  {}
+  {
+    _prev_reloc_request = request;
+  }
 
   rmf_utils::optional<messages::RelocalizationRequest>
     read_relocalization_request() final
   {
     return rmf_utils::nullopt;
   }
+
+  messages::ModeRequest _prev_mode_request;
+  messages::NavigationRequest _prev_nav_request;
+  messages::RelocalizationRequest _prev_reloc_request;
 };
 
 } // namespace free_fleet

@@ -62,11 +62,12 @@ void RobotInfo::Implementation::track_and_update(
     auto it = allocated_requests.find(task_id);
     if (it == allocated_requests.end())
     {
-      // GAH NOT GOOD, No such task was given to this robot through the manager,
-      // due to lack of information for this task, we will treat this as the
-      // robot is not doing any task.
-      // TODO(AA): Warn that this is happening.
+      std::cerr << "[Warning]: Robot [" << name << "] task ID [" << task_id
+        << "] was not given through the manager, due to lack of information, "
+        "this robot is considered LOST." << std::endl;
       track_without_task_id(curr_loc);
+      state = new_state;
+      return;
     }
     assert(it->second);
     auto request = it->second;
@@ -140,20 +141,19 @@ void RobotInfo::Implementation::track_and_update(
           tracking_state = TrackingState::OnLane;
           tracking_index = curr_lane->index();
 
-          // TODO(AA): Warn if it is far away from lane.
-          // double dist_to_lane = _distance_to_lane(lane, curr_loc);
-          // if (dist_to_lane > _lane_dist_threshold)
-          // {
-          //   // warn
-          // }
+          double dist_to_lane = distance_to_lane(curr_lane, curr_loc);
+          if (dist_to_lane > lane_dist_threshold)
+          {
+            std::cerr << "[Warning]: Robot [" << name << "] is " << dist_to_lane
+              << "m away from the lane center." << std::endl;
+          }
         }
       }
       else
       {
-        // Something is wrong here, it is not near the next waypoint, and has
-        // been unable to get a path using the previous waypoint, it is lost
-        // until a clearer state comes in
-        // TODO(AA): Warn that this is happening
+        std::cerr << "[Warning]: Robot [" << name << "] is far away from the "
+          "next waypoint, and there is no path from the previous "
+          "waypoint, it is LOST until a clearer state comes in." << std::endl;
         tracking_state = TrackingState::Lost;
       }
     }
@@ -177,10 +177,6 @@ void RobotInfo::Implementation::track_without_task_id(
     return;
   }
 
-  // Because we have no task, and we are quite far away from any
-  // waypoints, we have diverged from the navigation graph and would be
-  // considered quite lost.
-  // TODO(AA): Warn that this is happening.
   auto nearest_wp = find_nearest_waypoint(current_location);
   if (nearest_wp.second < waypoint_dist_threshold)
   {
@@ -189,7 +185,9 @@ void RobotInfo::Implementation::track_without_task_id(
     return;
   }
 
-  // It is lost even by the best estimates.
+  std::cerr << "[Warning]: Robot [" << name << "] has no task and is far away "
+    "from any waypoints, it has diverged from the navigation graph "
+    "and is LOST." << std::endl;
   tracking_state = TrackingState::Lost;
 }
 

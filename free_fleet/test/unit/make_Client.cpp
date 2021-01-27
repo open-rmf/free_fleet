@@ -31,11 +31,69 @@ SCENARIO("Verify that a Client can be created")
   auto sh = std::make_shared<free_fleet::MockStatusHandle>();
   auto m = std::make_shared<free_fleet::MockMiddleware>();
 
-  auto client = free_fleet::agv::Client::make(
-    "mock_robot_name",
-    "mock_robot_model",
-    ch,
-    sh,
-    m);
-  REQUIRE(client);
+  GIVEN("Empty robot name")
+  {
+    auto client = free_fleet::agv::Client::make(
+      "",
+      "mock_robot_model",
+      ch,
+      sh,
+      m);
+    CHECK(!client);
+  }
+
+  GIVEN("Empty robot model")
+  {
+    auto client = free_fleet::agv::Client::make(
+      "mock_robot_name",
+      "",
+      ch,
+      sh,
+      m);
+    CHECK(!client);
+  }
+
+  GIVEN("Invalid command handle")
+  {
+    auto client = free_fleet::agv::Client::make(
+      "mock_robot_name",
+      "mock_robot_model",
+      nullptr,
+      sh,
+      m);
+    CHECK(!client);
+  }
+
+  GIVEN("Invalid status handle")
+  {
+    auto client = free_fleet::agv::Client::make(
+      "mock_robot_name",
+      "mock_robot_model",
+      ch,
+      nullptr,
+      m);
+    CHECK(!client);
+  }
+
+  GIVEN("Invalid middleware")
+  {
+    auto client = free_fleet::agv::Client::make(
+      "mock_robot_name",
+      "mock_robot_model",
+      ch,
+      sh,
+      nullptr);
+    CHECK(!client);
+  }
+
+  GIVEN("Valid client")
+  {
+    auto client = free_fleet::agv::Client::make(
+      "mock_robot_name",
+      "mock_robot_model",
+      ch,
+      sh,
+      m);
+    CHECK(client);
+  }
 }

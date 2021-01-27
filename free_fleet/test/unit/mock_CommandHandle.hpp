@@ -30,13 +30,13 @@ public:
   {}
 
   void relocalize(
-    const free_fleet::messages::Location& location,
-    RequestCompleted relocalization_finished_callback) final
+    const free_fleet::messages::Location&,
+    RequestCompleted) final
   {}
 
   void follow_new_path(
-      const std::vector<free_fleet::messages::Waypoint>& waypoints,
-      RequestCompleted path_finished_callback) final
+      const std::vector<free_fleet::messages::Waypoint>&,
+      RequestCompleted) final
   {}
 
   void stop() final
@@ -46,8 +46,8 @@ public:
   {}
 
   void dock(
-    const std::string& dock_name,
-    RequestCompleted docking_finished_callback) final
+    const std::string&,
+    RequestCompleted) final
   {}
 
 };

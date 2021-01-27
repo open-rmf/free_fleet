@@ -18,6 +18,8 @@
 #ifndef SRC__AGV__INTERNAL__ROBOTINFO_HPP
 #define SRC__AGV__INTERNAL__ROBOTINFO_HPP
 
+#include <iostream>
+
 #include <rmf_utils/optional.hpp>
 
 #include <free_fleet/agv/RobotInfo.hpp>
@@ -52,15 +54,26 @@ public:
     std::shared_ptr<rmf_traffic::agv::Graph> graph,
     rmf_traffic::Time time_now)
   {
+    auto make_error_fn = [](const std::string& error_msg)
+    {
+      std::cerr << error_msg << std::endl;
+      return nullptr;
+    };
+
+    if (state.name.empty())
+      return make_error_fn("Provided robot name in state must not be empty.");
+    if (state.model.empty())
+      return make_error_fn("Provided robot model in state must not be empty.");
+    if (!graph)
+      return make_error_fn("Provided traffic graph is invalid.");
+
     RobotInfo info;
-    info._pimpl = rmf_utils::make_impl<Implementation>(
-      Implementation {
-        state.name,
-        state.model,
-        time_now,
-        time_now,
-        std::move(graph)
-      });
+    info._pimpl = rmf_utils::make_impl<Implementation>(Implementation());
+    info._pimpl->name = state.name;
+    info._pimpl->model = state.model;
+    info._pimpl->first_found = time_now;
+    info._pimpl->last_updated = time_now;
+    info._pimpl->graph = std::move(graph);
     info._pimpl->track_and_update(state);
     return std::make_shared<RobotInfo>(std::move(info));
   }
