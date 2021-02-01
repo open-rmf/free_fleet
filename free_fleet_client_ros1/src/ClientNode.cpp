@@ -202,7 +202,10 @@ void ClientNode::publish_robot_state()
 
   {
     ReadLock battery_state_lock(battery_state_mutex);
-    new_robot_state.battery_percent = current_battery_state.percentage;
+    /// RMF expects battery to have a percentage in the range for 0-100.
+    /// sensor_msgs/BatteryInfo on the other hand returns a value in 
+    /// the range of 0-1
+    new_robot_state.battery_percent = 100*current_battery_state.percentage;
   }
 
   {
