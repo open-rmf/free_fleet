@@ -9,6 +9,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <exec_depend>ff_rviz_plugins_ros1</exec_depend>
   <exec_depend>free_fleet_client_ros1</exec_depend>
 
   <exec_depend>turtlebot3_bringup</exec_depend>

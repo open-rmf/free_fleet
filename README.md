@@ -164,10 +164,16 @@ Additional packages are required for this example, clone in additional packages 
 ```bash
 cd ~/client_ws/src
 git clone https://github.com/rhaschke/robot_state_publisher -b noetic-devel
-git clone https://github.com/aaronchongth/turtlebot3 -b noetic-devel
 git clone https://github.com/aaronchongth/turtlebot3_simulations -b noetic-devel
 
+cd robot_state_publisher
+git checkout 661628a76bbb
+
 sudo apt install ros-noetic-gazebo-ros-pkgs ros-noetic-dwa-local-planner
+
+cd ~/client_ws
+source /opt/ros/noetic/setup.bash
+colcon build --packages-up-to ff_examples_ros1
 ```
 
 Launch the basic simulation of a single Turtlebot3, with a free fleet client attached to it, by sourcing the client workspace and launching the provided example launch file,
