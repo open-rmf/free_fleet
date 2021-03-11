@@ -99,7 +99,7 @@ Start a new ROS2 workspace, and pull in the necessary repositories,
 mkdir -p ~/server_ws/src
 cd ~/server_ws/src
 git clone https://github.com/osrf/free_fleet
-git clone https://github.com/osrf/rmf_core
+git clone https://github.com/open-rmf/rmf_internal_msgs
 ```
 
 Install all the dependencies through `rosdep`,
