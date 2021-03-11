@@ -5,11 +5,11 @@ jobs:
   ros1:
     runs-on: ubuntu-20.04
     container:
-      image: docker://ros:noetic-ros-core-focal
+      image: docker://ros:noetic-ros-base-focal
     steps:
     - name: non-ros-deps
       run: |
-        apt update && apt install \
+        sudo apt update && sudo apt install \
           git wget qt5-default \
           python3-rosdep \
           python3-vcstool \
@@ -28,7 +28,6 @@ jobs:
     - name: ros-deps
       run: |
         cd ros1_ws
-        rosdep init
         rosdep update
         rosdep install \
           --from-paths src \
