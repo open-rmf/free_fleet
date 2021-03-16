@@ -70,16 +70,26 @@ void Manager::Implementation::run_once()
       _to_robot_transform->backward_transform(s.location),
       s.path_target_index};
 
+    if (s.name.empty())
+    {
+      std::cout << "Somehow getting empty string!" << std::endl;
+      continue;
+    }
+
     const auto r_it = _robots.find(s.name);
     bool new_robot = r_it == _robots.end();
     if (new_robot)
     {
-      _robots[s.name] = agv::RobotInfo::Implementation::make(
+      auto new_robot = agv::RobotInfo::Implementation::make(
         transformed_state,
         _graph,
         _time_now_fn());
-      std::cout << "Registered new robot: [" << s.name << "]..."
-        << std::endl;
+      if (new_robot)
+      {
+        _robots[s.name] = std::move(new_robot);
+        std::cout << "Registered new robot: [" << s.name << "]..."
+          << std::endl;
+      }
     }
     else
     {
@@ -88,7 +98,7 @@ void Manager::Implementation::run_once()
     }
 
     // Updates external uses of the robot's information
-    if (_robot_updated_callback_fn)
+    if (r_it != _robots.end() && _robot_updated_callback_fn)
       _robot_updated_callback_fn(r_it->second);
 
     // for each robot figure out whether any tasks were not received yet

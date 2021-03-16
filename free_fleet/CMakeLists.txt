@@ -10,6 +10,10 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+
 if(NOT CMAKE_BUILD_TYPE)
   # Use the Release build type by default if the user has not specified one
   set(CMAKE_BUILD_TYPE Release)
