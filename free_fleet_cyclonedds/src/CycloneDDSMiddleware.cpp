@@ -75,7 +75,6 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
 {
   std::shared_ptr<CycloneDDSMiddleware> middleware(new CycloneDDSMiddleware());
   
-
   if(xml_config != "")
   {
     dds_entity_t err_code = dds_create_domain(dds_domain, xml_config.c_str());
@@ -147,7 +146,7 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_server(
       return nullptr;
     }
   }
-  
+
   dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
   if (participant <  0)
   {
