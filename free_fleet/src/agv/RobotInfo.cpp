@@ -48,120 +48,120 @@ void RobotInfo::Implementation::update_state(
 void RobotInfo::Implementation::track_and_update(
   const messages::RobotState& new_state)
 {
-  const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
+  // const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
 
   // If the robot is not performing any task, we first check if it is near a
   // previous waypoint, before going through the entire navigation graph
-  if (new_state.task_id == 0)
-  {
-    track_without_task_id(curr_loc);
-  }
-  else
-  {
-    const uint32_t task_id = new_state.task_id;
-    auto it = allocated_requests.find(task_id);
-    if (it == allocated_requests.end())
-    {
-      std::cerr << "[Warning]: Robot [" << name << "] task ID [" << task_id
-        << "] was not given through the manager, due to lack of information, "
-        "this robot is considered LOST." << std::endl;
-      track_without_task_id(curr_loc);
-      state = new_state;
-      return;
-    }
-    assert(it->second);
-    auto request = it->second;
-    auto request_type = request->request_type();
+  // if (new_state.task_id == 0)
+  // {
+  //   track_without_task_id(curr_loc);
+  // }
+  // else
+  // {
+  //   const uint32_t task_id = new_state.task_id;
+  //   auto it = allocated_requests.find(task_id);
+  //   if (it == allocated_requests.end())
+  //   {
+  //     std::cerr << "[Warning]: Robot [" << name << "] task ID [" << task_id
+  //       << "] was not given through the manager, due to lack of information, "
+  //       "this robot is considered LOST." << std::endl;
+  //     track_without_task_id(curr_loc);
+  //     state = new_state;
+  //     return;
+  //   }
+  //   assert(it->second);
+  //   auto request = it->second;
+  //   auto request_type = request->request_type();
 
-    using RequestType = requests::RequestInfo::RequestType;
+  //   using RequestType = requests::RequestInfo::RequestType;
 
-    if (request_type == RequestType::ModeRequest)
-    {
-      // Mode and Relocalization requests will mainly be for pausing, resuming,
-      // and changing perceived locations. Therefore it should not affect
-      // tracking.
-      track_without_task_id(curr_loc);
-    }
-    else if (request_type == RequestType::RelocalizationRequest)
-    {
-      // We will first check for the last visited waypoint.
-      std::shared_ptr<requests::RelocalizationRequestInfo> reloc_req =
-        std::dynamic_pointer_cast<requests::RelocalizationRequestInfo>(
-          request);
+  //   if (request_type == RequestType::ModeRequest)
+  //   {
+  //     // Mode and Relocalization requests will mainly be for pausing, resuming,
+  //     // and changing perceived locations. Therefore it should not affect
+  //     // tracking.
+  //     track_without_task_id(curr_loc);
+  //   }
+  //   else if (request_type == RequestType::RelocalizationRequest)
+  //   {
+  //     // We will first check for the last visited waypoint.
+  //     std::shared_ptr<requests::RelocalizationRequestInfo> reloc_req =
+  //       std::dynamic_pointer_cast<requests::RelocalizationRequestInfo>(
+  //         request);
 
-      if (is_near_waypoint(
-        reloc_req->request().last_visited_waypoint_index, curr_loc))
-      {
-        // We are very close to the provided waypoint
-        tracking_state = TrackingState::OnWaypoint;
-        tracking_index = reloc_req->request().last_visited_waypoint_index;
-      }
-      else
-      {
-        // We will try to localize just based on the waypoints in the navigation
-        // graph, otherwise it is considered to be lost.
-        track_without_task_id(curr_loc);
-      }
-    }
-    else if (request_type == RequestType::NavigationRequest)
-    {
-      // We will use the target waypoints in the navigation request as
-      // additional information to help with tracking.
-      std::shared_ptr<requests::NavigationRequestInfo> nav_req =
-        std::dynamic_pointer_cast<requests::NavigationRequestInfo>(request);
-      const std::size_t next_wp_index =
-        nav_req->request().path[new_state.path_target_index].index;
+  //     if (is_near_waypoint(
+  //       reloc_req->request().last_visited_waypoint_index, curr_loc))
+  //     {
+  //       // We are very close to the provided waypoint
+  //       tracking_state = TrackingState::OnWaypoint;
+  //       tracking_index = reloc_req->request().last_visited_waypoint_index;
+  //     }
+  //     else
+  //     {
+  //       // We will try to localize just based on the waypoints in the navigation
+  //       // graph, otherwise it is considered to be lost.
+  //       track_without_task_id(curr_loc);
+  //     }
+  //   }
+  //   else if (request_type == RequestType::NavigationRequest)
+  //   {
+  //     // We will use the target waypoints in the navigation request as
+  //     // additional information to help with tracking.
+  //     std::shared_ptr<requests::NavigationRequestInfo> nav_req =
+  //       std::dynamic_pointer_cast<requests::NavigationRequestInfo>(request);
+  //     const std::size_t next_wp_index =
+  //       nav_req->request().path[new_state.path_target_index].index;
 
-      rmf_utils::optional<std::size_t> prev_wp_index = rmf_utils::nullopt;
-      rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
-      if (new_state.path_target_index != 0)
-      {
-        prev_wp_index =
-          nav_req->request().path[new_state.path_target_index - 1].index;
-        curr_lane = graph->lane_from(prev_wp_index.value(), next_wp_index);
-      }
+  //     rmf_utils::optional<std::size_t> prev_wp_index = rmf_utils::nullopt;
+  //     rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
+  //     if (new_state.path_target_index != 0)
+  //     {
+  //       prev_wp_index =
+  //         nav_req->request().path[new_state.path_target_index - 1].index;
+  //       curr_lane = graph->lane_from(prev_wp_index.value(), next_wp_index);
+  //     }
 
-      if (is_near_waypoint(next_wp_index, curr_loc))
-      {
-        // The robot has reached the next waypoint on this navigation request.
-        tracking_state = TrackingState::OnWaypoint;
-        tracking_index = next_wp_index;
-      }
-      else if (prev_wp_index.has_value())
-      {
-        if (is_near_waypoint(prev_wp_index.value(), curr_loc))
-        {
-          // The robot is still in the previous waypoint on this navigation
-          // request.
-          tracking_state = TrackingState::OnWaypoint;
-          tracking_index = prev_wp_index.value();
-        }
-        else if (curr_lane && is_within_lane(curr_lane, curr_loc))
-        {
-          tracking_state = TrackingState::OnLane;
-          tracking_index = curr_lane->index();
+  //     if (is_near_waypoint(next_wp_index, curr_loc))
+  //     {
+  //       // The robot has reached the next waypoint on this navigation request.
+  //       tracking_state = TrackingState::OnWaypoint;
+  //       tracking_index = next_wp_index;
+  //     }
+  //     else if (prev_wp_index.has_value())
+  //     {
+  //       if (is_near_waypoint(prev_wp_index.value(), curr_loc))
+  //       {
+  //         // The robot is still in the previous waypoint on this navigation
+  //         // request.
+  //         tracking_state = TrackingState::OnWaypoint;
+  //         tracking_index = prev_wp_index.value();
+  //       }
+  //       else if (curr_lane && is_within_lane(curr_lane, curr_loc))
+  //       {
+  //         tracking_state = TrackingState::OnLane;
+  //         tracking_index = curr_lane->index();
 
-          double dist_to_lane = distance_to_lane(curr_lane, curr_loc);
-          if (dist_to_lane > lane_dist_threshold)
-          {
-            std::cerr << "[Warning]: Robot [" << name << "] is " << dist_to_lane
-              << "m away from the lane center." << std::endl;
-          }
-        }
-      }
-      else
-      {
-        std::cerr << "[Warning]: Robot [" << name << "] is far away from the "
-          "next waypoint, and there is no path from the previous "
-          "waypoint, it is LOST until a clearer state comes in." << std::endl;
-        tracking_state = TrackingState::Lost;
-      }
-    }
-    else
-    {
-      // We have no other TrackingState.
-    }
-  }
+  //         double dist_to_lane = distance_to_lane(curr_lane, curr_loc);
+  //         if (dist_to_lane > lane_dist_threshold)
+  //         {
+  //           std::cerr << "[Warning]: Robot [" << name << "] is " << dist_to_lane
+  //             << "m away from the lane center." << std::endl;
+  //         }
+  //       }
+  //     }
+  //     else
+  //     {
+  //       std::cerr << "[Warning]: Robot [" << name << "] is far away from the "
+  //         "next waypoint, and there is no path from the previous "
+  //         "waypoint, it is LOST until a clearer state comes in." << std::endl;
+  //       tracking_state = TrackingState::Lost;
+  //     }
+  //   }
+  //   else
+  //   {
+  //     // We have no other TrackingState.
+  //   }
+  // }
 
   state = new_state;
 }
