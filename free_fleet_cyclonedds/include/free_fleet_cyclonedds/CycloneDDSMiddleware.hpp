@@ -36,11 +36,13 @@ public:
 
   static std::shared_ptr<CycloneDDSMiddleware> make_client(
     int dds_domain,
-    const std::string& fleet_name);
+    const std::string& fleet_name,
+    const std::string& xml_config = "");
 
   static std::shared_ptr<CycloneDDSMiddleware> make_server(
     int dds_domain,
-    const std::string& fleet_name);
+    const std::string& fleet_name,
+    const std::string& xml_config = "");
 
   ~CycloneDDSMiddleware();
 

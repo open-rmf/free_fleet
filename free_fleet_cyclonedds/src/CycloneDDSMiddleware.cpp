@@ -70,10 +70,22 @@ public:
 //==============================================================================
 std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
   int dds_domain,
-  const std::string& fleet_name)
+  const std::string& fleet_name,
+  const std::string& xml_config)
 {
   std::shared_ptr<CycloneDDSMiddleware> middleware(new CycloneDDSMiddleware());
   
+
+  if(xml_config != "")
+  {
+    dds_entity_t err_code = dds_create_domain(dds_domain, xml_config.c_str());
+    if (err_code < 0)
+    {
+      DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-err_code));
+      return nullptr;
+    }
+  }
+
   dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
   if (participant <  0)
   {
@@ -121,10 +133,21 @@ std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_client(
 //==============================================================================
 std::shared_ptr<CycloneDDSMiddleware> CycloneDDSMiddleware::make_server(
   int dds_domain,
-  const std::string& fleet_name)
+  const std::string& fleet_name,
+  const std::string& xml_config)
 {
   std::shared_ptr<CycloneDDSMiddleware> middleware(new CycloneDDSMiddleware());
 
+  if(xml_config != "")
+  { 
+    dds_entity_t err_code = dds_create_domain(dds_domain, xml_config.c_str());
+    if (err_code < 0)
+    {
+      DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-err_code));
+      return nullptr;
+    }
+  }
+  
   dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
   if (participant <  0)
   {
