@@ -1,0 +1,55 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  ci:
+    runs-on: ubuntu-20.04
+    container:
+      image: docker://ros:foxy-ros-base-focal
+
+    steps:
+    - name: workspace
+      run: |
+        mkdir -p ws/src
+
+    - name: checkout
+      uses: actions/checkout@v2
+      with:
+        path: ws/src/free_fleet
+
+    - name: non-ros-deps
+      run: |
+        sudo apt update && sudo apt install \
+          git wget \
+          python3-rosdep \
+          python3-vcstool \
+          python3-colcon-common-extensions -y
+
+    - name: ros-deps
+      run: |
+        cd ws
+        rosdep update
+        rosdep install --from-paths src --ignore-src --rosdistro foxy -yr
+
+    - name: build
+      shell: bash
+      run: |
+        cd ws
+        source /opt/ros/foxy/setup.bash
+        colcon build \
+          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
+          --packages-up-to free_fleet free_fleet_cyclonedds
+
+    - name: test
+      shell: bash
+      run: |
+        cd ws
+        source install/setup.bash
+        colcon test \
+          --packages-select free_fleet free_fleet_cyclonedds
+
+    - name: test-results
+      shell: bash
+      run: |
+        cd ws
+        source install/setup.bash
+        colcon test-result --verbose
