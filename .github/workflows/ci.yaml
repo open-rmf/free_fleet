@@ -10,6 +10,10 @@ jobs:
     - name: workspace
       run: |
         mkdir -p ws/src
+        cd ws/src
+        git clone https://github.com/open-rmf/rmf_utils
+        git clone https://github.com/open-rmf/free_fleet
+        git clone https://github.com/open-rmf/rmf_traffic
 
     - name: checkout
       uses: actions/checkout@v2
