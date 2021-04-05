@@ -47,7 +47,7 @@ public:
 
   using SharedPtr = std::shared_ptr<Manager>;
 
-  /// This function returns the a time stamp based on the implementation.
+  /// This function returns the current time stamp based on the implementation.
   using TimeNow = std::function<rmf_traffic::Time()>;
 
   /// This callback function can be used to work with different applications,
