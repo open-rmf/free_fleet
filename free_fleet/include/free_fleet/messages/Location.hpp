@@ -26,10 +26,8 @@ namespace messages {
 
 struct Location
 {
-  /// Time in seconds.
+  /// Time in seconds and nanoseconds.
   int32_t sec;
-
-  /// Time in nanoseconds.
   uint32_t nanosec;
 
   /// x, y positions in meters and yaw in radians.

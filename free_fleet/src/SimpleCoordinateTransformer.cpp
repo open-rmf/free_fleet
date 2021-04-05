@@ -17,23 +17,22 @@
 
 #include <iostream>
 #include <Eigen/Geometry>
-
-#include <free_fleet/CoordinateTransformer.hpp>
+#include <free_fleet/SimpleCoordinateTransformer.hpp>
 
 namespace free_fleet {
 
 //==============================================================================
-class CoordinateTransformer::Implementation
+class SimpleCoordinateTransformer::Implementation
 {
 public:
 
-  double _scale;
-  double _rotation_yaw;
-  Eigen::Vector2d _translation;
+  double scale;
+  double rotation_yaw;
+  Eigen::Vector2d translation;
 };
 
 //==============================================================================
-CoordinateTransformer::SharedPtr CoordinateTransformer::make(
+SimpleCoordinateTransformer::SharedPtr SimpleCoordinateTransformer::make(
   double scale,
   double translation_x,
   double translation_y,
@@ -46,53 +45,55 @@ CoordinateTransformer::SharedPtr CoordinateTransformer::make(
     return nullptr;
   }
 
-  SharedPtr transformer(new CoordinateTransformer);
-  transformer->_pimpl->_scale = scale;
-  transformer->_pimpl->_rotation_yaw = rotation_yaw;
-  transformer->_pimpl->_translation = {translation_x, translation_y};
+  SharedPtr transformer(new SimpleCoordinateTransformer);
+  transformer->_pimpl = rmf_utils::make_impl<Implementation>(
+    Implementation{
+      scale,
+      rotation_yaw,
+      {translation_x, translation_y}
+    });
   return transformer;
 }
 
 //==============================================================================
-CoordinateTransformer::CoordinateTransformer()
-: _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
+SimpleCoordinateTransformer::SimpleCoordinateTransformer()
 {}
 
 //==============================================================================
-messages::Location CoordinateTransformer::forward_transform(
+messages::Location SimpleCoordinateTransformer::forward_transform(
   const messages::Location& input) const
 {
   const Eigen::Vector2d scaled =
-    _pimpl->_scale * Eigen::Vector2d(input.x, input.y);
+    _pimpl->scale * Eigen::Vector2d(input.x, input.y);
   const Eigen::Vector2d rotated =
-    Eigen::Rotation2D<double>(_pimpl->_rotation_yaw) * scaled;
-  const Eigen::Vector2d translated = rotated + _pimpl->_translation;
+    Eigen::Rotation2D<double>(_pimpl->rotation_yaw) * scaled;
+  const Eigen::Vector2d translated = rotated + _pimpl->translation;
   
   return messages::Location{
     input.sec,
     input.nanosec,
     translated[0],
     translated[1],
-    input.yaw + _pimpl->_rotation_yaw,
+    input.yaw + _pimpl->rotation_yaw,
     input.level_name};
 }
 
 //==============================================================================
-messages::Location CoordinateTransformer::backward_transform(
+messages::Location SimpleCoordinateTransformer::backward_transform(
   const messages::Location& input) const
 {
   const Eigen::Vector2d translated =
-    Eigen::Vector2d(input.x, input.y) - _pimpl->_translation;
+    Eigen::Vector2d(input.x, input.y) - _pimpl->translation;
   const Eigen::Vector2d rotated =
-    Eigen::Rotation2D<double>(-_pimpl->_rotation_yaw) * translated;
-  const Eigen::Vector2d scaled = 1.0 / _pimpl->_scale * rotated;
+    Eigen::Rotation2D<double>(-_pimpl->rotation_yaw) * translated;
+  const Eigen::Vector2d scaled = 1.0 / _pimpl->scale * rotated;
 
   return messages::Location{
     input.sec,
     input.nanosec,
     scaled[0],
     scaled[1],
-    input.yaw - _pimpl->_rotation_yaw,
+    input.yaw - _pimpl->rotation_yaw,
     input.level_name};
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Open Source Robotics Foundation
+ * Copyright (C) 2021 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@
 #define INCLUDE__FREE_FLEET__COORDINATETRANSFORMER_HPP
 
 #include <memory>
-
-#include <rmf_utils/impl_ptr.hpp>
-
 #include <free_fleet/messages/Location.hpp>
 
 namespace free_fleet {
@@ -30,25 +27,12 @@ class CoordinateTransformer
 {
 public:
 
-  using SharedPtr = std::shared_ptr<CoordinateTransformer>;
+  /// Forward transformation from 
+  virtual messages::Location forward_transform(const messages::Location& input)
+    const = 0;
 
-  ///
-  static SharedPtr make(
-    double scale,
-    double translation_x,
-    double translation_y,
-    double rotation_yaw);
-
-  ///
-  messages::Location forward_transform(const messages::Location& input) const;
-
-  ///
-  messages::Location backward_transform(const messages::Location& input) const;
-
-  class Implementation;
-private:
-  CoordinateTransformer();
-  rmf_utils::impl_ptr<Implementation> _pimpl;
+  virtual messages::Location backward_transform(const messages::Location& input)
+    const = 0;
 };
 
 } // namespace free_fleet

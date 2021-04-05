@@ -24,6 +24,7 @@
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/Location.hpp>
+#include <free_fleet/SimpleCoordinateTransformer.hpp>
 
 #include "src/internal_Manager.hpp"
 #include "src/agv/internal_RobotInfo.hpp"
@@ -51,7 +52,7 @@ SCENARIO("Test Manager API")
   graph->add_lane(4, 0);
 
   auto m = std::make_shared<free_fleet::MockMiddleware>();
-  auto ct = free_fleet::CoordinateTransformer::make(
+  auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
     0.0,
@@ -141,7 +142,7 @@ SCENARIO("Testing manager API with dummy robots")
   graph->add_waypoint(test_map_name, {100, 100});
 
   auto m = std::make_shared<free_fleet::MockMiddleware>();
-  auto ct = free_fleet::CoordinateTransformer::make(
+  auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
     0.0,
@@ -473,7 +474,7 @@ SCENARIO("Testing update robot callback with dummy robot")
   graph->add_waypoint(test_map_name, {100, 100});
 
   auto m = std::make_shared<MockMiddlewareWithRobot>();
-  auto ct = free_fleet::CoordinateTransformer::make(
+  auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
     0.0,

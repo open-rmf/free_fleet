@@ -23,6 +23,7 @@
 
 #include <free_fleet/Manager.hpp>
 #include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/SimpleCoordinateTransformer.hpp>
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
@@ -34,7 +35,7 @@ SCENARIO("Test make Manager")
   std::string fleet_name = "test_fleet";
   std::shared_ptr<rmf_traffic::agv::Graph> graph(new rmf_traffic::agv::Graph);
   auto m = std::make_shared<free_fleet::MockMiddleware>();
-  auto ct = free_fleet::CoordinateTransformer::make(
+  auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
     0.0,
