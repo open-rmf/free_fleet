@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(free_fleet_cyclonedds VERSION 1.0.0 LANGUAGES C CXX)
+project(free_fleet_cyclonedds VERSION 0.1.0 LANGUAGES C CXX)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)

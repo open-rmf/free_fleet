@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>free_fleet_cyclonedds</name>
-  <version>1.0.0</version>
+  <version>0.1.0</version>
   <description>Free fleet middleware implementation using CycloneDDS</description>
   <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
   <license>Apache 2.0</license>
