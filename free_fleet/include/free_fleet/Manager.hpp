@@ -72,12 +72,24 @@ public:
     TimeNow time_now_fn,
     RobotUpdatedCallback robot_updated_callback_fn);
 
-  /// Starts the manager which begins to listen for clients.
+  /// Starts the manager which begins to listen for clients, if it has not yet
+  /// been started. This function is blocking.
   ///
   /// \param[in] frequency
   ///   Frequency at which the manager operates. This value needs to be a
   ///   non-zero value.
-  void start(uint32_t frequency);
+  void run(uint32_t frequency);
+
+  /// Starts the manager which begins to listen for clients, if it has not yet
+  /// been started. This function is non-blocking.
+  ///
+  /// \param[in] frequency
+  ///   Frequency at which the manager operates. This value needs to be a
+  ///   non-zero value.
+  void start_async(uint32_t frequency);
+
+  /// Checks if the manager has already been started.
+  bool started() const;
 
   /// Gets all the names of the robots that are currently under this manager.
   ///

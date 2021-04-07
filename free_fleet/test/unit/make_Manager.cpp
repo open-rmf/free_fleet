@@ -55,6 +55,7 @@ SCENARIO("Test make Manager")
       time_now_fn,
       cb);
     CHECK(manager);
+    CHECK(!manager->started());
   }
 
   GIVEN("Empty fleet name")
@@ -115,6 +116,8 @@ SCENARIO("Test make Manager")
       time_now_fn,
       cb);
     REQUIRE(manager);
-    CHECK_THROWS(manager->start(0));
+    CHECK(!manager->started());
+    CHECK_THROWS(manager->run(0));
+    CHECK_THROWS(manager->start_async(0));
   }
 }

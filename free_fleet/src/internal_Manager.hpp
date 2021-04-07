@@ -19,6 +19,7 @@
 #define SRC__INTERNAL_MANAGER_HPP
 
 #include <mutex>
+#include <atomic>
 #include <thread>
 
 #include <free_fleet/Manager.hpp>
@@ -42,8 +43,8 @@ public:
 
   ~Implementation()
   {
-    if (_thread.joinable())
-      _thread.join();
+    if (started.load() && async_thread.joinable())
+      async_thread.join();
   }
 
   static Implementation& get(Manager& manager)
@@ -58,34 +59,32 @@ public:
 
   bool connected() const;
 
-  void start(uint32_t frequency);
-
   void run_once();
 
-  void thread_fn();
+  void run(uint32_t frequency);
 
-  std::string _fleet_name;
-  std::shared_ptr<rmf_traffic::agv::Graph> _graph;
-  std::shared_ptr<transport::Middleware> _middleware;
-  std::shared_ptr<CoordinateTransformer> _to_robot_transform;
-  TimeNow _time_now_fn;
-  RobotUpdatedCallback _robot_updated_callback_fn;
+  void start_async(uint32_t frequency);
 
-  std::unordered_map<std::string, std::shared_ptr<agv::RobotInfo>> _robots;
+  std::string fleet_name;
+  std::shared_ptr<rmf_traffic::agv::Graph> graph;
+  std::shared_ptr<transport::Middleware> middleware;
+  std::shared_ptr<CoordinateTransformer> to_robot_transform;
+  TimeNow time_now_fn;
+  RobotUpdatedCallback robot_updated_callback_fn;
+
+  std::unordered_map<std::string, std::shared_ptr<agv::RobotInfo>> robots;
 
   // Reserving task ID 0 for empty tasks
-  const uint32_t _idle_task_id = 0;
-  uint32_t _current_task_id = _idle_task_id;
+  const uint32_t idle_task_id = 0;
+  uint32_t current_task_id = idle_task_id;
   std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
-    _tasks;
+    tasks;
   std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
-    _unacknowledged_tasks;
+    unacknowledged_tasks;
 
-  std::mutex _mutex;
-  std::thread _thread;
-  uint32_t _thread_frequency;
-
-  bool _started = false;
+  std::atomic<bool> started = false;
+  std::mutex mutex;
+  std::thread async_thread;
 };
 
 } // namespace free_fleet

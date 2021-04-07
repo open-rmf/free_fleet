@@ -198,9 +198,9 @@ SCENARIO("Testing manager API with dummy robots")
       initial_time);
   REQUIRE(robot_info_3);
 
-  impl._robots[robot_info_1->name()] = robot_info_1;
-  impl._robots[robot_info_2->name()] = robot_info_2;
-  impl._robots[robot_info_3->name()] = robot_info_3;
+  impl.robots[robot_info_1->name()] = robot_info_1;
+  impl.robots[robot_info_2->name()] = robot_info_2;
+  impl.robots[robot_info_3->name()] = robot_info_3;
 
   GIVEN("Basic API with dummy robots")
   {
@@ -517,7 +517,7 @@ SCENARIO("Testing update robot callback with dummy robot")
       initial_time);
   REQUIRE(robot_info);
 
-  impl._robots[robot_info->name()] = robot_info;
+  impl.robots[robot_info->name()] = robot_info;
   
   impl.run_once();  
 }
