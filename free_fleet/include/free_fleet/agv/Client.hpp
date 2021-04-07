@@ -74,7 +74,8 @@ public:
   ///
   /// \param[in] frequency
   ///   Frequency at which the client attempts to check for incoming requests,
-  ///   command the robot and update its state upstream.
+  ///   command the robot and update its state upstream. This value needs to be
+  ///   a non-zero value.
   void run(uint32_t frequency);
 
   /// Starts the client which begins to update the fleet manager with the
@@ -83,7 +84,8 @@ public:
   ///
   /// \param[in] frequency
   ///   Frequency at which the client attempts to check for incoming requests,
-  ///   command the robot and update its state upstream.
+  ///   command the robot and update its state upstream. This value needs to be
+  ///   a non-zero value.
   void start_async(uint32_t frequency);
 
   /// Checks if the client has already been started.

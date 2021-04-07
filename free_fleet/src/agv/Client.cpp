@@ -104,6 +104,7 @@ void Client::Implementation::run(uint32_t frequency)
   {
     if (std::chrono::steady_clock::now() - t_prev < duration_per_iteration)
       continue;
+    t_prev = std::chrono::steady_clock::now();
 
     run_once();
   }
