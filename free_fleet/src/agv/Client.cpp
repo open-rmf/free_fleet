@@ -16,51 +16,105 @@
  */
 
 #include <chrono>
+#include <thread>
+#include <future>
 #include <iostream>
 #include <unordered_set>
 
 #include <rmf_traffic/Time.hpp>
 
 #include <free_fleet/agv/Client.hpp>
+#include "internal_Client.hpp"
 
 namespace free_fleet {
 namespace agv {
 
 //==============================================================================
-class Client::Implementation
+bool Client::Implementation::connected() const
 {
-public:
+  return command_handle && status_handle && middleware;
+}
 
-  Implementation()
-  {}
+//==============================================================================
+void Client::Implementation::run_once()
+{
+  // send state
+  free_fleet::messages::RobotState new_state {
+    robot_name,
+    robot_model,
+    task_id,
+    status_handle->mode(),
+    status_handle->battery_percent(),
+    status_handle->location(),
+    static_cast<uint32_t>(status_handle->target_path_waypoint_index())
+  };
+  middleware->send_state(new_state);
 
-  ~Implementation() = default;
-
-  bool _connected() const
+  // read mode request
+  auto mode_request = middleware->read_mode_request();
+  if (mode_request.has_value() && is_valid_request(mode_request.value()))
   {
-    return _command_handle && _status_handle && _middleware;
+    auto request = mode_request.value();
+    task_ids.insert(request.task_id);
+    task_id = request.task_id;
+    if (request.mode.mode == messages::RobotMode::MODE_PAUSED)
+      command_handle->stop();
+    else if (request.mode.mode == messages::RobotMode::MODE_MOVING)
+      command_handle->resume();
+    return;
+  }
+  
+  // read relocalization request
+  auto relocalization_request = middleware->read_relocalization_request();
+  if (relocalization_request.has_value() &&
+    is_valid_request(relocalization_request.value()))
+  {
+    auto request = relocalization_request.value();
+    task_ids.insert(request.task_id);
+    task_id = request.task_id;
+    free_fleet::agv::CommandHandle::RequestCompleted callback =
+      [this]() { task_id = 0; };
+    command_handle->relocalize(request.location, callback);
+    return;
   }
 
-  template<class T> 
-  bool _is_valid_request(const T& request)
+  // read navigation request
+  auto navigation_request = middleware->read_navigation_request();
+  if (navigation_request.has_value() &&
+    is_valid_request(navigation_request.value()))
   {
-    if (request.robot_name == _robot_name &&
-      _task_ids.find(request.task_id) == _task_ids.end())
-      return true;
-    return false;
+    auto request = navigation_request.value();
+    task_ids.insert(request.task_id);
+    task_id = request.task_id;
+    free_fleet::agv::CommandHandle::RequestCompleted callback =
+      [this]() { task_id = 0; };
+    command_handle->follow_new_path(request.path, callback);
   }
+}
 
-  std::string _robot_name;
-  std::string _robot_model;
+//==============================================================================
+void Client::Implementation::run(uint32_t frequency)
+{
+  const double seconds_per_iteration = 1.0 / frequency;
+  const rmf_traffic::Duration duration_per_iteration =
+    rmf_traffic::time::from_seconds(seconds_per_iteration);
+  rmf_traffic::Time t_prev = std::chrono::steady_clock::now();
 
-  // TODO(AA): handle overflow of uint32_t
-  uint32_t _task_id;
-  std::unordered_set<uint32_t> _task_ids;
+  while (connected())
+  {
+    if (std::chrono::steady_clock::now() - t_prev < duration_per_iteration)
+      continue;
 
-  std::shared_ptr<CommandHandle> _command_handle;
-  std::shared_ptr<StatusHandle> _status_handle;
-  std::shared_ptr<transport::Middleware> _middleware;
-};
+    run_once();
+  }
+}
+
+//==============================================================================
+void Client::Implementation::start_async(uint32_t frequency)
+{
+  async_thread =
+    std::thread(std::bind(&Client::Implementation::run, this, frequency));
+}
 
 //==============================================================================
 Client::SharedPtr Client::make(
@@ -88,12 +142,12 @@ Client::SharedPtr Client::make(
     return make_error_fn("Provided middleware is invalid.");
 
   Client::SharedPtr new_client(new Client);
-  new_client->_pimpl->_robot_name = robot_name;
-  new_client->_pimpl->_robot_model = robot_model;
-  new_client->_pimpl->_command_handle = std::move(command_handle);
-  new_client->_pimpl->_status_handle = std::move(status_handle);
-  new_client->_pimpl->_middleware = std::move(middleware);
-
+  new_client->_pimpl = rmf_utils::make_impl<Implementation>(Implementation());
+  new_client->_pimpl->robot_name = robot_name;
+  new_client->_pimpl->robot_model = robot_model;
+  new_client->_pimpl->command_handle = std::move(command_handle);
+  new_client->_pimpl->status_handle = std::move(status_handle);
+  new_client->_pimpl->middleware = std::move(middleware);
   return new_client;
 }
 
@@ -103,78 +157,32 @@ Client::Client()
 {}
 
 //==============================================================================
-void Client::start(uint32_t frequency)
+void Client::run(uint32_t frequency)
 {
-  const double seconds_per_iteration = 1.0 / frequency;
-  const rmf_traffic::Duration duration_per_iteration =
-    rmf_traffic::time::from_seconds(seconds_per_iteration);
-  rmf_traffic::Time t_prev = std::chrono::steady_clock::now();
+  if (frequency == 0)
+    throw std::range_error("[Error]: Frequency has to be greater than 0.");
+  if (started())
+    throw std::runtime_error("[Error]: Client has already been started.");
+  _pimpl->started = true;
 
-  while (_pimpl->_connected())
-  {
-    if (std::chrono::steady_clock::now() - t_prev < duration_per_iteration)
-      continue;
+  _pimpl->run(frequency);
+}
 
-    // send state
-    free_fleet::messages::RobotState new_state {
-      _pimpl->_robot_name,
-      _pimpl->_robot_model,
-      _pimpl->_task_id,
-      _pimpl->_status_handle->mode(),
-      _pimpl->_status_handle->battery_percent(),
-      _pimpl->_status_handle->location(),
-      static_cast<uint32_t>(
-        _pimpl->_status_handle->target_path_waypoint_index())
-    };
-    _pimpl->_middleware->send_state(new_state);
+//==============================================================================
+void Client::start_async(uint32_t frequency)
+{
+  if (frequency == 0)
+    throw std::range_error("[Error]: Frequency has to be greater than 0.");
+  if (started())
+    throw std::runtime_error("[Error]: Client has already been started.");
 
-    // read mode request
-    auto mode_request = _pimpl->_middleware->read_mode_request();
-    if (mode_request.has_value() && 
-      _pimpl->_is_valid_request(mode_request.value()))
-    {
-      auto request = mode_request.value();
-      _pimpl->_task_ids.insert(request.task_id);
-      _pimpl->_task_id = request.task_id;
-      if (request.mode.mode == messages::RobotMode::MODE_PAUSED)
-        _pimpl->_command_handle->stop();
-      else if (request.mode.mode == messages::RobotMode::MODE_MOVING)
-        _pimpl->_command_handle->resume();
-      continue;
-    }
-    
-    // read relocalization request
-    auto relocalization_request =
-      _pimpl->_middleware->read_relocalization_request();
-    if (relocalization_request.has_value() &&
-      _pimpl->_is_valid_request(relocalization_request.value()))
-    {
-      auto request = relocalization_request.value();
-      _pimpl->_task_ids.insert(request.task_id);
-      _pimpl->_task_id = request.task_id;
-      free_fleet::agv::CommandHandle::RequestCompleted callback =
-        [this]() { _pimpl->_task_id = 0; };
-      _pimpl->_command_handle->relocalize(
-        request.location,
-        callback);
-      continue;
-    }
+  _pimpl->start_async(frequency);
+}
 
-    // read navigation request
-    auto navigation_request = _pimpl->_middleware->read_navigation_request();
-    if (navigation_request.has_value() &&
-      _pimpl->_is_valid_request(navigation_request.value()))
-    {
-      auto request = navigation_request.value();
-      _pimpl->_task_ids.insert(request.task_id);
-      _pimpl->_task_id = request.task_id;
-      free_fleet::agv::CommandHandle::RequestCompleted callback =
-        [this]() { _pimpl->_task_id = 0; };
-      _pimpl->_command_handle->follow_new_path(
-        request.path,
-        callback);
-    }
-  }
+//==============================================================================
+bool Client::started() const
+{
+  return _pimpl->started.load();
 }
 
 //==============================================================================

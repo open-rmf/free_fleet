@@ -70,12 +70,24 @@ public:
 
   /// Starts the client which begins to update the fleet manager with the
   /// robot's current status, as well as polls for requests before performing
-  /// them.
+  /// them, if it has not yet been started. This function is blocking. 
   ///
   /// \param[in] frequency
   ///   Frequency at which the client attempts to check for incoming requests,
   ///   command the robot and update its state upstream.
-  void start(uint32_t frequency);
+  void run(uint32_t frequency);
+
+  /// Starts the client which begins to update the fleet manager with the
+  /// robot's current status, as well as polls for requests before performing
+  /// them. This function is non-blocking.
+  ///
+  /// \param[in] frequency
+  ///   Frequency at which the client attempts to check for incoming requests,
+  ///   command the robot and update its state upstream.
+  void start_async(uint32_t frequency);
+
+  /// Checks if the client has already been started.
+  bool started() const;
 
   class Implementation;
 private:
