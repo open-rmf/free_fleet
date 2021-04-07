@@ -27,19 +27,103 @@
 
 SCENARIO("Verify that a client can run")
 {
+  const std::string robot_name = "mock_robot";
+  const std::string robot_model = "mock_robot_model";
   auto ch = std::make_shared<free_fleet::MockCommandHandle>();
   auto sh = std::make_shared<free_fleet::MockStatusHandle>();
   auto m = std::make_shared<free_fleet::MockMiddleware>();
-  auto client = free_fleet::agv::Client::make(
-    "mock_robot",
-    "mock_robot_model",
-    ch,
-    sh,
-    m);
-  REQUIRE(client);
-  CHECK(!client->started());
-  
-  auto& impl = free_fleet::agv::Client::Implementation::get(*client);
-  CHECK_NOTHROW(impl.run_once());
-  CHECK(!client->started());
+
+  GIVEN("All valid")
+  {
+    auto client = free_fleet::agv::Client::make(
+      robot_name,
+      robot_model,
+      ch,
+      sh,
+      m);
+    REQUIRE(client);
+    CHECK(!client->started());
+  }
+
+  GIVEN("Empty robot name")
+  {
+    auto client = free_fleet::agv::Client::make(
+      "",
+      robot_model,
+      ch,
+      sh,
+      m);
+    CHECK(!client);
+  }
+
+  GIVEN("Empty robot model")
+  {
+    auto client = free_fleet::agv::Client::make(
+      robot_name,
+      "",
+      ch,
+      sh,
+      m);
+    CHECK(!client);
+  }
+
+  GIVEN("Invalid CommandHandle")
+  {
+    auto client = free_fleet::agv::Client::make(
+      robot_name,
+      robot_model,
+      nullptr,
+      sh,
+      m);
+    CHECK(!client);
+  }
+
+  GIVEN("Invalid StatusHandle")
+  {
+    auto client = free_fleet::agv::Client::make(
+      robot_name,
+      robot_model,
+      ch,
+      nullptr,
+      m);
+    CHECK(!client);
+  }
+  GIVEN("Invalid Middleware")
+  {
+    auto client = free_fleet::agv::Client::make(
+      robot_name,
+      robot_model,
+      ch,
+      sh,
+      nullptr);
+    CHECK(!client);
+  }
+
+  GIVEN("Starting with bad frequency")
+  {
+    auto client = free_fleet::agv::Client::make(
+      robot_name,
+      robot_model,
+      ch,
+      sh,
+      m);
+    REQUIRE(client);
+    CHECK(!client->started());
+    CHECK_THROWS(client->run(0));
+    CHECK_THROWS(client->start_async(0));
+  }
+
+  GIVEN("Running once")
+  {
+    auto client = free_fleet::agv::Client::make(
+      robot_name,
+      robot_model,
+      ch,
+      sh,
+      m);
+    REQUIRE(client);
+    auto& impl = free_fleet::agv::Client::Implementation::get(*client);
+    CHECK_NOTHROW(impl.run_once());
+    CHECK(!client->started());
+  }
 }
