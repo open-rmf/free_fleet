@@ -51,7 +51,8 @@ SCENARIO("Test Manager API")
   graph->add_lane(0, 4);
   graph->add_lane(4, 0);
 
-  auto m = std::make_shared<free_fleet::MockMiddleware>();
+  std::unique_ptr<free_fleet::transport::Middleware> m(
+    new free_fleet::MockMiddleware());
   auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
@@ -65,7 +66,7 @@ SCENARIO("Test Manager API")
   auto manager = free_fleet::Manager::make(
     fleet_name,
     graph,
-    m,
+    std::move(m),
     ct,
     time_now_fn,
     cb);
@@ -141,7 +142,8 @@ SCENARIO("Testing manager API with dummy robots")
   graph->add_lane(4, 0);
   graph->add_waypoint(test_map_name, {100, 100});
 
-  auto m = std::make_shared<free_fleet::MockMiddleware>();
+  std::unique_ptr<free_fleet::transport::Middleware> m(
+    new free_fleet::MockMiddleware());
   auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
@@ -155,7 +157,7 @@ SCENARIO("Testing manager API with dummy robots")
   auto manager = free_fleet::Manager::make(
     fleet_name,
     graph,
-    m,
+    std::move(m),
     ct,
     time_now_fn,
     cb);
@@ -473,7 +475,8 @@ SCENARIO("Testing update robot callback with dummy robot")
   graph->add_lane(4, 0);
   graph->add_waypoint(test_map_name, {100, 100});
 
-  auto m = std::make_shared<MockMiddlewareWithRobot>();
+  std::unique_ptr<free_fleet::transport::Middleware> m(
+    new MockMiddlewareWithRobot());
   auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
@@ -490,7 +493,7 @@ SCENARIO("Testing update robot callback with dummy robot")
   auto manager = free_fleet::Manager::make(
     fleet_name,
     graph,
-    m,
+    std::move(m),
     ct,
     time_now_fn,
     cb);

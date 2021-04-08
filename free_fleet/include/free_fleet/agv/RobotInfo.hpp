@@ -65,7 +65,7 @@ public:
   rmf_traffic::Time last_updated() const;
 
   /// Navigation graph of the robot.
-  std::shared_ptr<rmf_traffic::agv::Graph> graph() const;
+  std::shared_ptr<const rmf_traffic::agv::Graph> graph() const;
 
   /// Gets the most up to date tracking estimation of this robot within the
   /// navigation graph.

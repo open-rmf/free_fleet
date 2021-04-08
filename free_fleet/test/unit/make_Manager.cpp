@@ -34,7 +34,8 @@ SCENARIO("Test make Manager")
 {
   std::string fleet_name = "test_fleet";
   std::shared_ptr<rmf_traffic::agv::Graph> graph(new rmf_traffic::agv::Graph);
-  auto m = std::make_shared<free_fleet::MockMiddleware>();
+  std::unique_ptr<free_fleet::transport::Middleware> m(
+    new free_fleet::MockMiddleware());
   auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
@@ -50,7 +51,7 @@ SCENARIO("Test make Manager")
     auto manager = free_fleet::Manager::make(
       fleet_name,
       graph,
-      m,
+      std::move(m),
       ct,
       time_now_fn,
       cb);
@@ -63,7 +64,7 @@ SCENARIO("Test make Manager")
     auto manager = free_fleet::Manager::make(
       "",
       graph,
-      m,
+      std::move(m),
       ct,
       time_now_fn,
       cb);
@@ -75,7 +76,7 @@ SCENARIO("Test make Manager")
     auto manager = free_fleet::Manager::make(
       fleet_name,
       nullptr,
-      m,
+      std::move(m),
       ct,
       time_now_fn,
       cb);
@@ -99,7 +100,7 @@ SCENARIO("Test make Manager")
     auto manager = free_fleet::Manager::make(
       fleet_name,
       graph,
-      m,
+      std::move(m),
       nullptr,
       time_now_fn,
       cb);
@@ -111,7 +112,7 @@ SCENARIO("Test make Manager")
     auto manager = free_fleet::Manager::make(
       fleet_name,
       graph,
-      m,
+      std::move(m),
       ct,
       time_now_fn,
       cb);

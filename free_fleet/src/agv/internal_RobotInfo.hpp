@@ -37,7 +37,7 @@ public:
   std::string model;
   rmf_traffic::Time first_found;
   rmf_traffic::Time last_updated;
-  std::shared_ptr<rmf_traffic::agv::Graph> graph;
+  std::shared_ptr<const rmf_traffic::agv::Graph> graph;
 
   std::size_t tracking_index;
   TrackingState tracking_state = TrackingState::Lost;
@@ -51,7 +51,7 @@ public:
 
   static std::shared_ptr<RobotInfo> make(
     const messages::RobotState& state,
-    std::shared_ptr<rmf_traffic::agv::Graph> graph,
+    std::shared_ptr<const rmf_traffic::agv::Graph> graph,
     rmf_traffic::Time time_now)
   {
     auto make_error_fn = [](const std::string& error_msg)
@@ -114,23 +114,23 @@ public:
 
   /// Finds the normal distance of a point to a lane.
   double distance_to_lane(
-    rmf_traffic::agv::Graph::Lane* lane,
+    const rmf_traffic::agv::Graph::Lane* lane,
     const Eigen::Vector2d& coordinates) const;
 
   /// Finds the nearest waypoint in the graph to the location and its distance
   /// from it in meters.
-  std::pair<rmf_traffic::agv::Graph::Waypoint*, double> find_nearest_waypoint(
-    const Eigen::Vector2d& coordinates) const;
+  std::pair<const rmf_traffic::agv::Graph::Waypoint*, double>
+    find_nearest_waypoint(const Eigen::Vector2d& coordinates) const;
 
   /// Finds the nearest lane in the graph by normal distance, and its distance
   /// away in meters.
-  std::pair<rmf_traffic::agv::Graph::Lane*, double> find_nearest_lane(
+  std::pair<const rmf_traffic::agv::Graph::Lane*, double> find_nearest_lane(
     const Eigen::Vector2d& coordinates) const;
 
   /// Checks whether the normal projection of a point onto a lane is within the
   /// entry and exit.
   bool is_within_lane(
-    rmf_traffic::agv::Graph::Lane* lane,
+    const rmf_traffic::agv::Graph::Lane* lane,
     const Eigen::Vector2d& coordinates) const;
 
   /// Checks whether the coordinates are within 0.5 meters of a given waypoint.

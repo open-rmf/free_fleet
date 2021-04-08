@@ -113,7 +113,7 @@ void RobotInfo::Implementation::track_and_update(
         nav_req->request().path[new_state.path_target_index].index;
 
       rmf_utils::optional<std::size_t> prev_wp_index = rmf_utils::nullopt;
-      rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
+      const rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
       if (new_state.path_target_index != 0)
       {
         prev_wp_index =
@@ -193,7 +193,7 @@ void RobotInfo::Implementation::track_without_task_id(
 
 //==============================================================================
 double RobotInfo::Implementation::distance_to_lane(
-  rmf_traffic::agv::Graph::Lane* lane,
+  const rmf_traffic::agv::Graph::Lane* lane,
   const Eigen::Vector2d& coordinates) const
 {
   const Eigen::Vector2d entry_loc =
@@ -215,9 +215,9 @@ double RobotInfo::Implementation::distance_to_lane(
 //=============================================================================
 auto RobotInfo::Implementation::find_nearest_waypoint(
   const Eigen::Vector2d& coordinates) const
-  -> std::pair<rmf_traffic::agv::Graph::Waypoint*, double>
+  -> std::pair<const rmf_traffic::agv::Graph::Waypoint*, double>
 {
-  rmf_traffic::agv::Graph::Waypoint* nearest_wp = nullptr;
+  const rmf_traffic::agv::Graph::Waypoint* nearest_wp = nullptr;
   double nearest_dist = std::numeric_limits<double>::infinity();
   for (std::size_t i = 0; i < graph->num_waypoints(); ++i)
   {
@@ -236,9 +236,9 @@ auto RobotInfo::Implementation::find_nearest_waypoint(
 //==============================================================================
 auto RobotInfo::Implementation::find_nearest_lane(
   const Eigen::Vector2d& coordinates) const
-  -> std::pair<rmf_traffic::agv::Graph::Lane*, double>
+  -> std::pair<const rmf_traffic::agv::Graph::Lane*, double>
 {
-  rmf_traffic::agv::Graph::Lane* nearest_lane = nullptr;
+  const rmf_traffic::agv::Graph::Lane* nearest_lane = nullptr;
   double nearest_dist = std::numeric_limits<double>::infinity();
   for (std::size_t i = 0; i < graph->num_lanes(); ++i)
   {
@@ -261,7 +261,7 @@ auto RobotInfo::Implementation::find_nearest_lane(
 
 //==============================================================================
 bool RobotInfo::Implementation::is_within_lane(
-  rmf_traffic::agv::Graph::Lane* lane,
+  const rmf_traffic::agv::Graph::Lane* lane,
   const Eigen::Vector2d& coordinates) const
 {
   const Eigen::Vector2d p0 =
@@ -326,7 +326,7 @@ rmf_traffic::Time RobotInfo::last_updated() const
 }
 
 //==============================================================================
-std::shared_ptr<rmf_traffic::agv::Graph> RobotInfo::graph() const
+std::shared_ptr<const rmf_traffic::agv::Graph> RobotInfo::graph() const
 {
   return _pimpl->graph;
 }
