@@ -101,12 +101,12 @@ public:
   ///
   /// \param[in] robot_name
   /// \return
-  std::shared_ptr<agv::RobotInfo> robot(const std::string& robot_name);
+  std::shared_ptr<const agv::RobotInfo> robot(const std::string& robot_name);
 
   /// Gets all the available RobotInfo that has been registered with the manager
   ///
   /// \return
-  std::vector<std::shared_ptr<agv::RobotInfo>> all_robots();
+  std::vector<std::shared_ptr<const agv::RobotInfo>> all_robots();
 
   /// Sends out a mode request to a robot.
   ///

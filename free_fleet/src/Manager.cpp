@@ -220,7 +220,7 @@ auto Manager::robot_names() -> std::vector<std::string>
 
 //==============================================================================
 auto Manager::robot(const std::string& robot_name) 
-  -> std::shared_ptr<agv::RobotInfo>
+  -> std::shared_ptr<const agv::RobotInfo>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   const auto it = _pimpl->robots.find(robot_name);
@@ -230,10 +230,10 @@ auto Manager::robot(const std::string& robot_name)
 }
 
 //==============================================================================
-auto Manager::all_robots() -> std::vector<std::shared_ptr<agv::RobotInfo>>
+auto Manager::all_robots() -> std::vector<std::shared_ptr<const agv::RobotInfo>>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  std::vector<std::shared_ptr<agv::RobotInfo>> infos;
+  std::vector<std::shared_ptr<const agv::RobotInfo>> infos;
   infos.reserve(_pimpl->robots.size());
   for (const auto it : _pimpl->robots)
   {
