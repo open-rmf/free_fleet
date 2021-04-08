@@ -32,10 +32,6 @@
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
-#include "mock_Middleware.hpp"
-#include "mock_StatusHandle.hpp"
-#include "mock_CommandHandle.hpp"
-
 #include "src/agv/internal_RobotInfo.hpp"
 
 #include "src/requests/RequestInfo.hpp"

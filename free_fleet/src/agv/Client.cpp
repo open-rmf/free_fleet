@@ -123,7 +123,7 @@ Client::SharedPtr Client::make(
   const std::string& robot_model,
   std::shared_ptr<CommandHandle> command_handle,
   std::shared_ptr<StatusHandle> status_handle,
-  std::shared_ptr<transport::Middleware> middleware)
+  std::unique_ptr<transport::ClientMiddleware> middleware)
 {
   auto make_error_fn = [](const std::string& error_msg)
   {

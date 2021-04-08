@@ -21,15 +21,16 @@
 
 #include <free_fleet/agv/Client.hpp>
 
-#include "mock_Middleware.hpp"
 #include "mock_StatusHandle.hpp"
 #include "mock_CommandHandle.hpp"
+#include "mock_ClientMiddleware.hpp"
 
 SCENARIO("Verify that a Client can be created")
 {
   auto ch = std::make_shared<free_fleet::MockCommandHandle>();
   auto sh = std::make_shared<free_fleet::MockStatusHandle>();
-  auto m = std::make_shared<free_fleet::MockMiddleware>();
+  std::unique_ptr<free_fleet::transport::ClientMiddleware> m(
+    new free_fleet::MockClientMiddleware());
 
   GIVEN("Empty robot name")
   {
@@ -38,7 +39,7 @@ SCENARIO("Verify that a Client can be created")
       "mock_robot_model",
       ch,
       sh,
-      m);
+      std::move(m));
     CHECK(!client);
   }
 
@@ -49,7 +50,7 @@ SCENARIO("Verify that a Client can be created")
       "",
       ch,
       sh,
-      m);
+      std::move(m));
     CHECK(!client);
   }
 
@@ -60,7 +61,7 @@ SCENARIO("Verify that a Client can be created")
       "mock_robot_model",
       nullptr,
       sh,
-      m);
+      std::move(m));
     CHECK(!client);
   }
 
@@ -71,7 +72,7 @@ SCENARIO("Verify that a Client can be created")
       "mock_robot_model",
       ch,
       nullptr,
-      m);
+      std::move(m));
     CHECK(!client);
   }
 
@@ -93,7 +94,7 @@ SCENARIO("Verify that a Client can be created")
       "mock_robot_model",
       ch,
       sh,
-      m);
+      std::move(m));
     CHECK(client);
   }
 }

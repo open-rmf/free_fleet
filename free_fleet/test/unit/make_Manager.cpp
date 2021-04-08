@@ -28,14 +28,14 @@
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
-#include "mock_Middleware.hpp"
+#include "mock_ServerMiddleware.hpp"
 
 SCENARIO("Test make Manager")
 {
   std::string fleet_name = "test_fleet";
   std::shared_ptr<rmf_traffic::agv::Graph> graph(new rmf_traffic::agv::Graph);
-  std::unique_ptr<free_fleet::transport::Middleware> m(
-    new free_fleet::MockMiddleware());
+  std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
+    new free_fleet::MockServerMiddleware());
   auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,

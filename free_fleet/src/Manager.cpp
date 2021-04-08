@@ -136,7 +136,7 @@ void Manager::Implementation::start_async(uint32_t frequency)
 Manager::SharedPtr Manager::make(
   const std::string& fleet_name,
   std::shared_ptr<const rmf_traffic::agv::Graph> graph,
-  std::unique_ptr<transport::Middleware> middleware,
+  std::unique_ptr<transport::ServerMiddleware> middleware,
   std::shared_ptr<const CoordinateTransformer> to_robot_transform,
   TimeNow time_now_fn,
   RobotUpdatedCallback robot_updated_callback_fn)

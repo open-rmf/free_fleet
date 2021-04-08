@@ -24,7 +24,7 @@
 
 #include <free_fleet/agv/StatusHandle.hpp>
 #include <free_fleet/agv/CommandHandle.hpp>
-#include <free_fleet/transport/Middleware.hpp>
+#include <free_fleet/transport/ClientMiddleware.hpp>
 
 namespace free_fleet {
 namespace agv {
@@ -54,8 +54,7 @@ public:
   ///   that is required for updating the fleet manager.
   ///
   /// \param[in] middleware
-  ///   Middleware implementation to be used between the robot client and the
-  ///   fleet manager.
+  ///   Middleware implementation to be used between the robot client.
   ///
   /// \return
   ///   Shared pointer to a client instance that is ready to be started. If
@@ -66,7 +65,7 @@ public:
     const std::string& robot_model,
     std::shared_ptr<CommandHandle> command_handle,
     std::shared_ptr<StatusHandle> status_handle,
-    std::shared_ptr<transport::Middleware> middleware);
+    std::unique_ptr<transport::ClientMiddleware> middleware);
 
   /// Starts the client which begins to update the fleet manager with the
   /// robot's current status, as well as polls for requests before performing

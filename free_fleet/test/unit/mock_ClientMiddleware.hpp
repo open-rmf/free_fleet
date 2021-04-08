@@ -15,53 +15,32 @@
  *
  */
 
-#ifndef TEST__UNIT__MOCK_MIDDLEWARE_HPP
-#define TEST__UNIT__MOCK_MIDDLEWARE_HPP
+#ifndef TEST__UNIT__MOCK_CLIENTMIDDLEWARE_HPP
+#define TEST__UNIT__MOCK_CLIENTMIDDLEWARE_HPP
 
-#include <free_fleet/transport/Middleware.hpp>
+#include <free_fleet/transport/ClientMiddleware.hpp>
 
 namespace free_fleet {
 
-class MockMiddleware : public transport::Middleware
+class MockClientMiddleware : public transport::ClientMiddleware
 {
 public:
 
-  MockMiddleware()
+  MockClientMiddleware()
   {}
 
   void send_state(const messages::RobotState&) final
   {}
-
-  std::vector<messages::RobotState> read_states() override
-  {
-    return {};
-  }
-
-  void send_mode_request(const messages::ModeRequest& request) final
-  {
-    _prev_mode_request = request;
-  }
 
   rmf_utils::optional<messages::ModeRequest> read_mode_request() final
   {
     return rmf_utils::nullopt;
   }
 
-  void send_navigation_request(const messages::NavigationRequest& request) final
-  {
-    _prev_nav_request = request;
-  }
-
   rmf_utils::optional<messages::NavigationRequest>
     read_navigation_request() final
   {
     return rmf_utils::nullopt;
-  }
-
-  void send_relocalization_request(
-    const messages::RelocalizationRequest& request) final
-  {
-    _prev_reloc_request = request;
   }
 
   rmf_utils::optional<messages::RelocalizationRequest>
@@ -77,4 +56,4 @@ public:
 
 } // namespace free_fleet
 
-#endif // TEST__UNIT__MOCK_MIDDLEWARE_HPP
+#endif // TEST__UNIT__MOCK_CLIENTMIDDLEWARE_HPP

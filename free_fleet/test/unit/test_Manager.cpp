@@ -29,7 +29,7 @@
 #include "src/internal_Manager.hpp"
 #include "src/agv/internal_RobotInfo.hpp"
 
-#include "mock_Middleware.hpp"
+#include "mock_ServerMiddleware.hpp"
 
 SCENARIO("Test Manager API")
 {
@@ -51,8 +51,8 @@ SCENARIO("Test Manager API")
   graph->add_lane(0, 4);
   graph->add_lane(4, 0);
 
-  std::unique_ptr<free_fleet::transport::Middleware> m(
-    new free_fleet::MockMiddleware());
+  std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
+    new free_fleet::MockServerMiddleware());
   auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
@@ -142,8 +142,8 @@ SCENARIO("Testing manager API with dummy robots")
   graph->add_lane(4, 0);
   graph->add_waypoint(test_map_name, {100, 100});
 
-  std::unique_ptr<free_fleet::transport::Middleware> m(
-    new free_fleet::MockMiddleware());
+  std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
+    new free_fleet::MockServerMiddleware());
   auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
@@ -424,11 +424,11 @@ SCENARIO("Testing manager API with dummy robots")
   }
 }
 
-class MockMiddlewareWithRobot : public free_fleet::MockMiddleware
+class MockServerMiddlewareWithRobot : public free_fleet::MockServerMiddleware
 {
 public:
 
-  MockMiddlewareWithRobot()
+  MockServerMiddlewareWithRobot()
   {}
 
   std::vector<free_fleet::messages::RobotState> read_states() final
@@ -475,8 +475,8 @@ SCENARIO("Testing update robot callback with dummy robot")
   graph->add_lane(4, 0);
   graph->add_waypoint(test_map_name, {100, 100});
 
-  std::unique_ptr<free_fleet::transport::Middleware> m(
-    new MockMiddlewareWithRobot());
+  std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
+    new MockServerMiddlewareWithRobot());
   auto ct = free_fleet::SimpleCoordinateTransformer::make(
     1.0,
     0.0,

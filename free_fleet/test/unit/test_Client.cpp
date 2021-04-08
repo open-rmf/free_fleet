@@ -20,9 +20,9 @@
 #include <iostream>
 #include <free_fleet/agv/Client.hpp>
 
-#include "mock_Middleware.hpp"
 #include "mock_StatusHandle.hpp"
 #include "mock_CommandHandle.hpp"
+#include "mock_ClientMiddleware.hpp"
 #include "src/agv/internal_Client.hpp"
 
 SCENARIO("Verify that a client can run")
@@ -31,7 +31,9 @@ SCENARIO("Verify that a client can run")
   const std::string robot_model = "mock_robot_model";
   auto ch = std::make_shared<free_fleet::MockCommandHandle>();
   auto sh = std::make_shared<free_fleet::MockStatusHandle>();
-  auto m = std::make_shared<free_fleet::MockMiddleware>();
+  std::unique_ptr<free_fleet::transport::ClientMiddleware> m(
+    new free_fleet::MockClientMiddleware());
+
 
   GIVEN("All valid")
   {
@@ -40,63 +42,9 @@ SCENARIO("Verify that a client can run")
       robot_model,
       ch,
       sh,
-      m);
+      std::move(m));
     REQUIRE(client);
     CHECK(!client->started());
-  }
-
-  GIVEN("Empty robot name")
-  {
-    auto client = free_fleet::agv::Client::make(
-      "",
-      robot_model,
-      ch,
-      sh,
-      m);
-    CHECK(!client);
-  }
-
-  GIVEN("Empty robot model")
-  {
-    auto client = free_fleet::agv::Client::make(
-      robot_name,
-      "",
-      ch,
-      sh,
-      m);
-    CHECK(!client);
-  }
-
-  GIVEN("Invalid CommandHandle")
-  {
-    auto client = free_fleet::agv::Client::make(
-      robot_name,
-      robot_model,
-      nullptr,
-      sh,
-      m);
-    CHECK(!client);
-  }
-
-  GIVEN("Invalid StatusHandle")
-  {
-    auto client = free_fleet::agv::Client::make(
-      robot_name,
-      robot_model,
-      ch,
-      nullptr,
-      m);
-    CHECK(!client);
-  }
-  GIVEN("Invalid Middleware")
-  {
-    auto client = free_fleet::agv::Client::make(
-      robot_name,
-      robot_model,
-      ch,
-      sh,
-      nullptr);
-    CHECK(!client);
   }
 
   GIVEN("Starting with bad frequency")
@@ -106,7 +54,7 @@ SCENARIO("Verify that a client can run")
       robot_model,
       ch,
       sh,
-      m);
+      std::move(m));
     REQUIRE(client);
     CHECK(!client->started());
     CHECK_THROWS(client->run(0));
@@ -120,7 +68,7 @@ SCENARIO("Verify that a client can run")
       robot_model,
       ch,
       sh,
-      m);
+      std::move(m));
     REQUIRE(client);
     auto& impl = free_fleet::agv::Client::Implementation::get(*client);
     CHECK_NOTHROW(impl.run_once());

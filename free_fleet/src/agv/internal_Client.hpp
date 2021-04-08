@@ -80,7 +80,7 @@ public:
 
   std::shared_ptr<CommandHandle> command_handle;
   std::shared_ptr<StatusHandle> status_handle;
-  std::shared_ptr<transport::Middleware> middleware;
+  std::unique_ptr<transport::ClientMiddleware> middleware;
 
   // TODO(AA): handle overflow of uint32_t
   uint32_t task_id = 0;
