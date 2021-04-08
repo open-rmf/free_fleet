@@ -53,7 +53,7 @@ public:
   /// This callback function can be used to work with different applications,
   /// triggered every time a robot is updated with an incoming new state.
   using RobotUpdatedCallback =
-    std::function<void(const std::shared_ptr<agv::RobotInfo>& robot_info)>;
+    std::function<void(const agv::RobotInfo& robot_info)>;
 
   /// Factory function that creates an instance of the Free Fleet Manager.
   ///

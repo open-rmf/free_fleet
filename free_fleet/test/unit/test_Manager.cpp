@@ -60,7 +60,7 @@ SCENARIO("Test Manager API")
   free_fleet::Manager::TimeNow time_now_fn =
     [](){ return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const std::shared_ptr<free_fleet::agv::RobotInfo>&){};
+    [](const free_fleet::agv::RobotInfo&){};
 
   auto manager = free_fleet::Manager::make(
     fleet_name,
@@ -150,7 +150,7 @@ SCENARIO("Testing manager API with dummy robots")
   free_fleet::Manager::TimeNow time_now_fn =
     [](){ return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const std::shared_ptr<free_fleet::agv::RobotInfo>&){};
+    [](const free_fleet::agv::RobotInfo&){};
 
   auto manager = free_fleet::Manager::make(
     fleet_name,
@@ -482,10 +482,9 @@ SCENARIO("Testing update robot callback with dummy robot")
   free_fleet::Manager::TimeNow time_now_fn =
     [](){ return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const std::shared_ptr<free_fleet::agv::RobotInfo>& updated_robot_info)
+    [](const free_fleet::agv::RobotInfo& updated_robot_info)
   {
-    REQUIRE(updated_robot_info);
-    CHECK(updated_robot_info->name() == "test_robot");
+    CHECK(updated_robot_info.name() == "test_robot");
   };
 
   auto manager = free_fleet::Manager::make(

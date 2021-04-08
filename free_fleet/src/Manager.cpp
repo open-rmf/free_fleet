@@ -87,7 +87,7 @@ void Manager::Implementation::run_once()
 
     // Updates external uses of the robot's information
     if (r_it != robots.end() && robot_updated_callback_fn)
-      robot_updated_callback_fn(r_it->second);
+      robot_updated_callback_fn(*r_it->second);
 
     // for each robot figure out whether any tasks were not received yet
     const auto t_it = unacknowledged_tasks.find(s.task_id);
