@@ -46,30 +46,29 @@ public:
   ///   Most recent robot state message.
   virtual void send_state(const messages::RobotState& state) = 0;
 
-  /// Read the most recent available mode request message over the middleware.
+  /// Sets the callback function to be called whenever a mode request is
+  /// received through the middleware.
   ///
-  /// \return
-  ///   An optional of mode request message. If no request was received, a
-  ///   nullopt is returned.
-  virtual rmf_utils::optional<messages::ModeRequest> read_mode_request() = 0;
+  /// \param[in] callback
+  ///   Callback function for handling new incoming mode requests.
+  virtual void set_mode_request_callback(
+    std::function<void(const messages::ModeRequest&)> callback) = 0;
 
-  /// Read the most recent available navigation request message over the
-  /// middleware.
+  /// Sets the callback function to be called whenever a navigation request is
+  /// received through the middleware.
   ///
-  /// \return
-  ///   An optional of navigation request message. If no request was received,
-  ///   a nullopt is returned.
-  virtual rmf_utils::optional<messages::NavigationRequest>
-    read_navigation_request() = 0;
+  /// \param[in] callback
+  ///   Callback function for handling new incoming navigation requests.  
+  virtual void set_navigation_request_callback(
+    std::function<void(const messages::NavigationRequest&)> callback) = 0;
 
-  /// Read the most recent available relocalization request message over the
-  /// middleware.
+  /// Sets the callback function to be called whenever a relocalization
+  /// request is received through the middleware.
   ///
-  /// \return
-  ///   An optional of relocalization request message. If no request was
-  ///   received, a nullopt is returned.
-  virtual rmf_utils::optional<messages::RelocalizationRequest>
-    read_relocalization_request() = 0;
+  /// \param[in] callback
+  ///   Callback function for handling new incoming relocalization requests.
+  virtual void set_relocalization_request_callback(
+    std::function<void(const messages::RelocalizationRequest&)> callback) = 0;
 
   /// Virtual destructor
   virtual ~ClientMiddleware() = default;

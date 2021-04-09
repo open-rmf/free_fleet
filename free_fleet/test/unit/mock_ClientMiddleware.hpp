@@ -25,6 +25,11 @@ namespace free_fleet {
 class MockClientMiddleware : public transport::ClientMiddleware
 {
 public:
+  std::function<void(const messages::ModeRequest&)> mode_request_callback;
+  std::function<void(const messages::NavigationRequest&)>
+    navigation_request_callback;
+  std::function<void(const messages::RelocalizationRequest&)>
+    relocalization_request_callback;
 
   MockClientMiddleware()
   {}
@@ -32,26 +37,23 @@ public:
   void send_state(const messages::RobotState&) final
   {}
 
-  rmf_utils::optional<messages::ModeRequest> read_mode_request() final
+  void set_mode_request_callback(
+    std::function<void(const messages::ModeRequest&)> callback)
   {
-    return rmf_utils::nullopt;
+    mode_request_callback = std::move(callback);
   }
 
-  rmf_utils::optional<messages::NavigationRequest>
-    read_navigation_request() final
+  void set_navigation_request_callback(
+    std::function<void(const messages::NavigationRequest&)> callback)
   {
-    return rmf_utils::nullopt;
+    navigation_request_callback = std::move(callback);
   }
 
-  rmf_utils::optional<messages::RelocalizationRequest>
-    read_relocalization_request() final
+  void set_relocalization_request_callback(
+    std::function<void(const messages::RelocalizationRequest&)> callback)
   {
-    return rmf_utils::nullopt;
+    relocalization_request_callback = std::move(callback);
   }
-
-  messages::ModeRequest _prev_mode_request;
-  messages::NavigationRequest _prev_nav_request;
-  messages::RelocalizationRequest _prev_reloc_request;
 };
 
 } // namespace free_fleet

@@ -22,9 +22,13 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <variant>
 #include <unordered_set>
 
 #include <free_fleet/agv/Client.hpp>
+#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RelocalizationRequest.hpp>
 
 namespace free_fleet {
 namespace agv {
@@ -60,6 +64,8 @@ public:
 
   bool connected() const;
 
+  void set_callbacks();
+
   template<class T> 
   bool is_valid_request(const T& request)
   {
@@ -74,6 +80,13 @@ public:
   void run(uint32_t frequency);
 
   void start_async(uint32_t frequency);
+
+  void handle_mode_request(const messages::ModeRequest& request);
+
+  void handle_navigation_request(const messages::NavigationRequest& request);
+
+  void handle_relocalization_request(
+    const messages::RelocalizationRequest& request);
 
   std::string robot_name;
   std::string robot_model;

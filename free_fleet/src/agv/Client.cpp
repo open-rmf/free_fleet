@@ -36,6 +36,18 @@ bool Client::Implementation::connected() const
 }
 
 //==============================================================================
+void Client::Implementation::set_callbacks()
+{
+  using namespace std::placeholders;
+  middleware->set_mode_request_callback(
+    std::bind(&Implementation::handle_mode_request, this, _1));
+  middleware->set_navigation_request_callback(
+    std::bind(&Implementation::handle_navigation_request, this, _1));
+  middleware->set_relocalization_request_callback(
+    std::bind(&Implementation::handle_relocalization_request, this, _1));
+}
+
+//==============================================================================
 void Client::Implementation::run_once()
 {
   // send state
@@ -49,52 +61,13 @@ void Client::Implementation::run_once()
     static_cast<uint32_t>(status_handle->target_path_waypoint_index())
   };
   middleware->send_state(new_state);
-
-  // read mode request
-  auto mode_request = middleware->read_mode_request();
-  if (mode_request.has_value() && is_valid_request(mode_request.value()))
-  {
-    auto request = mode_request.value();
-    task_ids.insert(request.task_id);
-    task_id = request.task_id;
-    if (request.mode.mode == messages::RobotMode::MODE_PAUSED)
-      command_handle->stop();
-    else if (request.mode.mode == messages::RobotMode::MODE_MOVING)
-      command_handle->resume();
-    return;
-  }
-  
-  // read relocalization request
-  auto relocalization_request = middleware->read_relocalization_request();
-  if (relocalization_request.has_value() &&
-    is_valid_request(relocalization_request.value()))
-  {
-    auto request = relocalization_request.value();
-    task_ids.insert(request.task_id);
-    task_id = request.task_id;
-    free_fleet::agv::CommandHandle::RequestCompleted callback =
-      [this]() { task_id = 0; };
-    command_handle->relocalize(request.location, callback);
-    return;
-  }
-
-  // read navigation request
-  auto navigation_request = middleware->read_navigation_request();
-  if (navigation_request.has_value() &&
-    is_valid_request(navigation_request.value()))
-  {
-    auto request = navigation_request.value();
-    task_ids.insert(request.task_id);
-    task_id = request.task_id;
-    free_fleet::agv::CommandHandle::RequestCompleted callback =
-      [this]() { task_id = 0; };
-    command_handle->follow_new_path(request.path, callback);
-  }
 }
 
 //==============================================================================
 void Client::Implementation::run(uint32_t frequency)
 {
+  set_callbacks();
+
   const double seconds_per_iteration = 1.0 / frequency;
   const rmf_traffic::Duration duration_per_iteration =
     rmf_traffic::time::from_seconds(seconds_per_iteration);
@@ -115,6 +88,46 @@ void Client::Implementation::start_async(uint32_t frequency)
 {
   async_thread =
     std::thread(std::bind(&Client::Implementation::run, this, frequency));
+}
+
+//==============================================================================
+void Client::Implementation::handle_mode_request(
+  const messages::ModeRequest& request)
+{
+  if (!is_valid_request(request))
+    return;
+  task_ids.insert(request.task_id);
+  task_id = request.task_id;
+  if (request.mode.mode == messages::RobotMode::MODE_PAUSED)
+    command_handle->stop();
+  else if (request.mode.mode == messages::RobotMode::MODE_MOVING)
+    command_handle->resume();
+}
+
+//==============================================================================
+void Client::Implementation::handle_navigation_request(
+  const messages::NavigationRequest& request)
+{
+  if (!is_valid_request(request))
+    return;
+  task_ids.insert(request.task_id);
+  task_id = request.task_id;
+  free_fleet::agv::CommandHandle::RequestCompleted callback =
+    [this]() { task_id = 0; };
+  command_handle->follow_new_path(request.path, callback);
+}
+
+//==============================================================================
+void Client::Implementation::handle_relocalization_request(
+  const messages::RelocalizationRequest& request)
+{
+  if (!is_valid_request(request))
+    return;
+  task_ids.insert(request.task_id);
+  task_id = request.task_id;
+  free_fleet::agv::CommandHandle::RequestCompleted callback =
+    [this]() { task_id = 0; };
+  command_handle->relocalize(request.location, callback);
 }
 
 //==============================================================================
