@@ -26,22 +26,25 @@
 namespace free_fleet {
 namespace requests {
 
-class RequestInfo
+//==============================================================================
+class BaseRequestInfo
 {
 public:
 
-  using SharedPtr = std::shared_ptr<RequestInfo>;
+  using SharedPtr = std::shared_ptr<BaseRequestInfo>;
 
   /// Enum class to figure out what Request type this info is handling.
   enum class RequestType : uint8_t
   {
-    ModeRequest,
-    NavigationRequest,
-    RelocalizationRequest
+    PauseRequest,
+    ResumeRequest,
+    DockRequest,
+    RelocalizationRequest,
+    NavigationRequest
   };
 
   /// Base constructor
-  RequestInfo(
+  BaseRequestInfo(
     rmf_traffic::Time time_now,
     RequestType request_type)
   : _init_time(time_now),
@@ -94,6 +97,50 @@ private:
   RequestType _request_type;
 };
 
+//==============================================================================
+template <class T>
+class RequestInfo : public BaseRequestInfo
+{
+public:
+
+  using SendRequest = std::function<void(const T&)>;
+
+  /// Constructor
+  RequestInfo(
+    RequestType request_type,
+    const T& request,
+    SendRequest send_request_fn,
+    rmf_traffic::Time time_now)
+  : BaseRequestInfo(time_now, request_type),
+    _request(request),
+    _send_request_fn(std::move(send_request_fn))
+  {}
+
+  /// Gets the request message.
+  const T& request() const
+  {
+    return _request;
+  }
+
+  /// Gets the task ID
+  uint32_t id() const override
+  {
+    return _request.task_id;
+  }
+
+  /// Calls the send request function using the request message.
+  void send_request() const final
+  {
+    if (_send_request_fn)
+      _send_request_fn(_request);
+  }
+
+private:
+  T _request;
+  SendRequest _send_request_fn;
+};
+
+//==============================================================================
 } // namespace requests
 } // namespace free_fleet
 

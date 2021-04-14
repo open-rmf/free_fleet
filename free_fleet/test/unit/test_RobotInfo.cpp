@@ -23,7 +23,9 @@
 #include <free_fleet/messages/Location.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/RobotState.hpp>
-#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/DockRequest.hpp>
+#include <free_fleet/messages/PauseRequest.hpp>
+#include <free_fleet/messages/ResumeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
@@ -34,10 +36,7 @@
 
 #include "src/agv/internal_RobotInfo.hpp"
 
-#include "src/requests/RequestInfo.hpp"
-#include "src/requests/ModeRequestInfo.hpp"
-#include "src/requests/NavigationRequestInfo.hpp"
-#include "src/requests/RelocalizationRequestInfo.hpp"
+#include "src/RequestInfo.hpp"
 
 void update_and_check_tracking_state(
   const std::shared_ptr<free_fleet::agv::RobotInfo>& robot_info,
@@ -297,31 +296,83 @@ SCENARIO("Tests RobotInfo API")
     CHECK(third_tracking_estimation.second == 1);
   }
 
-  GIVEN("Allocated mode request")
+  GIVEN("Allocated pause request")
   {
-    free_fleet::messages::RobotMode pause_mode {
-      free_fleet::messages::RobotMode::MODE_PAUSED,
-      ""
-    };
-    free_fleet::messages::ModeRequest pause_request {
+    using PauseRequest = free_fleet::messages::PauseRequest;
+    using BaseRequestInfo = free_fleet::requests::BaseRequestInfo;
+
+    PauseRequest pause_request {
       initial_state.name,
-      initial_state.task_id + 1,
-      pause_mode,
-      {}
+      initial_state.task_id + 1
     };
 
     bool request_sent = false;
-    auto new_mode_request_info =
-      std::make_shared<free_fleet::requests::ModeRequestInfo>(
-        pause_request,
-        [&](const free_fleet::messages::ModeRequest&){ request_sent = true; },
-        std::chrono::steady_clock::now());
-    REQUIRE(new_mode_request_info);
+    std::shared_ptr<free_fleet::requests::RequestInfo<PauseRequest>>
+      new_pause_request_info =
+        std::make_shared<free_fleet::requests::RequestInfo<PauseRequest>>(
+          BaseRequestInfo::RequestType::PauseRequest,
+          pause_request,
+          [&](const PauseRequest&) {request_sent = true;},
+          std::chrono::steady_clock::now());
+    REQUIRE(new_pause_request_info);
 
     CHECK_NOTHROW(
-      free_fleet::agv::RobotInfo::Implementation::get(*robot_info).allocate_task(
-        std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
-          new_mode_request_info)));
+      free_fleet::agv::RobotInfo::Implementation::get(
+        *robot_info).allocate_task(
+          std::dynamic_pointer_cast<BaseRequestInfo>(new_pause_request_info)));
+  }
+
+  GIVEN("Allocated resume request")
+  {
+    using ResumeRequest = free_fleet::messages::ResumeRequest;
+    using BaseRequestInfo = free_fleet::requests::BaseRequestInfo;
+
+    ResumeRequest resume_request {
+      initial_state.name,
+      initial_state.task_id + 1
+    };
+
+    bool request_sent = false;
+    std::shared_ptr<free_fleet::requests::RequestInfo<ResumeRequest>>
+      new_resume_request_info =
+        std::make_shared<free_fleet::requests::RequestInfo<ResumeRequest>>(
+          BaseRequestInfo::RequestType::ResumeRequest,
+          resume_request,
+          [&](const ResumeRequest&) {request_sent = true;},
+          std::chrono::steady_clock::now());
+    REQUIRE(new_resume_request_info);
+
+    CHECK_NOTHROW(
+      free_fleet::agv::RobotInfo::Implementation::get(
+        *robot_info).allocate_task(
+          std::dynamic_pointer_cast<BaseRequestInfo>(new_resume_request_info)));
+  }
+
+  GIVEN("Allocated dock request")
+  {
+    using DockRequest = free_fleet::messages::DockRequest;
+    using BaseRequestInfo = free_fleet::requests::BaseRequestInfo;
+
+    DockRequest dock_request {
+      initial_state.name,
+      initial_state.task_id + 1,
+      "mock_dock"
+    };
+
+    bool request_sent = false;
+    std::shared_ptr<free_fleet::requests::RequestInfo<DockRequest>>
+      new_dock_request_info =
+        std::make_shared<free_fleet::requests::RequestInfo<DockRequest>>(
+          BaseRequestInfo::RequestType::DockRequest,
+          dock_request,
+          [&](const DockRequest&) {request_sent = true;},
+          std::chrono::steady_clock::now());
+    REQUIRE(new_dock_request_info);
+
+    CHECK_NOTHROW(
+      free_fleet::agv::RobotInfo::Implementation::get(
+        *robot_info).allocate_task(
+          std::dynamic_pointer_cast<BaseRequestInfo>(new_dock_request_info)));
   }
 
   GIVEN("Allocated relocation request")
@@ -334,7 +385,10 @@ SCENARIO("Tests RobotInfo API")
       0.0,
       test_map_name
     };
-    free_fleet::messages::RelocalizationRequest reloc_request {
+
+    using RelocalizationRequest = free_fleet::messages::RelocalizationRequest;
+    using BaseRequestInfo = free_fleet::requests::BaseRequestInfo;
+    RelocalizationRequest relocalization_request {
       initial_state.name,
       initial_state.task_id + 1,
       reloc_loc,
@@ -342,22 +396,27 @@ SCENARIO("Tests RobotInfo API")
     };
 
     bool request_sent = false;
-    auto new_reloc_request_info =
-      std::make_shared<free_fleet::requests::RelocalizationRequestInfo>(
-        reloc_request,
-        [&](const free_fleet::messages::RelocalizationRequest&) { request_sent = true; },
-        std::chrono::steady_clock::now());
+    std::shared_ptr<free_fleet::requests::RequestInfo<RelocalizationRequest>>
+      new_reloc_request_info =
+        std::make_shared<free_fleet::requests::RequestInfo<RelocalizationRequest>>(
+          BaseRequestInfo::RequestType::RelocalizationRequest,
+          relocalization_request,
+          [&](const RelocalizationRequest&) {request_sent = true;},
+          std::chrono::steady_clock::now());
     REQUIRE(new_reloc_request_info);
 
     CHECK_NOTHROW(
-      free_fleet::agv::RobotInfo::Implementation::get(*robot_info).allocate_task(
-        std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
-          new_reloc_request_info)));
+      free_fleet::agv::RobotInfo::Implementation::get(
+        *robot_info).allocate_task(
+          std::dynamic_pointer_cast<BaseRequestInfo>(new_reloc_request_info)));
   }
 
   GIVEN("Allocated navigation request")
   {
-    free_fleet::messages::NavigationRequest nav_request {
+    using NavigationRequest = free_fleet::messages::NavigationRequest;
+    using BaseRequestInfo = free_fleet::requests::BaseRequestInfo;
+
+    NavigationRequest nav_request {
       initial_state.name,
       initial_state.task_id + 1,
       {}
@@ -387,23 +446,28 @@ SCENARIO("Tests RobotInfo API")
     nav_request.path.push_back(forth_wp);
 
     bool request_sent = false;
-    auto new_nav_request_info =
-      std::make_shared<free_fleet::requests::NavigationRequestInfo>(
-        nav_request,
-        [&](const free_fleet::messages::NavigationRequest&){ request_sent = true; },
-        std::chrono::steady_clock::now());
+    std::shared_ptr<free_fleet::requests::RequestInfo<NavigationRequest>>
+      new_nav_request_info =
+        std::make_shared<free_fleet::requests::RequestInfo<NavigationRequest>>(
+          BaseRequestInfo::RequestType::NavigationRequest,
+          nav_request,
+          [&](const NavigationRequest&) {request_sent = true;},
+          std::chrono::steady_clock::now());
     REQUIRE(new_nav_request_info);
 
     CHECK_NOTHROW(
-      free_fleet::agv::RobotInfo::Implementation::get(*robot_info).allocate_task(
-        std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
-          new_nav_request_info)));
+      free_fleet::agv::RobotInfo::Implementation::get(
+        *robot_info).allocate_task(
+          std::dynamic_pointer_cast<BaseRequestInfo>(new_nav_request_info)));
   }
 
   GIVEN("Allocate navigation request, update multiple states, throughout the path")
   {
+    using NavigationRequest = free_fleet::messages::NavigationRequest;
+    using BaseRequestInfo = free_fleet::requests::BaseRequestInfo;
+
     uint32_t new_task_id = initial_state.task_id + 1;
-    free_fleet::messages::NavigationRequest nav_request {
+    NavigationRequest nav_request {
       initial_state.name,
       new_task_id,
       {}
@@ -436,17 +500,19 @@ SCENARIO("Tests RobotInfo API")
     nav_request.path.push_back(forth_wp);
 
     bool request_sent = false;
-    auto new_nav_request_info =
-      std::make_shared<free_fleet::requests::NavigationRequestInfo>(
-        nav_request,
-        [&](const free_fleet::messages::NavigationRequest&){ request_sent = true; },
-        std::chrono::steady_clock::now());
+    std::shared_ptr<free_fleet::requests::RequestInfo<NavigationRequest>>
+      new_nav_request_info =
+        std::make_shared<free_fleet::requests::RequestInfo<NavigationRequest>>(
+          BaseRequestInfo::RequestType::NavigationRequest,
+          nav_request,
+          [&](const NavigationRequest&) {request_sent = true;},
+          std::chrono::steady_clock::now());
     REQUIRE(new_nav_request_info);
 
     CHECK_NOTHROW(
-      free_fleet::agv::RobotInfo::Implementation::get(*robot_info).allocate_task(
-        std::dynamic_pointer_cast<free_fleet::requests::RequestInfo>(
-          new_nav_request_info)));
+      free_fleet::agv::RobotInfo::Implementation::get(
+        *robot_info).allocate_task(
+          std::dynamic_pointer_cast<BaseRequestInfo>(new_nav_request_info)));
 
     // Second state, starting on the path
     auto second_state = initial_state;

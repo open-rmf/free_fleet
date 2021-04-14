@@ -16,21 +16,28 @@
 */
 
 #include <free_fleet/agv/RobotInfo.hpp>
+#include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RelocalizationRequest.hpp>
 
 #include "internal_RobotInfo.hpp"
-#include "../requests/RequestInfo.hpp"
-#include "../requests/ModeRequestInfo.hpp"
-#include "../requests/NavigationRequestInfo.hpp"
-#include "../requests/RelocalizationRequestInfo.hpp"
+#include "../RequestInfo.hpp"
 
 namespace free_fleet {
 namespace agv {
 
 //==============================================================================
 void RobotInfo::Implementation::allocate_task(
-  const std::shared_ptr<requests::RequestInfo>& new_request_info)
+  const std::shared_ptr<requests::BaseRequestInfo>& new_request_info)
 {
-  allocated_requests[new_request_info->id()] = new_request_info;
+  bool request_registered =
+    allocated_requests.insert({
+      new_request_info->id(),
+      new_request_info}).second;
+  if (!request_registered)
+  {
+    std::cerr << "[Warning]: Attempted to allocate new task with existing task "
+      << "ID [" << new_request_info->id() << "]" << std::endl;
+  }
 }
 
 //==============================================================================
@@ -73,21 +80,23 @@ void RobotInfo::Implementation::track_and_update(
     auto request = it->second;
     auto request_type = request->request_type();
 
-    using RequestType = requests::RequestInfo::RequestType;
+    using RequestType = requests::BaseRequestInfo::RequestType;
 
-    if (request_type == RequestType::ModeRequest)
+    if (request_type == RequestType::PauseRequest ||
+      request_type == RequestType::ResumeRequest ||
+      request_type == RequestType::DockRequest)
     {
-      // Mode and Relocalization requests will mainly be for pausing, resuming,
-      // and changing perceived locations. Therefore it should not affect
-      // tracking.
+      // Pause, Resume and Dock requests will mainly be for changing perceived
+      // locations. Therefore it should not effect tracking.
       track_without_task_id(curr_loc);
     }
     else if (request_type == RequestType::RelocalizationRequest)
     {
       // We will first check for the last visited waypoint.
-      std::shared_ptr<requests::RelocalizationRequestInfo> reloc_req =
-        std::dynamic_pointer_cast<requests::RelocalizationRequestInfo>(
-          request);
+      std::shared_ptr<requests::RequestInfo<messages::RelocalizationRequest>>
+        reloc_req =
+          std::dynamic_pointer_cast<
+            requests::RequestInfo<messages::RelocalizationRequest>>(request);
 
       if (is_near_waypoint(
         reloc_req->request().last_visited_waypoint_index, curr_loc))
@@ -107,8 +116,10 @@ void RobotInfo::Implementation::track_and_update(
     {
       // We will use the target waypoints in the navigation request as
       // additional information to help with tracking.
-      std::shared_ptr<requests::NavigationRequestInfo> nav_req =
-        std::dynamic_pointer_cast<requests::NavigationRequestInfo>(request);
+      std::shared_ptr<requests::RequestInfo<messages::NavigationRequest>>
+        nav_req =
+          std::dynamic_pointer_cast<
+            requests::RequestInfo<messages::NavigationRequest>>(request);
       const std::size_t next_wp_index =
         nav_req->request().path[new_state.path_target_index].index;
 

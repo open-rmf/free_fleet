@@ -34,9 +34,19 @@ public:
     return {};
   }
 
-  void send_mode_request(const messages::ModeRequest& request) final
+  void send_dock_request(const messages::DockRequest& request) final
   {
-    _prev_mode_request = request;
+    _prev_dock_request = request;
+  }
+
+  void send_pause_request(const messages::PauseRequest& request) final
+  {
+    _prev_pause_request = request;
+  }
+
+  void send_resume_request(const messages::ResumeRequest& request) final
+  {
+    _prev_resume_request = request;
   }
 
   void send_navigation_request(const messages::NavigationRequest& request) final
@@ -44,14 +54,15 @@ public:
     _prev_nav_request = request;
   }
 
-
   void send_relocalization_request(
     const messages::RelocalizationRequest& request) final
   {
     _prev_reloc_request = request;
   }
 
-  messages::ModeRequest _prev_mode_request;
+  messages::DockRequest _prev_dock_request;
+  messages::PauseRequest _prev_pause_request;
+  messages::ResumeRequest _prev_resume_request;
   messages::NavigationRequest _prev_nav_request;
   messages::RelocalizationRequest _prev_reloc_request;
 };

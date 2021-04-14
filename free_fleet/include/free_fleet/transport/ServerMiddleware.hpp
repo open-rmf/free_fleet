@@ -25,7 +25,9 @@
 #include <rmf_utils/optional.hpp>
 
 #include <free_fleet/messages/RobotState.hpp>
-#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/DockRequest.hpp>
+#include <free_fleet/messages/PauseRequest.hpp>
+#include <free_fleet/messages/ResumeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
@@ -47,11 +49,23 @@ public:
   ///   Vector of robot state messages.
   virtual std::vector<messages::RobotState> read_states() = 0;
 
-  /// Sends a mode request over the middleware to be performed by a robot.
+  /// Sends a dock request over the middleware to be performed by a robot.
   ///
   /// \param[in] request
-  ///   Mode request message detailing a desired mode for a robot.
-  virtual void send_mode_request(const messages::ModeRequest& request) = 0;
+  ///   Dock request message for a robot.
+  virtual void send_dock_request(const messages::DockRequest& request) = 0;
+
+  /// Sends a pause request over the middleware to be performed by a robot.
+  ///
+  /// \param[in] request
+  ///   Pause request message for a robot.
+  virtual void send_pause_request(const messages::PauseRequest& request) = 0;
+
+  /// Sends a resume request over the middleware to be performed by a robot.
+  ///
+  /// \param[in] request
+  ///   Resume request message for a robot.
+  virtual void send_resume_request(const messages::ResumeRequest& request) = 0;
 
   /// Sends a navigation request over the middleware to be performed by a robot.
   ///

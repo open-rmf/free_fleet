@@ -24,7 +24,9 @@
 #include <rmf_utils/optional.hpp>
 
 #include <free_fleet/messages/RobotState.hpp>
-#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/DockRequest.hpp>
+#include <free_fleet/messages/PauseRequest.hpp>
+#include <free_fleet/messages/ResumeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
@@ -46,13 +48,29 @@ public:
   ///   Most recent robot state message.
   virtual void send_state(const messages::RobotState& state) = 0;
 
-  /// Sets the callback function to be called whenever a mode request is
+  /// Sets the callback function to be called whenever a dock request is
   /// received through the middleware.
   ///
   /// \param[in] callback
-  ///   Callback function for handling new incoming mode requests.
-  virtual void set_mode_request_callback(
-    std::function<void(const messages::ModeRequest&)> callback) = 0;
+  ///   Callback function for handling new incoming dock requests.
+  virtual void set_dock_request_callback(
+    std::function<void(const messages::DockRequest&)> callback) = 0;
+
+  /// Sets the callback function to be called whenever a pause request is
+  /// received through the middleware.
+  ///
+  /// \param[in] callback
+  ///   Callback function for handling new incoming pause requests.
+  virtual void set_pause_request_callback(
+    std::function<void(const messages::PauseRequest&)> callback) = 0;
+
+  /// Sets the callback function to be called whenever a resume request is
+  /// received through the middleware.
+  ///
+  /// \param[in] callback
+  ///   Callback function for handling new incoming resume requests.
+  virtual void set_resume_request_callback(
+    std::function<void(const messages::ResumeRequest&)> callback) = 0;
 
   /// Sets the callback function to be called whenever a navigation request is
   /// received through the middleware.

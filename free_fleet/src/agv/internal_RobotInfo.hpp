@@ -24,7 +24,7 @@
 
 #include <free_fleet/agv/RobotInfo.hpp>
 
-#include "../requests/RequestInfo.hpp"
+#include "../RequestInfo.hpp"
 
 namespace free_fleet {
 namespace agv {
@@ -43,7 +43,7 @@ public:
   TrackingState tracking_state = TrackingState::Lost;
   rmf_utils::optional<messages::RobotState> state = rmf_utils::nullopt;
 
-  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<requests::BaseRequestInfo>>
     allocated_requests;
 
   const double waypoint_dist_threshold = 0.5;
@@ -93,7 +93,7 @@ public:
   /// \param[in] new_request_info
   ///   Pointer to a request.
   void allocate_task(
-    const std::shared_ptr<requests::RequestInfo>& new_request_info);
+    const std::shared_ptr<requests::BaseRequestInfo>& new_request_info);
 
   /// Update the internal robot handler with the newest state.
   ///

@@ -26,7 +26,6 @@
 #include <unordered_set>
 
 #include <free_fleet/agv/Client.hpp>
-#include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Open Source Robotics Foundation
+ * Copyright (C) 2021 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,33 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
-#define INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
+#ifndef INCLUDE__FREE_FLEET__MESSAGES__DOCKREQUEST_HPP
+#define INCLUDE__FREE_FLEET__MESSAGES__DOCKREQUEST_HPP
 
 #include <string>
 
 namespace free_fleet {
 namespace messages {
 
-struct ModeParameter
+struct DockRequest
 {
-  /// Parameter name.
-  std::string name;
+  /// Robot to perform this request
+  std::string robot_name;
 
-  /// Parameter value.
-  std::string value;
+  /// Task ID issued by the fleet manager
+  uint32_t task_id;
+
+  /// Name of the desired dock
+  std::string dock_name;
 
   /// Comparing operator
   friend bool operator==(
-    const ModeParameter& lhs,
-    const ModeParameter& rhs)
+    const DockRequest& lhs,
+    const DockRequest& rhs)
   {
-    if (lhs.name == rhs.name &&
-      lhs.value == rhs.value)
+    if (lhs.robot_name == rhs.robot_name &&
+      lhs.task_id == rhs.task_id &&
+      lhs.dock_name == rhs.dock_name)
       return true;
     return false;
   }
@@ -46,4 +50,4 @@ struct ModeParameter
 } // namespace messages
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__MESSAGES__MODEPARAMETER_HPP
+#endif // INCLUDE__FREE_FLEET__MESSAGES__DOCKREQUEST_HPP

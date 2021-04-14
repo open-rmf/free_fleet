@@ -25,7 +25,9 @@ namespace free_fleet {
 class MockClientMiddleware : public transport::ClientMiddleware
 {
 public:
-  std::function<void(const messages::ModeRequest&)> mode_request_callback;
+  std::function<void(const messages::DockRequest&)> dock_request_callback;
+  std::function<void(const messages::PauseRequest&)> pause_request_callback;
+  std::function<void(const messages::ResumeRequest&)> resume_request_callback;
   std::function<void(const messages::NavigationRequest&)>
     navigation_request_callback;
   std::function<void(const messages::RelocalizationRequest&)>
@@ -37,10 +39,22 @@ public:
   void send_state(const messages::RobotState&) final
   {}
 
-  void set_mode_request_callback(
-    std::function<void(const messages::ModeRequest&)> callback)
+  void set_dock_request_callback(
+    std::function<void(const messages::DockRequest&)> callback)
   {
-    mode_request_callback = std::move(callback);
+    dock_request_callback = std::move(callback);
+  }
+
+  void set_pause_request_callback(
+    std::function<void(const messages::PauseRequest&)> callback)
+  {
+    pause_request_callback = std::move(callback);
+  }
+  
+  void set_resume_request_callback(
+    std::function<void(const messages::ResumeRequest&)> callback)
+  {
+    resume_request_callback = std::move(callback);
   }
 
   void set_navigation_request_callback(

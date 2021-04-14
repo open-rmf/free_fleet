@@ -24,14 +24,15 @@
 
 #include <free_fleet/Manager.hpp>
 #include <free_fleet/agv/RobotInfo.hpp>
-
-#include "agv/internal_RobotInfo.hpp"
-
-#include "requests/ModeRequestInfo.hpp"
-#include "requests/NavigationRequestInfo.hpp"
-#include "requests/RelocalizationRequestInfo.hpp"
+#include <free_fleet/messages/DockRequest.hpp>
+#include <free_fleet/messages/PauseRequest.hpp>
+#include <free_fleet/messages/ResumeRequest.hpp>
+#include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RelocalizationRequest.hpp>
 
 #include "internal_Manager.hpp"
+#include "RequestInfo.hpp"
+#include "agv/internal_RobotInfo.hpp"
 
 namespace free_fleet {
 
@@ -187,7 +188,6 @@ void Manager::run(uint32_t frequency)
   _pimpl->run(frequency);
 }
 
-
 //==============================================================================
 void Manager::start_async(uint32_t frequency)
 {
@@ -243,10 +243,7 @@ auto Manager::all_robots() -> std::vector<std::shared_ptr<const agv::RobotInfo>>
 }
 
 //==============================================================================
-auto Manager::send_mode_request(
-  const std::string& robot_name,
-  const messages::RobotMode& mode,
-  std::vector<messages::ModeParameter> parameters)
+auto Manager::request_pause(const std::string& robot_name)
   -> rmf_utils::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
@@ -259,145 +256,226 @@ auto Manager::send_mode_request(
   if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
     ++_pimpl->current_task_id;
 
-  messages::ModeRequest request{
+  messages::PauseRequest request {
     robot_name,
-    _pimpl->current_task_id,
-    mode,
-    parameters};
-  auto mode_request_info = std::make_shared<requests::ModeRequestInfo>(
-    requests::ModeRequestInfo(
-      request,
-      [this](const messages::ModeRequest& request_msg)
-    {
-      this->_pimpl->middleware->send_mode_request(request_msg);
-    },
-      _pimpl->time_now_fn()));
-  
-  auto request_info =
-    std::dynamic_pointer_cast<requests::RequestInfo>(mode_request_info);
-  _pimpl->tasks[request.task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+    _pimpl->current_task_id
+  };
 
-  _pimpl->middleware->send_mode_request(request);
-  return _pimpl->current_task_id;
+  // auto pause_request_info =
+  //   std::make_shared<requests::PauseRequestInfo>(
+  //     requests::
+  //   )
+
+//   auto mode_request_info = std::make_shared<requests::ModeRequestInfo>(
+//     requests::ModeRequestInfo(
+//       request,
+//       [this](const messages::ModeRequest& request_msg)
+//     {
+//       this->_pimpl->middleware->send_mode_request(request_msg);
+//     },
+//       _pimpl->time_now_fn()));
+  
+//   auto request_info =
+//     std::dynamic_pointer_cast<requests::RequestInfo>(mode_request_info);
+//   _pimpl->tasks[request.task_id] = request_info;
+//   _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+
+//   _pimpl->middleware->send_mode_request(request);
+//   return _pimpl->current_task_id;
+  // messages::Pause
+  return rmf_utils::nullopt;
 }
 
 //==============================================================================
-auto Manager::send_navigation_request(
-  const std::string& robot_name,
-  const std::vector<messages::Waypoint>& path)
+auto Manager::request_resume(const std::string& robot_name)
   -> rmf_utils::optional<std::size_t>
 {
-  std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  if (path.empty() ||
-    _pimpl->robots.find(robot_name) == _pimpl->robots.end())
-  {
-    // std::cerr << "Path is empty or no such robot." << std::endl;
-    return rmf_utils::nullopt;
-  }
-
-  const std::size_t num_wp = _pimpl->graph->num_waypoints();
-  std::vector<messages::Waypoint> transformed_path;
-  for (const auto wp : path)
-  {
-    std::size_t wp_index = static_cast<std::size_t>(wp.index);
-    if (wp_index >= num_wp)
-    {
-      // std::cerr << "No such waypoint." << std::endl;
-      return rmf_utils::nullopt;
-    }
-    
-    const auto g_wp = _pimpl->graph->get_waypoint(wp_index);
-    const Eigen::Vector2d provided_loc {wp.location.x, wp.location.y};
-    if (g_wp.get_map_name() != wp.location.level_name ||
-      (provided_loc - g_wp.get_location()).norm() > 1e-3)
-      return rmf_utils::nullopt;
-
-    transformed_path.push_back(
-      messages::Waypoint{
-        wp.index,
-        _pimpl->to_robot_transform->forward_transform(wp.location)});
-  }
-
-  if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
-    ++_pimpl->current_task_id;
-
-  messages::NavigationRequest request{
-    robot_name,
-    _pimpl->current_task_id,
-    transformed_path};
-  auto navigation_request_info =
-    std::make_shared<requests::NavigationRequestInfo>(
-      request,
-      [this](const messages::NavigationRequest& request_msg)
-  {
-    this->_pimpl->middleware->send_navigation_request(request_msg);
-  },
-      _pimpl->time_now_fn());
-
-  auto request_info =
-    std::dynamic_pointer_cast<requests::RequestInfo>(navigation_request_info);
-  _pimpl->tasks[request.task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request.task_id] = request_info;
-
-  _pimpl->middleware->send_navigation_request(request);
-  return _pimpl->current_task_id;
+  return rmf_utils::nullopt;
 }
 
 //==============================================================================
-auto Manager::send_relocalization_request(
+auto Manager::request_dock(
+  const std::string& robot_name, const std::string& dock_name)
+  -> rmf_utils::optional<std::size_t>
+{
+  return rmf_utils::nullopt;
+}
+
+//==============================================================================
+auto Manager::request_relocalize(
   const std::string& robot_name,
   const messages::Location& location,
   std::size_t last_visited_waypoint_index)
   -> rmf_utils::optional<std::size_t>
 {
-  std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  if (_pimpl->robots.find(robot_name) == _pimpl->robots.end() ||
-    last_visited_waypoint_index >= _pimpl->graph->num_waypoints())
-  {
-    // std::cerr << "No such robot or waypoint." << std::endl;
-    return rmf_utils::nullopt;
-  }
-
-  auto wp =
-    _pimpl->graph->get_waypoint(last_visited_waypoint_index);
-  const double dist_from_wp =
-    (Eigen::Vector2d{location.x, location.y} - wp.get_location()).norm();
-  if (dist_from_wp >= 10.0)
-  {
-    // std::cerr << "Last visited waypoint is too far away." << std::endl;
-    return rmf_utils::nullopt;
-  }
-
-  messages::Location transformed_location =
-    _pimpl->to_robot_transform->forward_transform(location);
-
-  if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
-    ++_pimpl->current_task_id;
-
-  messages::RelocalizationRequest request{
-    robot_name,
-    _pimpl->current_task_id,
-    transformed_location,
-    last_visited_waypoint_index};
-  auto relocalization_request_info =
-    std::make_shared<requests::RelocalizationRequestInfo>(
-      request,
-      [this](const messages::RelocalizationRequest& request_msg)
-  {
-    this->_pimpl->middleware->send_relocalization_request(request_msg);
-  },
-      _pimpl->time_now_fn());
-
-  auto request_info =
-    std::dynamic_pointer_cast<requests::RequestInfo>(
-      relocalization_request_info);
-  _pimpl->tasks[request.task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request.task_id] = request_info;
-
-  _pimpl->middleware->send_relocalization_request(request);
-  return _pimpl->current_task_id;
+  return rmf_utils::nullopt;
 }
+
+//==============================================================================
+auto Manager::request_navigation(
+  const std::string& robot_name,
+  const std::vector<messages::Waypoint>& path)
+  -> rmf_utils::optional<std::size_t>
+{
+  return rmf_utils::nullopt;
+}
+
+//==============================================================================
+// auto Manager::send_mode_request(
+//   const std::string& robot_name,
+//   const messages::RobotMode& mode,
+//   std::vector<messages::ModeParameter> parameters)
+//   -> rmf_utils::optional<std::size_t>
+// {
+//   std::lock_guard<std::mutex> lock(_pimpl->mutex);
+//   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
+//   {
+//     // std::cerr << "No such robot." << std::endl;
+//     return rmf_utils::nullopt;
+//   }
+
+//   if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
+//     ++_pimpl->current_task_id;
+
+//   messages::ModeRequest request{
+//     robot_name,
+//     _pimpl->current_task_id,
+//     mode,
+//     parameters};
+//   auto mode_request_info = std::make_shared<requests::ModeRequestInfo>(
+//     requests::ModeRequestInfo(
+//       request,
+//       [this](const messages::ModeRequest& request_msg)
+//     {
+//       this->_pimpl->middleware->send_mode_request(request_msg);
+//     },
+//       _pimpl->time_now_fn()));
+  
+//   auto request_info =
+//     std::dynamic_pointer_cast<requests::RequestInfo>(mode_request_info);
+//   _pimpl->tasks[request.task_id] = request_info;
+//   _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+
+//   _pimpl->middleware->send_mode_request(request);
+//   return _pimpl->current_task_id;
+// }
+
+//==============================================================================
+// auto Manager::send_navigation_request(
+//   const std::string& robot_name,
+//   const std::vector<messages::Waypoint>& path)
+//   -> rmf_utils::optional<std::size_t>
+// {
+//   std::lock_guard<std::mutex> lock(_pimpl->mutex);
+//   if (path.empty() ||
+//     _pimpl->robots.find(robot_name) == _pimpl->robots.end())
+//   {
+//     // std::cerr << "Path is empty or no such robot." << std::endl;
+//     return rmf_utils::nullopt;
+//   }
+
+//   const std::size_t num_wp = _pimpl->graph->num_waypoints();
+//   std::vector<messages::Waypoint> transformed_path;
+//   for (const auto wp : path)
+//   {
+//     std::size_t wp_index = static_cast<std::size_t>(wp.index);
+//     if (wp_index >= num_wp)
+//     {
+//       // std::cerr << "No such waypoint." << std::endl;
+//       return rmf_utils::nullopt;
+//     }
+    
+//     const auto g_wp = _pimpl->graph->get_waypoint(wp_index);
+//     const Eigen::Vector2d provided_loc {wp.location.x, wp.location.y};
+//     if (g_wp.get_map_name() != wp.location.level_name ||
+//       (provided_loc - g_wp.get_location()).norm() > 1e-3)
+//       return rmf_utils::nullopt;
+
+//     transformed_path.push_back(
+//       messages::Waypoint{
+//         wp.index,
+//         _pimpl->to_robot_transform->forward_transform(wp.location)});
+//   }
+
+//   if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
+//     ++_pimpl->current_task_id;
+
+//   messages::NavigationRequest request{
+//     robot_name,
+//     _pimpl->current_task_id,
+//     transformed_path};
+//   auto navigation_request_info =
+//     std::make_shared<requests::NavigationRequestInfo>(
+//       request,
+//       [this](const messages::NavigationRequest& request_msg)
+//   {
+//     this->_pimpl->middleware->send_navigation_request(request_msg);
+//   },
+//       _pimpl->time_now_fn());
+
+//   auto request_info =
+//     std::dynamic_pointer_cast<requests::RequestInfo>(navigation_request_info);
+//   _pimpl->tasks[request.task_id] = request_info;
+//   _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+
+//   _pimpl->middleware->send_navigation_request(request);
+//   return _pimpl->current_task_id;
+// }
+
+//==============================================================================
+// auto Manager::send_relocalization_request(
+//   const std::string& robot_name,
+//   const messages::Location& location,
+//   std::size_t last_visited_waypoint_index)
+//   -> rmf_utils::optional<std::size_t>
+// {
+//   std::lock_guard<std::mutex> lock(_pimpl->mutex);
+//   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end() ||
+//     last_visited_waypoint_index >= _pimpl->graph->num_waypoints())
+//   {
+//     // std::cerr << "No such robot or waypoint." << std::endl;
+//     return rmf_utils::nullopt;
+//   }
+
+//   auto wp =
+//     _pimpl->graph->get_waypoint(last_visited_waypoint_index);
+//   const double dist_from_wp =
+//     (Eigen::Vector2d{location.x, location.y} - wp.get_location()).norm();
+//   if (dist_from_wp >= 10.0)
+//   {
+//     // std::cerr << "Last visited waypoint is too far away." << std::endl;
+//     return rmf_utils::nullopt;
+//   }
+
+//   messages::Location transformed_location =
+//     _pimpl->to_robot_transform->forward_transform(location);
+
+//   if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
+//     ++_pimpl->current_task_id;
+
+//   messages::RelocalizationRequest request{
+//     robot_name,
+//     _pimpl->current_task_id,
+//     transformed_location,
+//     last_visited_waypoint_index};
+//   auto relocalization_request_info =
+//     std::make_shared<requests::RelocalizationRequestInfo>(
+//       request,
+//       [this](const messages::RelocalizationRequest& request_msg)
+//   {
+//     this->_pimpl->middleware->send_relocalization_request(request_msg);
+//   },
+//       _pimpl->time_now_fn());
+
+//   auto request_info =
+//     std::dynamic_pointer_cast<requests::RequestInfo>(
+//       relocalization_request_info);
+//   _pimpl->tasks[request.task_id] = request_info;
+//   _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+
+//   _pimpl->middleware->send_relocalization_request(request);
+//   return _pimpl->current_task_id;
+// }
 
 //==============================================================================
 } // namespace free_fleet

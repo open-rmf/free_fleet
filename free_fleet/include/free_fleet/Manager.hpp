@@ -32,10 +32,7 @@
 #include <free_fleet/transport/ServerMiddleware.hpp>
 
 #include <free_fleet/messages/Waypoint.hpp>
-#include <free_fleet/messages/ModeParameter.hpp>
-
 #include <free_fleet/messages/RobotState.hpp>
-#include <free_fleet/messages/ModeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
@@ -108,43 +105,42 @@ public:
   /// \return
   std::vector<std::shared_ptr<const agv::RobotInfo>> all_robots();
 
-  /// Sends out a mode request to a robot.
+  /// Sends out a pause request to a robot.
   ///
   /// \param[in] robot_name
-  ///   Name of robot that the request is targeted at.
-  ///
-  /// \param[in] mode
-  ///   Desired robot mode.
-  ///
-  /// \param[in] parameters
-  ///   Optional parameters for a mode request.
+  ///   Name of the robot that this request is targeted at.
   ///
   /// \return
-  ///   Optional of the task ID for this particular request. Returns a nullopt
-  ///   if there does not exist a robot of the provided name.
-  rmf_utils::optional<std::size_t> send_mode_request(
-    const std::string& robot_name,
-    const messages::RobotMode& mode,
-    std::vector<messages::ModeParameter> parameters);
+  ///   Optional of the task ID for this request. Returns a nullopt if there
+  ///   does not exist a robot of the provided name.
+  rmf_utils::optional<std::size_t> request_pause(const std::string& robot_name);
 
-  /// Sends out a navigation request.
+  /// Sends out a resume request to a robot.
   ///
   /// \param[in] robot_name
-  ///   Name of the robot that the request is targeted at.
-  ///
-  /// \param[in] path
-  ///   Desired path of waypoints that the robot should follow.
+  ///   Name of the robot that this request is targeted at.
   ///
   /// \return
-  ///   Optional of the task ID for this particular request. Returns a nullopt
-  ///   if there does not exist a robot of the provided name, if the provided
-  ///   path is empty, or if any of the waypoints are non-conforming to the
-  ///   navigation graph of the manager.
-  rmf_utils::optional<std::size_t> send_navigation_request(
-    const std::string& robot_name,
-    const std::vector<messages::Waypoint>& path);
+  ///   Optional of the task ID for this request. Returns a nullopt if there
+  ///   does not exist a robot of the provided name.
+  rmf_utils::optional<std::size_t> request_resume(const std::string& robot_name);
 
-  /// Sends out a relocalization request.
+  /// Sends out a dock request to a robot.
+  ///
+  /// \param[in] robot_name
+  ///   Name of the robot that this request is targeted at.
+  ///
+  /// \param[in] dock_name
+  ///   Name of the desired dock.
+  ///
+  /// \return
+  ///   Optional of the task ID for this request. Returns a nullopt if there
+  ///   does not exist a robot of the provided name.
+  rmf_utils::optional<std::size_t> request_dock(
+    const std::string& robot_name,
+    const std::string& dock_name);
+
+  /// Sends out a relocalization request to a robot.
   ///
   /// \param[in] robot_name
   ///   Name of the robot that the request is targeted at.
@@ -157,15 +153,31 @@ public:
   ///   the robot, for it to continue tracking its progress through the graph.
   ///
   /// \return
-  ///   Optional of the task ID for this particular request. Returns a nullopt
-  ///   if there does not exist a robot of the provided name, if the last
-  ///   visited waypoint index does not exist in the navigation graph, or if the
-  ///   desired relocalization location is too far away from the last visited
-  ///   waypoint.
-  rmf_utils::optional<std::size_t> send_relocalization_request(
+  ///   Optional of the task ID for this request. Returns a nullopt if there
+  ///   does not exist a robot of the provided name, if the last visited
+  ///   waypoint index does not exist in the navigation graph, or if the desired
+  ///   relocalization location is too far away from the last visited waypoint.
+  rmf_utils::optional<std::size_t> request_relocalize(
     const std::string& robot_name,
     const messages::Location& location,
     std::size_t last_visited_waypoint_index);
+
+  /// Sends out a navigation request to a robot.
+  ///
+  /// \param[in] robot_name
+  ///   Name of the robot that the request is targeted at.
+  ///
+  /// \param[in] path
+  ///   Desired path of waypoints that the robot should follow.
+  ///
+  /// \return
+  ///   Optional of the task ID for this request. Returns a nullopt if there
+  ///   does not exist a robot of the provided name, if the provided path is
+  ///   empty, or if any of the waypoints are non-conforming to the navigation
+  ///   graph of the manager.
+  rmf_utils::optional<std::size_t> request_navigation(
+    const std::string& robot_name,
+    const std::vector<messages::Waypoint>& path);
 
   class Implementation;
 private:
