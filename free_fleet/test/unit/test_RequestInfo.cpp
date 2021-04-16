@@ -31,16 +31,47 @@
 
 #include <rmf_traffic/Time.hpp>
 
-#include "src/RequestInfo.hpp"
+#include "src/requests/RequestInfo.hpp"
+#include "src/requests/SimpleRequestInfo.hpp"
 
 SCENARIO("Testing request info API")
 {
+  using RequestInfo = free_fleet::requests::RequestInfo;
+
   const std::string robot_name = "test_robot";
   const uint32_t initial_task_id = 0;
-
-  using BaseRequestInfo = free_fleet::requests::BaseRequestInfo;
-
   auto time_now = std::chrono::steady_clock::now();
+
+  GIVEN("Dock request info")
+  {
+    using DockRequest = free_fleet::messages::DockRequest;
+
+    DockRequest request {
+      robot_name,
+      initial_task_id + 1,
+      "mock_dock"};
+
+    bool request_sent = false;
+    std::shared_ptr<RequestInfo> request_info(
+      new free_fleet::requests::SimpleRequestInfo<DockRequest>(
+        request,
+        [&](const DockRequest&){request_sent = true;},
+        time_now));
+    
+    REQUIRE(request_info);
+    CHECK(request_info->init_time() == time_now);
+    CHECK(!request_info->acknowledged());
+    CHECK(!request_info->acknowledged_time().has_value());
+    CHECK(request_info->id() == initial_task_id + 1);
+    CHECK_NOTHROW(request_info->send_request());
+    CHECK(request_sent);
+
+    auto ack_time = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
+    CHECK(request_info->acknowledged());
+    CHECK(request_info->acknowledged_time().has_value());
+    CHECK(request_info->acknowledged_time().value() == ack_time);
+  }
 
   GIVEN("Pause request info")
   {
@@ -51,30 +82,25 @@ SCENARIO("Testing request info API")
       initial_task_id + 1};
 
     bool request_sent = false;
-    std::shared_ptr<free_fleet::requests::RequestInfo<PauseRequest>>
-      request_info =
-        std::make_shared<free_fleet::requests::RequestInfo<PauseRequest>>(
-          BaseRequestInfo::RequestType::PauseRequest,
-          request,
-          [&](const PauseRequest&) {request_sent = true;},
-          time_now);
+    std::shared_ptr<RequestInfo> request_info(
+      new free_fleet::requests::SimpleRequestInfo<PauseRequest>(
+        request,
+        [&](const PauseRequest&){request_sent = true;},
+        time_now));
     
+    REQUIRE(request_info);
     CHECK(request_info->init_time() == time_now);
     CHECK(!request_info->acknowledged());
     CHECK(!request_info->acknowledged_time().has_value());
-    CHECK(request_info->request_type() ==
-      BaseRequestInfo::RequestType::PauseRequest);
-    CHECK(request_info->id() == request.task_id);
-    CHECK(request_info->request() == request);
-
+    CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto new_time_now = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(new_time_now));
+    auto ack_time = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
     CHECK(request_info->acknowledged());
-    REQUIRE(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value()  == new_time_now);
+    CHECK(request_info->acknowledged_time().has_value());
+    CHECK(request_info->acknowledged_time().value() == ack_time);
   }
 
   GIVEN("Resume request info")
@@ -86,66 +112,25 @@ SCENARIO("Testing request info API")
       initial_task_id + 1};
 
     bool request_sent = false;
-    std::shared_ptr<free_fleet::requests::RequestInfo<ResumeRequest>>
-      request_info =
-        std::make_shared<free_fleet::requests::RequestInfo<ResumeRequest>>(
-          BaseRequestInfo::RequestType::ResumeRequest,
-          request,
-          [&](const ResumeRequest&) {request_sent = true;},
-          time_now);
+    std::shared_ptr<RequestInfo> request_info(
+      new free_fleet::requests::SimpleRequestInfo<ResumeRequest>(
+        request,
+        [&](const ResumeRequest&){request_sent = true;},
+        time_now));
     
+    REQUIRE(request_info);
     CHECK(request_info->init_time() == time_now);
     CHECK(!request_info->acknowledged());
     CHECK(!request_info->acknowledged_time().has_value());
-    CHECK(request_info->request_type() ==
-      BaseRequestInfo::RequestType::ResumeRequest);
-    CHECK(request_info->id() == request.task_id);
-    CHECK(request_info->request() == request);
-
+    CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto new_time_now = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(new_time_now));
+    auto ack_time = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
     CHECK(request_info->acknowledged());
-    REQUIRE(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value()  == new_time_now);
-  }
-
-  GIVEN("Dock request info")
-  {
-    using DockRequest = free_fleet::messages::DockRequest;
-
-    DockRequest request {
-      robot_name,
-      initial_task_id + 1,
-      "test_dock"};
-
-    bool request_sent = false;
-    std::shared_ptr<free_fleet::requests::RequestInfo<DockRequest>>
-      request_info =
-        std::make_shared<free_fleet::requests::RequestInfo<DockRequest>>(
-          BaseRequestInfo::RequestType::DockRequest,
-          request,
-          [&](const DockRequest&) {request_sent = true;},
-          time_now);
-    
-    CHECK(request_info->init_time() == time_now);
-    CHECK(!request_info->acknowledged());
-    CHECK(!request_info->acknowledged_time().has_value());
-    CHECK(request_info->request_type() ==
-      BaseRequestInfo::RequestType::DockRequest);
-    CHECK(request_info->id() == request.task_id);
-    CHECK(request_info->request() == request);
-
-    CHECK_NOTHROW(request_info->send_request());
-    CHECK(request_sent);
-
-    auto new_time_now = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(new_time_now));
-    CHECK(request_info->acknowledged());
-    REQUIRE(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value()  == new_time_now);
+    CHECK(request_info->acknowledged_time().has_value());
+    CHECK(request_info->acknowledged_time().value() == ack_time);
   }
 
   GIVEN("Relocalization request info")
@@ -166,30 +151,25 @@ SCENARIO("Testing request info API")
       0};
 
     bool request_sent = false;
-    std::shared_ptr<free_fleet::requests::RequestInfo<RelocalizationRequest>>
-      request_info =
-        std::make_shared<free_fleet::requests::RequestInfo<RelocalizationRequest>>(
-          BaseRequestInfo::RequestType::RelocalizationRequest,
-          request,
-          [&](const RelocalizationRequest&) {request_sent = true;},
-          time_now);
-    
+    std::shared_ptr<RequestInfo> request_info(
+      new free_fleet::requests::SimpleRequestInfo<RelocalizationRequest>(
+        request,
+        [&](const RelocalizationRequest&){request_sent = true;},
+        time_now));
+
+    REQUIRE(request_info);
     CHECK(request_info->init_time() == time_now);
     CHECK(!request_info->acknowledged());
     CHECK(!request_info->acknowledged_time().has_value());
-    CHECK(request_info->request_type() ==
-      BaseRequestInfo::RequestType::RelocalizationRequest);
-    CHECK(request_info->id() == request.task_id);
-    CHECK(request_info->request() == request);
-
+    CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto new_time_now = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(new_time_now));
+    auto ack_time = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
     CHECK(request_info->acknowledged());
-    REQUIRE(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value()  == new_time_now);
+    CHECK(request_info->acknowledged_time().has_value());
+    CHECK(request_info->acknowledged_time().value() == ack_time);
   }
 
   GIVEN("Navigation request info")
@@ -226,29 +206,24 @@ SCENARIO("Testing request info API")
     request.path.push_back(forth_wp);
 
     bool request_sent = false;
-    std::shared_ptr<free_fleet::requests::RequestInfo<NavigationRequest>>
-      request_info =
-        std::make_shared<free_fleet::requests::RequestInfo<NavigationRequest>>(
-          BaseRequestInfo::RequestType::NavigationRequest,
-          request,
-          [&](const NavigationRequest&) {request_sent = true;},
-          time_now);
-    
+    std::shared_ptr<RequestInfo> request_info(
+      new free_fleet::requests::SimpleRequestInfo<NavigationRequest>(
+        request,
+        [&](const NavigationRequest&){request_sent = true;},
+        time_now));
+
+    REQUIRE(request_info);
     CHECK(request_info->init_time() == time_now);
     CHECK(!request_info->acknowledged());
     CHECK(!request_info->acknowledged_time().has_value());
-    CHECK(request_info->request_type() ==
-      BaseRequestInfo::RequestType::NavigationRequest);
-    CHECK(request_info->id() == request.task_id);
-    CHECK(request_info->request() == request);
-
+    CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto new_time_now = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(new_time_now));
+    auto ack_time = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
     CHECK(request_info->acknowledged());
-    REQUIRE(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value()  == new_time_now);
+    CHECK(request_info->acknowledged_time().has_value());
+    CHECK(request_info->acknowledged_time().value() == ack_time);
   }
 }

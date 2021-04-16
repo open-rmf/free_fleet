@@ -30,7 +30,7 @@
 namespace free_fleet {
 namespace agv {
 
-class RobotInfo
+class RobotInfo : public std::enable_shared_from_this<RobotInfo>
 {
 public:
 

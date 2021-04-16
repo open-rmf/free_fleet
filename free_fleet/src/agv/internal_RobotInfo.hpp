@@ -24,7 +24,7 @@
 
 #include <free_fleet/agv/RobotInfo.hpp>
 
-#include "../RequestInfo.hpp"
+#include "../requests/RequestInfo.hpp"
 
 namespace free_fleet {
 namespace agv {
@@ -32,6 +32,8 @@ namespace agv {
 class RobotInfo::Implementation
 {
 public:
+
+  RobotInfo* parent = nullptr;
 
   std::string name;
   std::string model;
@@ -43,7 +45,7 @@ public:
   TrackingState tracking_state = TrackingState::Lost;
   rmf_utils::optional<messages::RobotState> state = rmf_utils::nullopt;
 
-  std::unordered_map<uint32_t, std::shared_ptr<requests::BaseRequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     allocated_requests;
 
   const double waypoint_dist_threshold = 0.5;
@@ -67,22 +69,25 @@ public:
     if (!graph)
       return make_error_fn("Provided traffic graph is invalid.");
 
-    RobotInfo info;
-    info._pimpl = rmf_utils::make_impl<Implementation>(Implementation());
-    info._pimpl->name = state.name;
-    info._pimpl->model = state.model;
-    info._pimpl->first_found = time_now;
-    info._pimpl->last_updated = time_now;
-    info._pimpl->graph = std::move(graph);
-    info._pimpl->track_and_update(state);
-    return std::make_shared<RobotInfo>(std::move(info));
+    std::shared_ptr<RobotInfo> info(new RobotInfo);
+    info->_pimpl = rmf_utils::make_impl<Implementation>(Implementation());
+    info->_pimpl->name = state.name;
+    info->_pimpl->model = state.model;
+    info->_pimpl->first_found = time_now;
+    info->_pimpl->last_updated = time_now;
+    info->_pimpl->graph = std::move(graph);
+    info->_pimpl->track_and_update(state);
+    info->_pimpl->parent = info.get();
+    return info;
   }
 
+  ///
   static Implementation& get(RobotInfo& robot_info)
   {
     return *robot_info._pimpl;
   }
 
+  ///
   static const Implementation& get(const RobotInfo& robot_info)
   {
     return *robot_info._pimpl;
@@ -93,7 +98,7 @@ public:
   /// \param[in] new_request_info
   ///   Pointer to a request.
   void allocate_task(
-    const std::shared_ptr<requests::BaseRequestInfo>& new_request_info);
+    const std::shared_ptr<requests::RequestInfo>& new_request_info);
 
   /// Update the internal robot handler with the newest state.
   ///
@@ -109,34 +114,10 @@ public:
   /// Tracks the robot using the new incoming state and prior information.
   void track_and_update(const messages::RobotState& new_state);
 
-  /// Tracks the robot using only the new incoming state information.
-  void track_without_task_id(const Eigen::Vector2d& new_state);
-
-  /// Finds the normal distance of a point to a lane.
-  double distance_to_lane(
-    const rmf_traffic::agv::Graph::Lane* lane,
-    const Eigen::Vector2d& coordinates) const;
-
-  /// Finds the nearest waypoint in the graph to the location and its distance
-  /// from it in meters.
-  std::pair<const rmf_traffic::agv::Graph::Waypoint*, double>
-    find_nearest_waypoint(const Eigen::Vector2d& coordinates) const;
-
-  /// Finds the nearest lane in the graph by normal distance, and its distance
-  /// away in meters.
-  std::pair<const rmf_traffic::agv::Graph::Lane*, double> find_nearest_lane(
-    const Eigen::Vector2d& coordinates) const;
-
-  /// Checks whether the normal projection of a point onto a lane is within the
-  /// entry and exit.
-  bool is_within_lane(
-    const rmf_traffic::agv::Graph::Lane* lane,
-    const Eigen::Vector2d& coordinates) const;
-
-  /// Checks whether the coordinates are within 0.5 meters of a given waypoint.
-  bool is_near_waypoint(
-    std::size_t waypoint_index,
-    const Eigen::Vector2d& coordinates) const;
+  /// Gets the tracking estimation purely based on the incoming new state as
+  /// well as it's previos tracking estimation.
+  std::pair<TrackingState, std::size_t> track_through_graph(
+    const messages::RobotState& new_state) const;
 };
 
 } // namespace agv

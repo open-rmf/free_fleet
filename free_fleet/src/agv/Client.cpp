@@ -39,8 +39,12 @@ bool Client::Implementation::connected() const
 void Client::Implementation::set_callbacks()
 {
   using namespace std::placeholders;
-  middleware->set_mode_request_callback(
-    std::bind(&Implementation::handle_mode_request, this, _1));
+  middleware->set_pause_request_callback(
+    std::bind(&Implementation::handle_pause_request, this, _1));
+  middleware->set_resume_request_callback(
+    std::bind(&Implementation::handle_resume_request, this, _1));
+  middleware->set_dock_request_callback(
+    std::bind(&Implementation::handle_dock_request, this, _1));
   middleware->set_navigation_request_callback(
     std::bind(&Implementation::handle_navigation_request, this, _1));
   middleware->set_relocalization_request_callback(
@@ -91,17 +95,38 @@ void Client::Implementation::start_async(uint32_t frequency)
 }
 
 //==============================================================================
-void Client::Implementation::handle_mode_request(
-  const messages::ModeRequest& request)
+void Client::Implementation::handle_pause_request(
+  const messages::PauseRequest& request)
 {
   if (!is_valid_request(request))
     return;
   task_ids.insert(request.task_id);
   task_id = request.task_id;
-  if (request.mode.mode == messages::RobotMode::MODE_PAUSED)
-    command_handle->stop();
-  else if (request.mode.mode == messages::RobotMode::MODE_MOVING)
-    command_handle->resume();
+  command_handle->stop();
+}
+
+//==============================================================================
+void Client::Implementation::handle_resume_request(
+  const messages::ResumeRequest& request)
+{
+  if (!is_valid_request(request))
+    return;
+  task_ids.insert(request.task_id);
+  task_id = request.task_id;
+  command_handle->resume();
+}
+
+//==============================================================================
+void Client::Implementation::handle_dock_request(
+  const messages::DockRequest& request)
+{
+  if (!is_valid_request(request))
+    return;
+  task_ids.insert(request.task_id);
+  task_id = request.task_id;
+  free_fleet::agv::CommandHandle::RequestCompleted callback =
+    [this]() { task_id = 0; };
+  command_handle->dock(request.dock_name, callback);
 }
 
 //==============================================================================

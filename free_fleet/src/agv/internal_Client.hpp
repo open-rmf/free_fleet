@@ -26,6 +26,9 @@
 #include <unordered_set>
 
 #include <free_fleet/agv/Client.hpp>
+#include <free_fleet/messages/DockRequest.hpp>
+#include <free_fleet/messages/PauseRequest.hpp>
+#include <free_fleet/messages/ResumeRequest.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
@@ -80,7 +83,11 @@ public:
 
   void start_async(uint32_t frequency);
 
-  void handle_mode_request(const messages::ModeRequest& request);
+  void handle_pause_request(const messages::PauseRequest& request);
+
+  void handle_resume_request(const messages::ResumeRequest& request);
+
+  void handle_dock_request(const messages::DockRequest& request);
 
   void handle_navigation_request(const messages::NavigationRequest& request);
 

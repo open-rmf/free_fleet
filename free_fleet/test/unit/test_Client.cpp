@@ -83,14 +83,33 @@ public:
   MockClientMiddlewareWithServer()
   {}
 
-  void received_mode_request(const std::string& robot_name, uint32_t task_id)
+  void received_dock_request(
+    const std::string& robot_name,
+    uint32_t task_id, 
+    const std::string& dock_name)
   {
-    if (mode_request_callback)
+    if (dock_request_callback)
     {
-      free_fleet::messages::ModeRequest request;
-      request.robot_name = robot_name;
-      request.task_id = task_id;
-      mode_request_callback(request);
+      free_fleet::messages::DockRequest request {
+        robot_name, task_id, dock_name};
+      dock_request_callback(request);
+    }
+  }
+
+  void received_pause_request(const std::string& robot_name, uint32_t task_id)
+  {
+    if (pause_request_callback)
+    {
+      free_fleet::messages::PauseRequest request {robot_name, task_id};
+      pause_request_callback(request);
+    }
+  }
+  void received_resume_request(const std::string& robot_name, uint32_t task_id)
+  {
+    if (resume_request_callback)
+    {
+      free_fleet::messages::ResumeRequest request {robot_name, task_id};
+      resume_request_callback(request);
     }
   }
 
@@ -141,10 +160,25 @@ SCENARIO("Testing receiving requests")
     dynamic_cast<MockClientMiddlewareWithServer*>(impl.middleware.get());
   REQUIRE(impl.middleware);
 
-  GIVEN("Receiving another robot's mode request")
+  GIVEN("Receiving another robot's dock request")
   {
     REQUIRE(impl.task_id == 0);
-    middleware->received_mode_request("wrong_robot", 1);
+    middleware->received_dock_request("wrong_robot", 1, "mock_dock");
+    CHECK(impl.task_id == 0);
+    CHECK(impl.task_ids.find(1) == impl.task_ids.end());
+  }
+
+  GIVEN("Receiving another robot's pause request")
+  {
+    REQUIRE(impl.task_id == 0);
+    middleware->received_pause_request("wrong_robot", 1);
+    CHECK(impl.task_id == 0);
+    CHECK(impl.task_ids.find(1) == impl.task_ids.end());
+  }
+  GIVEN("Receiving another robot's resume request")
+  {
+    REQUIRE(impl.task_id == 0);
+    middleware->received_resume_request("wrong_robot", 1);
     CHECK(impl.task_id == 0);
     CHECK(impl.task_ids.find(1) == impl.task_ids.end());
   }
@@ -165,10 +199,26 @@ SCENARIO("Testing receiving requests")
     CHECK(impl.task_ids.find(1) == impl.task_ids.end());
   }
 
-  GIVEN("Receiving mode request")
+  GIVEN("Receiving dock request")
   {
     REQUIRE(impl.task_id == 0);
-    middleware->received_mode_request(robot_name, 1);
+    middleware->received_dock_request(robot_name, 1, "mock_dock");
+    CHECK(impl.task_id == 1);
+    CHECK(impl.task_ids.find(1) != impl.task_ids.end());
+  }
+
+  GIVEN("Receiving pause request")
+  {
+    REQUIRE(impl.task_id == 0);
+    middleware->received_pause_request(robot_name, 1);
+    CHECK(impl.task_id == 1);
+    CHECK(impl.task_ids.find(1) != impl.task_ids.end());
+  }
+
+  GIVEN("Receiving resume request")
+  {
+    REQUIRE(impl.task_id == 0);
+    middleware->received_resume_request(robot_name, 1);
     CHECK(impl.task_id == 1);
     CHECK(impl.task_ids.find(1) != impl.task_ids.end());
   }
@@ -192,14 +242,20 @@ SCENARIO("Testing receiving requests")
   GIVEN("Receiving multiple requests")
   {
     REQUIRE(impl.task_id == 0);
-    middleware->received_mode_request(robot_name, 1);
-    CHECK(impl.task_id == 1);
+    middleware->received_dock_request(robot_name, 1, "mock_dock");
+    REQUIRE(impl.task_id == 1);
     CHECK(impl.task_ids.find(1) != impl.task_ids.end());
-    middleware->received_navigation_request(robot_name, 2);
-    CHECK(impl.task_id == 2);
+    middleware->received_pause_request(robot_name, 2);
+    REQUIRE(impl.task_id == 2);
     CHECK(impl.task_ids.find(2) != impl.task_ids.end());
-    middleware->received_relocalization_request(robot_name, 3);
+    middleware->received_resume_request(robot_name, 3);
     CHECK(impl.task_id == 3);
     CHECK(impl.task_ids.find(3) != impl.task_ids.end());
+    middleware->received_navigation_request(robot_name, 4);
+    CHECK(impl.task_id == 4);
+    CHECK(impl.task_ids.find(4) != impl.task_ids.end());
+    middleware->received_relocalization_request(robot_name, 5);
+    CHECK(impl.task_id == 5);
+    CHECK(impl.task_ids.find(5) != impl.task_ids.end());
   }
 }

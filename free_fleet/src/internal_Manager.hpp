@@ -24,7 +24,7 @@
 
 #include <free_fleet/Manager.hpp>
 
-#include "RequestInfo.hpp"
+#include "requests/RequestInfo.hpp"
 
 namespace free_fleet {
 
@@ -77,9 +77,9 @@ public:
   // Reserving task ID 0 for empty tasks
   const uint32_t idle_task_id = 0;
   uint32_t current_task_id = idle_task_id;
-  std::unordered_map<uint32_t, std::shared_ptr<requests::BaseRequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     tasks;
-  std::unordered_map<uint32_t, std::shared_ptr<requests::BaseRequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     unacknowledged_tasks;
 
   std::atomic<bool> started = false;

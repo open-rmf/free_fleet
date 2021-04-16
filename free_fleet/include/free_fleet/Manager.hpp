@@ -157,7 +157,7 @@ public:
   ///   does not exist a robot of the provided name, if the last visited
   ///   waypoint index does not exist in the navigation graph, or if the desired
   ///   relocalization location is too far away from the last visited waypoint.
-  rmf_utils::optional<std::size_t> request_relocalize(
+  rmf_utils::optional<std::size_t> request_relocalization(
     const std::string& robot_name,
     const messages::Location& location,
     std::size_t last_visited_waypoint_index);
