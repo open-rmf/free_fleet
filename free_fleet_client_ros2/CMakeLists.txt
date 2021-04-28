@@ -18,7 +18,10 @@ if (ament_cmake_FOUND)
 
   find_package(rclcpp REQUIRED)
   find_package(rclcpp_action REQUIRED)
-  find_package(tf_ros REQUIRED)
+  find_package(tf2_ros REQUIRED)
+  find_package(nav2_util REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+  find_package(tf2 REQUIRED)
 
   add_executable(free_fleet_client_ros2
     src/main.cpp
@@ -27,7 +30,10 @@ if (ament_cmake_FOUND)
   set(dependencies
     rclcpp
     rclcpp_action
+    tf2
     tf2_ros
+    nav2_util
+    geometry_msgs
   )
 
   ament_target_dependencies(free_fleet_client_ros2
