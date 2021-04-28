@@ -30,6 +30,13 @@
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
+#include <free_fleet/Client.hpp>
+#include <free_fleet/ClientConfig.hpp>
+#include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/messages/ModeRequest.hpp>
+#include <free_fleet/messages/PathRequest.hpp>
+#include <free_fleet/messages/DestinationRequest.hpp>
+
 class Client : public rclcpp::Node
 {
 private:
