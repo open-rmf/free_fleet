@@ -71,8 +71,8 @@ public:
     /// move base action client
     MoveBaseClientSharedPtr move_base_client;
 
-    /// Charger server client
-    std::unique_ptr<ros::ServiceClient> charging_trigger_client;
+    /// Docking server client
+    std::unique_ptr<ros::ServiceClient> docking_trigger_client;
   };
 
   void print_config();

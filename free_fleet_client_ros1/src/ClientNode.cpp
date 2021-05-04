@@ -49,19 +49,19 @@ ClientNode::SharedPtr ClientNode::make(const ClientNodeConfig& _config)
   ROS_INFO("connected with move base action server: %s",
       _config.move_base_server_name.c_str());
 
-  /// Setting up the charger server client, if required, wait for server
-  std::unique_ptr<ros::ServiceClient> charging_trigger_client = nullptr;
-  if (_config.charging_trigger_server_name != "")
+  /// Setting up the docking server client, if required, wait for server
+  std::unique_ptr<ros::ServiceClient> docking_trigger_client = nullptr;
+  if (_config.docking_trigger_server_name != "")
   {
-    charging_trigger_client =
+    docking_trigger_client =
       std::make_unique<ros::ServiceClient>(
         client_node->node->serviceClient<std_srvs::Trigger>(
-          _config.charging_trigger_server_name, true));
-    if (!charging_trigger_client->waitForExistence(
+          _config.docking_trigger_server_name, true));
+    if (!docking_trigger_client->waitForExistence(
       ros::Duration(_config.wait_timeout)))
     {
-      ROS_ERROR("timed out waiting for charging trigger server: %s",
-        _config.charging_trigger_server_name.c_str());
+      ROS_ERROR("timed out waiting for docking trigger server: %s",
+        _config.docking_trigger_server_name.c_str());
       return nullptr;
     }
   }
@@ -69,7 +69,7 @@ ClientNode::SharedPtr ClientNode::make(const ClientNodeConfig& _config)
   client_node->start(Fields{
       std::move(client),
       std::move(move_base_client),
-      std::move(charging_trigger_client)
+      std::move(docking_trigger_client)
   });
 
   return client_node;
@@ -304,17 +304,17 @@ bool ClientNode::read_mode_request()
       paused = false;
       emergency = true;
     }
-    else if (mode_request.mode.mode == messages::RobotMode::MODE_CHARGING)
+    else if (mode_request.mode.mode == messages::RobotMode::MODE_DOCKING)
     {
-      ROS_INFO("received a CHARGING command.");
-      if (fields.charging_trigger_client &&
-        fields.charging_trigger_client->isValid())
+      ROS_INFO("received a DOCKING command.");
+      if (fields.docking_trigger_client &&
+        fields.docking_trigger_client->isValid())
       {
         std_srvs::Trigger trigger_srv;
-        fields.charging_trigger_client->call(trigger_srv);
+        fields.docking_trigger_client->call(trigger_srv);
         if (!trigger_srv.response.success)
         {
-          ROS_ERROR("Failed to trigger charging sequence, message: %s.",
+          ROS_ERROR("Failed to trigger docking sequence, message: %s.",
             trigger_srv.response.message.c_str());
           request_error = true;
           return false;

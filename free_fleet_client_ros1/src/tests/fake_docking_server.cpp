@@ -23,17 +23,18 @@ bool trigger(
   std_srvs::Trigger::Response& res)
 {
   res.success = true;
-  ROS_INFO("Charger trigger received.");
+  ROS_INFO("Docking trigger received.");
   return true;
 }
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "fake_charger_server");
+  ros::init(argc, argv, "fake_docking_server");
   ros::NodeHandle n;
 
   ros::ServiceServer service =
-    n.advertiseService("fake_charger_server", trigger);
+    n.advertiseService("fake_docking_server", trigger);
   ros::spin();
   return 0;
 }
+
