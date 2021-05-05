@@ -44,6 +44,8 @@ struct ClientNodeConfig
 
   std::string move_base_server_name = "move_base";
 
+  std::string docking_trigger_server_name = "";
+
   int dds_domain = 42;
   std::string dds_state_topic = "robot_state";
   std::string dds_mode_request_topic = "mode_request";

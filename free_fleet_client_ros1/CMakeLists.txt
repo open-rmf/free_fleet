@@ -19,6 +19,7 @@ include(GNUInstallDirs)
 
 find_package(catkin QUIET COMPONENTS
   roscpp
+  std_srvs
   sensor_msgs
   tf2
   tf2_ros
@@ -55,6 +56,7 @@ if (catkin_FOUND)
 
   set(testing_targets
     fake_action_server
+    fake_docking_server
   )
   
   foreach(target ${testing_targets})

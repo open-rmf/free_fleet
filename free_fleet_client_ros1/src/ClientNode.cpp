@@ -27,6 +27,7 @@ namespace ros1
 ClientNode::SharedPtr ClientNode::make(const ClientNodeConfig& _config)
 {
   SharedPtr client_node = SharedPtr(new ClientNode(_config));
+  client_node->node.reset(new ros::NodeHandle(_config.robot_name + "_node"));
 
   /// Starting the free fleet client
   ClientConfig client_config = _config.get_client_config();
@@ -48,9 +49,27 @@ ClientNode::SharedPtr ClientNode::make(const ClientNodeConfig& _config)
   ROS_INFO("connected with move base action server: %s",
       _config.move_base_server_name.c_str());
 
+  /// Setting up the docking server client, if required, wait for server
+  std::unique_ptr<ros::ServiceClient> docking_trigger_client = nullptr;
+  if (_config.docking_trigger_server_name != "")
+  {
+    docking_trigger_client =
+      std::make_unique<ros::ServiceClient>(
+        client_node->node->serviceClient<std_srvs::Trigger>(
+          _config.docking_trigger_server_name, true));
+    if (!docking_trigger_client->waitForExistence(
+      ros::Duration(_config.wait_timeout)))
+    {
+      ROS_ERROR("timed out waiting for docking trigger server: %s",
+        _config.docking_trigger_server_name.c_str());
+      return nullptr;
+    }
+  }
+
   client_node->start(Fields{
       std::move(client),
-      std::move(move_base_client)
+      std::move(move_base_client),
+      std::move(docking_trigger_client)
   });
 
   return client_node;
@@ -80,7 +99,6 @@ void ClientNode::start(Fields _fields)
 {
   fields = std::move(_fields);
 
-  node.reset(new ros::NodeHandle(client_node_config.robot_name + "_node"));
   update_rate.reset(new ros::Rate(client_node_config.update_frequency));
   publish_rate.reset(new ros::Rate(client_node_config.publish_frequency));
 
@@ -184,7 +202,10 @@ void ClientNode::publish_robot_state()
 
   {
     ReadLock battery_state_lock(battery_state_mutex);
-    new_robot_state.battery_percent = current_battery_state.percentage;
+    /// RMF expects battery to have a percentage in the range for 0-100.
+    /// sensor_msgs/BatteryInfo on the other hand returns a value in 
+    /// the range of 0-1
+    new_robot_state.battery_percent = 100*current_battery_state.percentage;
   }
 
   {
@@ -282,6 +303,23 @@ bool ClientNode::read_mode_request()
       ROS_INFO("received an EMERGENCY command.");
       paused = false;
       emergency = true;
+    }
+    else if (mode_request.mode.mode == messages::RobotMode::MODE_DOCKING)
+    {
+      ROS_INFO("received a DOCKING command.");
+      if (fields.docking_trigger_client &&
+        fields.docking_trigger_client->isValid())
+      {
+        std_srvs::Trigger trigger_srv;
+        fields.docking_trigger_client->call(trigger_srv);
+        if (!trigger_srv.response.success)
+        {
+          ROS_ERROR("Failed to trigger docking sequence, message: %s.",
+            trigger_srv.response.message.c_str());
+          request_error = true;
+          return false;
+        }
+      }
     }
 
     WriteLock task_id_lock(task_id_mutex);
