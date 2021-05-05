@@ -166,7 +166,8 @@ void ServerNode::start(Fields _fields)
           server_node_config.fleet_state_topic, 10);
 
   fleet_state_pub_timer = create_wall_timer(
-      200ms, std::bind(&ServerNode::publish_fleet_state, this),
+      std::chrono::seconds(1) / server_node_config.publish_state_frequency,
+      std::bind(&ServerNode::publish_fleet_state, this),
       fleet_state_pub_callback_group);
 
   // --------------------------------------------------------------------------
