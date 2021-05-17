@@ -1,4 +1,4 @@
-![](https://github.com/open-rmf/free_fleet/workflows/build/badge.svg)
+![](https://github.com/osrf/free_fleet/workflows/build/badge.svg)
 
 # Free Fleet
 
@@ -70,7 +70,7 @@ Start a new ROS1 workspace, and pull in the necessary repositories,
 ```bash
 mkdir -p ~/client_ws/src
 cd ~/client_ws/src
-git clone https://github.com/open-rmf/free_fleet
+git clone https://github.com/osrf/free_fleet
 git clone https://github.com/eclipse-cyclonedds/cyclonedds
 ```
 
@@ -98,7 +98,7 @@ Start a new ROS2 workspace, and pull in the necessary repositories,
 ```bash
 mkdir -p ~/server_ws/src
 cd ~/server_ws/src
-git clone https://github.com/open-rmf/free_fleet
+git clone https://github.com/osrf/free_fleet
 git clone https://github.com/open-rmf/rmf_internal_msgs
 ```
 

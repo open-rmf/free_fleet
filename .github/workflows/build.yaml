@@ -19,7 +19,7 @@ jobs:
       run: |
         mkdir -p ros1_ws/src
         cd ros1_ws/src
-        git clone https://github.com/open-rmf/free_fleet
+        git clone https://github.com/osrf/free_fleet
         git clone https://github.com/eclipse-cyclonedds/cyclonedds
     - name: checkout
       uses: actions/checkout@v2
@@ -65,7 +65,7 @@ jobs:
       run: |
         mkdir -p ros2_ws/src
         cd ros2_ws/src
-        git clone https://github.com/open-rmf/free_fleet
+        git clone https://github.com/osrf/free_fleet
         git clone https://github.com/open-rmf/rmf_internal_msgs
     - name: checkout
       uses: actions/checkout@v2
