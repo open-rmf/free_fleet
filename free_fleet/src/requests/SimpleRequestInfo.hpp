@@ -39,7 +39,7 @@ public:
   : _request(request),
     _send_request_fn(std::move(send_request_fn)),
     _init_time(time_now),
-    _acknowledged_time(rmf_utils::nullopt)
+    _acknowledged_time(std::nullopt)
   {}
 
   rmf_traffic::Time init_time() const override
@@ -52,7 +52,7 @@ public:
     return _acknowledged_time.has_value();
   }
 
-  rmf_utils::optional<rmf_traffic::Time> acknowledged_time() const override
+  std::optional<rmf_traffic::Time> acknowledged_time() const override
   {
     return _acknowledged_time;
   }
@@ -81,7 +81,7 @@ private:
   T _request;
   SendRequest _send_request_fn;
   rmf_traffic::Time _init_time;
-  rmf_utils::optional<rmf_traffic::Time> _acknowledged_time;
+  std::optional<rmf_traffic::Time> _acknowledged_time;
 };
 
 //==============================================================================

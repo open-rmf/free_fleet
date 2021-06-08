@@ -20,9 +20,9 @@
 
 #include <memory>
 #include <vector>
+#include <optional>
 
 #include <rmf_utils/impl_ptr.hpp>
-#include <rmf_utils/optional.hpp>
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
@@ -113,7 +113,7 @@ public:
   /// \return
   ///   Optional of the task ID for this request. Returns a nullopt if there
   ///   does not exist a robot of the provided name.
-  rmf_utils::optional<std::size_t> request_pause(const std::string& robot_name);
+  std::optional<std::size_t> request_pause(const std::string& robot_name);
 
   /// Sends out a resume request to a robot.
   ///
@@ -123,7 +123,7 @@ public:
   /// \return
   ///   Optional of the task ID for this request. Returns a nullopt if there
   ///   does not exist a robot of the provided name.
-  rmf_utils::optional<std::size_t> request_resume(const std::string& robot_name);
+  std::optional<std::size_t> request_resume(const std::string& robot_name);
 
   /// Sends out a dock request to a robot.
   ///
@@ -136,7 +136,7 @@ public:
   /// \return
   ///   Optional of the task ID for this request. Returns a nullopt if there
   ///   does not exist a robot of the provided name.
-  rmf_utils::optional<std::size_t> request_dock(
+  std::optional<std::size_t> request_dock(
     const std::string& robot_name,
     const std::string& dock_name);
 
@@ -157,7 +157,7 @@ public:
   ///   does not exist a robot of the provided name, if the last visited
   ///   waypoint index does not exist in the navigation graph, or if the desired
   ///   relocalization location is too far away from the last visited waypoint.
-  rmf_utils::optional<std::size_t> request_relocalization(
+  std::optional<std::size_t> request_relocalization(
     const std::string& robot_name,
     const messages::Location& location,
     std::size_t last_visited_waypoint_index);
@@ -175,7 +175,7 @@ public:
   ///   does not exist a robot of the provided name, if the provided path is
   ///   empty, or if any of the waypoints are non-conforming to the navigation
   ///   graph of the manager.
-  rmf_utils::optional<std::size_t> request_navigation(
+  std::optional<std::size_t> request_navigation(
     const std::string& robot_name,
     const std::vector<messages::Waypoint>& path);
 

@@ -43,7 +43,7 @@ public:
 
   std::size_t tracking_index;
   TrackingState tracking_state = TrackingState::Lost;
-  rmf_utils::optional<messages::RobotState> state = rmf_utils::nullopt;
+  std::optional<messages::RobotState> state = std::nullopt;
 
   std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
     allocated_requests;

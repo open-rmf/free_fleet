@@ -245,13 +245,13 @@ auto Manager::all_robots() -> std::vector<std::shared_ptr<const agv::RobotInfo>>
 
 //==============================================================================
 auto Manager::request_pause(const std::string& robot_name)
-  -> rmf_utils::optional<std::size_t>
+  -> std::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
     std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
-    return rmf_utils::nullopt;
+    return std::nullopt;
   }
 
   // Handles the carry forward
@@ -280,13 +280,13 @@ auto Manager::request_pause(const std::string& robot_name)
 
 //==============================================================================
 auto Manager::request_resume(const std::string& robot_name)
-  -> rmf_utils::optional<std::size_t>
+  -> std::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
     std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
-    return rmf_utils::nullopt;
+    return std::nullopt;
   }
 
   // Handles the carry forward
@@ -316,13 +316,13 @@ auto Manager::request_resume(const std::string& robot_name)
 //==============================================================================
 auto Manager::request_dock(
   const std::string& robot_name, const std::string& dock_name)
-  -> rmf_utils::optional<std::size_t>
+  -> std::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
     std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
-    return rmf_utils::nullopt;
+    return std::nullopt;
   }
 
   // Handles the carry forward
@@ -355,13 +355,13 @@ auto Manager::request_relocalization(
   const std::string& robot_name,
   const messages::Location& location,
   std::size_t last_visited_waypoint_index)
-  -> rmf_utils::optional<std::size_t>
+  -> std::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
     std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
-    return rmf_utils::nullopt;
+    return std::nullopt;
   }
 
   // Check if the waypoint exists
@@ -371,7 +371,7 @@ auto Manager::request_relocalization(
     std::cerr << "[Error]: Waypoint ["
       << std::to_string(last_visited_waypoint_index)
       << "] on the path does not exist on the graph." << std::endl;
-    return rmf_utils::nullopt;
+    return std::nullopt;
   }
 
   auto wp =
@@ -383,7 +383,7 @@ auto Manager::request_relocalization(
     std::cerr << "[Error]: Last visited waypoint ["
       << std::to_string(last_visited_waypoint_index)
       << "] is too far away." << std::endl;
-    return rmf_utils::nullopt;
+    return std::nullopt;
   }
 
   messages::Location transformed_location =
@@ -420,19 +420,19 @@ auto Manager::request_relocalization(
 auto Manager::request_navigation(
   const std::string& robot_name,
   const std::vector<messages::Waypoint>& path)
-  -> rmf_utils::optional<std::size_t>
+  -> std::optional<std::size_t>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
     std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
-    return rmf_utils::nullopt;
+    return std::nullopt;
   }
 
   if (path.empty())
   {
     std::cerr << "[Error]: Path is empty." << std::endl;
-    return rmf_utils::nullopt;
+    return std::nullopt;
   }
 
   const std::size_t num_wp = _pimpl->graph->num_waypoints();
@@ -447,7 +447,7 @@ auto Manager::request_navigation(
     {
       std::cerr << "[Error]: Waypoint [" << std::to_string(i)
         << "] on the path does not exist on the graph." << std::endl;
-      return rmf_utils::nullopt;
+      return std::nullopt;
     }
 
     // Check if the connection exists
@@ -461,7 +461,7 @@ auto Manager::request_navigation(
         std::cerr << "[Error]: No connecting lane between waypoints ["
           << std::to_string(i) << "] & [" << std::to_string(i+1)
           << "] on the path." << std::endl;
-        return rmf_utils::nullopt;
+        return std::nullopt;
       }
     }
     
@@ -473,7 +473,7 @@ auto Manager::request_navigation(
     {
       std::cerr << "[Error]: Provided waypoint [" << std::to_string(i)
         << "] on path does not match the waypoint on the graph." << std::endl;
-      return rmf_utils::nullopt;
+      return std::nullopt;
     }
 
     transformed_path.push_back(

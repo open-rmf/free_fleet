@@ -105,7 +105,7 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
   const std::size_t next_wp_index =
     _request.path[new_state.path_target_index].index;
   
-  rmf_utils::optional<std::size_t> prev_wp_index = rmf_utils::nullopt;
+  std::optional<std::size_t> prev_wp_index = std::nullopt;
   const rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
   if (new_state.path_target_index != 0)
   {

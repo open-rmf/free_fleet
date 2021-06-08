@@ -41,7 +41,7 @@ public:
   ///
   /// \return
   ///   Returns a nullopt if the request has not been acknowledged.
-  virtual rmf_utils::optional<rmf_traffic::Time> acknowledged_time() const = 0;
+  virtual std::optional<rmf_traffic::Time> acknowledged_time() const = 0;
 
   /// Sets the time that this request was acknowledged.
   virtual void acknowledged_time(rmf_traffic::Time time) = 0;
