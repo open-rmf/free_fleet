@@ -28,9 +28,10 @@ find_package(Threads REQUIRED)
 
 file(GLOB lib_srcs
   "src/*.cpp"
-  "src/agv/*.cpp"
-  "src/requests/*.cpp"
-  "src/utilities/*.cpp"
+  "src/client/*.cpp"
+  "src/manager/*.cpp"
+  "src/manager/requests/*.cpp"
+  "src/manager/utilities/*.cpp"
 )
 
 add_library(free_fleet SHARED

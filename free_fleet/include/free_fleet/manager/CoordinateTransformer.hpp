@@ -15,13 +15,14 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__COORDINATETRANSFORMER_HPP
-#define INCLUDE__FREE_FLEET__COORDINATETRANSFORMER_HPP
+#ifndef INCLUDE__FREE_FLEET__MANAGER__COORDINATETRANSFORMER_HPP
+#define INCLUDE__FREE_FLEET__MANAGER__COORDINATETRANSFORMER_HPP
 
 #include <memory>
 #include <free_fleet/messages/Location.hpp>
 
 namespace free_fleet {
+namespace manager {
 
 class CoordinateTransformer
 {
@@ -35,6 +36,7 @@ public:
     const = 0;
 };
 
+} // namespace manager
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__COORDINATETRANSFORMER_HPP
+#endif // INCLUDE__FREE_FLEET__MANAGER__COORDINATETRANSFORMER_HPP

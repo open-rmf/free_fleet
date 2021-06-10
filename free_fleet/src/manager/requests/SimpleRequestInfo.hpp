@@ -15,13 +15,13 @@
  *
 */
 
-#ifndef SRC__REQUESTS__SIMPLEREQUESTINFO_HPP
-#define SRC__REQUESTS__SIMPLEREQUESTINFO_HPP
+#ifndef SRC__MANAGER__REQUESTS__SIMPLEREQUESTINFO_HPP
+#define SRC__MANAGER__REQUESTS__SIMPLEREQUESTINFO_HPP
 
 #include "RequestInfo.hpp"
 
 namespace free_fleet {
-namespace requests {
+namespace manager {
 
 //==============================================================================
 template <typename T>
@@ -73,8 +73,8 @@ public:
       _send_request_fn(_request);
   }
 
-  std::pair<agv::RobotInfo::TrackingState, std::size_t> track_robot(
-    const agv::RobotInfo& robot_info,
+  std::pair<RobotInfo::TrackingState, std::size_t> track_robot(
+    const RobotInfo& robot_info,
     const messages::RobotState& new_state) const override;
 
 private:
@@ -85,7 +85,7 @@ private:
 };
 
 //==============================================================================
-} // namespace requests
+} // namespace manager
 } // namespace free_fleet
 
-#endif // SRC__REQUESTS__REQUESTINFO_HPP
+#endif // SRC__MANAGER__REQUESTS__REQUESTINFO_HPP

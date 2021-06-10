@@ -15,19 +15,19 @@
  *
 */
 
-#ifndef SRC__AGV__INTERNAL__ROBOTINFO_HPP
-#define SRC__AGV__INTERNAL__ROBOTINFO_HPP
+#ifndef SRC__MANAGER__INTERNAL__ROBOTINFO_HPP
+#define SRC__MANAGER__INTERNAL__ROBOTINFO_HPP
 
 #include <iostream>
 
 #include <rmf_utils/optional.hpp>
 
-#include <free_fleet/agv/RobotInfo.hpp>
+#include <free_fleet/manager/RobotInfo.hpp>
 
-#include "../requests/RequestInfo.hpp"
+#include "../manager/requests/RequestInfo.hpp"
 
 namespace free_fleet {
-namespace agv {
+namespace manager {
 
 class RobotInfo::Implementation
 {
@@ -45,7 +45,7 @@ public:
   TrackingState tracking_state = TrackingState::Lost;
   std::optional<messages::RobotState> state = std::nullopt;
 
-  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<RequestInfo>>
     allocated_requests;
 
   const double waypoint_dist_threshold = 0.5;
@@ -98,7 +98,7 @@ public:
   /// \param[in] new_request_info
   ///   Pointer to a request.
   void allocate_task(
-    const std::shared_ptr<requests::RequestInfo>& new_request_info);
+    const std::shared_ptr<RequestInfo>& new_request_info);
 
   /// Update the internal robot handler with the newest state.
   ///
@@ -120,7 +120,7 @@ public:
     const messages::RobotState& new_state) const;
 };
 
-} // namespace agv
+} // namespace manager
 } // namespace free_fleet
 
-#endif // SRC__AGV__INTERNAL__ROBOTINFO_HPP
+#endif // SRC__MANAGER__INTERNAL__ROBOTINFO_HPP

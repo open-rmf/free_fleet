@@ -15,20 +15,20 @@
  *
 */
 
-#include <free_fleet/agv/RobotInfo.hpp>
+#include <free_fleet/manager/RobotInfo.hpp>
 #include <free_fleet/messages/NavigationRequest.hpp>
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
 #include "internal_RobotInfo.hpp"
-#include "../utilities/utilities.hpp"
-#include "../requests/SimpleRequestInfo.hpp"
+#include "../manager/utilities/utilities.hpp"
+#include "../manager/requests/SimpleRequestInfo.hpp"
 
 namespace free_fleet {
-namespace agv {
+namespace manager {
 
 //==============================================================================
 void RobotInfo::Implementation::allocate_task(
-  const std::shared_ptr<requests::RequestInfo>& new_request_info)
+  const std::shared_ptr<RequestInfo>& new_request_info)
 {
   bool request_registered =
     allocated_requests.insert({
@@ -101,7 +101,7 @@ auto RobotInfo::Implementation::track_through_graph(
 {
   const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
 
-  if (tracking_state == agv::RobotInfo::TrackingState::OnWaypoint)
+  if (tracking_state == RobotInfo::TrackingState::OnWaypoint)
   {
     double distance =
       distance_to_waypoint(graph->get_waypoint(tracking_index), curr_loc);
@@ -112,13 +112,12 @@ auto RobotInfo::Implementation::track_through_graph(
   auto nearest_wp = find_nearest_waypoint(*graph, curr_loc);
   if (nearest_wp.first && nearest_wp.second < waypoint_dist_threshold)
     return std::make_pair(
-      agv::RobotInfo::TrackingState::OnWaypoint, nearest_wp.first->index());
+      RobotInfo::TrackingState::OnWaypoint, nearest_wp.first->index());
 
   std::cerr << "[Warning]: Robot [" << name << "] has no task and "
     "is far away from any waypoints, it has diverged from the navigation graph "
     "and is LOST." << std::endl;
-  return std::make_pair(
-    agv::RobotInfo::TrackingState::Lost, tracking_index);
+  return std::make_pair(RobotInfo::TrackingState::Lost, tracking_index);
 }
 
 //==============================================================================
@@ -170,5 +169,5 @@ auto RobotInfo::tracking_estimation() const
 
 //==============================================================================
 
-} // namespace agv
+} // namespace manager
 } // namespace free_fleet

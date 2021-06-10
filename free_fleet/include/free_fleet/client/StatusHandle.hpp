@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__AGV__STATUSHANDLE_HPP
-#define INCLUDE__FREE_FLEET__AGV__STATUSHANDLE_HPP
+#ifndef INCLUDE__FREE_FLEET__CLIENT__STATUSHANDLE_HPP
+#define INCLUDE__FREE_FLEET__CLIENT__STATUSHANDLE_HPP
 
 #include <vector>
 
@@ -25,7 +25,7 @@
 #include <free_fleet/messages/RobotMode.hpp>
 
 namespace free_fleet {
-namespace agv {
+namespace client {
 
 //==============================================================================
 /// Implement this class to obtain various information of the robot, including
@@ -65,7 +65,7 @@ public:
   virtual ~StatusHandle() = default;
 };
 
-} // namespace agv
+} // namespace client
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__AGV__STATUSHANDLE_HPP
+#endif // INCLUDE__FREE_FLEET__CLIENT__STATUSHANDLE_HPP

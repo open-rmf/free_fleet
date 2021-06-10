@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef INCLUDE__FREE_FLEET__MANAGER_HPP
-#define INCLUDE__FREE_FLEET__MANAGER_HPP
+#ifndef INCLUDE__FREE_FLEET__MANAGER__MANAGER_HPP
+#define INCLUDE__FREE_FLEET__MANAGER__MANAGER_HPP
 
 #include <memory>
 #include <vector>
@@ -27,8 +27,8 @@
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
-#include <free_fleet/agv/RobotInfo.hpp>
-#include <free_fleet/CoordinateTransformer.hpp>
+#include <free_fleet/manager/RobotInfo.hpp>
+#include <free_fleet/manager/CoordinateTransformer.hpp>
 #include <free_fleet/transport/ServerMiddleware.hpp>
 
 #include <free_fleet/messages/Waypoint.hpp>
@@ -37,12 +37,11 @@
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
 namespace free_fleet {
+namespace manager {
 
 class Manager
 {
 public:
-
-  using SharedPtr = std::shared_ptr<Manager>;
 
   /// This function returns the current time stamp based on the implementation.
   using TimeNow = std::function<rmf_traffic::Time()>;
@@ -50,7 +49,7 @@ public:
   /// This callback function can be used to work with different applications,
   /// triggered every time a robot is updated with an incoming new state.
   using RobotUpdatedCallback =
-    std::function<void(const agv::RobotInfo& robot_info)>;
+    std::function<void(const RobotInfo& robot_info)>;
 
   /// Factory function that creates an instance of the Free Fleet Manager.
   ///
@@ -61,7 +60,7 @@ public:
   /// \param[in] time_now_fn
   /// \param[in] robot_updated_callback_fn
   /// \return
-  static SharedPtr make(
+  static std::shared_ptr<Manager> make(
     const std::string& fleet_name,
     std::shared_ptr<const rmf_traffic::agv::Graph> graph,
     std::unique_ptr<transport::ServerMiddleware> middleware,
@@ -98,12 +97,12 @@ public:
   ///
   /// \param[in] robot_name
   /// \return
-  std::shared_ptr<const agv::RobotInfo> robot(const std::string& robot_name);
+  std::shared_ptr<const RobotInfo> robot(const std::string& robot_name);
 
   /// Gets all the available RobotInfo that has been registered with the manager
   ///
   /// \return
-  std::vector<std::shared_ptr<const agv::RobotInfo>> all_robots();
+  std::vector<std::shared_ptr<const RobotInfo>> all_robots();
 
   /// Sends out a pause request to a robot.
   ///
@@ -185,6 +184,7 @@ private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
+} // namespace manager
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__MANAGER_HPP
+#endif // INCLUDE__FREE_FLEET__MANAGER__MANAGER_HPP

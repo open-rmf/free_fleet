@@ -23,11 +23,11 @@
 
 #include <rmf_traffic/Time.hpp>
 
-#include <free_fleet/agv/Client.hpp>
+#include <free_fleet/client/Client.hpp>
 #include "internal_Client.hpp"
 
 namespace free_fleet {
-namespace agv {
+namespace client {
 
 //==============================================================================
 bool Client::Implementation::connected() const
@@ -124,7 +124,7 @@ void Client::Implementation::handle_dock_request(
     return;
   task_ids.insert(request.task_id);
   task_id = request.task_id;
-  free_fleet::agv::CommandHandle::RequestCompleted callback =
+  free_fleet::client::CommandHandle::RequestCompleted callback =
     [this]() { task_id = 0; };
   command_handle->dock(request.dock_name, callback);
 }
@@ -137,7 +137,7 @@ void Client::Implementation::handle_navigation_request(
     return;
   task_ids.insert(request.task_id);
   task_id = request.task_id;
-  free_fleet::agv::CommandHandle::RequestCompleted callback =
+  free_fleet::client::CommandHandle::RequestCompleted callback =
     [this]() { task_id = 0; };
   command_handle->follow_new_path(request.path, callback);
 }
@@ -150,18 +150,19 @@ void Client::Implementation::handle_relocalization_request(
     return;
   task_ids.insert(request.task_id);
   task_id = request.task_id;
-  free_fleet::agv::CommandHandle::RequestCompleted callback =
+  free_fleet::client::CommandHandle::RequestCompleted callback =
     [this]() { task_id = 0; };
   command_handle->relocalize(request.location, callback);
 }
 
 //==============================================================================
-Client::SharedPtr Client::make(
+auto Client::make(
   const std::string& robot_name,
   const std::string& robot_model,
   std::shared_ptr<CommandHandle> command_handle,
   std::shared_ptr<StatusHandle> status_handle,
   std::unique_ptr<transport::ClientMiddleware> middleware)
+  -> std::shared_ptr<Client>
 {
   auto make_error_fn = [](const std::string& error_msg)
   {
@@ -180,7 +181,7 @@ Client::SharedPtr Client::make(
   if (!middleware)
     return make_error_fn("Provided middleware is invalid.");
 
-  Client::SharedPtr new_client(new Client);
+  std::shared_ptr<Client> new_client(new Client);
   new_client->_pimpl = rmf_utils::make_impl<Implementation>(Implementation());
   new_client->_pimpl->robot_name = robot_name;
   new_client->_pimpl->robot_model = robot_model;
@@ -226,5 +227,5 @@ bool Client::started() const
 
 //==============================================================================
 
-} // namespace agv
+} // namespace client
 } // namespace free_fleet

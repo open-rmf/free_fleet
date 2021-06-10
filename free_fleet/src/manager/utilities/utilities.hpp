@@ -15,13 +15,13 @@
  *
 */
 
-#ifndef SRC__UTILITIES__UTILITIES_HPP
-#define SRC__UTILITIES__UTILITIES_HPP
+#ifndef SRC__MANAGER__UTILITIES__UTILITIES_HPP
+#define SRC__MANAGER__UTILITIES__UTILITIES_HPP
 
-#include <rmf_utils/optional.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
 namespace free_fleet {
+namespace manager {
 
 /// Finds the distance to a waypoint.
 double distance_to_waypoint(
@@ -57,6 +57,7 @@ std::pair<const rmf_traffic::agv::Graph::Lane*, double>
     const rmf_traffic::agv::Graph& graph,
     const Eigen::Vector2d& coordinates);
 
+} // namespace manager
 } // namespace free_fleet
 
-#endif // SRC__UTILITIES__UTILITIES_HPP
+#endif // SRC__MANAGER__UTILITIES__UTILITIES_HPP

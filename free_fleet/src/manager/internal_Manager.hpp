@@ -15,18 +15,19 @@
  *
 */
 
-#ifndef SRC__INTERNAL_MANAGER_HPP
-#define SRC__INTERNAL_MANAGER_HPP
+#ifndef SRC__MANAGER__INTERNAL_MANAGER_HPP
+#define SRC__MANAGER__INTERNAL_MANAGER_HPP
 
 #include <mutex>
 #include <atomic>
 #include <thread>
 
-#include <free_fleet/Manager.hpp>
+#include <free_fleet/manager/Manager.hpp>
 
 #include "requests/RequestInfo.hpp"
 
 namespace free_fleet {
+namespace manager {
 
 //==============================================================================
 class Manager::Implementation
@@ -72,14 +73,13 @@ public:
   TimeNow time_now_fn;
   RobotUpdatedCallback robot_updated_callback_fn;
 
-  std::unordered_map<std::string, std::shared_ptr<agv::RobotInfo>> robots;
+  std::unordered_map<std::string, std::shared_ptr<RobotInfo>> robots;
 
   // Reserving task ID 0 for empty tasks
   const uint32_t idle_task_id = 0;
   uint32_t current_task_id = idle_task_id;
-  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
-    tasks;
-  std::unordered_map<uint32_t, std::shared_ptr<requests::RequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<RequestInfo>> tasks;
+  std::unordered_map<uint32_t, std::shared_ptr<RequestInfo>>
     unacknowledged_tasks;
 
   std::atomic<bool> started = false;
@@ -87,6 +87,7 @@ public:
   std::thread async_thread;
 };
 
+} // namespace manager
 } // namespace free_fleet
 
-#endif // SRC__INTERNAL_MANAGER_HPP
+#endif // SRC__INTERNAL__MANAGER__MANAGER_HPP

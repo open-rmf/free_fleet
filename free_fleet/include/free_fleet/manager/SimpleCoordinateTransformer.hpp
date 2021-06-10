@@ -15,24 +15,23 @@
  *
  */
 
-#ifndef INCLUDE_FREE_FLEET__SIMPLECOORDINATETRANSFORMER_HPP
-#define INCLUDE_FREE_FLEET__SIMPLECOORDINATETRANSFORMER_HPP
+#ifndef INCLUDE__FREE_FLEET__MANAGER__SIMPLECOORDINATETRANSFORMER_HPP
+#define INCLUDE__FREE_FLEET__MANAGER__SIMPLECOORDINATETRANSFORMER_HPP
 
 #include <memory>
 #include <rmf_utils/impl_ptr.hpp>
-#include <free_fleet/CoordinateTransformer.hpp>
+#include <free_fleet/manager/CoordinateTransformer.hpp>
 
 namespace free_fleet {
+namespace manager {
 
 class SimpleCoordinateTransformer : public CoordinateTransformer
 {
 public:
 
-  using SharedPtr = std::shared_ptr<SimpleCoordinateTransformer>;
-
   /// Factory function that creates an instance of the Simple Coordinate
   /// Transformer, which handles scale, translation in x, y, and yaw rotations.
-  static SharedPtr make(
+  static std::shared_ptr<SimpleCoordinateTransformer> make(
     double scale,
     double translation_x,
     double translation_y,
@@ -50,6 +49,7 @@ private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
+} // namespace manager
 } // namespace free_fleet
 
-#endif // INCLUDE_FREE_FLEET__SIMPLECOORDINATETRANSFORMER_HPP
+#endif // INCLUDE__FREE_FLEET__MANAGER__SIMPLECOORDINATETRANSFORMER_HPP

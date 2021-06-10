@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef SRC__AGV__INTERNAL_CLIENT_HPP
-#define SRC__AGV__INTERNAL_CLIENT_HPP
+#ifndef SRC__CLIENT__INTERNAL_CLIENT_HPP
+#define SRC__CLIENT__INTERNAL_CLIENT_HPP
 
 #include <atomic>
 #include <memory>
@@ -25,7 +25,7 @@
 #include <variant>
 #include <unordered_set>
 
-#include <free_fleet/agv/Client.hpp>
+#include <free_fleet/client/Client.hpp>
 #include <free_fleet/messages/DockRequest.hpp>
 #include <free_fleet/messages/PauseRequest.hpp>
 #include <free_fleet/messages/ResumeRequest.hpp>
@@ -33,7 +33,7 @@
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
 namespace free_fleet {
-namespace agv {
+namespace client {
 
 //==============================================================================
 class Client::Implementation
@@ -109,7 +109,7 @@ public:
   std::thread async_thread;
 };
 
-} // namespace agv
+} // namespace client
 } // namespace free_fleet
 
-#endif // SRC__AGV__INTERNAL_CLIENT_HPP
+#endif // SRC__CLIENT__INTERNAL_CLIENT_HPP

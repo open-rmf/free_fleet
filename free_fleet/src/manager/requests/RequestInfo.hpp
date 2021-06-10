@@ -15,16 +15,16 @@
  *
 */
 
-#ifndef SRC__REQUESTS__REQUESTINFO_HPP
-#define SRC__REQUESTS__REQUESTINFO_HPP
+#ifndef SRC__MANAGER__REQUESTS__REQUESTINFO_HPP
+#define SRC__MANAGER__REQUESTS__REQUESTINFO_HPP
 
 #include <utility>
 #include <rmf_traffic/Time.hpp>
 #include <rmf_utils/optional.hpp>
-#include <free_fleet/agv/RobotInfo.hpp>
+#include <free_fleet/manager/RobotInfo.hpp>
 
 namespace free_fleet {
-namespace requests {
+namespace manager {
 
 //==============================================================================
 class RequestInfo
@@ -58,13 +58,13 @@ public:
   ///   Pair consists of the tracking state, as well as the index of the
   ///   component that it is tracked to. If the tracking state is Lost, the
   ///   second value is meaningless.
-  virtual std::pair<agv::RobotInfo::TrackingState, std::size_t> track_robot(
-    const agv::RobotInfo& robot_info,
+  virtual std::pair<RobotInfo::TrackingState, std::size_t> track_robot(
+    const RobotInfo& robot_info,
     const messages::RobotState& new_state) const = 0;
 };
 
 //==============================================================================
-} // namespace requests
+} // namespace manager
 } // namespace free_fleet
 
-#endif // SRC__REQUESTS__REQUESTINFO_HPP
+#endif // SRC__MANAGER__REQUESTS__REQUESTINFO_HPP

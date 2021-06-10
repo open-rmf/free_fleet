@@ -17,9 +17,10 @@
 
 #include <iostream>
 #include <Eigen/Geometry>
-#include <free_fleet/SimpleCoordinateTransformer.hpp>
+#include <free_fleet/manager/SimpleCoordinateTransformer.hpp>
 
 namespace free_fleet {
+namespace manager {
 
 //==============================================================================
 class SimpleCoordinateTransformer::Implementation
@@ -32,11 +33,12 @@ public:
 };
 
 //==============================================================================
-SimpleCoordinateTransformer::SharedPtr SimpleCoordinateTransformer::make(
+auto SimpleCoordinateTransformer::make(
   double scale,
   double translation_x,
   double translation_y,
   double rotation_yaw)
+  -> std::shared_ptr<SimpleCoordinateTransformer>
 {
   if (scale < 0)
   {
@@ -45,7 +47,8 @@ SimpleCoordinateTransformer::SharedPtr SimpleCoordinateTransformer::make(
     return nullptr;
   }
 
-  SharedPtr transformer(new SimpleCoordinateTransformer);
+  std::shared_ptr<SimpleCoordinateTransformer> transformer(
+    new SimpleCoordinateTransformer);
   transformer->_pimpl = rmf_utils::make_impl<Implementation>(
     Implementation{
       scale,
@@ -98,4 +101,5 @@ messages::Location SimpleCoordinateTransformer::backward_transform(
 }
 
 //==============================================================================
+} // namespace manager
 } // namespace free_fleet

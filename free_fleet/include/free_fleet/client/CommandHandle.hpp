@@ -15,19 +15,16 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__AGV__COMMANDHANDLE_HPP
-#define INCLUDE__FREE_FLEET__AGV__COMMANDHANDLE_HPP
+#ifndef INCLUDE__FREE_FLEET__CLIENT__COMMANDHANDLE_HPP
+#define INCLUDE__FREE_FLEET__CLIENT__COMMANDHANDLE_HPP
 
 #include <vector>
 #include <functional>
 
 #include <free_fleet/messages/Waypoint.hpp>
 
-// Heavily referenced from RobotCommandHandle
-// https://github.com/osrf/rmf_core/blob/master/rmf_fleet_adapter/include/rmf_fleet_adapter/agv/RobotCommandHandle.hpp
-
 namespace free_fleet {
-namespace agv {
+namespace client {
 
 //==============================================================================
 /// Implement this class to execute commands on the robot.
@@ -89,7 +86,7 @@ public:
   virtual ~CommandHandle() = default;
 };
 
-} // namespace agv
+} // namespace client
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__AGV__COMMANDHANDLE_HPP
+#endif // INCLUDE__FREE_FLEET__CLIENT__COMMANDHANDLE_HPP

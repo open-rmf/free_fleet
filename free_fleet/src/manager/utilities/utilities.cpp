@@ -18,6 +18,7 @@
 #include "utilities.hpp"
 
 namespace free_fleet {
+namespace manager {
 
 //==============================================================================
 double distance_to_waypoint(
@@ -121,4 +122,5 @@ std::pair<const rmf_traffic::agv::Graph::Lane*, double>
 }
 
 //==============================================================================
+} // namespace manager
 } // namespace free_fleet

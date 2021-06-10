@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef INCLUDE__FREE_FLEET__AGV__ROBOTINFO_HPP
-#define INCLUDE__FREE_FLEET__AGV__ROBOTINFO_HPP
+#ifndef INCLUDE__FREE_FLEET__MANAGER__ROBOTINFO_HPP
+#define INCLUDE__FREE_FLEET__MANAGER__ROBOTINFO_HPP
 
 #include <string>
 #include <memory>
@@ -28,7 +28,7 @@
 #include <free_fleet/messages/RobotState.hpp>
 
 namespace free_fleet {
-namespace agv {
+namespace manager {
 
 class RobotInfo : public std::enable_shared_from_this<RobotInfo>
 {
@@ -82,7 +82,7 @@ private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
-} // namespace agv
+} // namespace manager 
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__AGV__ROBOTINFO_HPP
+#endif // INCLUDE__FREE_FLEET__MANAGER__ROBOTINFO_HPP

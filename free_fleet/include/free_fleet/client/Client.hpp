@@ -15,25 +15,23 @@
  *
  */
 
-#ifndef INCLUDE__FREE_FLEET__AGV__CLIENT_HPP
-#define INCLUDE__FREE_FLEET__AGV__CLIENT_HPP
+#ifndef INCLUDE__FREE_FLEET__CLIENT__CLIENT_HPP
+#define INCLUDE__FREE_FLEET__CLIENT__CLIENT_HPP
 
 #include <memory>
 
 #include <rmf_utils/impl_ptr.hpp>
 
-#include <free_fleet/agv/StatusHandle.hpp>
-#include <free_fleet/agv/CommandHandle.hpp>
+#include <free_fleet/client/StatusHandle.hpp>
+#include <free_fleet/client/CommandHandle.hpp>
 #include <free_fleet/transport/ClientMiddleware.hpp>
 
 namespace free_fleet {
-namespace agv {
+namespace client {
 
 class Client
 {
 public:
-
-  using SharedPtr = std::shared_ptr<Client>;
 
   /// Factory function that creates an instance of the Free Fleet Client.
   ///
@@ -60,7 +58,7 @@ public:
   ///   Shared pointer to a client instance that is ready to be started. If
   ///   any of the initializations fail during during this function's
   ///   execution, a nullptr will be returned.
-  static SharedPtr make(
+  static std::shared_ptr<Client> make(
     const std::string& robot_name,
     const std::string& robot_model,
     std::shared_ptr<CommandHandle> command_handle,
@@ -96,7 +94,7 @@ private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
-} // namespace agv
+} // namespace client
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__AGV__CLIENT_HPP
+#endif // INCLUDE__FREE_FLEET__CLIENT__CLIENT_HPP

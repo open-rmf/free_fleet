@@ -16,8 +16,8 @@
 */
 
 #include "SimpleRequestInfo.hpp"
+#include "../internal_RobotInfo.hpp"
 #include "../utilities/utilities.hpp"
-#include "../agv/internal_RobotInfo.hpp"
 
 #include <free_fleet/messages/DockRequest.hpp>
 #include <free_fleet/messages/PauseRequest.hpp>
@@ -26,50 +26,50 @@
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
 namespace free_fleet {
-namespace requests {
+namespace manager {
 
 //==============================================================================
 template <>
 auto SimpleRequestInfo<messages::DockRequest>::track_robot(
-  const agv::RobotInfo& robot_info,
+  const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<agv::RobotInfo::TrackingState, std::size_t>
+  -> std::pair<RobotInfo::TrackingState, std::size_t>
 {
-  return agv::RobotInfo::Implementation::get(robot_info).track_through_graph(
+  return RobotInfo::Implementation::get(robot_info).track_through_graph(
     new_state);
 }
 
 //==============================================================================
 template <>
 auto SimpleRequestInfo<messages::PauseRequest>::track_robot(
-  const agv::RobotInfo& robot_info,
+  const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<agv::RobotInfo::TrackingState, std::size_t>
+  -> std::pair<RobotInfo::TrackingState, std::size_t>
 {
-  return agv::RobotInfo::Implementation::get(robot_info).track_through_graph(
+  return RobotInfo::Implementation::get(robot_info).track_through_graph(
     new_state);
 }
 
 //==============================================================================
 template <>
 auto SimpleRequestInfo<messages::ResumeRequest>::track_robot(
-  const agv::RobotInfo& robot_info,
+  const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<agv::RobotInfo::TrackingState, std::size_t>
+  -> std::pair<RobotInfo::TrackingState, std::size_t>
 {
-  return agv::RobotInfo::Implementation::get(robot_info).track_through_graph(
+  return RobotInfo::Implementation::get(robot_info).track_through_graph(
     new_state);
 }
 
 //==============================================================================
 template <>
 auto SimpleRequestInfo<messages::RelocalizationRequest>::track_robot(
-  const agv::RobotInfo& robot_info,
+  const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<agv::RobotInfo::TrackingState, std::size_t>
+  -> std::pair<RobotInfo::TrackingState, std::size_t>
 {
   const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
-  auto impl = agv::RobotInfo::Implementation::get(robot_info);
+  auto impl = RobotInfo::Implementation::get(robot_info);
   
   double distance_to_wp =
     distance_to_waypoint(
@@ -79,7 +79,7 @@ auto SimpleRequestInfo<messages::RelocalizationRequest>::track_robot(
   {
     // We are very close to the provided waypoint
     return std::make_pair(
-      agv::RobotInfo::TrackingState::OnWaypoint,
+      RobotInfo::TrackingState::OnWaypoint,
       _request.last_visited_waypoint_index);
   }
 
@@ -91,16 +91,16 @@ auto SimpleRequestInfo<messages::RelocalizationRequest>::track_robot(
 //==============================================================================
 template <>
 auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
-  const agv::RobotInfo& robot_info,
+  const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<agv::RobotInfo::TrackingState, std::size_t>
+  -> std::pair<RobotInfo::TrackingState, std::size_t>
 {
   // We will use the target waypoints in the navigation request as
   // additional information to help with tracking.
 
   const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
   auto prev_estimation = robot_info.tracking_estimation();
-  auto impl = agv::RobotInfo::Implementation::get(robot_info);
+  auto impl = RobotInfo::Implementation::get(robot_info);
 
   const std::size_t next_wp_index =
     _request.path[new_state.path_target_index].index;
@@ -119,7 +119,7 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
   {
     // The robot has reached the next waypoint on this navigation request.
     return std::make_pair(
-      agv::RobotInfo::TrackingState::OnWaypoint, next_wp_index);
+      RobotInfo::TrackingState::OnWaypoint, next_wp_index);
   }
   else if (prev_wp_index.has_value())
   {
@@ -131,7 +131,7 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
       // The robot is still in the previous waypoint on this navigation
       // request.
       return std::make_pair(
-        agv::RobotInfo::TrackingState::OnWaypoint, prev_wp_index.value());
+        RobotInfo::TrackingState::OnWaypoint, prev_wp_index.value());
     }
     else if (curr_lane && is_within_lane(*curr_lane, *impl.graph, curr_loc))
     {
@@ -143,7 +143,7 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
       }
 
       return std::make_pair(
-        agv::RobotInfo::TrackingState::OnLane, curr_lane->index());
+        RobotInfo::TrackingState::OnLane, curr_lane->index());
     }
   }
   
@@ -151,9 +151,9 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
     "from the next waypoint, and there is no path from the previous "
     "waypoint, it is LOST until a clearer state comes in." << std::endl;
   return std::make_pair(
-    agv::RobotInfo::TrackingState::Lost, prev_estimation.second);
+    RobotInfo::TrackingState::Lost, prev_estimation.second);
 }
 
 //==============================================================================
-} // namespace requests
+} // namespace manager
 } // namesapce free_fleet
