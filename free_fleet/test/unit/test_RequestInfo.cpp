@@ -22,7 +22,6 @@
 
 #include <rmf_utils/catch.hpp>
 
-
 #include <free_fleet/messages/DockRequest.hpp>
 #include <free_fleet/messages/PauseRequest.hpp>
 #include <free_fleet/messages/ResumeRequest.hpp>
@@ -31,12 +30,12 @@
 
 #include <rmf_traffic/Time.hpp>
 
-#include "src/requests/RequestInfo.hpp"
-#include "src/requests/SimpleRequestInfo.hpp"
+#include "src/manager/requests/RequestInfo.hpp"
+#include "src/manager/requests/SimpleRequestInfo.hpp"
 
 SCENARIO("Testing request info API")
 {
-  using RequestInfo = free_fleet::requests::RequestInfo;
+  using RequestInfo = free_fleet::manager::RequestInfo;
 
   const std::string robot_name = "test_robot";
   const uint32_t initial_task_id = 0;
@@ -53,7 +52,7 @@ SCENARIO("Testing request info API")
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
-      new free_fleet::requests::SimpleRequestInfo<DockRequest>(
+      new free_fleet::manager::SimpleRequestInfo<DockRequest>(
         request,
         [&](const DockRequest&){request_sent = true;},
         time_now));
@@ -83,7 +82,7 @@ SCENARIO("Testing request info API")
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
-      new free_fleet::requests::SimpleRequestInfo<PauseRequest>(
+      new free_fleet::manager::SimpleRequestInfo<PauseRequest>(
         request,
         [&](const PauseRequest&){request_sent = true;},
         time_now));
@@ -113,7 +112,7 @@ SCENARIO("Testing request info API")
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
-      new free_fleet::requests::SimpleRequestInfo<ResumeRequest>(
+      new free_fleet::manager::SimpleRequestInfo<ResumeRequest>(
         request,
         [&](const ResumeRequest&){request_sent = true;},
         time_now));
@@ -152,7 +151,7 @@ SCENARIO("Testing request info API")
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
-      new free_fleet::requests::SimpleRequestInfo<RelocalizationRequest>(
+      new free_fleet::manager::SimpleRequestInfo<RelocalizationRequest>(
         request,
         [&](const RelocalizationRequest&){request_sent = true;},
         time_now));
@@ -207,7 +206,7 @@ SCENARIO("Testing request info API")
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
-      new free_fleet::requests::SimpleRequestInfo<NavigationRequest>(
+      new free_fleet::manager::SimpleRequestInfo<NavigationRequest>(
         request,
         [&](const NavigationRequest&){request_sent = true;},
         time_now));

@@ -21,9 +21,9 @@
 
 #include <rmf_utils/catch.hpp>
 
-#include <free_fleet/Manager.hpp>
+#include <free_fleet/manager/Manager.hpp>
 #include <free_fleet/messages/RobotState.hpp>
-#include <free_fleet/SimpleCoordinateTransformer.hpp>
+#include <free_fleet/manager/SimpleCoordinateTransformer.hpp>
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
@@ -36,7 +36,7 @@ SCENARIO("Test make Manager")
   std::shared_ptr<rmf_traffic::agv::Graph> graph(new rmf_traffic::agv::Graph);
   std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
     new free_fleet::MockServerMiddleware());
-  auto ct = free_fleet::SimpleCoordinateTransformer::make(
+  auto ct = free_fleet::manager::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
     0.0,
@@ -44,7 +44,7 @@ SCENARIO("Test make Manager")
   free_fleet::Manager::TimeNow time_now_fn =
     [](){ return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const free_fleet::agv::RobotInfo&){};
+    [](const free_fleet::manager::RobotInfo&){};
   
   GIVEN("All valid")
   {

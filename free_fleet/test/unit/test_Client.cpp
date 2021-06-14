@@ -18,12 +18,12 @@
 #include <rmf_utils/catch.hpp>
 
 #include <iostream>
-#include <free_fleet/agv/Client.hpp>
+#include <free_fleet/client/Client.hpp>
 
 #include "mock_StatusHandle.hpp"
 #include "mock_CommandHandle.hpp"
 #include "mock_ClientMiddleware.hpp"
-#include "src/agv/internal_Client.hpp"
+#include "src/client/internal_Client.hpp"
 
 SCENARIO("Verify that a client can run")
 {
@@ -37,7 +37,7 @@ SCENARIO("Verify that a client can run")
 
   GIVEN("All valid")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       robot_name,
       robot_model,
       ch,
@@ -49,7 +49,7 @@ SCENARIO("Verify that a client can run")
 
   GIVEN("Starting with bad frequency")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       robot_name,
       robot_model,
       ch,
@@ -63,14 +63,14 @@ SCENARIO("Verify that a client can run")
 
   GIVEN("Running once")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       robot_name,
       robot_model,
       ch,
       sh,
       std::move(m));
     REQUIRE(client);
-    auto& impl = free_fleet::agv::Client::Implementation::get(*client);
+    auto& impl = free_fleet::Client::Implementation::get(*client);
     CHECK_NOTHROW(impl.run_once());
     CHECK(!client->started());
   }
@@ -146,7 +146,7 @@ SCENARIO("Testing receiving requests")
   auto sh = std::make_shared<free_fleet::MockStatusHandle>();
   std::unique_ptr<free_fleet::transport::ClientMiddleware> m(
     new MockClientMiddlewareWithServer());
-  auto client = free_fleet::agv::Client::make(
+  auto client = free_fleet::Client::make(
     robot_name,
     robot_model,
     ch,
@@ -154,7 +154,7 @@ SCENARIO("Testing receiving requests")
     std::move(m));
   REQUIRE(client);
 
-  auto& impl = free_fleet::agv::Client::Implementation::get(*client);
+  auto& impl = free_fleet::Client::Implementation::get(*client);
   impl.set_callbacks();
   MockClientMiddlewareWithServer* middleware =
     dynamic_cast<MockClientMiddlewareWithServer*>(impl.middleware.get());

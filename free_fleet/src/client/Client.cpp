@@ -27,7 +27,6 @@
 #include "internal_Client.hpp"
 
 namespace free_fleet {
-namespace client {
 
 //==============================================================================
 bool Client::Implementation::connected() const
@@ -159,8 +158,8 @@ void Client::Implementation::handle_relocalization_request(
 auto Client::make(
   const std::string& robot_name,
   const std::string& robot_model,
-  std::shared_ptr<CommandHandle> command_handle,
-  std::shared_ptr<StatusHandle> status_handle,
+  std::shared_ptr<client::CommandHandle> command_handle,
+  std::shared_ptr<client::StatusHandle> status_handle,
   std::unique_ptr<transport::ClientMiddleware> middleware)
   -> std::shared_ptr<Client>
 {
@@ -227,5 +226,4 @@ bool Client::started() const
 
 //==============================================================================
 
-} // namespace client
 } // namespace free_fleet

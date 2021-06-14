@@ -36,7 +36,6 @@
 #include "requests/SimpleRequestInfo.hpp"
 
 namespace free_fleet {
-namespace manager {
 
 //==============================================================================
 bool Manager::Implementation::connected() const
@@ -71,7 +70,7 @@ void Manager::Implementation::run_once()
     bool new_robot = r_it == robots.end();
     if (new_robot)
     {
-      auto new_robot = RobotInfo::Implementation::make(
+      auto new_robot = manager::RobotInfo::Implementation::make(
         transformed_state,
         graph,
         time_now_fn());
@@ -84,7 +83,7 @@ void Manager::Implementation::run_once()
     }
     else
     {
-      RobotInfo::Implementation::get(*r_it->second).update_state(
+      manager::RobotInfo::Implementation::get(*r_it->second).update_state(
         transformed_state, time_now_fn());
     }
 
@@ -141,7 +140,7 @@ auto Manager::make(
   const std::string& fleet_name,
   std::shared_ptr<const rmf_traffic::agv::Graph> graph,
   std::unique_ptr<transport::ServerMiddleware> middleware,
-  std::shared_ptr<const CoordinateTransformer> to_robot_transform,
+  std::shared_ptr<const manager::CoordinateTransformer> to_robot_transform,
   TimeNow time_now_fn,
   RobotUpdatedCallback robot_updated_callback_fn)
   -> std::shared_ptr<Manager>
@@ -160,7 +159,7 @@ auto Manager::make(
     return make_error_fn("Provided free fleet middleware is invalid.");
   if (!to_robot_transform)
     return make_error_fn(
-      "Provided free fleet CoordinateTransformer is invalid.");
+      "Provided free fleet manager::CoordinateTransformer is invalid.");
   if (!time_now_fn)
     return make_error_fn("Provided time function is invalid.");
 
@@ -224,7 +223,7 @@ auto Manager::robot_names() -> std::vector<std::string>
 
 //==============================================================================
 auto Manager::robot(const std::string& robot_name) 
-  -> std::shared_ptr<const RobotInfo>
+  -> std::shared_ptr<const manager::RobotInfo>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   const auto it = _pimpl->robots.find(robot_name);
@@ -234,10 +233,11 @@ auto Manager::robot(const std::string& robot_name)
 }
 
 //==============================================================================
-auto Manager::all_robots() -> std::vector<std::shared_ptr<const RobotInfo>>
+auto Manager::all_robots()
+  -> std::vector<std::shared_ptr<const manager::RobotInfo>>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  std::vector<std::shared_ptr<const RobotInfo>> infos;
+  std::vector<std::shared_ptr<const manager::RobotInfo>> infos;
   infos.reserve(_pimpl->robots.size());
   for (const auto it : _pimpl->robots)
   {
@@ -266,8 +266,8 @@ auto Manager::request_pause(const std::string& robot_name)
     _pimpl->current_task_id
   };
 
-  std::shared_ptr<RequestInfo> request_info(
-    new SimpleRequestInfo<messages::PauseRequest>(
+  std::shared_ptr<manager::RequestInfo> request_info(
+    new manager::SimpleRequestInfo<messages::PauseRequest>(
       request,
       [this](const messages::PauseRequest& request_msg)
     {
@@ -301,8 +301,8 @@ auto Manager::request_resume(const std::string& robot_name)
     _pimpl->current_task_id
   };
 
-  std::shared_ptr<RequestInfo> request_info(
-    new SimpleRequestInfo<messages::ResumeRequest>(
+  std::shared_ptr<manager::RequestInfo> request_info(
+    new manager::SimpleRequestInfo<messages::ResumeRequest>(
       request,
       [this](const messages::ResumeRequest& request_msg)
     {
@@ -338,8 +338,8 @@ auto Manager::request_dock(
     dock_name
   };
 
-  std::shared_ptr<RequestInfo> request_info(
-    new SimpleRequestInfo<messages::DockRequest>(
+  std::shared_ptr<manager::RequestInfo> request_info(
+    new manager::SimpleRequestInfo<messages::DockRequest>(
       request,
       [this](const messages::DockRequest& request_msg)
     {
@@ -402,8 +402,8 @@ auto Manager::request_relocalization(
     last_visited_waypoint_index
   };
 
-  std::shared_ptr<RequestInfo> request_info(
-    new SimpleRequestInfo<
+  std::shared_ptr<manager::RequestInfo> request_info(
+    new manager::SimpleRequestInfo<
       messages::RelocalizationRequest>(
         request,
         [this](const messages::RelocalizationRequest& request_msg)
@@ -494,8 +494,8 @@ auto Manager::request_navigation(
     transformed_path
   };
 
-  std::shared_ptr<RequestInfo> request_info(
-    new SimpleRequestInfo<messages::NavigationRequest>(
+  std::shared_ptr<manager::RequestInfo> request_info(
+    new manager::SimpleRequestInfo<messages::NavigationRequest>(
       request,
       [this](const messages::NavigationRequest& request_msg)
     {
@@ -510,5 +510,4 @@ auto Manager::request_navigation(
 }
 
 //==============================================================================
-} // namespace manager
 } // namespace free_fleet

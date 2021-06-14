@@ -22,12 +22,12 @@
 
 #include <free_fleet/messages/RobotState.hpp>
 
-#include <free_fleet/agv/RobotInfo.hpp>
+#include <free_fleet/manager/RobotInfo.hpp>
 
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
-#include "src/agv/internal_RobotInfo.hpp"
+#include "src/manager/internal_RobotInfo.hpp"
 
 SCENARIO("Make RobotInfo")
 {
@@ -61,7 +61,7 @@ SCENARIO("Make RobotInfo")
   GIVEN("Valid traffic graph")
   {
     auto robot_info =
-      free_fleet::agv::RobotInfo::Implementation::make(
+      free_fleet::manager::RobotInfo::Implementation::make(
         initial_state,
         graph,
         initial_time);
@@ -71,7 +71,7 @@ SCENARIO("Make RobotInfo")
   GIVEN("Invalid traffic graph")
   {
     auto robot_info =
-      free_fleet::agv::RobotInfo::Implementation::make(
+      free_fleet::manager::RobotInfo::Implementation::make(
         initial_state,
         nullptr,
         initial_time);
@@ -82,7 +82,7 @@ SCENARIO("Make RobotInfo")
   {
     initial_state.name = "";
     auto robot_info =
-      free_fleet::agv::RobotInfo::Implementation::make(
+      free_fleet::manager::RobotInfo::Implementation::make(
         initial_state,
         graph,
         initial_time);
@@ -93,7 +93,7 @@ SCENARIO("Make RobotInfo")
   {
     initial_state.model = "";
     auto robot_info =
-      free_fleet::agv::RobotInfo::Implementation::make(
+      free_fleet::manager::RobotInfo::Implementation::make(
         initial_state,
         graph,
         initial_time);

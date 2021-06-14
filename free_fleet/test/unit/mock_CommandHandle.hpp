@@ -18,11 +18,11 @@
 #ifndef TEST__UNIT__MOCK_COMMANDHANDLE_HPP
 #define TEST__UNIT__MOCK_COMMANDHANDLE_HPP
 
-#include <free_fleet/agv/CommandHandle.hpp>
+#include <free_fleet/client/CommandHandle.hpp>
 
 namespace free_fleet {
 
-class MockCommandHandle : public agv::CommandHandle
+class MockCommandHandle : public client::CommandHandle
 {
 public:
 

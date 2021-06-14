@@ -27,7 +27,6 @@
 #include "requests/RequestInfo.hpp"
 
 namespace free_fleet {
-namespace manager {
 
 //==============================================================================
 class Manager::Implementation
@@ -69,17 +68,17 @@ public:
   std::string fleet_name;
   std::shared_ptr<const rmf_traffic::agv::Graph> graph;
   std::unique_ptr<transport::ServerMiddleware> middleware;
-  std::shared_ptr<const CoordinateTransformer> to_robot_transform;
+  std::shared_ptr<const manager::CoordinateTransformer> to_robot_transform;
   TimeNow time_now_fn;
   RobotUpdatedCallback robot_updated_callback_fn;
 
-  std::unordered_map<std::string, std::shared_ptr<RobotInfo>> robots;
+  std::unordered_map<std::string, std::shared_ptr<manager::RobotInfo>> robots;
 
   // Reserving task ID 0 for empty tasks
   const uint32_t idle_task_id = 0;
   uint32_t current_task_id = idle_task_id;
-  std::unordered_map<uint32_t, std::shared_ptr<RequestInfo>> tasks;
-  std::unordered_map<uint32_t, std::shared_ptr<RequestInfo>>
+  std::unordered_map<uint32_t, std::shared_ptr<manager::RequestInfo>> tasks;
+  std::unordered_map<uint32_t, std::shared_ptr<manager::RequestInfo>>
     unacknowledged_tasks;
 
   std::atomic<bool> started = false;
@@ -87,7 +86,6 @@ public:
   std::thread async_thread;
 };
 
-} // namespace manager
 } // namespace free_fleet
 
 #endif // SRC__INTERNAL__MANAGER__MANAGER_HPP

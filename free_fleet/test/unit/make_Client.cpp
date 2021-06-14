@@ -19,7 +19,7 @@
 
 #include <rmf_utils/catch.hpp>
 
-#include <free_fleet/agv/Client.hpp>
+#include <free_fleet/client/Client.hpp>
 
 #include "mock_StatusHandle.hpp"
 #include "mock_CommandHandle.hpp"
@@ -34,7 +34,7 @@ SCENARIO("Verify that a Client can be created")
 
   GIVEN("Empty robot name")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       "",
       "mock_robot_model",
       ch,
@@ -45,7 +45,7 @@ SCENARIO("Verify that a Client can be created")
 
   GIVEN("Empty robot model")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       "mock_robot_name",
       "",
       ch,
@@ -56,7 +56,7 @@ SCENARIO("Verify that a Client can be created")
 
   GIVEN("Invalid command handle")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       "mock_robot_name",
       "mock_robot_model",
       nullptr,
@@ -67,7 +67,7 @@ SCENARIO("Verify that a Client can be created")
 
   GIVEN("Invalid status handle")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       "mock_robot_name",
       "mock_robot_model",
       ch,
@@ -78,7 +78,7 @@ SCENARIO("Verify that a Client can be created")
 
   GIVEN("Invalid middleware")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       "mock_robot_name",
       "mock_robot_model",
       ch,
@@ -89,7 +89,7 @@ SCENARIO("Verify that a Client can be created")
 
   GIVEN("Valid client")
   {
-    auto client = free_fleet::agv::Client::make(
+    auto client = free_fleet::Client::make(
       "mock_robot_name",
       "mock_robot_model",
       ch,

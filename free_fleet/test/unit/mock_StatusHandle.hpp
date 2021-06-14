@@ -18,11 +18,11 @@
 #ifndef TEST__UNIT__MOCK_STATUSHANDLE_HPP
 #define TEST__UNIT__MOCK_STATUSHANDLE_HPP
 
-#include <free_fleet/agv/StatusHandle.hpp>
+#include <free_fleet/client/StatusHandle.hpp>
 
 namespace free_fleet {
 
-class MockStatusHandle : public agv::StatusHandle
+class MockStatusHandle : public client::StatusHandle
 {
 public:
 

@@ -37,7 +37,6 @@
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
 namespace free_fleet {
-namespace manager {
 
 class Manager
 {
@@ -49,7 +48,7 @@ public:
   /// This callback function can be used to work with different applications,
   /// triggered every time a robot is updated with an incoming new state.
   using RobotUpdatedCallback =
-    std::function<void(const RobotInfo& robot_info)>;
+    std::function<void(const manager::RobotInfo& robot_info)>;
 
   /// Factory function that creates an instance of the Free Fleet Manager.
   ///
@@ -64,7 +63,7 @@ public:
     const std::string& fleet_name,
     std::shared_ptr<const rmf_traffic::agv::Graph> graph,
     std::unique_ptr<transport::ServerMiddleware> middleware,
-    std::shared_ptr<const CoordinateTransformer> to_robot_transform,
+    std::shared_ptr<const manager::CoordinateTransformer> to_robot_transform,
     TimeNow time_now_fn,
     RobotUpdatedCallback robot_updated_callback_fn);
 
@@ -97,12 +96,13 @@ public:
   ///
   /// \param[in] robot_name
   /// \return
-  std::shared_ptr<const RobotInfo> robot(const std::string& robot_name);
+  std::shared_ptr<const manager::RobotInfo> robot(
+    const std::string& robot_name);
 
   /// Gets all the available RobotInfo that has been registered with the manager
   ///
   /// \return
-  std::vector<std::shared_ptr<const RobotInfo>> all_robots();
+  std::vector<std::shared_ptr<const manager::RobotInfo>> all_robots();
 
   /// Sends out a pause request to a robot.
   ///
@@ -184,7 +184,6 @@ private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
-} // namespace manager
 } // namespace free_fleet
 
 #endif // INCLUDE__FREE_FLEET__MANAGER__MANAGER_HPP

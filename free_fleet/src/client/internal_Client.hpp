@@ -33,7 +33,6 @@
 #include <free_fleet/messages/RelocalizationRequest.hpp>
 
 namespace free_fleet {
-namespace client {
 
 //==============================================================================
 class Client::Implementation
@@ -97,8 +96,8 @@ public:
   std::string robot_name;
   std::string robot_model;
 
-  std::shared_ptr<CommandHandle> command_handle;
-  std::shared_ptr<StatusHandle> status_handle;
+  std::shared_ptr<client::CommandHandle> command_handle;
+  std::shared_ptr<client::StatusHandle> status_handle;
   std::unique_ptr<transport::ClientMiddleware> middleware;
 
   // TODO(AA): handle overflow of uint32_t
@@ -109,7 +108,6 @@ public:
   std::thread async_thread;
 };
 
-} // namespace client
 } // namespace free_fleet
 
 #endif // SRC__CLIENT__INTERNAL_CLIENT_HPP

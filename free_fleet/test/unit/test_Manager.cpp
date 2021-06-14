@@ -20,14 +20,14 @@
 
 #include <rmf_utils/catch.hpp>
 
-#include <free_fleet/Manager.hpp>
+#include <free_fleet/manager/Manager.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
 #include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/Location.hpp>
-#include <free_fleet/SimpleCoordinateTransformer.hpp>
+#include <free_fleet/manager/SimpleCoordinateTransformer.hpp>
 
-#include "src/internal_Manager.hpp"
-#include "src/agv/internal_RobotInfo.hpp"
+#include "src/manager/internal_Manager.hpp"
+#include "src/manager/internal_RobotInfo.hpp"
 
 #include "mock_ServerMiddleware.hpp"
 
@@ -53,7 +53,7 @@ SCENARIO("Test Manager API")
 
   std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
     new free_fleet::MockServerMiddleware());
-  auto ct = free_fleet::SimpleCoordinateTransformer::make(
+  auto ct = free_fleet::manager::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
     0.0,
@@ -61,7 +61,7 @@ SCENARIO("Test Manager API")
   free_fleet::Manager::TimeNow time_now_fn =
     [](){ return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const free_fleet::agv::RobotInfo&){};
+    [](const free_fleet::manager::RobotInfo&){};
 
   auto manager = free_fleet::Manager::make(
     fleet_name,
@@ -147,7 +147,7 @@ SCENARIO("Testing manager API with dummy robots")
 
   std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
     new free_fleet::MockServerMiddleware());
-  auto ct = free_fleet::SimpleCoordinateTransformer::make(
+  auto ct = free_fleet::manager::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
     0.0,
@@ -155,7 +155,7 @@ SCENARIO("Testing manager API with dummy robots")
   free_fleet::Manager::TimeNow time_now_fn =
     [](){ return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const free_fleet::agv::RobotInfo&){};
+    [](const free_fleet::manager::RobotInfo&){};
 
   auto manager = free_fleet::Manager::make(
     fleet_name,
@@ -181,7 +181,7 @@ SCENARIO("Testing manager API with dummy robots")
 
   initial_state.name = "test_robot_1";
   auto robot_info_1 =
-    free_fleet::agv::RobotInfo::Implementation::make(
+    free_fleet::manager::RobotInfo::Implementation::make(
       initial_state,
       graph,
       initial_time);
@@ -189,7 +189,7 @@ SCENARIO("Testing manager API with dummy robots")
 
   initial_state.name = "test_robot_2";
   auto robot_info_2 =
-    free_fleet::agv::RobotInfo::Implementation::make(
+    free_fleet::manager::RobotInfo::Implementation::make(
       initial_state,
       graph,
       initial_time);
@@ -197,7 +197,7 @@ SCENARIO("Testing manager API with dummy robots")
 
   initial_state.name = "test_robot_3";
   auto robot_info_3 =
-    free_fleet::agv::RobotInfo::Implementation::make(
+    free_fleet::manager::RobotInfo::Implementation::make(
       initial_state,
       graph,
       initial_time);
@@ -517,7 +517,7 @@ SCENARIO("Testing update robot callback with dummy robot")
 
   std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
     new MockServerMiddlewareWithRobot());
-  auto ct = free_fleet::SimpleCoordinateTransformer::make(
+  auto ct = free_fleet::manager::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
     0.0,
@@ -525,7 +525,7 @@ SCENARIO("Testing update robot callback with dummy robot")
   free_fleet::Manager::TimeNow time_now_fn =
     [](){ return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const free_fleet::agv::RobotInfo& updated_robot_info)
+    [](const free_fleet::manager::RobotInfo& updated_robot_info)
   {
     CHECK(updated_robot_info.name() == "test_robot");
   };
@@ -553,7 +553,7 @@ SCENARIO("Testing update robot callback with dummy robot")
   auto& impl = free_fleet::Manager::Implementation::get(*manager);
 
   auto robot_info =
-    free_fleet::agv::RobotInfo::Implementation::make(
+    free_fleet::manager::RobotInfo::Implementation::make(
       initial_state,
       graph,
       initial_time);

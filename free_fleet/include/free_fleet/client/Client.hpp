@@ -27,7 +27,6 @@
 #include <free_fleet/transport/ClientMiddleware.hpp>
 
 namespace free_fleet {
-namespace client {
 
 class Client
 {
@@ -61,8 +60,8 @@ public:
   static std::shared_ptr<Client> make(
     const std::string& robot_name,
     const std::string& robot_model,
-    std::shared_ptr<CommandHandle> command_handle,
-    std::shared_ptr<StatusHandle> status_handle,
+    std::shared_ptr<client::CommandHandle> command_handle,
+    std::shared_ptr<client::StatusHandle> status_handle,
     std::unique_ptr<transport::ClientMiddleware> middleware);
 
   /// Starts the client which begins to update the fleet manager with the
@@ -94,7 +93,6 @@ private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
-} // namespace client
 } // namespace free_fleet
 
 #endif // INCLUDE__FREE_FLEET__CLIENT__CLIENT_HPP
