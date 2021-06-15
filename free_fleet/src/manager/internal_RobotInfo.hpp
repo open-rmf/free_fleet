@@ -22,6 +22,7 @@
 
 #include <rmf_utils/optional.hpp>
 
+#include <free_fleet/Console.hpp>
 #include <free_fleet/manager/RobotInfo.hpp>
 
 #include "../manager/requests/RequestInfo.hpp"
@@ -58,7 +59,7 @@ public:
   {
     auto make_error_fn = [](const std::string& error_msg)
     {
-      std::cerr << error_msg << std::endl;
+      fferr << error_msg << "\n";
       return nullptr;
     };
 

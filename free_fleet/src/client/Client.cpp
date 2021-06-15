@@ -23,6 +23,7 @@
 
 #include <rmf_traffic/Time.hpp>
 
+#include <free_fleet/Console.hpp>
 #include <free_fleet/client/Client.hpp>
 #include "internal_Client.hpp"
 
@@ -165,7 +166,7 @@ auto Client::make(
 {
   auto make_error_fn = [](const std::string& error_msg)
   {
-    std::cerr << error_msg << std::endl;
+    fferr << error_msg << "\n";
     return nullptr;
   };
 
@@ -174,11 +175,11 @@ auto Client::make(
   if (robot_model.empty())
     return make_error_fn("Provided robot model must not be empty.");
   if (!command_handle)
-    return make_error_fn("Provided command handle is invalid.");
+    return make_error_fn("Provided command handle cannot be null.");
   if (!status_handle)
-    return make_error_fn("Provided status handle is invalid.");
+    return make_error_fn("Provided status handle cannot be null.");
   if (!middleware)
-    return make_error_fn("Provided middleware is invalid.");
+    return make_error_fn("Provided middleware cannot be null.");
 
   std::shared_ptr<Client> new_client(new Client);
   new_client->_pimpl = rmf_utils::make_impl<Implementation>(Implementation());

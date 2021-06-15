@@ -36,8 +36,8 @@ void RobotInfo::Implementation::allocate_task(
       new_request_info}).second;
   if (!request_registered)
   {
-    std::cerr << "[Warning]: Attempted to allocate new task with existing task "
-      << "ID [" << new_request_info->id() << "]" << std::endl;
+    ffwarn << "Attempted to allocate new task with existing task ID ["
+      << new_request_info->id() << "], ignoring.\n";
   }
 }
 
@@ -73,8 +73,8 @@ void RobotInfo::Implementation::track_and_update(
   // No such task exists
   if (it == allocated_requests.end())
   {
-    std::cerr << "[Warning]: Robot [" << name << "] task ID [" << task_id
-      << "] was not allocated through the manager." << std::endl;
+    ffwarn << "Robot [" << name << "] task ID [" << task_id
+      << "] was not allocated through the manager.\n";
 
     auto new_tracking_estimate = track_through_graph(new_state);
     tracking_state = new_tracking_estimate.first;
@@ -114,9 +114,9 @@ auto RobotInfo::Implementation::track_through_graph(
     return std::make_pair(
       RobotInfo::TrackingState::OnWaypoint, nearest_wp.first->index());
 
-  std::cerr << "[Warning]: Robot [" << name << "] has no task and "
+  ffwarn << "Robot [" << name << "] has no task and "
     "is far away from any waypoints, it has diverged from the navigation graph "
-    "and is LOST." << std::endl;
+    "and is LOST.\n";
   return std::make_pair(RobotInfo::TrackingState::Lost, tracking_index);
 }
 
@@ -168,6 +168,5 @@ auto RobotInfo::tracking_estimation() const
 }
 
 //==============================================================================
-
 } // namespace manager
 } // namespace free_fleet

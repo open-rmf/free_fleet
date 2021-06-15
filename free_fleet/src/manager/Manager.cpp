@@ -22,6 +22,7 @@
 
 #include <rmf_traffic/Time.hpp>
 
+#include <free_fleet/Console.hpp>
 #include <free_fleet/manager/Manager.hpp>
 #include <free_fleet/manager/RobotInfo.hpp>
 #include <free_fleet/messages/DockRequest.hpp>
@@ -62,7 +63,7 @@ void Manager::Implementation::run_once()
 
     if (s.name.empty())
     {
-      std::cout << "Somehow getting empty string!" << std::endl;
+      fferr << "Incoming robot state's name is empty, ignoring.\n";
       continue;
     }
 
@@ -77,8 +78,7 @@ void Manager::Implementation::run_once()
       if (new_robot)
       {
         robots[s.name] = std::move(new_robot);
-        std::cout << "Registered new robot: [" << s.name << "]..."
-          << std::endl;
+        ffinfo << "Registered new robot: [" << s.name << "]\n";
       }
     }
     else
@@ -128,7 +128,6 @@ void Manager::Implementation::run(uint32_t frequency)
 //==============================================================================
 void Manager::Implementation::start_async(uint32_t frequency)
 {
-  std::cout << "Starting manager thread..." << std::endl;
   async_thread =
     std::thread(
       std::bind(
@@ -147,21 +146,21 @@ auto Manager::make(
 {
   auto make_error_fn = [](const std::string& error_msg)
   {
-    std::cerr << "[Error]: " << error_msg << std::endl;
+    fferr << error_msg << "\n";
     return nullptr;
   };
 
   if (fleet_name.empty())
     return make_error_fn("Provided fleet name must not be empty.");
   if (!graph)
-    return make_error_fn("Provided traffic graph is invalid.");
+    return make_error_fn("Provided traffic graph cannot be null.");
   if (!middleware)
-    return make_error_fn("Provided free fleet middleware is invalid.");
+    return make_error_fn("Provided free fleet middleware cannot be null.");
   if (!to_robot_transform)
     return make_error_fn(
-      "Provided free fleet manager::CoordinateTransformer is invalid.");
+      "Provided free fleet manager::CoordinateTransformer cannot be null.");
   if (!time_now_fn)
-    return make_error_fn("Provided time function is invalid.");
+    return make_error_fn("Provided time function cannot be null.");
 
   std::shared_ptr<Manager> manager_ptr(new Manager);
   manager_ptr->_pimpl->fleet_name = fleet_name;
@@ -253,7 +252,7 @@ auto Manager::request_pause(const std::string& robot_name)
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
-    std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
+    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
   }
 
@@ -288,7 +287,7 @@ auto Manager::request_resume(const std::string& robot_name)
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
-    std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
+    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
   }
 
@@ -324,7 +323,7 @@ auto Manager::request_dock(
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
-    std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
+    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
   }
 
@@ -362,7 +361,7 @@ auto Manager::request_relocalization(
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
-    std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
+    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
   }
 
@@ -370,9 +369,8 @@ auto Manager::request_relocalization(
   const std::size_t num_wp = _pimpl->graph->num_waypoints();
   if (last_visited_waypoint_index >= num_wp)
   {
-    std::cerr << "[Error]: Waypoint ["
-      << std::to_string(last_visited_waypoint_index)
-      << "] on the path does not exist on the graph." << std::endl;
+    fferr << "Waypoint [" << last_visited_waypoint_index
+      << "] on the path does not exist on the graph.\n";
     return std::nullopt;
   }
 
@@ -382,9 +380,8 @@ auto Manager::request_relocalization(
     (Eigen::Vector2d{location.x, location.y} - wp.get_location()).norm();
   if (dist_from_wp >= 10.0)
   {
-    std::cerr << "[Error]: Last visited waypoint ["
-      << std::to_string(last_visited_waypoint_index)
-      << "] is too far away." << std::endl;
+    fferr << "Last visited waypoint [" << last_visited_waypoint_index
+      << "] is too far away.\n";
     return std::nullopt;
   }
 
@@ -427,13 +424,13 @@ auto Manager::request_navigation(
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
   {
-    std::cerr << "[Error]: No such robot [" << robot_name << "]." << std::endl;
+    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
   }
 
   if (path.empty())
   {
-    std::cerr << "[Error]: Path is empty." << std::endl;
+    fferr << "Requested path is empty.\n";
     return std::nullopt;
   }
 
@@ -447,8 +444,8 @@ auto Manager::request_navigation(
     // Check if the waypoint exists
     if (wp_index >= num_wp)
     {
-      std::cerr << "[Error]: Waypoint [" << std::to_string(i)
-        << "] on the path does not exist on the graph." << std::endl;
+      fferr << "Waypoint [" << i
+        << "] on the path does not exist on the graph.\n";
       return std::nullopt;
     }
 
@@ -460,9 +457,8 @@ auto Manager::request_navigation(
         _pimpl->graph->lane_from(wp.index, next_wp.index);
       if (!connecting_lane)
       {
-        std::cerr << "[Error]: No connecting lane between waypoints ["
-          << std::to_string(i) << "] & [" << std::to_string(i+1)
-          << "] on the path." << std::endl;
+        fferr << "No connecting lane between waypoints [" << i << "] & ["
+          << (i+1) << "] on the path.\n";
         return std::nullopt;
       }
     }
@@ -473,8 +469,8 @@ auto Manager::request_navigation(
     if (g_wp.get_map_name() != wp.location.level_name ||
       (provided_loc - g_wp.get_location()).norm() > 1e-3)
     {
-      std::cerr << "[Error]: Provided waypoint [" << std::to_string(i)
-        << "] on path does not match the waypoint on the graph." << std::endl;
+      fferr << "Povided waypoint [" << i
+        << "] on path does not match the waypoint on the graph.\n";
       return std::nullopt;
     }
 

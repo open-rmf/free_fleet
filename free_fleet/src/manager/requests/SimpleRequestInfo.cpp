@@ -19,6 +19,7 @@
 #include "../internal_RobotInfo.hpp"
 #include "../utilities/utilities.hpp"
 
+#include <free_fleet/Console.hpp>
 #include <free_fleet/messages/DockRequest.hpp>
 #include <free_fleet/messages/PauseRequest.hpp>
 #include <free_fleet/messages/ResumeRequest.hpp>
@@ -138,8 +139,8 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
       double dist_to_lane = distance_to_lane(*curr_lane, *impl.graph, curr_loc);
       if (dist_to_lane > impl.lane_dist_threshold)
       {
-        std::cerr << "[Warning]: Robot [" << robot_info.name() << "] is "
-          << dist_to_lane << "m away from the lane center." << std::endl;
+        ffwarn << "Robot [" << robot_info.name() << "] is "
+          << dist_to_lane << "m away from the lane center.\n";
       }
 
       return std::make_pair(
@@ -147,9 +148,9 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
     }
   }
   
-  std::cerr << "[Warning]: Robot [" << robot_info.name() << "] is far away "
+  ffwarn << "Robot [" << robot_info.name() << "] is far away "
     "from the next waypoint, and there is no path from the previous "
-    "waypoint, it is LOST until a clearer state comes in." << std::endl;
+    "waypoint, it is LOST until a trackable state comes in.\n";
   return std::make_pair(
     RobotInfo::TrackingState::Lost, prev_estimation.second);
 }

@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <Eigen/Geometry>
+#include <free_fleet/Console.hpp>
 #include <free_fleet/manager/SimpleCoordinateTransformer.hpp>
 
 namespace free_fleet {
@@ -42,8 +43,8 @@ auto SimpleCoordinateTransformer::make(
 {
   if (scale < 0)
   {
-    std::cerr << "Provided scale is invalid, it has to be a double larger than 0"
-      << std::endl;
+    fferr << "Provided scale is invalid, it has to be a double larger than "
+      << "0.\n";
     return nullptr;
   }
 
