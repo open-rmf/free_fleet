@@ -63,8 +63,6 @@ public:
     return *client._pimpl;
   }
 
-  bool connected() const;
-
   void set_callbacks();
 
   template<class T> 
@@ -77,10 +75,6 @@ public:
   }
 
   void run_once();
-
-  void run(uint32_t frequency);
-
-  void start_async(uint32_t frequency);
 
   void handle_pause_request(const messages::PauseRequest& request);
 

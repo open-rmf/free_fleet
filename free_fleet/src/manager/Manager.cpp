@@ -39,12 +39,6 @@
 namespace free_fleet {
 
 //==============================================================================
-bool Manager::Implementation::connected() const
-{
-  return middleware && graph && to_robot_transform && time_now_fn;
-}
-
-//==============================================================================
 void Manager::Implementation::run_once()
 {
   // get states
@@ -108,33 +102,6 @@ void Manager::Implementation::run_once()
 }
 
 //==============================================================================
-void Manager::Implementation::run(uint32_t frequency)
-{
-  const double seconds_per_iteration = 1.0 / frequency;
-  const rmf_traffic::Duration duration_per_iteration =
-    rmf_traffic::time::from_seconds(seconds_per_iteration);
-  rmf_traffic::Time t_prev = time_now_fn();
-
-  while (connected())
-  {
-    if (time_now_fn() - t_prev < duration_per_iteration)
-      continue;
-    t_prev = time_now_fn();
-
-    run_once();
-  }
-}
-
-//==============================================================================
-void Manager::Implementation::start_async(uint32_t frequency)
-{
-  async_thread =
-    std::thread(
-      std::bind(
-        &Manager::Implementation::run, this, frequency));
-}
-
-//==============================================================================
 auto Manager::make(
   const std::string& fleet_name,
   std::shared_ptr<const rmf_traffic::agv::Graph> graph,
@@ -179,32 +146,9 @@ Manager::Manager()
 {}
 
 //==============================================================================
-void Manager::run(uint32_t frequency)
+void Manager::run_once()
 {
-  if (frequency == 0)
-    throw std::range_error("[Error]: Frequency has to be greater than 0.");
-  if (started())
-    throw std::runtime_error("[Error]: Manager has already been started.");
-  _pimpl->started = true;
-
-  _pimpl->run(frequency);
-}
-
-//==============================================================================
-void Manager::start_async(uint32_t frequency)
-{
-  if (frequency == 0)
-    throw std::range_error("[Error]: Frequency has to be greater than 0.");
-  if (started())
-    throw std::runtime_error("[Error]: Manager has already been started.");
-
-  _pimpl->start_async(frequency);
-}
-
-//==============================================================================
-bool Manager::started() const
-{
-  return _pimpl->started.load();
+  _pimpl->run_once();
 }
 
 //==============================================================================

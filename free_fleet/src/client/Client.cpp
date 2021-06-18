@@ -30,12 +30,6 @@
 namespace free_fleet {
 
 //==============================================================================
-bool Client::Implementation::connected() const
-{
-  return command_handle && status_handle && middleware;
-}
-
-//==============================================================================
 void Client::Implementation::set_callbacks()
 {
   using namespace std::placeholders;
@@ -65,33 +59,6 @@ void Client::Implementation::run_once()
     static_cast<uint32_t>(status_handle->target_path_waypoint_index())
   };
   middleware->send_state(new_state);
-}
-
-//==============================================================================
-void Client::Implementation::run(uint32_t frequency)
-{
-  set_callbacks();
-
-  const double seconds_per_iteration = 1.0 / frequency;
-  const rmf_traffic::Duration duration_per_iteration =
-    rmf_traffic::time::from_seconds(seconds_per_iteration);
-  rmf_traffic::Time t_prev = std::chrono::steady_clock::now();
-
-  while (connected())
-  {
-    if (std::chrono::steady_clock::now() - t_prev < duration_per_iteration)
-      continue;
-    t_prev = std::chrono::steady_clock::now();
-
-    run_once();
-  }
-}
-
-//==============================================================================
-void Client::Implementation::start_async(uint32_t frequency)
-{
-  async_thread =
-    std::thread(std::bind(&Client::Implementation::run, this, frequency));
 }
 
 //==============================================================================
@@ -188,6 +155,7 @@ auto Client::make(
   new_client->_pimpl->command_handle = std::move(command_handle);
   new_client->_pimpl->status_handle = std::move(status_handle);
   new_client->_pimpl->middleware = std::move(middleware);
+  new_client->_pimpl->set_callbacks();
   return new_client;
 }
 
@@ -197,34 +165,10 @@ Client::Client()
 {}
 
 //==============================================================================
-void Client::run(uint32_t frequency)
+void Client::run_once()
 {
-  if (frequency == 0)
-    throw std::range_error("[Error]: Frequency has to be greater than 0.");
-  if (started())
-    throw std::runtime_error("[Error]: Client has already been started.");
-  _pimpl->started = true;
-
-  _pimpl->run(frequency);
+  _pimpl->run_once();
 }
 
 //==============================================================================
-void Client::start_async(uint32_t frequency)
-{
-  if (frequency == 0)
-    throw std::range_error("[Error]: Frequency has to be greater than 0.");
-  if (started())
-    throw std::runtime_error("[Error]: Client has already been started.");
-
-  _pimpl->start_async(frequency);
-}
-
-//==============================================================================
-bool Client::started() const
-{
-  return _pimpl->started.load();
-}
-
-//==============================================================================
-
 } // namespace free_fleet

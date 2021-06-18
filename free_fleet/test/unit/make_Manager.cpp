@@ -56,7 +56,6 @@ SCENARIO("Test make Manager")
       time_now_fn,
       cb);
     CHECK(manager);
-    CHECK(!manager->started());
   }
 
   GIVEN("Empty fleet name")
@@ -105,20 +104,5 @@ SCENARIO("Test make Manager")
       time_now_fn,
       cb);
     CHECK(!manager);
-  }
-
-  GIVEN("Starting with bad frequency")
-  {
-    auto manager = free_fleet::Manager::make(
-      fleet_name,
-      graph,
-      std::move(m),
-      ct,
-      time_now_fn,
-      cb);
-    REQUIRE(manager);
-    CHECK(!manager->started());
-    CHECK_THROWS(manager->run(0));
-    CHECK_THROWS(manager->start_async(0));
   }
 }

@@ -27,6 +27,7 @@
 #include <rmf_traffic/Time.hpp>
 #include <rmf_traffic/agv/Graph.hpp>
 
+#include <free_fleet/Worker.hpp>
 #include <free_fleet/manager/RobotInfo.hpp>
 #include <free_fleet/manager/CoordinateTransformer.hpp>
 #include <free_fleet/transport/ServerMiddleware.hpp>
@@ -38,7 +39,7 @@
 
 namespace free_fleet {
 
-class Manager
+class Manager : public Worker
 {
 public:
 
@@ -67,24 +68,8 @@ public:
     TimeNow time_now_fn,
     RobotUpdatedCallback robot_updated_callback_fn);
 
-  /// Starts the manager which begins to listen for clients, if it has not yet
-  /// been started. This function is blocking.
-  ///
-  /// \param[in] frequency
-  ///   Frequency at which the manager operates. This value needs to be a
-  ///   non-zero value.
-  void run(uint32_t frequency);
-
-  /// Starts the manager which begins to listen for clients, if it has not yet
-  /// been started. This function is non-blocking.
-  ///
-  /// \param[in] frequency
-  ///   Frequency at which the manager operates. This value needs to be a
-  ///   non-zero value.
-  void start_async(uint32_t frequency);
-
-  /// Checks if the manager has already been started.
-  bool started() const;
+  /// Running the operations of the manager once. 
+  void run_once() override;
 
   /// Gets all the names of the robots that are currently under this manager.
   ///

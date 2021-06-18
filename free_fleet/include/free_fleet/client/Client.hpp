@@ -22,13 +22,14 @@
 
 #include <rmf_utils/impl_ptr.hpp>
 
+#include <free_fleet/Worker.hpp>
 #include <free_fleet/client/StatusHandle.hpp>
 #include <free_fleet/client/CommandHandle.hpp>
 #include <free_fleet/transport/ClientMiddleware.hpp>
 
 namespace free_fleet {
 
-class Client
+class Client : public Worker
 {
 public:
 
@@ -64,28 +65,8 @@ public:
     std::shared_ptr<client::StatusHandle> status_handle,
     std::unique_ptr<transport::ClientMiddleware> middleware);
 
-  /// Starts the client which begins to update the fleet manager with the
-  /// robot's current status, as well as polls for requests before performing
-  /// them, if it has not yet been started. This function is blocking. 
-  ///
-  /// \param[in] frequency
-  ///   Frequency at which the client attempts to check for incoming requests,
-  ///   command the robot and update its state upstream. This value needs to be
-  ///   a non-zero value.
-  void run(uint32_t frequency);
-
-  /// Starts the client which begins to update the fleet manager with the
-  /// robot's current status, as well as polls for requests before performing
-  /// them. This function is non-blocking.
-  ///
-  /// \param[in] frequency
-  ///   Frequency at which the client attempts to check for incoming requests,
-  ///   command the robot and update its state upstream. This value needs to be
-  ///   a non-zero value.
-  void start_async(uint32_t frequency);
-
-  /// Checks if the client has already been started.
-  bool started() const;
+  /// Running the operations of the client once.
+  void run_once() override;
 
   class Implementation;
 private:

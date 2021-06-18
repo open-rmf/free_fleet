@@ -43,7 +43,8 @@ public:
 
   ~Implementation()
   {
-    if (started.load() && async_thread.joinable())
+    stopped = true;
+    if (async_thread.joinable())
       async_thread.join();
   }
 
@@ -57,13 +58,7 @@ public:
     return *manager._pimpl;
   }
 
-  bool connected() const;
-
   void run_once();
-
-  void run(uint32_t frequency);
-
-  void start_async(uint32_t frequency);
 
   std::string fleet_name;
   std::shared_ptr<const rmf_traffic::agv::Graph> graph;
@@ -81,7 +76,7 @@ public:
   std::unordered_map<uint32_t, std::shared_ptr<manager::RequestInfo>>
     unacknowledged_tasks;
 
-  std::atomic<bool> started = false;
+  std::atomic<bool> stopped = true;
   std::mutex mutex;
   std::thread async_thread;
 };

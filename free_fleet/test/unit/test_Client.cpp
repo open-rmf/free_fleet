@@ -44,7 +44,6 @@ SCENARIO("Verify that a client can run")
       sh,
       std::move(m));
     REQUIRE(client);
-    CHECK(!client->started());
   }
 
   GIVEN("Starting with bad frequency")
@@ -56,9 +55,6 @@ SCENARIO("Verify that a client can run")
       sh,
       std::move(m));
     REQUIRE(client);
-    CHECK(!client->started());
-    CHECK_THROWS(client->run(0));
-    CHECK_THROWS(client->start_async(0));
   }
 
   GIVEN("Running once")
@@ -72,7 +68,6 @@ SCENARIO("Verify that a client can run")
     REQUIRE(client);
     auto& impl = free_fleet::Client::Implementation::get(*client);
     CHECK_NOTHROW(impl.run_once());
-    CHECK(!client->started());
   }
 }
 
