@@ -34,8 +34,6 @@ class RobotInfo::Implementation
 {
 public:
 
-  RobotInfo* parent = nullptr;
-
   std::string name;
   std::string model;
   rmf_traffic::Time first_found;
@@ -77,22 +75,28 @@ public:
     info->_pimpl->first_found = time_now;
     info->_pimpl->last_updated = time_now;
     info->_pimpl->graph = std::move(graph);
-    info->_pimpl->track_and_update(state);
-    info->_pimpl->parent = info.get();
+    update_state(*info, state, time_now);
     return info;
   }
 
-  ///
+  /// Static getter for a mutable Implementation of the provided RobotInfo.
   static Implementation& get(RobotInfo& robot_info)
   {
     return *robot_info._pimpl;
   }
 
-  ///
+  /// Static getter for a const Implementation of the provided RobotInfo.
   static const Implementation& get(const RobotInfo& robot_info)
   {
     return *robot_info._pimpl;
   }
+
+  /// Static state updater. Attempts to update and track the robot using the new
+  /// incoming state and prior information.
+  static void update_state(
+    RobotInfo& robot_info,
+    const messages::RobotState& new_state,
+    rmf_traffic::Time time_now);
 
   /// Allocates this task to this robot.
   ///
@@ -101,22 +105,8 @@ public:
   void allocate_task(
     const std::shared_ptr<RequestInfo>& new_request_info);
 
-  /// Update the internal robot handler with the newest state.
-  ///
-  /// \param[in] new_state
-  ///   The most recent incoming state from the robot.
-  ///
-  /// \param[in] time_now
-  ///   The current time stamp relative to the fleet manager.
-  void update_state(
-    const messages::RobotState& new_state,
-    rmf_traffic::Time time_now);
-
-  /// Tracks the robot using the new incoming state and prior information.
-  void track_and_update(const messages::RobotState& new_state);
-
   /// Gets the tracking estimation purely based on the incoming new state as
-  /// well as it's previos tracking estimation.
+  /// well as it's previous tracking estimation.
   std::pair<TrackingState, std::size_t> track_through_graph(
     const messages::RobotState& new_state) const;
 };

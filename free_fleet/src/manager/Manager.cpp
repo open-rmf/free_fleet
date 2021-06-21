@@ -77,8 +77,10 @@ void Manager::Implementation::run_once()
     }
     else
     {
-      manager::RobotInfo::Implementation::get(*r_it->second).update_state(
-        transformed_state, time_now_fn());
+      manager::RobotInfo::Implementation::update_state(
+        *r_it->second,
+        transformed_state,
+        time_now_fn());
     }
 
     // Updates external uses of the robot's information

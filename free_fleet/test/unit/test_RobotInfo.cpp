@@ -47,8 +47,10 @@ void update_and_check_tracking_state(
 {
   rmf_traffic::Time update_time = std::chrono::steady_clock::now();
 
-  free_fleet::manager::RobotInfo::Implementation::get(*robot_info).update_state(
-    new_state, update_time);
+  free_fleet::manager::RobotInfo::Implementation::update_state(
+    *robot_info,
+    new_state,
+    update_time);
   CHECK(robot_info->state() == new_state);
   CHECK(robot_info->last_updated() == update_time);
 
@@ -144,8 +146,10 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    free_fleet::manager::RobotInfo::Implementation::get(
-      *robot_info).update_state(next_state, next_time);
+    free_fleet::manager::RobotInfo::Implementation::update_state(
+      *robot_info,
+      next_state,
+      next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -169,8 +173,10 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    free_fleet::manager::RobotInfo::Implementation::get(
-      *robot_info).update_state(next_state, next_time);
+    free_fleet::manager::RobotInfo::Implementation::update_state(
+      *robot_info,
+      next_state,
+      next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -194,8 +200,10 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    free_fleet::manager::RobotInfo::Implementation::get(
-      *robot_info).update_state(next_state, next_time);
+    free_fleet::manager::RobotInfo::Implementation::update_state(
+      *robot_info,
+      next_state,
+      next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -218,8 +226,10 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    free_fleet::manager::RobotInfo::Implementation::get(
-      *robot_info).update_state(next_state, next_time);
+    free_fleet::manager::RobotInfo::Implementation::update_state(
+      *robot_info,
+      next_state,
+      next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -243,8 +253,10 @@ SCENARIO("Tests RobotInfo API")
     auto next_state = initial_state;
     next_state.location = next_location;
     rmf_traffic::Time next_time = std::chrono::steady_clock::now();
-    free_fleet::manager::RobotInfo::Implementation::get(
-      *robot_info).update_state(next_state, next_time);
+    free_fleet::manager::RobotInfo::Implementation::update_state(
+      *robot_info,
+      next_state,
+      next_time);
 
     CHECK(robot_info->state() == next_state);
     CHECK(robot_info->first_found() == initial_time);
@@ -267,8 +279,10 @@ SCENARIO("Tests RobotInfo API")
     auto second_state = initial_state;
     second_state.location = second_loc;
     rmf_traffic::Time second_time = std::chrono::steady_clock::now();
-    free_fleet::manager::RobotInfo::Implementation::get(
-      *robot_info).update_state(second_state, second_time);
+    free_fleet::manager::RobotInfo::Implementation::update_state(
+      *robot_info,
+      second_state,
+      second_time);
 
     CHECK(robot_info->state() == second_state);
     CHECK(robot_info->last_updated() == second_time);
@@ -287,8 +301,10 @@ SCENARIO("Tests RobotInfo API")
     auto third_state = initial_state;
     third_state.location = third_loc;
     rmf_traffic::Time third_time = std::chrono::steady_clock::now();
-    free_fleet::manager::RobotInfo::Implementation::get(
-      *robot_info).update_state(third_state, third_time);
+    free_fleet::manager::RobotInfo::Implementation::update_state(
+      *robot_info,
+      third_state,
+      third_time);
 
     CHECK(robot_info->state() == third_state);
     CHECK(robot_info->last_updated() == third_time);

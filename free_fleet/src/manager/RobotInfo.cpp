@@ -43,55 +43,45 @@ void RobotInfo::Implementation::allocate_task(
 
 //==============================================================================
 void RobotInfo::Implementation::update_state(
+  RobotInfo& robot_info,
   const messages::RobotState& new_state,
   rmf_traffic::Time time_now)
 {
-  if (name != new_state.name)
+  if (robot_info.name() != new_state.name)
     return;
-  track_and_update(new_state);
-  last_updated = time_now;
-}
-
-//==============================================================================
-void RobotInfo::Implementation::track_and_update(
-  const messages::RobotState& new_state)
-{
-  // Robot is not doing any task at the moment.
-  if (new_state.task_id == 0)
-  {
-    auto new_tracking_estimate = track_through_graph(new_state);
-    tracking_state = new_tracking_estimate.first;
-    tracking_index = new_tracking_estimate.second;
-    state = new_state;
-    return;
-  }
   
-  // Use the information from the current task to help track the robot.
   const uint32_t task_id = new_state.task_id;
-  auto it = allocated_requests.find(task_id);
+  auto it = robot_info._pimpl->allocated_requests.end();
+  std::pair<TrackingState, std::size_t> new_tracking_estimate;
 
-  // No such task exists
-  if (it == allocated_requests.end())
+  // Robot is not doing any task at the moment.
+  if (task_id == 0)
   {
-    ffwarn << "Robot [" << name << "] task ID [" << task_id
-      << "] was not allocated through the manager.\n";
-
-    auto new_tracking_estimate = track_through_graph(new_state);
-    tracking_state = new_tracking_estimate.first;
-    tracking_index = new_tracking_estimate.second;
-    state = new_state;
-    return;
+    new_tracking_estimate =
+      robot_info._pimpl->track_through_graph(new_state);
   }
-
   // Use the implemented track_robot function of each request type to get new
   // tracking estimates.
-  assert(it->second);
-  auto request = it->second;
-  auto new_tracking_estimate = request->track_robot(*parent, new_state);
+  else if ((it = robot_info._pimpl->allocated_requests.find(task_id)) !=
+    robot_info._pimpl->allocated_requests.end())
+  {
+    assert(it->second);
+    auto request = it->second;
+    new_tracking_estimate = request->track_robot(robot_info, new_state);
+  }
+  // No such task exists
+  else
+  {
+    ffwarn << "Robot [" << robot_info.name() << "] task ID [" << task_id
+      << "] was not allocated through this manager instance.\n";
 
-  tracking_state = new_tracking_estimate.first;
-  tracking_index = new_tracking_estimate.second;
-  state = new_state;
+    new_tracking_estimate = robot_info._pimpl->track_through_graph(new_state);
+  }
+
+  robot_info._pimpl->tracking_state = new_tracking_estimate.first;
+  robot_info._pimpl->tracking_index = new_tracking_estimate.second;
+  robot_info._pimpl->state = new_state;
+  robot_info._pimpl->last_updated = time_now;
 }
 
 //==============================================================================
