@@ -42,9 +42,9 @@ namespace free_fleet {
 void Manager::Implementation::run_once()
 {
   // get states
-  auto states = middleware->read_states();
+  const auto states = middleware->read_states();
   std::lock_guard<std::mutex> lock(mutex);
-  for (const auto s : states)
+  for (const auto& s : states)
   {
     messages::RobotState transformed_state{
       s.name,
@@ -195,10 +195,7 @@ auto Manager::request_pause(const std::string& robot_name)
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
-  {
-    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
-  }
 
   // Handles the carry forward
   if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
@@ -230,10 +227,7 @@ auto Manager::request_resume(const std::string& robot_name)
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
-  {
-    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
-  }
 
   // Handles the carry forward
   if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
@@ -266,10 +260,7 @@ auto Manager::request_dock(
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
-  {
-    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
-  }
 
   // Handles the carry forward
   if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
@@ -304,10 +295,7 @@ auto Manager::request_relocalization(
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
-  {
-    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
-  }
 
   // Check if the waypoint exists
   const std::size_t num_wp = _pimpl->graph->num_waypoints();
@@ -367,10 +355,7 @@ auto Manager::request_navigation(
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
-  {
-    fferr << "Unknown robot [" << robot_name << "].\n";
     return std::nullopt;
-  }
 
   if (path.empty())
   {
