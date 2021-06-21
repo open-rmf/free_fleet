@@ -55,21 +55,22 @@ SCENARIO("Testing request info API")
       new free_fleet::manager::SimpleRequestInfo<DockRequest>(
         request,
         [&](const DockRequest&){request_sent = true;},
-        time_now));
+        [](){return std::chrono::steady_clock::now();}));
     
     REQUIRE(request_info);
-    CHECK(request_info->init_time() == time_now);
-    CHECK(!request_info->acknowledged());
-    CHECK(!request_info->acknowledged_time().has_value());
+    CHECK(request_info->init_time() >= time_now);
+    CHECK(!request_info->acknowledged().has_value());
     CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto ack_time = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
-    CHECK(request_info->acknowledged());
-    CHECK(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value() == ack_time);
+    auto time_before_ack = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledge_request());
+    auto ack_time = request_info->acknowledged();
+    REQUIRE(ack_time.has_value());
+    CHECK(ack_time.value() > time_now);
+    CHECK(ack_time.value() > request_info->init_time());
+    CHECK(ack_time.value() > time_before_ack);
   }
 
   GIVEN("Pause request info")
@@ -85,21 +86,22 @@ SCENARIO("Testing request info API")
       new free_fleet::manager::SimpleRequestInfo<PauseRequest>(
         request,
         [&](const PauseRequest&){request_sent = true;},
-        time_now));
+        [](){return std::chrono::steady_clock::now();})); 
     
     REQUIRE(request_info);
-    CHECK(request_info->init_time() == time_now);
-    CHECK(!request_info->acknowledged());
-    CHECK(!request_info->acknowledged_time().has_value());
+    CHECK(request_info->init_time() >= time_now);
+    CHECK(!request_info->acknowledged().has_value());
     CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto ack_time = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
-    CHECK(request_info->acknowledged());
-    CHECK(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value() == ack_time);
+    auto time_before_ack = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledge_request());
+    auto ack_time = request_info->acknowledged();
+    REQUIRE(ack_time.has_value());
+    CHECK(ack_time.value() > time_now);
+    CHECK(ack_time.value() > request_info->init_time());
+    CHECK(ack_time.value() > time_before_ack);
   }
 
   GIVEN("Resume request info")
@@ -115,21 +117,22 @@ SCENARIO("Testing request info API")
       new free_fleet::manager::SimpleRequestInfo<ResumeRequest>(
         request,
         [&](const ResumeRequest&){request_sent = true;},
-        time_now));
+        [](){return std::chrono::steady_clock::now();})); 
     
     REQUIRE(request_info);
-    CHECK(request_info->init_time() == time_now);
-    CHECK(!request_info->acknowledged());
-    CHECK(!request_info->acknowledged_time().has_value());
+    CHECK(request_info->init_time() >= time_now);
+    CHECK(!request_info->acknowledged().has_value());
     CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto ack_time = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
-    CHECK(request_info->acknowledged());
-    CHECK(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value() == ack_time);
+    auto time_before_ack = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledge_request());
+    auto ack_time = request_info->acknowledged();
+    REQUIRE(ack_time.has_value());
+    CHECK(ack_time.value() > time_now);
+    CHECK(ack_time.value() > request_info->init_time());
+    CHECK(ack_time.value() > time_before_ack);
   }
 
   GIVEN("Relocalization request info")
@@ -154,21 +157,22 @@ SCENARIO("Testing request info API")
       new free_fleet::manager::SimpleRequestInfo<RelocalizationRequest>(
         request,
         [&](const RelocalizationRequest&){request_sent = true;},
-        time_now));
-
+        [](){return std::chrono::steady_clock::now();})); 
+    
     REQUIRE(request_info);
-    CHECK(request_info->init_time() == time_now);
-    CHECK(!request_info->acknowledged());
-    CHECK(!request_info->acknowledged_time().has_value());
+    CHECK(request_info->init_time() >= time_now);
+    CHECK(!request_info->acknowledged().has_value());
     CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto ack_time = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
-    CHECK(request_info->acknowledged());
-    CHECK(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value() == ack_time);
+    auto time_before_ack = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledge_request());
+    auto ack_time = request_info->acknowledged();
+    REQUIRE(ack_time.has_value());
+    CHECK(ack_time.value() > time_now);
+    CHECK(ack_time.value() > request_info->init_time());
+    CHECK(ack_time.value() > time_before_ack);
   }
 
   GIVEN("Navigation request info")
@@ -209,20 +213,21 @@ SCENARIO("Testing request info API")
       new free_fleet::manager::SimpleRequestInfo<NavigationRequest>(
         request,
         [&](const NavigationRequest&){request_sent = true;},
-        time_now));
-
+        [](){return std::chrono::steady_clock::now();})); 
+    
     REQUIRE(request_info);
-    CHECK(request_info->init_time() == time_now);
-    CHECK(!request_info->acknowledged());
-    CHECK(!request_info->acknowledged_time().has_value());
+    CHECK(request_info->init_time() >= time_now);
+    CHECK(!request_info->acknowledged().has_value());
     CHECK(request_info->id() == initial_task_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
-    auto ack_time = std::chrono::steady_clock::now();
-    CHECK_NOTHROW(request_info->acknowledged_time(ack_time));
-    CHECK(request_info->acknowledged());
-    CHECK(request_info->acknowledged_time().has_value());
-    CHECK(request_info->acknowledged_time().value() == ack_time);
+    auto time_before_ack = std::chrono::steady_clock::now();
+    CHECK_NOTHROW(request_info->acknowledge_request());
+    auto ack_time = request_info->acknowledged();
+    REQUIRE(ack_time.has_value());
+    CHECK(ack_time.value() > time_now);
+    CHECK(ack_time.value() > request_info->init_time());
+    CHECK(ack_time.value() > time_before_ack);
   }
 }

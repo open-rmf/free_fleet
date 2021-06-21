@@ -34,24 +34,22 @@ public:
   /// Time stamp of when the request was initialized.
   virtual rmf_traffic::Time init_time() const = 0;
 
-  /// Whether the request has been acknowledged by the robot.
-  virtual bool acknowledged() const = 0;
-
   /// Time stamp of when the request was acknowledged.
   ///
   /// \return
-  ///   Returns a nullopt if the request has not been acknowledged.
-  virtual std::optional<rmf_traffic::Time> acknowledged_time() const = 0;
+  ///   Returns the time stamp of the acknowledgement, if it has not yet been
+  ///   acknowledged, a nullopt is returned.
+  virtual std::optional<rmf_traffic::Time> acknowledged() const = 0;
 
-  /// Sets the time that this request was acknowledged.
-  virtual void acknowledged_time(rmf_traffic::Time time) = 0;
-  
   /// Gets the task ID of this request.
   virtual uint32_t id() const = 0;
 
-  /// Sends oout this request.
+  /// Sends out this request.
   virtual void send_request() const = 0;
-  
+ 
+  /// Acknowledge that this request has been received.
+  virtual void acknowledge_request() = 0;
+
   /// Tracks the robot throughout its navigation graph.
   ///
   /// \return

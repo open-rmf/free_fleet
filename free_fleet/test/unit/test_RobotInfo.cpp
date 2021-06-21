@@ -313,7 +313,7 @@ SCENARIO("Tests RobotInfo API")
       new free_fleet::manager::SimpleRequestInfo<DockRequest>(
         request,
         [&](const DockRequest&){request_sent = true;},
-        std::chrono::steady_clock::now()));
+        [](){return std::chrono::steady_clock::now();})); 
     REQUIRE(request_info);
 
     CHECK_NOTHROW(
@@ -335,7 +335,7 @@ SCENARIO("Tests RobotInfo API")
       new free_fleet::manager::SimpleRequestInfo<PauseRequest>(
         request,
         [&](const PauseRequest&){request_sent = true;},
-        std::chrono::steady_clock::now()));
+        [](){return std::chrono::steady_clock::now();})); 
     REQUIRE(request_info);
 
     CHECK_NOTHROW(
@@ -357,7 +357,7 @@ SCENARIO("Tests RobotInfo API")
       new free_fleet::manager::SimpleRequestInfo<ResumeRequest>(
         request,
         [&](const ResumeRequest&){request_sent = true;},
-        std::chrono::steady_clock::now()));
+        [](){return std::chrono::steady_clock::now();})); 
     REQUIRE(request_info);
 
     CHECK_NOTHROW(
@@ -390,7 +390,7 @@ SCENARIO("Tests RobotInfo API")
       new free_fleet::manager::SimpleRequestInfo<RelocalizationRequest>(
         request,
         [&](const RelocalizationRequest&){request_sent = true;},
-        std::chrono::steady_clock::now()));
+        [](){return std::chrono::steady_clock::now();})); 
     REQUIRE(request_info);
 
     CHECK_NOTHROW(
@@ -437,7 +437,7 @@ SCENARIO("Tests RobotInfo API")
       new free_fleet::manager::SimpleRequestInfo<NavigationRequest>(
         request,
         [&](const NavigationRequest&){request_sent = true;},
-        std::chrono::steady_clock::now()));
+        [](){return std::chrono::steady_clock::now();})); 
     REQUIRE(request_info);
 
     CHECK_NOTHROW(
@@ -488,7 +488,7 @@ SCENARIO("Tests RobotInfo API")
       new free_fleet::manager::SimpleRequestInfo<NavigationRequest>(
         request,
         [&](const NavigationRequest&){request_sent = true;},
-        std::chrono::steady_clock::now()));
+        [](){return std::chrono::steady_clock::now();})); 
     REQUIRE(request_info);
 
     CHECK_NOTHROW(

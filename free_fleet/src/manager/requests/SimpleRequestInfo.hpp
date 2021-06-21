@@ -18,6 +18,8 @@
 #ifndef SRC__MANAGER__REQUESTS__SIMPLEREQUESTINFO_HPP
 #define SRC__MANAGER__REQUESTS__SIMPLEREQUESTINFO_HPP
 
+#include <rmf_traffic/Time.hpp>
+
 #include "RequestInfo.hpp"
 
 namespace free_fleet {
@@ -31,14 +33,17 @@ public:
 
   using SendRequest = std::function<void(const T&)>;
 
+  using TimeNow = std::function<rmf_traffic::Time()>;
+
   /// Constructor
   SimpleRequestInfo(
     const T& request,
     SendRequest send_request_fn,
-    rmf_traffic::Time time_now)
+    TimeNow time_now_fn)
   : _request(request),
     _send_request_fn(std::move(send_request_fn)),
-    _init_time(time_now),
+    _time_now_fn(std::move(time_now_fn)),
+    _init_time(_time_now_fn()),
     _acknowledged_time(std::nullopt)
   {}
 
@@ -47,19 +52,9 @@ public:
     return _init_time;
   }
 
-  bool acknowledged() const override
-  {
-    return _acknowledged_time.has_value();
-  }
-
-  std::optional<rmf_traffic::Time> acknowledged_time() const override
+  std::optional<rmf_traffic::Time> acknowledged() const override
   {
     return _acknowledged_time;
-  }
-
-  void acknowledged_time(rmf_traffic::Time time) override
-  {
-    _acknowledged_time = time;
   }
 
   uint32_t id() const override
@@ -73,6 +68,12 @@ public:
       _send_request_fn(_request);
   }
 
+  void acknowledge_request() override
+  {
+    if (!_acknowledged_time.has_value())
+      _acknowledged_time = _time_now_fn();
+  }
+
   std::pair<RobotInfo::TrackingState, std::size_t> track_robot(
     const RobotInfo& robot_info,
     const messages::RobotState& new_state) const override;
@@ -80,6 +81,7 @@ public:
 private:
   T _request;
   SendRequest _send_request_fn;
+  TimeNow _time_now_fn;
   rmf_traffic::Time _init_time;
   std::optional<rmf_traffic::Time> _acknowledged_time;
 };
