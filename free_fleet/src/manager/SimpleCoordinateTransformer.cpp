@@ -67,38 +67,38 @@ SimpleCoordinateTransformer::SimpleCoordinateTransformer()
 messages::Location SimpleCoordinateTransformer::forward_transform(
   const messages::Location& input) const
 {
-  const Eigen::Vector2d scaled =
-    _pimpl->scale * Eigen::Vector2d(input.x, input.y);
+  const Eigen::Vector2d scaled = _pimpl->scale * input.coordinates();
   const Eigen::Vector2d rotated =
     Eigen::Rotation2D<double>(_pimpl->rotation_yaw) * scaled;
   const Eigen::Vector2d translated = rotated + _pimpl->translation;
-  
-  return messages::Location{
-    input.sec,
-    input.nanosec,
-    translated[0],
-    translated[1],
-    input.yaw + _pimpl->rotation_yaw,
-    input.level_name};
+
+  if (input.yaw().has_value())
+  {
+    return messages::Location(
+      input.map_name(), translated, input.yaw().value() + _pimpl->rotation_yaw);
+  }
+
+  return messages::Location(input.map_name(), translated);
 }
 
 //==============================================================================
 messages::Location SimpleCoordinateTransformer::backward_transform(
   const messages::Location& input) const
 {
-  const Eigen::Vector2d translated =
-    Eigen::Vector2d(input.x, input.y) - _pimpl->translation;
+  const Eigen::Vector2d translated = input.coordinates() - _pimpl->translation;
   const Eigen::Vector2d rotated =
     Eigen::Rotation2D<double>(-_pimpl->rotation_yaw) * translated;
   const Eigen::Vector2d scaled = 1.0 / _pimpl->scale * rotated;
 
-  return messages::Location{
-    input.sec,
-    input.nanosec,
-    scaled[0],
-    scaled[1],
-    input.yaw - _pimpl->rotation_yaw,
-    input.level_name};
+  if (input.yaw().has_value())
+  {
+    return messages::Location(
+      input.map_name(),
+      scaled,
+      input.yaw().value() - _pimpl->rotation_yaw);
+  }
+
+  return messages::Location(input.map_name(), scaled);
 }
 
 //==============================================================================

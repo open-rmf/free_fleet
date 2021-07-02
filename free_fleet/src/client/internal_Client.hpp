@@ -22,9 +22,12 @@
 #include <memory>
 #include <string>
 #include <thread>
-#include <variant>
+#include <optional>
 #include <unordered_set>
 
+#include <rmf_utils/Modular.hpp>
+
+#include <free_fleet/Types.hpp>
 #include <free_fleet/client/Client.hpp>
 #include <free_fleet/messages/DockRequest.hpp>
 #include <free_fleet/messages/PauseRequest.hpp>
@@ -68,11 +71,20 @@ public:
   template<class T> 
   bool is_valid_request(const T& request)
   {
-    if (request.robot_name == robot_name &&
-      task_ids.find(request.task_id) == task_ids.end())
+    if (request.robot_name() != robot_name)
+      return false;
+
+    // TODO(AA): Consider if there is the chance that this client idles for more
+    // than 2 billion task ids, and suddenly gets a clashing id that has
+    // overflowed and is slightly lower than the last task id.
+    const auto it = task_ids.find(request.task_id());
+    if (it == task_ids.end() ||
+      rmf_utils::Modular(last_task_id).less_than(request.task_id()))
       return true;
     return false;
   }
+
+  void complete_task();
 
   void run_once();
 
@@ -95,7 +107,8 @@ public:
   std::unique_ptr<transport::ClientMiddleware> middleware;
 
   // TODO(AA): handle overflow of uint32_t
-  uint32_t task_id = 0;
+  std::optional<TaskId> task_id = std::nullopt;
+  TaskId last_task_id = 0; 
   std::unordered_set<uint32_t> task_ids;
 
   std::atomic<bool> started = false;

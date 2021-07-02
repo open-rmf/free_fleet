@@ -20,6 +20,8 @@
 
 #include <vector>
 
+#include <rmf_traffic/Time.hpp>
+
 #include <free_fleet/messages/Location.hpp>
 #include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
@@ -35,6 +37,12 @@ namespace client {
 class StatusHandle
 {
 public:
+
+  /// Obtain the current time stamp.
+  ///
+  /// \return
+  ///   Current time on the robot.
+  virtual rmf_traffic::Time time() const = 0;
 
   /// Obtain the current location of the robot.
   ///

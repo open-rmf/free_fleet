@@ -22,6 +22,7 @@
 
 #include <rmf_utils/catch.hpp>
 
+#include <free_fleet/Types.hpp>
 #include <free_fleet/messages/DockRequest.hpp>
 #include <free_fleet/messages/PauseRequest.hpp>
 #include <free_fleet/messages/ResumeRequest.hpp>
@@ -38,17 +39,17 @@ SCENARIO("Testing request info API")
   using RequestInfo = free_fleet::manager::RequestInfo;
 
   const std::string robot_name = "test_robot";
-  const uint32_t initial_task_id = 0;
+  const free_fleet::TaskId initial_task_id = 0;
   auto time_now = std::chrono::steady_clock::now();
 
   GIVEN("Dock request info")
   {
     using DockRequest = free_fleet::messages::DockRequest;
 
-    DockRequest request {
+    DockRequest request(
       robot_name,
       initial_task_id + 1,
-      "mock_dock"};
+      "mock_dock");
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
@@ -77,9 +78,9 @@ SCENARIO("Testing request info API")
   {
     using PauseRequest = free_fleet::messages::PauseRequest;
 
-    PauseRequest request {
+    PauseRequest request(
       robot_name,
-      initial_task_id + 1};
+      initial_task_id + 1);
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
@@ -108,9 +109,9 @@ SCENARIO("Testing request info API")
   {
     using ResumeRequest = free_fleet::messages::ResumeRequest;
 
-    ResumeRequest request {
+    ResumeRequest request(
       robot_name,
-      initial_task_id + 1};
+      initial_task_id + 1);
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
@@ -139,18 +140,15 @@ SCENARIO("Testing request info API")
   {
     using RelocalizationRequest = free_fleet::messages::RelocalizationRequest;
 
-    free_fleet::messages::Location reloc_loc {
-      0,
-      0,
-      0.0,
-      10.0 + 0.5 - 1e-3,
-      0.0,
-      "test_map"};
-    RelocalizationRequest request {
+    free_fleet::messages::Location reloc_loc(
+      "test_map",
+      {0.0, 10.0 + 0.5 - 1e-3},
+      0.0);
+    RelocalizationRequest request(
       robot_name,
       initial_task_id + 1,
       reloc_loc,
-      0};
+      0);
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
@@ -178,36 +176,19 @@ SCENARIO("Testing request info API")
   GIVEN("Navigation request info")
   {
     using NavigationRequest = free_fleet::messages::NavigationRequest;
+    using Waypoint = free_fleet::messages::Waypoint;
+    using Location = free_fleet::messages::Location;
 
-    NavigationRequest request {
+    Waypoint first_wp(0, Location("test_map", {0.0, 0.0}, 0.0));
+    Waypoint second_wp(1, Location("test_map", {10.0, 0.0}, 0.0));
+    Waypoint third_wp(0, Location("test_map", {0.0, 0.0}, 0.0));
+    Waypoint forth_wp(2, Location("test_map", {-10.0, 0.0}, 0.0));
+
+    NavigationRequest request(
       robot_name,
       initial_task_id + 1,
-      {}
-    };
-    free_fleet::messages::Waypoint wp;
-    wp.location.level_name = "test_map";
-
-    auto first_wp = wp;
-    first_wp.index = 0;
-    first_wp.location.x = 0.0;
-    first_wp.location.y = 0.0;
-    request.path.push_back(first_wp);
-
-    auto second_wp = wp;
-    second_wp.index = 1;
-    second_wp.location.x = 10.0;
-    request.path.push_back(second_wp);
-
-    auto third_wp = wp;
-    third_wp.index = 0;
-    third_wp.location.x = 0.0;
-    request.path.push_back(third_wp);
-
-    auto forth_wp = wp;
-    forth_wp.index = 2;
-    forth_wp.location.x = -10.0;
-    request.path.push_back(forth_wp);
-
+      {first_wp, second_wp, third_wp, forth_wp});
+    
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
       new free_fleet::manager::SimpleRequestInfo<NavigationRequest>(

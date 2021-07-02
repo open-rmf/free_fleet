@@ -15,6 +15,7 @@
  *
  */
 
+#include <chrono>
 #include <memory>
 #include <iostream>
 
@@ -75,15 +76,13 @@ SCENARIO("Test Manager API")
   GIVEN("Starting with initial conditions, running 5 times")
   {
     for (int i = 0; i < 5; ++i)
-      CHECK_NOTHROW(
-        free_fleet::Manager::Implementation::get(*manager).run_once());
+      CHECK_NOTHROW(manager->run_once());
   }
 
   GIVEN("Started with no robots")
   {
     for (int i = 0; i < 5; ++i)
-      CHECK_NOTHROW(
-        free_fleet::Manager::Implementation::get(*manager).run_once());
+      CHECK_NOTHROW(manager->run_once());
 
     auto robot_names = manager->robot_names();
     CHECK(robot_names.empty());
@@ -113,13 +112,18 @@ SCENARIO("Test Manager API")
 
     id = manager->request_relocalization(
       rn,
-      free_fleet::messages::Location(),
+      free_fleet::messages::Location("test_map", {0.0, 0.0}, 0.0),
       0);
     CHECK(!id.has_value());
 
+    using Waypoint = free_fleet::messages::Waypoint;
+    using Location = free_fleet::messages::Location;
     id = manager->request_navigation(
       rn,
-      {free_fleet::messages::Waypoint(), free_fleet::messages::Waypoint()});
+      {
+        Waypoint(0, Location("test_map", {0.0, 0.0}, 0.0)),
+        Waypoint(1, Location("test_map", {1.0, 0.0}, 0.0))
+      });
     CHECK(!id.has_value());
   }
 }
@@ -166,39 +170,57 @@ SCENARIO("Testing manager API with dummy robots")
     cb);
   REQUIRE(manager);
 
-  free_fleet::messages::RobotState initial_state {
-    "test_robot",
-    "test_model",
-    0,
-    free_fleet::messages::RobotMode(),
-    1.0,
-    free_fleet::messages::Location(),
-    0
-  };
+  using RobotMode = free_fleet::messages::RobotMode;
+  using Location = free_fleet::messages::Location;
+  using RobotState = free_fleet::messages::RobotState;
   rmf_traffic::Time initial_time = std::chrono::steady_clock::now();
 
   auto& impl = free_fleet::Manager::Implementation::get(*manager);
 
-  initial_state.name = "test_robot_1";
+  RobotState state_1(
+    std::chrono::steady_clock::now(),
+    "test_robot_1",
+    "test_model",
+    0,
+    RobotMode(RobotMode::Mode::Idle),
+    1.0,
+    Location(test_map_name, {0.0, 0.0}, 0.0),
+    0);
   auto robot_info_1 =
     free_fleet::manager::RobotInfo::Implementation::make(
-      initial_state,
+      state_1,
       graph,
       initial_time);
   REQUIRE(robot_info_1);
 
-  initial_state.name = "test_robot_2";
+  RobotState state_2(
+    std::chrono::steady_clock::now(),
+    "test_robot_2",
+    "test_model",
+    0,
+    RobotMode(RobotMode::Mode::Idle),
+    1.0,
+    Location(test_map_name, {0.0, 0.0}, 0.0),
+    0);
   auto robot_info_2 =
     free_fleet::manager::RobotInfo::Implementation::make(
-      initial_state,
+      state_2,
       graph,
       initial_time);
   REQUIRE(robot_info_2);
 
-  initial_state.name = "test_robot_3";
+  RobotState state_3(
+    std::chrono::steady_clock::now(),
+    "test_robot_3",
+    "test_model",
+    0,
+    RobotMode(RobotMode::Mode::Idle),
+    1.0,
+    Location(test_map_name, {0.0, 0.0}, 0.0),
+    0);
   auto robot_info_3 =
     free_fleet::manager::RobotInfo::Implementation::make(
-      initial_state,
+      state_3,
       graph,
       initial_time);
   REQUIRE(robot_info_3);
@@ -290,14 +312,8 @@ SCENARIO("Testing manager API with dummy robots")
   GIVEN("Sending relocalization requests to dummy robots")
   {
     // Valid relocalization
-    free_fleet::messages::Location valid_location {
-      0,
-      0,
-      0.0,
-      0.0,
-      0.0,
-      test_map_name,
-    };
+    free_fleet::messages::Location valid_location(
+      test_map_name, {0.0, 0.0}, 0.0);
     auto id_1 = manager->request_relocalization(
       "test_robot_1",
       valid_location,
@@ -337,22 +353,12 @@ SCENARIO("Testing manager API with dummy robots")
 
   GIVEN("Sending navigation request to dummy robots")
   {
-    // Valid waypoints
-    free_fleet::messages::Location valid_location {
-      0,
-      0,
-      0.0,
-      0.0,
-      0.0,
-      test_map_name};
-    free_fleet::messages::Waypoint valid_waypoint_1 {
-      0,
-      valid_location};
+    using Waypoint = free_fleet::messages::Waypoint;
+    using Location = free_fleet::messages::Location;
 
-    valid_location.x = 10.0;
-    free_fleet::messages::Waypoint valid_waypoint_2 {
-      1,
-      valid_location};
+    // Valid waypoints
+    Waypoint valid_waypoint_1(0, Location(test_map_name, {0.0, 0.0}, 0.0));
+    Waypoint valid_waypoint_2(1, Location(test_map_name, {10.0, 0.0}, 0.0));
     
     auto id_1 = manager->request_navigation(
       "test_robot_2",
@@ -361,12 +367,14 @@ SCENARIO("Testing manager API with dummy robots")
     CHECK(id_1.value() == 1);
 
     // Invalid waypoints
-    free_fleet::messages::Waypoint invalid_waypoint {
-      100,
-      free_fleet::messages::Location()};
+    free_fleet::messages::Waypoint invalid_waypoint(
+      100, Location("invalid_map_name", {0.0, 0.0}, 0.0));
     auto id_2 = manager->request_navigation(
       "test_robot_3",
-      {free_fleet::messages::Waypoint(), invalid_waypoint});
+      {
+        Waypoint(0, Location(test_map_name, {0.0, 0.0}, 0.0)),
+        invalid_waypoint
+      });
     CHECK(!id_2.has_value());
 
     // Empty path
@@ -378,7 +386,10 @@ SCENARIO("Testing manager API with dummy robots")
     // Invalid robot
     auto id_4 = manager->request_navigation(
       "test_robot_30",
-      {free_fleet::messages::Waypoint(), free_fleet::messages::Waypoint()});
+      {
+        Waypoint(0, Location(test_map_name, {0.0, 0.0}, 0.0)),
+        Waypoint(0, Location(test_map_name, {0.0, 0.0}, 0.0))
+      });
     CHECK(!id_4.has_value());
 
     // Subsequent navigation request
@@ -397,6 +408,9 @@ SCENARIO("Testing manager API with dummy robots")
 
   GIVEN("Sending subsequent requests of different types")
   {
+    using Waypoint = free_fleet::messages::Waypoint;
+    using Location = free_fleet::messages::Location;
+
     // Dock
     auto id_1 = manager->request_dock("test_robot_1", "mock_dock");
     REQUIRE(id_1.has_value());
@@ -413,20 +427,8 @@ SCENARIO("Testing manager API with dummy robots")
     CHECK(id_3.value() == 3);
 
     // Navigation
-    free_fleet::messages::Location valid_location {
-      0,
-      0,
-      0.0,
-      0.0,
-      0.0,
-      test_map_name};
-    free_fleet::messages::Waypoint valid_waypoint_1 {
-      0,
-      valid_location};
-    valid_location.x = 10.0;
-    free_fleet::messages::Waypoint valid_waypoint_2 {
-      1,
-      valid_location};
+    Waypoint valid_waypoint_1(0, Location(test_map_name, {0.0, 0.0}, 0.0));
+    Waypoint valid_waypoint_2(1, Location(test_map_name, {10.0, 0.0}, 0.0));
     auto id_4 = manager->request_navigation(
       "test_robot_2",
       {valid_waypoint_1, valid_waypoint_2});
@@ -434,65 +436,22 @@ SCENARIO("Testing manager API with dummy robots")
     CHECK(id_4.value() == 4);
 
     // Relocalization
-    valid_location.x = 0.0;
-    valid_location.y = 10.0;
     auto id_5 = manager->request_relocalization(
       "test_robot_3",
-      valid_location,
+      Location(test_map_name, {0.0, 10.0}, 0.0),
       3);
     REQUIRE(id_5.has_value());
     CHECK(id_5.value() == 5);
 
-    // Invalid navigation
-    free_fleet::messages::Waypoint invalid_waypoint {
-      100,
-      free_fleet::messages::Location()};
-    auto id_6 = manager->request_navigation(
-      "test_robot_1",
-      {free_fleet::messages::Waypoint(), invalid_waypoint});
-    CHECK(!id_6.has_value());
-
     // Valid Relocalization
-    valid_location.x = 0.0;
-    valid_location.y = 0.0;
-    auto id_7 = manager->request_relocalization(
+    auto id_6 = manager->request_relocalization(
       "test_robot_1",
-      valid_location,
+      Location(test_map_name, {0.0, 0.0}, 0.0),
       0);
-    REQUIRE(id_7.has_value());
-    CHECK(id_7.value() == 6);
+    REQUIRE(id_6.has_value());
+    CHECK(id_6.value() == 6);
   }
 }
-
-class MockServerMiddlewareWithRobot : public free_fleet::MockServerMiddleware
-{
-public:
-
-  MockServerMiddlewareWithRobot()
-  {}
-
-  std::vector<free_fleet::messages::RobotState> read_states() final
-  {
-    const std::string test_map_name = "test_level";
-    free_fleet::messages::Location valid_location {
-      0,
-      0,
-      0.0,
-      0.0,
-      0.0,
-      test_map_name};
-    free_fleet::messages::RobotState valid_state {
-      "test_robot",
-      "test_model",
-      0,
-      free_fleet::messages::RobotMode(),
-      1.0,
-      valid_location,
-      0
-    };
-    return {valid_state};
-  }
-};
 
 SCENARIO("Testing update robot callback with dummy robot")
 {
@@ -516,7 +475,8 @@ SCENARIO("Testing update robot callback with dummy robot")
   graph->add_waypoint(test_map_name, {100, 100});
 
   std::unique_ptr<free_fleet::transport::ServerMiddleware> m(
-    new MockServerMiddlewareWithRobot());
+    new free_fleet::MockServerMiddleware());
+
   auto ct = free_fleet::manager::SimpleCoordinateTransformer::make(
     1.0,
     0.0,
@@ -539,15 +499,16 @@ SCENARIO("Testing update robot callback with dummy robot")
     cb);
   REQUIRE(manager);
 
-  free_fleet::messages::RobotState initial_state {
+  free_fleet::messages::RobotState initial_state(
+    std::chrono::steady_clock::now(),
     "test_robot",
     "test_model",
     1,
-    free_fleet::messages::RobotMode(),
+    free_fleet::messages::RobotMode(
+      free_fleet::messages::RobotMode::Mode::Idle),
     1.0,
-    free_fleet::messages::Location(),
-    0
-  };
+    free_fleet::messages::Location("test_map", {0.0, 0.0}, 0.0),
+    0);
   rmf_traffic::Time initial_time = std::chrono::steady_clock::now();
 
   auto& impl = free_fleet::Manager::Implementation::get(*manager);
@@ -560,6 +521,5 @@ SCENARIO("Testing update robot callback with dummy robot")
   REQUIRE(robot_info);
 
   impl.robots[robot_info->name()] = robot_info;
-  
-  impl.run_once();  
+  manager->run_once();  
 }

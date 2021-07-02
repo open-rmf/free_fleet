@@ -20,39 +20,65 @@
 
 #include <cstdint>
 
+#include <rmf_utils/impl_ptr.hpp>
+
 namespace free_fleet {
 namespace messages {
 
-struct RobotMode
+//==============================================================================
+class RobotMode
 {
-  /// Mode of the robot.
-  uint32_t mode;
-  static const uint32_t MODE_IDLE = 0;
-  static const uint32_t MODE_CHARGING = 1;
-  static const uint32_t MODE_MOVING = 2;
-  static const uint32_t MODE_PAUSED = 3;
-  static const uint32_t MODE_WAITING = 4;
-  static const uint32_t MODE_EMERGENCY = 5;
-  static const uint32_t MODE_GOING_HOME = 6;
-  static const uint32_t MODE_DOCKING = 7;
-  static const uint32_t MODE_REQUEST_ERROR = 8;
-  static const uint32_t MODE_UNDEFINED = 9;
-  static const uint32_t MODE_CUSTOM = 10;
+public:
 
-  /// Information accompanying any of the modes, especially if it is undefined.
-  std::string info;
-
-  /// Comparing operator
-  friend bool operator==(
-    const RobotMode& lhs,
-    const RobotMode& rhs)
+  /// Types of modes of the robot.
+  enum class Mode : uint32_t
   {
-    if (lhs.mode == rhs.mode)
-      return true;
-    return false;
-  }
+    Idle,
+    Charging,
+    Moving,
+    Paused,
+    Waiting,
+    Emergency,
+    Docking,
+    Error,
+    Undefined,
+    Custom
+  };
+
+  /// Constructor
+  ///
+  /// \param[in] mode
+  ///   The current robot mode.
+  RobotMode(Mode mode);
+
+  /// Constructor
+  ///
+  /// \param[in] mode
+  ///   The current robot mode.
+  ///
+  /// \param[in] info
+  ///   Any additional information about this mode that is relevant.
+  RobotMode(Mode mode, const std::string& info);
+
+  /// Gets the mode.
+  Mode mode() const;
+
+  /// Gets the additional information if any. Returns an empty string if not
+  /// set.
+  const std::string& info() const;
+  
+  class Implementation;
+private:
+  rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
+//==============================================================================
+/// Comparing Operators.
+bool operator==(const RobotMode& lhs, const RobotMode& rhs);
+
+bool operator!=(const RobotMode& lhs, const RobotMode& rhs);
+
+//==============================================================================
 } // namespace messages
 } // namespace free_fleet
 

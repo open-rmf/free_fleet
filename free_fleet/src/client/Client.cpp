@@ -46,18 +46,26 @@ void Client::Implementation::set_callbacks()
 }
 
 //==============================================================================
+void Client::Implementation::complete_task()
+{
+  assert(task_id.has_value());
+  last_task_id = task_id.value();
+  task_id = std::nullopt; 
+}
+
+//==============================================================================
 void Client::Implementation::run_once()
 {
   // send state
-  free_fleet::messages::RobotState new_state {
+  free_fleet::messages::RobotState new_state(
+    status_handle->time(),
     robot_name,
     robot_model,
     task_id,
     status_handle->mode(),
     status_handle->battery_percent(),
     status_handle->location(),
-    static_cast<uint32_t>(status_handle->target_path_waypoint_index())
-  };
+    status_handle->target_path_waypoint_index());
   middleware->send_state(new_state);
 }
 
@@ -67,9 +75,10 @@ void Client::Implementation::handle_pause_request(
 {
   if (!is_valid_request(request))
     return;
-  task_ids.insert(request.task_id);
-  task_id = request.task_id;
-  command_handle->stop();
+  task_id = request.task_id();
+  task_ids.insert(task_id.value());
+  command_handle->stop(
+    [this](){complete_task();});
 }
 
 //==============================================================================
@@ -78,9 +87,10 @@ void Client::Implementation::handle_resume_request(
 {
   if (!is_valid_request(request))
     return;
-  task_ids.insert(request.task_id);
-  task_id = request.task_id;
-  command_handle->resume();
+  task_id = request.task_id();
+  task_ids.insert(task_id.value());
+  command_handle->resume(
+    [this](){complete_task();});
 }
 
 //==============================================================================
@@ -89,11 +99,11 @@ void Client::Implementation::handle_dock_request(
 {
   if (!is_valid_request(request))
     return;
-  task_ids.insert(request.task_id);
-  task_id = request.task_id;
-  free_fleet::client::CommandHandle::RequestCompleted callback =
-    [this]() { task_id = 0; };
-  command_handle->dock(request.dock_name, callback);
+  task_id = request.task_id();
+  task_ids.insert(task_id.value());
+  command_handle->dock(
+    request.dock_name(),
+    [this](){complete_task();});
 }
 
 //==============================================================================
@@ -102,11 +112,11 @@ void Client::Implementation::handle_navigation_request(
 {
   if (!is_valid_request(request))
     return;
-  task_ids.insert(request.task_id);
-  task_id = request.task_id;
-  free_fleet::client::CommandHandle::RequestCompleted callback =
-    [this]() { task_id = 0; };
-  command_handle->follow_new_path(request.path, callback);
+  task_id = request.task_id();
+  task_ids.insert(task_id.value());
+  command_handle->follow_new_path(
+    request.path(),
+    [this](){complete_task();});
 }
 
 //==============================================================================
@@ -115,11 +125,11 @@ void Client::Implementation::handle_relocalization_request(
 {
   if (!is_valid_request(request))
     return;
-  task_ids.insert(request.task_id);
-  task_id = request.task_id;
-  free_fleet::client::CommandHandle::RequestCompleted callback =
-    [this]() { task_id = 0; };
-  command_handle->relocalize(request.location, callback);
+  task_id = request.task_id();
+  task_ids.insert(task_id.value());
+  command_handle->relocalize(
+    request.location(),
+    [this](){complete_task();});
 }
 
 //==============================================================================

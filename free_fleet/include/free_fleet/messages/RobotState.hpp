@@ -20,7 +20,12 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
+#include <rmf_traffic/Time.hpp>
+#include <rmf_utils/impl_ptr.hpp>
+
+#include <free_fleet/Types.hpp>
 #include <free_fleet/messages/Location.hpp>
 #include <free_fleet/messages/Waypoint.hpp>
 #include <free_fleet/messages/RobotMode.hpp>
@@ -28,46 +33,88 @@
 namespace free_fleet {
 namespace messages {
 
-struct RobotState
+//==============================================================================
+class RobotState
 {
-  /// Name of the robot.
-  std::string name;
+public:
 
-  /// Model of the robot.
-  std::string model;
+  /// Constructor.
+  /// \param[in] time
+  ///   The time stamp of this state. 
+  ///
+  /// \param[in] name
+  ///   The name of this robot. A std::invalid_argument will be thrown if this
+  ///   is empty.
+  ///
+  /// \param[in] model
+  ///   The model name of this robot.
+  ///   
+  /// \param[in] task_id
+  ///   The taks id of the task that the robot is currently performing. If the
+  ///   robot has completed its previous task and is idle, this should be a
+  ///   nullopt.
+  ///
+  /// \param[in] mode
+  ///   The current mode of the robot.
+  ///
+  /// \param[in] battery_percent
+  ///   The current battery percentage of the robot. A std::invalid_argument
+  ///   will be thrown if this value is not between 0.0 (empty) and 1.0 (full).
+  ///
+  /// \param[in] location
+  ///   The current location of the robot.
+  ///
+  /// \param[in] target_path_index
+  ///   The target path index for the waypoint, which the robot is currently
+  ///   navigating towards to.
+  RobotState(
+    rmf_traffic::Time time,
+    const std::string& name,
+    const std::string& model,
+    std::optional<TaskId> task_id,
+    const RobotMode& mode,
+    double battery_percent,
+    const Location& location,
+    std::size_t target_path_index);
+  
+  /// Gets the current time stamp of this state.
+  rmf_traffic::Time time() const;
 
-  /// Task ID of the task it is currently performing.
-  uint32_t task_id;
+  /// Gets the robot name.
+  const std::string& name() const;
 
-  /// Current mode of the robot.
-  RobotMode mode;
+  /// Gets the robot model.
+  const std::string& model() const;
 
-  /// Current battery percentage, values from 0 to 1.
-  double battery_percent;
+  /// Gets the current task id. If the robot has completed its task and is idle,
+  /// returns a nullopt.
+  std::optional<TaskId> task_id() const;
 
-  /// Current location of the robot.
-  Location location;
+  /// Gets the robot mode.
+  const RobotMode& mode() const;
 
-  /// Index of the most recently past 
-  std::size_t path_target_index;
+  /// Gets the robot battery percentage.
+  double battery_percent() const;
 
-  /// Comparing operator
-  friend bool operator==(
-    const RobotState& lhs,
-    const RobotState& rhs)
-  {
-    if (lhs.name == rhs.name &&
-      lhs.model == rhs.model &&
-      lhs.task_id == rhs.task_id &&
-      lhs.mode == rhs.mode &&
-      lhs.battery_percent == rhs.battery_percent &&
-      lhs.location == rhs.location &&
-      lhs.path_target_index == rhs.path_target_index)
-      return true;
-    return false;    
-  }
+  /// Gets the robot location.
+  const Location& location() const;
+
+  /// Gets the target path index for the waypoint, which the robot is currently
+  /// navigating towards to.
+  std::size_t target_path_index() const;
+
+  class Implementation;
+private:
+  rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
+//==============================================================================
+/// Comparing operators.
+bool operator==(const RobotState& lhs, const RobotState& rhs);
+
+bool operator!=(const RobotState& lhs, const RobotState& rhs);
+
+//==============================================================================
 } // namespace messages
 } // namespace free_fleet
 

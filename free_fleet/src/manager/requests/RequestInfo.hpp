@@ -21,6 +21,7 @@
 #include <utility>
 #include <rmf_traffic/Time.hpp>
 #include <rmf_utils/optional.hpp>
+#include <free_fleet/Types.hpp>
 #include <free_fleet/manager/RobotInfo.hpp>
 
 namespace free_fleet {
@@ -42,7 +43,7 @@ public:
   virtual std::optional<rmf_traffic::Time> acknowledged() const = 0;
 
   /// Gets the task ID of this request.
-  virtual uint32_t id() const = 0;
+  virtual TaskId id() const = 0;
 
   /// Sends out this request.
   virtual void send_request() const = 0;

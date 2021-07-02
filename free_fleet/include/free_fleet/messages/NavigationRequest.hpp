@@ -21,44 +21,56 @@
 #include <string>
 #include <vector>
 
+#include <rmf_utils/impl_ptr.hpp>
+
+#include <free_fleet/Types.hpp>
 #include <free_fleet/messages/Waypoint.hpp>
 
 namespace free_fleet {
 namespace messages {
 
-struct NavigationRequest
+//==============================================================================
+class NavigationRequest
 {
-  /// Robot to perform this request.
-  std::string robot_name;
+public:
 
-  /// Task ID issued by the fleet manager.
-  uint32_t task_id;
+  /// Constructor
+  ///
+  /// \param[in] robot_name
+  ///   The name of the robot this request is targeting. A std::invalid_argument
+  ///   will be thrown if this is empty.
+  ///
+  /// \param[in] task_id
+  ///   The task id associated with this request.
+  ///
+  /// \param[in] path
+  ///   The desired path for this navigation request.
+  NavigationRequest(
+    const std::string& robot_name,
+    TaskId task_id,
+    std::vector<Waypoint> path);
 
-  /// A vector of waypoints.
-  std::vector<Waypoint> path;
+  /// Gets the robot name.
+  const std::string& robot_name() const;
 
-  /// Comparing operator
-  friend bool operator==(
-    const NavigationRequest& lhs,
-    const NavigationRequest& rhs)
-  {
-    if (lhs.robot_name == rhs.robot_name &&
-      lhs.task_id == rhs.task_id &&
-      lhs.path.size() == rhs.path.size())
-    {
-      for (std::size_t i = 0; i < lhs.path.size(); ++i)
-      {
-        if (lhs.path[i] == rhs.path[i])
-          continue;
-        else
-          return false;
-      }
-      return true;
-    }
-    return false;
-  }
+  /// Gets the task id.
+  TaskId task_id() const;
+
+  /// Gets the desired path of this request.
+  const std::vector<Waypoint>& path() const; 
+
+  class Implementation;
+private:
+  rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
+//==============================================================================
+/// Comparing operators.
+bool operator==(const NavigationRequest& lhs, const NavigationRequest& rhs);
+
+bool operator!=(const NavigationRequest& lhs, const NavigationRequest& rhs);
+
+//==============================================================================
 } // namespace messages
 } // namespace free_fleet
 

@@ -58,7 +58,9 @@ public:
     return *manager._pimpl;
   }
 
-  void run_once();
+  void set_callbacks();
+
+  void handle_robot_states(const std::vector<messages::RobotState>& states);
 
   std::string fleet_name;
   std::shared_ptr<const rmf_traffic::agv::Graph> graph;
@@ -69,11 +71,9 @@ public:
 
   std::unordered_map<std::string, std::shared_ptr<manager::RobotInfo>> robots;
 
-  // Reserving task ID 0 for empty tasks
-  const uint32_t idle_task_id = 0;
-  uint32_t current_task_id = idle_task_id;
-  std::unordered_map<uint32_t, std::shared_ptr<manager::RequestInfo>> tasks;
-  std::unordered_map<uint32_t, std::shared_ptr<manager::RequestInfo>>
+  TaskId current_task_id = 0;
+  std::unordered_map<TaskId, std::shared_ptr<manager::RequestInfo>> tasks;
+  std::unordered_map<TaskId, std::shared_ptr<manager::RequestInfo>>
     unacknowledged_tasks;
 
   std::atomic<bool> stopped = true;

@@ -20,29 +20,46 @@
 
 #include <string>
 
+#include <rmf_utils/impl_ptr.hpp>
+
+#include <free_fleet/Types.hpp>
+
 namespace free_fleet {
 namespace messages {
 
-struct ResumeRequest
+//==============================================================================
+class ResumeRequest
 {
-  /// Robot to perform this request
-  std::string robot_name;
+public:
 
-  /// Task ID issued by the fleet manager
-  uint32_t task_id;
+  /// Constructor
+  ///
+  /// \param[in] robot_name
+  ///   The name of the robot this request is targeting. A std::invalid_argument
+  ///   will be thrown if this is empty.
+  ///
+  /// \param[in] task_id
+  ///   The task id associated with this request.
+  ResumeRequest(const std::string& robot_name, TaskId task_id);
 
-  /// Comparing operator
-  friend bool operator==(
-    const ResumeRequest& lhs,
-    const ResumeRequest& rhs)
-  {
-    if (lhs.robot_name == rhs.robot_name &&
-      lhs.task_id == rhs.task_id)
-      return true;
-    return false;
-  }
+  /// Gets the robot name.
+  const std::string& robot_name() const;
+
+  /// Gets the task ID.
+  TaskId task_id() const;
+
+  class Implementation;
+private:
+  rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
+//==============================================================================
+/// Comparing operators.
+bool operator==(const ResumeRequest& lhs, const ResumeRequest& rhs);
+
+bool operator!=(const ResumeRequest& lhs, const ResumeRequest& rhs);
+
+//==============================================================================
 } // namespace messages
 } // namespace free_fleet
 

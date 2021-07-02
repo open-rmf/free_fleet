@@ -32,27 +32,21 @@
 SCENARIO("Make RobotInfo")
 {
   const std::string test_map_name = "test_level";
-  free_fleet::messages::RobotMode initial_mode {
-    free_fleet::messages::RobotMode::MODE_IDLE,
-    ""
-  };
-  free_fleet::messages::Location initial_location {
-    0,
-    0,
-    0.0,
-    0.0,
-    0.0,
-    test_map_name
-  };
-  free_fleet::messages::RobotState initial_state {
+  free_fleet::messages::RobotMode initial_mode(
+    free_fleet::messages::RobotMode::Mode::Idle);
+  free_fleet::messages::Location initial_location(
+    test_map_name,
+    {0.0, 0.0},
+    0.0);
+  free_fleet::messages::RobotState initial_state(
+    std::chrono::steady_clock::now(),
     "test_robot",
     "test_model",
     0,
     initial_mode,
     1.0,
     initial_location,
-    0
-  };
+    0);
 
   std::shared_ptr<rmf_traffic::agv::Graph> graph(new rmf_traffic::agv::Graph);
 
@@ -74,28 +68,6 @@ SCENARIO("Make RobotInfo")
       free_fleet::manager::RobotInfo::Implementation::make(
         initial_state,
         nullptr,
-        initial_time);
-    CHECK(!robot_info);
-  }
-
-  GIVEN("Empty robot name")
-  {
-    initial_state.name = "";
-    auto robot_info =
-      free_fleet::manager::RobotInfo::Implementation::make(
-        initial_state,
-        graph,
-        initial_time);
-    CHECK(!robot_info);
-  }
-
-  GIVEN("Empty robot model")
-  {
-    initial_state.model = "";
-    auto robot_info =
-      free_fleet::manager::RobotInfo::Implementation::make(
-        initial_state,
-        graph,
         initial_time);
     CHECK(!robot_info);
   }

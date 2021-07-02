@@ -30,6 +30,7 @@ file(GLOB lib_srcs
   "src/*.cpp"
   "src/client/*.cpp"
   "src/manager/*.cpp"
+  "src/messages/*.cpp"
   "src/manager/requests/*.cpp"
   "src/manager/utilities/*.cpp"
 )

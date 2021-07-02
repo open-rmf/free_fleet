@@ -47,23 +47,23 @@ void RobotInfo::Implementation::update_state(
   const messages::RobotState& new_state,
   rmf_traffic::Time time_now)
 {
-  if (robot_info.name() != new_state.name)
+  if (robot_info.name() != new_state.name())
     return;
   
-  const uint32_t task_id = new_state.task_id;
+  const std::optional<uint32_t> task_id = new_state.task_id();
   auto it = robot_info._pimpl->allocated_requests.end();
   std::pair<TrackingState, std::size_t> new_tracking_estimate;
 
   // Robot is not doing any task at the moment.
-  if (task_id == 0)
+  if (!task_id.has_value())
   {
     new_tracking_estimate =
       robot_info._pimpl->track_through_graph(new_state);
   }
   // Use the implemented track_robot function of each request type to get new
   // tracking estimates.
-  else if ((it = robot_info._pimpl->allocated_requests.find(task_id)) !=
-    robot_info._pimpl->allocated_requests.end())
+  else if ((it = robot_info._pimpl->allocated_requests.find(task_id.value()))
+    != robot_info._pimpl->allocated_requests.end())
   {
     assert(it->second);
     auto request = it->second;
@@ -72,7 +72,7 @@ void RobotInfo::Implementation::update_state(
   // No such task exists
   else
   {
-    ffwarn << "Robot [" << robot_info.name() << "] task ID [" << task_id
+    ffwarn << "Robot [" << robot_info.name() << "] task ID [" << task_id.value()
       << "] was not allocated through this manager instance.\n";
 
     new_tracking_estimate = robot_info._pimpl->track_through_graph(new_state);
@@ -89,7 +89,7 @@ auto RobotInfo::Implementation::track_through_graph(
   const messages::RobotState& new_state) const
   -> std::pair<TrackingState, std::size_t>
 {
-  const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
+  const Eigen::Vector2d curr_loc = new_state.location().coordinates();
 
   if (tracking_state == RobotInfo::TrackingState::OnWaypoint)
   {

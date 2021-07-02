@@ -20,9 +20,10 @@
 
 #include <vector>
 #include <memory>
+#include <optional>
+#include <functional>
 
 #include <rmf_traffic/Time.hpp>
-#include <rmf_utils/optional.hpp>
 
 #include <free_fleet/messages/RobotState.hpp>
 #include <free_fleet/messages/DockRequest.hpp>
@@ -43,11 +44,13 @@ public:
 
   using Duration = rmf_traffic::Duration;
 
-  /// Reads any available robot states over the middleware.
+  /// Sets the callback function to be called whenever robot state messages are
+  /// received through the middleware.
   ///
-  /// \return
-  ///   Vector of robot state messages.
-  virtual std::vector<messages::RobotState> read_states() = 0;
+  /// \param[in] callback
+  ///   Callback function for handling new incoming robot states.
+  virtual void set_robot_states_callback(
+    std::function<void(const std::vector<messages::RobotState>&)> callback) = 0;
 
   /// Sends a dock request over the middleware to be performed by a robot.
   ///

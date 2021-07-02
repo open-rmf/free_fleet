@@ -39,10 +39,10 @@ public:
       RequestCompleted) final
   {}
 
-  void stop() final
+  void stop(RequestCompleted) final
   {}
 
-  void resume() final
+  void resume(RequestCompleted) final
   {}
 
   void dock(

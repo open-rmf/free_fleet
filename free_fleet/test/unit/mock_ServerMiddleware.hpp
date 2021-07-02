@@ -25,46 +25,50 @@ namespace free_fleet {
 class MockServerMiddleware : public transport::ServerMiddleware
 {
 public:
+  std::optional<messages::DockRequest> _prev_dock_request;
+  std::optional<messages::PauseRequest> _prev_pause_request;
+  std::optional<messages::ResumeRequest> _prev_resume_request;
+  std::optional<messages::NavigationRequest> _prev_nav_request;
+  std::optional<messages::RelocalizationRequest> _prev_reloc_request;
+  std::function<void(const std::vector<messages::RobotState>&)>
+    robot_states_callback; 
 
   MockServerMiddleware()
   {}
 
-  std::vector<messages::RobotState> read_states() override
+  void set_robot_states_callback(
+    std::function<void(const std::vector<messages::RobotState>&)> callback)
+    override 
   {
-    return {};
+    robot_states_callback = std::move(callback); 
   }
 
-  void send_dock_request(const messages::DockRequest& request) final
+  void send_dock_request(const messages::DockRequest& request) override
   {
     _prev_dock_request = request;
   }
 
-  void send_pause_request(const messages::PauseRequest& request) final
+  void send_pause_request(const messages::PauseRequest& request) override
   {
     _prev_pause_request = request;
   }
 
-  void send_resume_request(const messages::ResumeRequest& request) final
+  void send_resume_request(const messages::ResumeRequest& request) override
   {
     _prev_resume_request = request;
   }
 
-  void send_navigation_request(const messages::NavigationRequest& request) final
+  void send_navigation_request(const messages::NavigationRequest& request)
+    override
   {
     _prev_nav_request = request;
   }
 
   void send_relocalization_request(
-    const messages::RelocalizationRequest& request) final
+    const messages::RelocalizationRequest& request) override
   {
     _prev_reloc_request = request;
   }
-
-  messages::DockRequest _prev_dock_request;
-  messages::PauseRequest _prev_pause_request;
-  messages::ResumeRequest _prev_resume_request;
-  messages::NavigationRequest _prev_nav_request;
-  messages::RelocalizationRequest _prev_reloc_request;
 };
 
 } // namespace free_fleet

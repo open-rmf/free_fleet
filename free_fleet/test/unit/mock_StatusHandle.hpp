@@ -18,6 +18,7 @@
 #ifndef TEST__UNIT__MOCK_STATUSHANDLE_HPP
 #define TEST__UNIT__MOCK_STATUSHANDLE_HPP
 
+#include <chrono>
 #include <free_fleet/client/StatusHandle.hpp>
 
 namespace free_fleet {
@@ -32,14 +33,19 @@ public:
   ~MockStatusHandle() final
   {}
 
+  rmf_traffic::Time time() const final
+  {
+    return std::chrono::steady_clock::now();
+  }
+
   messages::Location location() const final
   {
-    return messages::Location();
+    return messages::Location("mock_map", {0.0, 0.0});
   }
 
   messages::RobotMode mode() const final
   {
-    return messages::RobotMode();
+    return messages::RobotMode(messages::RobotMode::Mode::Idle);
   }
 
   double battery_percent() const final

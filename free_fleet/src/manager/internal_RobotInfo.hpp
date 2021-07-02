@@ -55,23 +55,16 @@ public:
     std::shared_ptr<const rmf_traffic::agv::Graph> graph,
     rmf_traffic::Time time_now)
   {
-    auto make_error_fn = [](const std::string& error_msg)
-    {
-      fferr << error_msg << "\n";
-      return nullptr;
-    };
-
-    if (state.name.empty())
-      return make_error_fn("Provided robot name in state must not be empty.");
-    if (state.model.empty())
-      return make_error_fn("Provided robot model in state must not be empty.");
     if (!graph)
-      return make_error_fn("Provided traffic graph is invalid.");
+    {
+      fferr << "Provided traffic graph is invalid.\n";
+      return nullptr;
+    }
 
     std::shared_ptr<RobotInfo> info(new RobotInfo);
     info->_pimpl = rmf_utils::make_impl<Implementation>(Implementation());
-    info->_pimpl->name = state.name;
-    info->_pimpl->model = state.model;
+    info->_pimpl->name = state.name();
+    info->_pimpl->model = state.model();
     info->_pimpl->first_found = time_now;
     info->_pimpl->last_updated = time_now;
     info->_pimpl->graph = std::move(graph);

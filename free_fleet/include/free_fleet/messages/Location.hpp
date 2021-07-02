@@ -20,41 +20,72 @@
 
 #include <string>
 #include <cstdint>
+#include <optional>
+
+#include <Eigen/Geometry>
+
+#include <rmf_traffic/Time.hpp>
+#include <rmf_utils/impl_ptr.hpp>
 
 namespace free_fleet {
 namespace messages {
 
-struct Location
+//==============================================================================
+class Location
 {
-  /// Time in seconds and nanoseconds.
-  int32_t sec;
-  uint32_t nanosec;
+public:
 
-  /// x, y positions in meters and yaw in radians.
-  double x;
-  double y;
-  double yaw;
+  /// Constructor
+  ///
+  /// \param[in] map_name
+  ///   The name of the map this Location is referenced in. A
+  ///   std::invalid_argument will be thrown if this is empty.
+  ///
+  /// \param[in] coordinates
+  ///   The coordinates (x, y) of this Location in meters.
+  Location(
+    const std::string& map_name,
+    Eigen::Vector2d coordinates);
 
-  /// Current level/map name.
-  std::string level_name;
+  /// Constructor
+  /// 
+  /// \param[in] map_name
+  ///   The name of the map this Location is referenced in. A
+  ///   std::invalid_argument will be thrown if this is empty.
+  ///
+  /// \param[in] coordinates
+  ///   The coordinates (x, y) of this Location in meters.
+  ///
+  /// \param[in] yaw
+  ///   The yaw of this Location in radians.
+  Location(
+    const std::string& map_name,
+    Eigen::Vector2d coordinates,
+    double yaw);
 
-  /// Comparing operator
-  friend bool operator==(
-    const Location& lhs,
-    const Location& rhs)
-  {
-    if (lhs.sec == rhs.sec &&
-      lhs.nanosec == rhs.nanosec &&
-      abs(lhs.x - rhs.x) < 1e-3 &&
-      abs(lhs.y - rhs.y) < 1e-3 &&
-      abs(lhs.yaw - rhs.yaw) < 1e-3 &&
-      lhs.level_name == rhs.level_name)
-      return true;
-    return false;
-  }
+  /// Gets the current map name.
+  const std::string& map_name() const;
+
+  /// Gets the coordinates of this Location (x, y) in meters.
+  const Eigen::Vector2d& coordinates() const;
+
+  /// Gets the yaw in radians of this location. If the yaw is not required, a
+  /// nullopt will be returned.
+  std::optional<double> yaw() const;
+
+  class Implementation;
+private:
+  rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
+//=============================================================================
+/// Comparing operators
+bool operator==(const Location& lhs, const Location& rhs);
+
+bool operator!=(const Location& lhs, const Location& rhs);
+
+//=============================================================================
 } // namespace messages
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP
+# endif // INCLUDE__FREE_FLEET__MESSAGES__LOCATION_HPP

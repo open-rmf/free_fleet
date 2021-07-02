@@ -39,29 +39,42 @@
 namespace free_fleet {
 
 //==============================================================================
-void Manager::Implementation::run_once()
+void Manager::Implementation::set_callbacks()
 {
-  // get states
-  const auto states = middleware->read_states();
+  middleware->set_robot_states_callback(
+    std::bind(
+      &Manager::Implementation::handle_robot_states,
+      this,
+      std::placeholders::_1));
+}
+
+//==============================================================================
+void Manager::Implementation::handle_robot_states(
+  const std::vector<messages::RobotState>& states)
+{
   std::lock_guard<std::mutex> lock(mutex);
   for (const auto& s : states)
   {
-    messages::RobotState transformed_state{
-      s.name,
-      s.model,
-      s.task_id,
-      s.mode,
-      s.battery_percent,
-      to_robot_transform->backward_transform(s.location),
-      s.path_target_index};
+    const std::string robot_name = s.name();
+    const auto task_id = s.task_id();
 
-    if (s.name.empty())
+    messages::RobotState transformed_state(
+      s.time(),
+      robot_name,
+      s.model(),
+      task_id,
+      s.mode(),
+      s.battery_percent(),
+      to_robot_transform->backward_transform(s.location()),
+      s.target_path_index());
+
+    if (robot_name.empty())
     {
       fferr << "Incoming robot state's name is empty, ignoring.\n";
       continue;
     }
 
-    const auto r_it = robots.find(s.name);
+    const auto r_it = robots.find(robot_name);
     bool new_robot = r_it == robots.end();
     if (new_robot)
     {
@@ -71,8 +84,8 @@ void Manager::Implementation::run_once()
         time_now_fn());
       if (new_robot)
       {
-        robots[s.name] = std::move(new_robot);
-        ffinfo << "Registered new robot: [" << s.name << "]\n";
+        robots[robot_name] = std::move(new_robot);
+        ffinfo << "Registered new robot: [" << robot_name << "]\n";
       }
     }
     else
@@ -88,18 +101,15 @@ void Manager::Implementation::run_once()
       robot_updated_callback_fn(*r_it->second);
 
     // for each robot figure out whether any tasks were not received yet
-    const auto t_it = unacknowledged_tasks.find(s.task_id);
-    if (t_it != unacknowledged_tasks.end())
+    if (task_id.has_value())
     {
-      t_it->second->acknowledge_request();
-      unacknowledged_tasks.erase(t_it);
+      const auto t_it = unacknowledged_tasks.find(task_id.value());
+      if (t_it != unacknowledged_tasks.end())
+      {
+        t_it->second->acknowledge_request();
+        unacknowledged_tasks.erase(t_it);
+      }
     }
-  }
-  
-  // Send out all unreceived tasks again
-  for (const auto t_it : unacknowledged_tasks)
-  {
-    t_it.second->send_request();
   }
 }
 
@@ -150,7 +160,11 @@ Manager::Manager()
 //==============================================================================
 void Manager::run_once()
 {
-  _pimpl->run_once();
+  // Send out all unreceived tasks again
+  for (const auto t_it : _pimpl->unacknowledged_tasks)
+  {
+    t_it.second->send_request();
+  }
 }
 
 //==============================================================================
@@ -199,14 +213,8 @@ auto Manager::request_pause(const std::string& robot_name)
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
     return std::nullopt;
 
-  // Handles the carry forward
-  if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
-    ++_pimpl->current_task_id;
-
-  messages::PauseRequest request {
-    robot_name,
-    _pimpl->current_task_id
-  };
+  const TaskId request_task_id = ++_pimpl->current_task_id;
+  messages::PauseRequest request(robot_name, request_task_id); 
 
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::PauseRequest>(
@@ -216,9 +224,9 @@ auto Manager::request_pause(const std::string& robot_name)
       this->_pimpl->middleware->send_pause_request(request_msg);
     },
       [this](){return _pimpl->time_now_fn();}));
-  
-  _pimpl->tasks[request.task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+
+  _pimpl->tasks[request_task_id] = request_info;
+  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();
   return _pimpl->current_task_id;
 }
@@ -231,14 +239,8 @@ auto Manager::request_resume(const std::string& robot_name)
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
     return std::nullopt;
 
-  // Handles the carry forward
-  if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
-    ++_pimpl->current_task_id;
-
-  messages::ResumeRequest request {
-    robot_name,
-    _pimpl->current_task_id
-  };
+  const TaskId request_task_id = ++_pimpl->current_task_id;
+  messages::ResumeRequest request(robot_name, request_task_id);
 
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::ResumeRequest>(
@@ -249,8 +251,8 @@ auto Manager::request_resume(const std::string& robot_name)
     },
       [this](){return _pimpl->time_now_fn();}));
   
-  _pimpl->tasks[request.task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+  _pimpl->tasks[request_task_id] = request_info;
+  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();
   return _pimpl->current_task_id;
 }
@@ -264,15 +266,11 @@ auto Manager::request_dock(
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
     return std::nullopt;
 
-  // Handles the carry forward
-  if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
-    ++_pimpl->current_task_id;
-
-  messages::DockRequest request {
+  const TaskId request_task_id = ++_pimpl->current_task_id;
+  messages::DockRequest request(
     robot_name,
-    _pimpl->current_task_id,
-    dock_name
-  };
+    request_task_id,
+    dock_name);
 
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::DockRequest>(
@@ -283,8 +281,8 @@ auto Manager::request_dock(
     },
       [this](){return _pimpl->time_now_fn();}));
   
-  _pimpl->tasks[request.task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+  _pimpl->tasks[request_task_id] = request_info;
+  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();
   return _pimpl->current_task_id;
 }
@@ -311,7 +309,7 @@ auto Manager::request_relocalization(
   auto wp =
     _pimpl->graph->get_waypoint(last_visited_waypoint_index);
   const double dist_from_wp =
-    (Eigen::Vector2d{location.x, location.y} - wp.get_location()).norm();
+    (location.coordinates() - wp.get_location()).norm();
   if (dist_from_wp >= 10.0)
   {
     fferr << "Last visited waypoint [" << last_visited_waypoint_index
@@ -322,16 +320,12 @@ auto Manager::request_relocalization(
   messages::Location transformed_location =
     _pimpl->to_robot_transform->forward_transform(location);
 
-  // Handles the carry forward
-  if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
-    ++_pimpl->current_task_id;
-
-  messages::RelocalizationRequest request {
+  const TaskId request_task_id = ++_pimpl->current_task_id;
+  messages::RelocalizationRequest request(
     robot_name,
-    _pimpl->current_task_id,
+    request_task_id,
     transformed_location,
-    last_visited_waypoint_index
-  };
+    last_visited_waypoint_index);
 
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<
@@ -343,8 +337,8 @@ auto Manager::request_relocalization(
     },
         [this](){return _pimpl->time_now_fn();}));
   
-  _pimpl->tasks[request.task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+  _pimpl->tasks[request_task_id] = request_info;
+  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();
   return _pimpl->current_task_id;
 }
@@ -370,7 +364,7 @@ auto Manager::request_navigation(
   for (std::size_t i = 0; i < path.size(); ++i)
   {
     auto wp = path[i];
-    std::size_t wp_index = static_cast<std::size_t>(wp.index);
+    std::size_t wp_index = static_cast<std::size_t>(wp.index());
 
     // Check if the waypoint exists
     if (wp_index >= num_wp)
@@ -385,7 +379,7 @@ auto Manager::request_navigation(
     {
       auto next_wp = path[i+1];
       const rmf_traffic::agv::Graph::Lane* connecting_lane =
-        _pimpl->graph->lane_from(wp.index, next_wp.index);
+        _pimpl->graph->lane_from(wp_index, next_wp.index());
       if (!connecting_lane)
       {
         fferr << "No connecting lane between waypoints [" << i << "] & ["
@@ -396,9 +390,8 @@ auto Manager::request_navigation(
     
     // Check if the provided location matches the one found in the graph
     const auto g_wp = _pimpl->graph->get_waypoint(wp_index);
-    const Eigen::Vector2d provided_loc {wp.location.x, wp.location.y};
-    if (g_wp.get_map_name() != wp.location.level_name ||
-      (provided_loc - g_wp.get_location()).norm() > 1e-3)
+    if (g_wp.get_map_name() != wp.location().map_name() ||
+      (wp.location().coordinates() - g_wp.get_location()).norm() > 1e-3)
     {
       fferr << "Povided waypoint [" << i
         << "] on path does not match the waypoint on the graph.\n";
@@ -406,20 +399,16 @@ auto Manager::request_navigation(
     }
 
     transformed_path.push_back(
-      messages::Waypoint{
-        wp.index,
-        _pimpl->to_robot_transform->forward_transform(wp.location)});
+      messages::Waypoint(
+        wp.index(),
+        _pimpl->to_robot_transform->forward_transform(wp.location())));
   }
 
-  // Handles the carry forward
-  if ((++_pimpl->current_task_id) == _pimpl->idle_task_id)
-    ++_pimpl->current_task_id;
-
-  messages::NavigationRequest request {
+  const TaskId request_task_id = ++_pimpl->current_task_id;
+  messages::NavigationRequest request(
     robot_name,
-    _pimpl->current_task_id,
-    transformed_path
-  };
+    request_task_id,
+    transformed_path);
 
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::NavigationRequest>(
@@ -430,8 +419,8 @@ auto Manager::request_navigation(
     },
       _pimpl->time_now_fn));
   
-  _pimpl->tasks[request.task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request.task_id] = request_info;
+  _pimpl->tasks[request_task_id] = request_info;
+  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();
   return _pimpl->current_task_id;
 }

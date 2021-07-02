@@ -69,19 +69,20 @@ auto SimpleRequestInfo<messages::RelocalizationRequest>::track_robot(
   const messages::RobotState& new_state) const
   -> std::pair<RobotInfo::TrackingState, std::size_t>
 {
-  const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
+  const Eigen::Vector2d curr_loc = new_state.location().coordinates();
   auto impl = RobotInfo::Implementation::get(robot_info);
   
   double distance_to_wp =
     distance_to_waypoint(
-      impl.graph->get_waypoint(_request.last_visited_waypoint_index), curr_loc);
+      impl.graph->get_waypoint(_request.last_visited_waypoint_index()),
+      curr_loc);
 
   if (distance_to_wp < impl.waypoint_dist_threshold)
   {
     // We are very close to the provided waypoint
     return std::make_pair(
       RobotInfo::TrackingState::OnWaypoint,
-      _request.last_visited_waypoint_index);
+      _request.last_visited_waypoint_index());
   }
 
   // We will try to localize just based on the waypoints in the navigation
@@ -99,18 +100,18 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
   // We will use the target waypoints in the navigation request as
   // additional information to help with tracking.
 
-  const Eigen::Vector2d curr_loc = {new_state.location.x, new_state.location.y};
+  const Eigen::Vector2d curr_loc = new_state.location().coordinates();
   auto prev_estimation = robot_info.tracking_estimation();
   auto impl = RobotInfo::Implementation::get(robot_info);
 
   const std::size_t next_wp_index =
-    _request.path[new_state.path_target_index].index;
+    _request.path()[new_state.target_path_index()].index();
   
   std::optional<std::size_t> prev_wp_index = std::nullopt;
   const rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
-  if (new_state.path_target_index != 0)
+  if (new_state.target_path_index() != 0)
   {
-    prev_wp_index = _request.path[new_state.path_target_index - 1].index;
+    prev_wp_index = _request.path()[new_state.target_path_index() - 1].index();
     curr_lane = impl.graph->lane_from(prev_wp_index.value(), next_wp_index);
   }
 

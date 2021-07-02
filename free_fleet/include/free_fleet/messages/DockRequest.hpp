@@ -20,33 +20,55 @@
 
 #include <string>
 
+#include <rmf_utils/impl_ptr.hpp>
+
+#include <free_fleet/Types.hpp>
+
 namespace free_fleet {
 namespace messages {
 
-struct DockRequest
+//==============================================================================
+class DockRequest
 {
-  /// Robot to perform this request
-  std::string robot_name;
+public:
+  
+  /// Constructor
+  ///
+  /// \param[in] robot_name
+  ///   The name of the robot this request is targeting. A std::invalid_argument
+  ///   will be thrown if this is empty.
+  ///
+  /// \param[in] task_id
+  ///   The task id associated with this request.
+  ///
+  /// \param[in] dock_name
+  ///   The name of the desired docking station.
+  DockRequest(
+    const std::string& robot_name,
+    TaskId task_id,
+    const std::string& dock_name);
 
-  /// Task ID issued by the fleet manager
-  uint32_t task_id;
+  /// Gets the robot name.
+  const std::string& robot_name() const;
 
-  /// Name of the desired dock
-  std::string dock_name;
+  /// Gets the task id for this request.
+  TaskId task_id() const;
 
-  /// Comparing operator
-  friend bool operator==(
-    const DockRequest& lhs,
-    const DockRequest& rhs)
-  {
-    if (lhs.robot_name == rhs.robot_name &&
-      lhs.task_id == rhs.task_id &&
-      lhs.dock_name == rhs.dock_name)
-      return true;
-    return false;
-  }
+  /// Gets the name of the docking station.
+  const std::string& dock_name() const;
+
+  class Implementation;
+private:
+  rmf_utils::impl_ptr<Implementation> _pimpl;  
 };
 
+//==============================================================================
+/// Comparing operators.
+bool operator==(const DockRequest& lhs, const DockRequest& rhs);
+
+bool operator!=(const DockRequest& lhs, const DockRequest& rhs);
+
+//==============================================================================
 } // namespace messages
 } // namespace free_fleet
 
