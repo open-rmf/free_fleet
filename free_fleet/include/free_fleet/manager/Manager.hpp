@@ -97,7 +97,7 @@ public:
   /// \return
   ///   Optional of the task ID for this request. Returns a nullopt if there
   ///   does not exist a robot of the provided name.
-  std::optional<std::size_t> request_pause(const std::string& robot_name);
+  std::optional<TaskId> request_pause(const std::string& robot_name);
 
   /// Sends out a resume request to a robot.
   ///
@@ -107,7 +107,7 @@ public:
   /// \return
   ///   Optional of the task ID for this request. Returns a nullopt if there
   ///   does not exist a robot of the provided name.
-  std::optional<std::size_t> request_resume(const std::string& robot_name);
+  std::optional<TaskId> request_resume(const std::string& robot_name);
 
   /// Sends out a dock request to a robot.
   ///
@@ -120,7 +120,7 @@ public:
   /// \return
   ///   Optional of the task ID for this request. Returns a nullopt if there
   ///   does not exist a robot of the provided name.
-  std::optional<std::size_t> request_dock(
+  std::optional<TaskId> request_dock(
     const std::string& robot_name,
     const std::string& dock_name);
 
@@ -141,10 +141,21 @@ public:
   ///   does not exist a robot of the provided name, if the last visited
   ///   waypoint index does not exist in the navigation graph, or if the desired
   ///   relocalization location is too far away from the last visited waypoint.
-  std::optional<std::size_t> request_relocalization(
+  std::optional<TaskId> request_relocalization(
     const std::string& robot_name,
     const messages::Location& location,
     std::size_t last_visited_waypoint_index);
+
+  /// Single navigation point within the path.
+  struct NavigationPoint
+  {
+    /// Waypoint index within the navgiation graph.
+    std::size_t waypoint_index;
+
+    /// Orientation yaw value in radians for this location. If there is no
+    /// preference for the orientation, this field can be left as a nullopt.
+    std::optional<double> yaw = std::nullopt;
+  };
 
   /// Sends out a navigation request to a robot.
   ///
@@ -152,16 +163,16 @@ public:
   ///   Name of the robot that the request is targeted at.
   ///
   /// \param[in] path
-  ///   Desired path of waypoints that the robot should follow.
+  ///   Desired path comprised of NavigationPoints that the robot should follow.
   ///
   /// \return
   ///   Optional of the task ID for this request. Returns a nullopt if there
   ///   does not exist a robot of the provided name, if the provided path is
   ///   empty, or if any of the waypoints are non-conforming to the navigation
   ///   graph of the manager.
-  std::optional<std::size_t> request_navigation(
+  std::optional<TaskId> request_navigation(
     const std::string& robot_name,
-    const std::vector<messages::Waypoint>& path);
+    const std::vector<NavigationPoint>& path);
 
   class Implementation;
 private:

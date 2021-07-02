@@ -43,25 +43,13 @@ public:
   ///
   /// \param[in] coordinates
   ///   The coordinates (x, y) of this Location in meters.
-  Location(
-    const std::string& map_name,
-    Eigen::Vector2d coordinates);
-
-  /// Constructor
-  /// 
-  /// \param[in] map_name
-  ///   The name of the map this Location is referenced in. A
-  ///   std::invalid_argument will be thrown if this is empty.
-  ///
-  /// \param[in] coordinates
-  ///   The coordinates (x, y) of this Location in meters.
   ///
   /// \param[in] yaw
-  ///   The yaw of this Location in radians.
+  ///   The yaw of this Location in radians, this field is optional.
   Location(
     const std::string& map_name,
     Eigen::Vector2d coordinates,
-    double yaw);
+    std::optional<double> yaw = std::nullopt);
 
   /// Gets the current map name.
   const std::string& map_name() const;

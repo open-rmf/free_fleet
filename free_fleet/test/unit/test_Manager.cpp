@@ -116,13 +116,12 @@ SCENARIO("Test Manager API")
       0);
     CHECK(!id.has_value());
 
-    using Waypoint = free_fleet::messages::Waypoint;
-    using Location = free_fleet::messages::Location;
+    using NavigationPoint = free_fleet::Manager::NavigationPoint;
     id = manager->request_navigation(
       rn,
       {
-        Waypoint(0, Location("test_map", {0.0, 0.0}, 0.0)),
-        Waypoint(1, Location("test_map", {1.0, 0.0}, 0.0))
+        NavigationPoint{0, 0.0},
+        NavigationPoint{1, 0.0}
       });
     CHECK(!id.has_value());
   }
@@ -353,16 +352,12 @@ SCENARIO("Testing manager API with dummy robots")
 
   GIVEN("Sending navigation request to dummy robots")
   {
-    using Waypoint = free_fleet::messages::Waypoint;
-    using Location = free_fleet::messages::Location;
+    using NavigationPoint = free_fleet::Manager::NavigationPoint;
 
     // Valid waypoints
-    Waypoint valid_waypoint_1(0, Location(test_map_name, {0.0, 0.0}, 0.0));
-    Waypoint valid_waypoint_2(1, Location(test_map_name, {10.0, 0.0}, 0.0));
-    
     auto id_1 = manager->request_navigation(
       "test_robot_2",
-      {valid_waypoint_1, valid_waypoint_2});
+      {NavigationPoint{0, 0.0}, NavigationPoint{1, 0.0}});
     REQUIRE(id_1.has_value());
     CHECK(id_1.value() == 1);
 
@@ -371,10 +366,7 @@ SCENARIO("Testing manager API with dummy robots")
       100, Location("invalid_map_name", {0.0, 0.0}, 0.0));
     auto id_2 = manager->request_navigation(
       "test_robot_3",
-      {
-        Waypoint(0, Location(test_map_name, {0.0, 0.0}, 0.0)),
-        invalid_waypoint
-      });
+      {NavigationPoint{0, 0.0}, NavigationPoint{100, 0.0}});
     CHECK(!id_2.has_value());
 
     // Empty path
@@ -386,30 +378,26 @@ SCENARIO("Testing manager API with dummy robots")
     // Invalid robot
     auto id_4 = manager->request_navigation(
       "test_robot_30",
-      {
-        Waypoint(0, Location(test_map_name, {0.0, 0.0}, 0.0)),
-        Waypoint(0, Location(test_map_name, {0.0, 0.0}, 0.0))
-      });
+      {NavigationPoint{0, 0.0}, NavigationPoint{0, 0.0}});
     CHECK(!id_4.has_value());
 
     // Subsequent navigation request
     auto id_5 = manager->request_navigation(
       "test_robot_1",
-      {valid_waypoint_1, valid_waypoint_2});
+      {NavigationPoint{0, 0.0}, NavigationPoint{1, 0.0}});
     REQUIRE(id_5.has_value());
     CHECK(id_5.value() == 2);
 
     auto id_6 = manager->request_navigation(
       "test_robot_3",
-      {valid_waypoint_1, valid_waypoint_2});
+      {NavigationPoint{0, 0.0}, NavigationPoint{1, 0.0}});
     REQUIRE(id_6.has_value());
     CHECK(id_6.value() == 3);
   }
 
   GIVEN("Sending subsequent requests of different types")
   {
-    using Waypoint = free_fleet::messages::Waypoint;
-    using Location = free_fleet::messages::Location;
+    using NavigationPoint = free_fleet::Manager::NavigationPoint;
 
     // Dock
     auto id_1 = manager->request_dock("test_robot_1", "mock_dock");
@@ -427,11 +415,9 @@ SCENARIO("Testing manager API with dummy robots")
     CHECK(id_3.value() == 3);
 
     // Navigation
-    Waypoint valid_waypoint_1(0, Location(test_map_name, {0.0, 0.0}, 0.0));
-    Waypoint valid_waypoint_2(1, Location(test_map_name, {10.0, 0.0}, 0.0));
     auto id_4 = manager->request_navigation(
       "test_robot_2",
-      {valid_waypoint_1, valid_waypoint_2});
+      {NavigationPoint{0, 0.0}, NavigationPoint{1, 0.0}});
     REQUIRE(id_4.has_value());
     CHECK(id_4.value() == 4);
 

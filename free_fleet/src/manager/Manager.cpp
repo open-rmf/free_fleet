@@ -207,7 +207,7 @@ auto Manager::all_robots()
 
 //==============================================================================
 auto Manager::request_pause(const std::string& robot_name)
-  -> std::optional<std::size_t>
+  -> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -233,7 +233,7 @@ auto Manager::request_pause(const std::string& robot_name)
 
 //==============================================================================
 auto Manager::request_resume(const std::string& robot_name)
-  -> std::optional<std::size_t>
+  -> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -260,7 +260,7 @@ auto Manager::request_resume(const std::string& robot_name)
 //==============================================================================
 auto Manager::request_dock(
   const std::string& robot_name, const std::string& dock_name)
-  -> std::optional<std::size_t>
+  -> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -291,7 +291,7 @@ auto Manager::request_dock(
 auto Manager::request_relocalization(
   const std::string& robot_name,
   const messages::Location& location,
-  std::size_t last_visited_waypoint_index) -> std::optional<std::size_t>
+  std::size_t last_visited_waypoint_index) -> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -346,8 +346,8 @@ auto Manager::request_relocalization(
 //==============================================================================
 auto Manager::request_navigation(
   const std::string& robot_name,
-  const std::vector<messages::Waypoint>& path)
-  -> std::optional<std::size_t>
+  const std::vector<Manager::NavigationPoint>& path)
+  -> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -363,13 +363,12 @@ auto Manager::request_navigation(
   std::vector<messages::Waypoint> transformed_path;
   for (std::size_t i = 0; i < path.size(); ++i)
   {
-    auto wp = path[i];
-    std::size_t wp_index = static_cast<std::size_t>(wp.index());
+    const auto& nav_point = path[i];
 
     // Check if the waypoint exists
-    if (wp_index >= num_wp)
+    if (nav_point.waypoint_index >= num_wp)
     {
-      fferr << "Waypoint [" << i
+      fferr << "Navigation point [" << i
         << "] on the path does not exist on the graph.\n";
       return std::nullopt;
     }
@@ -377,31 +376,24 @@ auto Manager::request_navigation(
     // Check if the connection exists
     if (i + 1 != path.size())
     {
-      auto next_wp = path[i+1];
       const rmf_traffic::agv::Graph::Lane* connecting_lane =
-        _pimpl->graph->lane_from(wp_index, next_wp.index());
+        _pimpl->graph->lane_from(
+          nav_point.waypoint_index, path[i+1].waypoint_index);
       if (!connecting_lane)
       {
-        fferr << "No connecting lane between waypoints [" << i << "] & ["
-          << (i+1) << "] on the path.\n";
+        fferr << "No connecting lane between navigation points [" << i
+          << "] & [" << (i+1) << "] on the path.\n";
         return std::nullopt;
       }
     }
     
-    // Check if the provided location matches the one found in the graph
-    const auto g_wp = _pimpl->graph->get_waypoint(wp_index);
-    if (g_wp.get_map_name() != wp.location().map_name() ||
-      (wp.location().coordinates() - g_wp.get_location()).norm() > 1e-3)
-    {
-      fferr << "Povided waypoint [" << i
-        << "] on path does not match the waypoint on the graph.\n";
-      return std::nullopt;
-    }
-
+    const auto g_wp = _pimpl->graph->get_waypoint(nav_point.waypoint_index);
+    const messages::Location g_loc(
+      g_wp.get_map_name(), g_wp.get_location(), nav_point.yaw); 
     transformed_path.push_back(
       messages::Waypoint(
-        wp.index(),
-        _pimpl->to_robot_transform->forward_transform(wp.location())));
+        nav_point.waypoint_index,
+        _pimpl->to_robot_transform->forward_transform(g_loc)));
   }
 
   const TaskId request_task_id = ++_pimpl->current_task_id;

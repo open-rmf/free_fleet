@@ -36,30 +36,8 @@ public:
 //==============================================================================
 Location::Location(
   const std::string& map_name,
-  Eigen::Vector2d coordinates)
-{
-  std::string error_message;
-
-  if (map_name.empty())
-    error_message = "map_name in Location must not be empty.";
-
-  if (!error_message.empty())
-  {
-    fferr << error_message << "\n";
-    throw std::invalid_argument(error_message);
-  }
-
-  _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
-    map_name,
-    coordinates,
-    std::nullopt});
-}
-
-//==============================================================================
-Location::Location(
-  const std::string& map_name,
   Eigen::Vector2d coordinates,
-  double yaw)
+  std::optional<double> yaw)
 {
   std::string error_message;
 

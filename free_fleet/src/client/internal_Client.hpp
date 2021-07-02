@@ -106,7 +106,6 @@ public:
   std::shared_ptr<client::StatusHandle> status_handle;
   std::unique_ptr<transport::ClientMiddleware> middleware;
 
-  // TODO(AA): handle overflow of uint32_t
   std::optional<TaskId> task_id = std::nullopt;
   TaskId last_task_id = 0; 
   std::unordered_set<uint32_t> task_ids;
