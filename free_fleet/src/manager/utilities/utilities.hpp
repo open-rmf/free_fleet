@@ -49,14 +49,6 @@ std::pair<const rmf_traffic::agv::Graph::Waypoint*, double>
     const rmf_traffic::agv::Graph& graph,
     const Eigen::Vector2d& coordinates);
 
-/// Finds the nearest lane and returns a pointer to it, as well as the distance.
-/// If there is no such lane, the first of the pair will be a nullptr, and the
-/// second should be ignored.
-std::pair<const rmf_traffic::agv::Graph::Lane*, double>
-  find_nearest_lane(
-    const rmf_traffic::agv::Graph& graph,
-    const Eigen::Vector2d& coordinates);
-
 } // namespace manager
 } // namespace free_fleet
 

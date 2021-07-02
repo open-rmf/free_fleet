@@ -92,32 +92,5 @@ std::pair<const rmf_traffic::agv::Graph::Waypoint*, double>
 }
 
 //==============================================================================
-std::pair<const rmf_traffic::agv::Graph::Lane*, double>
-  find_nearest_lane(
-    const rmf_traffic::agv::Graph& graph,
-    const Eigen::Vector2d& coordinates)
-{
-  const rmf_traffic::agv::Graph::Lane* nearest_lane = nullptr;
-  double nearest_dist = std::numeric_limits<double>::infinity();
-  for (std::size_t i = 0; i < graph.num_lanes(); ++i)
-  {
-    auto& l = graph.get_lane(i);
-
-    // The normal formed by the given coordinates must also lie within the entry
-    // and exit, to be considered
-    if (!is_within_lane(l, graph, coordinates))
-      continue;
-
-    const double dist = distance_to_lane(l, graph, coordinates);
-    if (dist < nearest_dist)
-    {
-      nearest_lane = &l;
-      nearest_dist = dist;
-    }
-  }
-  return std::make_pair(nearest_lane, nearest_dist);
-}
-
-//==============================================================================
 } // namespace manager
 } // namespace free_fleet
