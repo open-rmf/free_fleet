@@ -41,74 +41,72 @@ namespace free_fleet {
 //==============================================================================
 void Manager::Implementation::set_callbacks()
 {
-  middleware->set_robot_states_callback(
+  middleware->set_robot_state_callback(
     std::bind(
-      &Manager::Implementation::handle_robot_states,
+      &Manager::Implementation::handle_robot_state,
       this,
       std::placeholders::_1));
 }
 
 //==============================================================================
-void Manager::Implementation::handle_robot_states(
-  const std::vector<messages::RobotState>& states)
+void Manager::Implementation::handle_robot_state(
+  const messages::RobotState& state)
 {
   std::lock_guard<std::mutex> lock(mutex);
-  for (const auto& s : states)
+
+  const std::string robot_name = state.name();
+  const auto task_id = state.task_id();
+
+  messages::RobotState transformed_state(
+    state.time(),
+    robot_name,
+    state.model(),
+    task_id,
+    state.mode(),
+    state.battery_percent(),
+    to_robot_transform->backward_transform(state.location()),
+    state.target_path_index());
+
+  if (robot_name.empty())
   {
-    const std::string robot_name = s.name();
-    const auto task_id = s.task_id();
+    fferr << "Incoming robot state's name is empty, ignoring.\n";
+    return;
+  }
 
-    messages::RobotState transformed_state(
-      s.time(),
-      robot_name,
-      s.model(),
-      task_id,
-      s.mode(),
-      s.battery_percent(),
-      to_robot_transform->backward_transform(s.location()),
-      s.target_path_index());
-
-    if (robot_name.empty())
-    {
-      fferr << "Incoming robot state's name is empty, ignoring.\n";
-      continue;
-    }
-
-    const auto r_it = robots.find(robot_name);
-    bool new_robot = r_it == robots.end();
+  const auto r_it = robots.find(robot_name);
+  bool new_robot = r_it == robots.end();
+  if (new_robot)
+  {
+    auto new_robot = manager::RobotInfo::Implementation::make(
+      transformed_state,
+      graph,
+      time_now_fn());
     if (new_robot)
     {
-      auto new_robot = manager::RobotInfo::Implementation::make(
-        transformed_state,
-        graph,
-        time_now_fn());
-      if (new_robot)
-      {
-        robots[robot_name] = std::move(new_robot);
-        ffinfo << "Registered new robot: [" << robot_name << "]\n";
-      }
+      robots[robot_name] = std::move(new_robot);
+      ffinfo << "Registered new robot: [" << robot_name << "]\n";
     }
-    else
-    {
-      manager::RobotInfo::Implementation::update_state(
-        *r_it->second,
-        transformed_state,
-        time_now_fn());
-    }
+  }
+  else
+  {
+    manager::RobotInfo::Implementation::update_state(
+      *r_it->second,
+      transformed_state,
+      time_now_fn());
+  }
 
-    // Updates external uses of the robot's information
-    if (r_it != robots.end() && robot_updated_callback_fn)
-      robot_updated_callback_fn(*r_it->second);
+  // Updates external uses of the robot's information
+  if (r_it != robots.end() && robot_updated_callback_fn)
+    robot_updated_callback_fn(*r_it->second);
 
-    // for each robot figure out whether any tasks were not received yet
-    if (task_id.has_value())
+  // for each robot figure out whether any tasks were not received yet
+  if (task_id.has_value())
+  {
+    const auto t_it = unacknowledged_tasks.find(task_id.value());
+    if (t_it != unacknowledged_tasks.end())
     {
-      const auto t_it = unacknowledged_tasks.find(task_id.value());
-      if (t_it != unacknowledged_tasks.end())
-      {
-        t_it->second->acknowledge_request();
-        unacknowledged_tasks.erase(t_it);
-      }
+      t_it->second->acknowledge_request();
+      unacknowledged_tasks.erase(t_it);
     }
   }
 }
@@ -388,12 +386,27 @@ auto Manager::request_navigation(
     }
     
     const auto g_wp = _pimpl->graph->get_waypoint(nav_point.waypoint_index);
-    const messages::Location g_loc(
-      g_wp.get_map_name(), g_wp.get_location(), nav_point.yaw); 
-    transformed_path.push_back(
-      messages::Waypoint(
-        nav_point.waypoint_index,
-        _pimpl->to_robot_transform->forward_transform(g_loc)));
+    if (nav_point.yaw.has_value())
+    {
+      messages::Location g_loc =
+        messages::Location(
+          g_wp.get_map_name(), g_wp.get_location(), nav_point.yaw.value());
+
+      transformed_path.push_back(
+        messages::Waypoint(
+          nav_point.waypoint_index,
+          _pimpl->to_robot_transform->forward_transform(g_loc)));
+    }
+    else
+    {
+      messages::Location g_loc =
+        messages::Location(g_wp.get_map_name(), g_wp.get_location());
+
+      transformed_path.push_back(
+        messages::Waypoint(
+          nav_point.waypoint_index,
+          _pimpl->to_robot_transform->forward_transform(g_loc)));
+    }
   }
 
   const TaskId request_task_id = ++_pimpl->current_task_id;

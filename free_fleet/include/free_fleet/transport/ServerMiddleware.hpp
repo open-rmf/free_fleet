@@ -44,13 +44,13 @@ public:
 
   using Duration = rmf_traffic::Duration;
 
-  /// Sets the callback function to be called whenever robot state messages are
+  /// Sets the callback function to be called whenever a robot state message is
   /// received through the middleware.
   ///
   /// \param[in] callback
-  ///   Callback function for handling new incoming robot states.
-  virtual void set_robot_states_callback(
-    std::function<void(const std::vector<messages::RobotState>&)> callback) = 0;
+  ///   Callback function for handling a new incoming robot state.
+  virtual void set_robot_state_callback(
+    std::function<void(const messages::RobotState&)> callback) = 0;
 
   /// Sends a dock request over the middleware to be performed by a robot.
   ///

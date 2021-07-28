@@ -60,7 +60,7 @@ public:
 
   void set_callbacks();
 
-  void handle_robot_states(const std::vector<messages::RobotState>& states);
+  void handle_robot_state(const messages::RobotState& state);
 
   std::string fleet_name;
   std::shared_ptr<const rmf_traffic::agv::Graph> graph;

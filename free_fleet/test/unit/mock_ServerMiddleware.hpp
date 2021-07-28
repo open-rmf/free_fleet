@@ -30,17 +30,15 @@ public:
   std::optional<messages::ResumeRequest> _prev_resume_request;
   std::optional<messages::NavigationRequest> _prev_nav_request;
   std::optional<messages::RelocalizationRequest> _prev_reloc_request;
-  std::function<void(const std::vector<messages::RobotState>&)>
-    robot_states_callback; 
+  std::function<void(const messages::RobotState&)> robot_state_callback; 
 
   MockServerMiddleware()
   {}
 
-  void set_robot_states_callback(
-    std::function<void(const std::vector<messages::RobotState>&)> callback)
-    override 
+  void set_robot_state_callback(
+    std::function<void(const messages::RobotState&)> callback) override
   {
-    robot_states_callback = std::move(callback); 
+    robot_state_callback = std::move(callback);
   }
 
   void send_dock_request(const messages::DockRequest& request) override
