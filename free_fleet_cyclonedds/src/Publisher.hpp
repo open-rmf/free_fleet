@@ -33,13 +33,13 @@ public:
   using SharedPtr = std::shared_ptr<Publisher<Message>>;
 
   static SharedPtr make(
-      const dds_entity_t& participant,
-      const dds_topic_descriptor_t* topic_desc,
-      const std::string& topic_name,
-      bool transient_local = false)
+    const dds_entity_t& participant,
+    const dds_topic_descriptor_t* topic_desc,
+    const std::string& topic_name,
+    bool transient_local = false)
   {
     dds_entity_t topic = dds_create_topic(
-        participant, topic_desc, topic_name.c_str(), NULL, NULL);
+      participant, topic_desc, topic_name.c_str(), NULL, NULL);
     if (topic < 0)
     {
       DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
@@ -88,7 +88,6 @@ public:
   }
 
 private:
-
   dds_entity_t _topic;
   dds_entity_t _writer;
 

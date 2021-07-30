@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(free_fleet_cyclonedds VERSION 0.1.0 LANGUAGES C CXX)
 
-# Default to C++14
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
+
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -19,62 +24,49 @@ include(GNUInstallDirs)
 
 find_package(rmf_utils REQUIRED)
 find_package(free_fleet REQUIRED)
-find_package(CycloneDDS QUIET CONFIG)
-if(NOT CycloneDDS_FOUND)
-  message(WARNING "Could not find Eclipse Cyclone DDS - skipping '${PROJECT_NAME}'")
-  return()
-endif()
+find_package(CycloneDDS REQUIRED COMPONENTS idlc)
 
-file(GLOB lib_srcs
-  "src/messages/*.c"
-  "src/messages/*.cpp"
-  "src/*.cpp"
-)
+idlc_generate(MiddlewareMessages_lib "idl/MiddlewareMessages.idl")
 
 add_library(free_fleet_cyclonedds SHARED
-  ${lib_srcs}
+  "src/messages/convert.cpp"
 )
-
 target_link_libraries(free_fleet_cyclonedds
-  rmf_utils::rmf_utils
-  free_fleet::free_fleet
-  CycloneDDS::ddsc
-)
-
-target_include_directories(free_fleet_cyclonedds
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-
-# Tests
-find_package(ament_cmake_catch2 QUIET)
-find_package(rmf_cmake_uncrustify QUIET)
-if (BUILD_TESTING AND ament_cmake_catch2_FOUND AND rmf_cmake_uncrustify_FOUND)
-  file(GLOB_RECURSE unit_test_srcs "test/*.cpp")
-
-  ament_add_catch2(
-    test_free_fleet_cyclonedds test/main.cpp ${unit_test_srcs}
-    TIMEOUT 300)
-  target_link_libraries(test_free_fleet_cyclonedds
-    free_fleet_cyclonedds
-    rmf_utils::rmf_utils
-    free_fleet::free_fleet
+  PRIVATE
+    MiddlewareMessages_lib
     CycloneDDS::ddsc
-  )
-  target_include_directories(test_free_fleet_cyclonedds
-    PRIVATE
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/>
-  )
+    free_fleet::free_fleet
+    rmf_utils::rmf_utils
+)
 
-  find_file(uncrustify_config_file NAMES "share/format/rmf_code_style.cfg")
-
-  rmf_uncrustify(
-    ARGN include src test
-    CONFIG_FILE ${uncrustify_config_file}
-    MAX_LINE_LENGTH 80
-  )
-endif()
+# # Tests
+# find_package(ament_cmake_catch2 QUIET)
+# find_package(rmf_cmake_uncrustify QUIET)
+# if (BUILD_TESTING AND ament_cmake_catch2_FOUND AND rmf_cmake_uncrustify_FOUND)
+#   file(GLOB_RECURSE unit_test_srcs "test/*.cpp")
+# 
+#   ament_add_catch2(
+#     test_free_fleet_cyclonedds test/main.cpp ${unit_test_srcs}
+#     TIMEOUT 300)
+#   target_link_libraries(test_free_fleet_cyclonedds
+#     free_fleet_cyclonedds
+#     rmf_utils::rmf_utils
+#     free_fleet::free_fleet
+#     CycloneDDS::ddsc
+#   )
+#   target_include_directories(test_free_fleet_cyclonedds
+#     PRIVATE
+#       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/>
+#   )
+# 
+#   find_file(uncrustify_config_file NAMES "share/format/rmf_code_style.cfg")
+# 
+#   rmf_uncrustify(
+#     ARGN include src test
+#     CONFIG_FILE ${uncrustify_config_file}
+#     MAX_LINE_LENGTH 80
+#   )
+# endif()
 
 # Create cmake config files
 include(CMakePackageConfigHelpers)

@@ -15,23 +15,40 @@
  *
  */
 
-#ifndef SRC__STANDARDNAMES_HPP
-#define SRC__STANDARDNAMES_HPP
-
-#include <string>
+#ifndef INCLUDE__FREE_FLEET_CYCLONEDDS__STANDARDNAMES_HPP
+#define INCLUDE__FREE_FLEET_CYCLONEDDS__STANDARDNAMES_HPP
 
 namespace free_fleet {
 namespace cyclonedds {
 
-const std::string Prefix = "free_fleet/";
-const std::string GraphTopicName = "navigation_graph";
-const std::string StateTopicName = "robot_state";
-const std::string ModeRequestTopicName = "mode_request";
-const std::string NavigationRequestTopicName = "navigation_request";
-const std::string RelocalizationRequestTopicName = "relocalization_request";
+constexpr char Prefix[] = "free_fleet";
+constexpr char StateTopicName[] = "robot_state";
+constexpr char DockRequestTopicName[] = "dock_request";
+constexpr char PauseRequestTopicName[] = "pause_request";
+constexpr char ResumeRequestTopicName[] = "resume_request";
+constexpr char NavigationRequestTopicName[] = "navigation_request";
+constexpr char RelocalizationRequestTopicName[] = "relocalization_request";
 
+//==============================================================================
+/// Appends one or more additional string elements to the first passed in
+/// argument.
+///
+/// \param[in] args
+///   The string elements to be appended together.
+///
+/// \return
+///   The appended strings.
+template <typename... Args>
+std::string append(Args const&... args)
+{
+  std::string result;
+  int unpack[]{0, (result += std::to_string(args) + "/", 0)...};
+  static_cast<void>(unpack);
+  return result;
+}
+
+//==============================================================================
 } // namespace cyclonedds
 } // namespace free_fleet
 
-
-#endif // SRC__STANDARDNAMES_HPP
+#endif // INCLUDE__FREE_FLEET_CYCLONEDDS__STANDARDNAMES_HPP 

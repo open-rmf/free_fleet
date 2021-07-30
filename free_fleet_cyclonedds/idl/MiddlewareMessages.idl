@@ -1,56 +1,76 @@
 module MiddlewareMessages
 {
-  struct Location
+  struct Time
   {
     long sec;
     unsigned long nanosec;
+  };  
+
+  struct Location
+  {
+    string map_name;
     double x;
     double y;
+
+    boolean yaw_available;
     double yaw;
-    string level_name;
   };
+
   struct Waypoint
   {
     unsigned long index;
     Location location;
+
+    boolean wait_until_available;
+    Time wait_until;     
   };
-  struct ModeParameter
-  {
-    string name;
-    string value;
-  };
+
   module RobotMode_Constants
   {
-    const unsigned long MODE_IDLE = 0;
-    const unsigned long MODE_CHARGING = 1;
-    const unsigned long MODE_MOVING = 2;
-    const unsigned long MODE_PAUSED = 3;
-    const unsigned long MODE_WAITING = 4;
-    const unsigned long MODE_EMERGENCY = 5;
-    const unsigned long MODE_GOING_HOME = 6;
-    const unsigned long MODE_DOCKING = 7;
-    const unsigned long MODE_REQUEST_ERROR = 8;
-    const unsigned long MODE_UNDEFINED = 9;
-    const unsigned long MODE_CUSTOM = 10;  
+    const unsigned long Idle = 0;
+    const unsigned long Charging = 1;
+    const unsigned long Moving = 2;
+    const unsigned long Paused = 3;
+    const unsigned long Waiting = 4;
+    const unsigned long Emergency = 5;
+    const unsigned long Docking = 6;
+    const unsigned long Error = 7;
+    const unsigned long Undefined = 9;
+    const unsigned long Custom = 10;  
   };
+
   struct RobotMode
   {
     unsigned long mode;
     string info;
   };
-  struct ModeRequest
+
+  struct PauseRequest
   {
     string robot_name;
     unsigned long task_id;
-    RobotMode mode;
-    sequence<ModeParameter> parameters;
   };
+
+  struct ResumeRequest
+  {
+    string robot_name;
+    unsigned long task_id;
+  };
+
+  struct DockRequest
+  {
+    string robot_name;
+    unsigned long task_id;
+    string dock_name;
+  };
+
   struct NavigationRequest
   {
     string robot_name;
     unsigned long task_id;
     sequence<Waypoint> path;
   };
+
   struct RelocalizationRequest
   {
     string robot_name;
@@ -58,11 +78,16 @@ module MiddlewareMessages
     Location location;
     unsigned long last_visited_waypoint_index;
   };
+
   struct RobotState
   {
+    Time time;
     string name;
     string model;
+
+    boolean task_id_available;
     unsigned long task_id;
+
     RobotMode mode;
     double battery_percent;
     Location location;
