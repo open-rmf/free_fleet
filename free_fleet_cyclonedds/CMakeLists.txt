@@ -28,9 +28,14 @@ find_package(CycloneDDS REQUIRED COMPONENTS idlc)
 
 idlc_generate(MiddlewareMessages_lib "idl/MiddlewareMessages.idl")
 
-add_library(free_fleet_cyclonedds SHARED
-  "src/messages/convert.cpp"
+file(GLOB lib_srcs
+  "src/messages/*.cpp"
 )
+
+add_library(free_fleet_cyclonedds SHARED
+  ${lib_srcs}
+)
+
 target_link_libraries(free_fleet_cyclonedds
   PRIVATE
     MiddlewareMessages_lib

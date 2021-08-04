@@ -18,16 +18,16 @@
 #ifndef SRC__MESSAGES__CONVERT_HPP
 #define SRC__MESSAGES__CONVERT_HPP
 
-#include <free_fleet/messages/Location.hpp>
-// #include <free_fleet/messages/Waypoint.hpp>
-// #include <free_fleet/messages/RobotMode.hpp>
-// #include <free_fleet/messages/RobotState.hpp>
-// #include <free_fleet/messages/ModeRequest.hpp>
-// #include <free_fleet/messages/ModeParameter.hpp>
-// #include <free_fleet/messages/NavigationRequest.hpp>
-// #include <free_fleet/messages/RelocalizationRequest.hpp>
-
 #include <rmf_traffic/Time.hpp>
+#include <free_fleet/messages/Location.hpp>
+#include <free_fleet/messages/Waypoint.hpp>
+#include <free_fleet/messages/RobotMode.hpp>
+#include <free_fleet/messages/RobotState.hpp>
+#include <free_fleet/messages/DockRequest.hpp>
+#include <free_fleet/messages/PauseRequest.hpp>
+#include <free_fleet/messages/ResumeRequest.hpp>
+#include <free_fleet/messages/NavigationRequest.hpp>
+#include <free_fleet/messages/RelocalizationRequest.hpp>
 
 #include "MiddlewareMessages.h"
 
@@ -43,101 +43,59 @@ namespace cyclonedds {
 ///   The char pointer which has memory allocated and string copied into.
 char* dds_string_alloc_and_copy(const std::string& str);
 
-///
-void convert(const rmf_traffic::Time& input, MiddlewareMessages_Time& output);
+//==============================================================================
+/// From free_fleet::messages to DDS messages
+MiddlewareMessages_Time convert(const rmf_traffic::Time& input);
 
-///
-void convert(const MiddlewareMessages_Time& input, rmf_traffic::Time& output);
+MiddlewareMessages_Location convert(const messages::Location& input);
 
-///
-void convert(
-  const free_fleet::messages::Location& input,
-  MiddlewareMessages_Location& output);
+MiddlewareMessages_Waypoint convert(
+  const free_fleet::messages::Waypoint& input);
 
-///
-void convet(
-  const MiddlewareMessages_Location& input,
-  free_fleet::messages::Location& output);
+MiddlewareMessages_RobotMode convert(
+  const free_fleet::messages::RobotMode& input);
 
-// ///
-// void convert(
-//   const free_fleet::messages::Waypoint& input,
-//   MiddlewareMessages_Waypoint& output);
-// 
-// ///
-// void convert(
-//   const MiddlewareMessages_Waypoint& input,
-//   free_fleet::messages::Waypoint& output);
-// 
-// ///
-// void convert(
-//   const free_fleet::messages::RobotMode& input,
-//   MiddlewareMessages_RobotMode& output);
-// 
-// ///
-// void convert(
-//   const MiddlewareMessages_RobotMode& input,
-//   free_fleet::messages::RobotMode& output);
-// 
-// ///
-// void convert(
-//   const free_fleet::messages::PauseRequest& input,
-//   MiddlewareMessages_PauseRequest& output);
-// 
-// ///
-// void convert(
-//   const MiddlewareMessages_PauseRequest& input,
-//   free_fleet::messages::PauseRequest& output);
-// 
-// ///
-// void convert(
-//   const free_fleet::messages::ResumeRequest& input,
-//   MiddlewareMessages_ResumeRequest& output);
-// 
-// ///
-// void convert(
-//   const MiddlewareMessages_ResumeRequest& input,
-//   free_fleet::messages::ResumeRequest& output);
-// 
-// ///
-// void convert(
-//   const free_fleet::messages::DockRequest& input,
-//   MiddlewareMessages_DockRequest& output);
-// 
-// ///
-// void convert(
-//   const MiddlewareMessages_DockRequest& input,
-//   free_fleet::messages::DockRequest& output);
-// 
-// ///
-// void convert(
-//   const free_fleet::messages::NavigationRequest& input,
-//   MiddlewareMessages_NavigationRequest& output);
-// 
-// ///
-// void convert(
-//   const MiddlewareMessages_NavigationRequest& input,
-//   free_fleet::messages::NavigationRequest& output);
-// 
-// ///
-// void convert(
-//   const free_fleet::messages::RelocalizationRequest& input,
-//   MiddlewareMessages_RelocalizationRequest& output);
-// 
-// ///
-// void convet(
-//   const MiddlewareMessages_RelocalizationRequest& input,
-//   free_fleet::messages::RelocalizationRequest& output);
-// 
-// ///
-// void convert(
-//   const free_fleet::messages::RobotState& input,
-//   MiddlewareMessages_RobotState& output);
-// 
-// ///
-// void convert(
-//   const MiddlewareMessages_RobotState& input,
-//   MiddlewareMessages_RobotState& output);
+MiddlewareMessages_PauseRequest convert(
+  const free_fleet::messages::PauseRequest& input);
+
+MiddlewareMessages_ResumeRequest convert(
+  const free_fleet::messages::ResumeRequest& input);
+
+MiddlewareMessages_DockRequest convert(
+  const free_fleet::messages::DockRequest& input);
+
+MiddlewareMessages_NavigationRequest convert(
+  const free_fleet::messages::NavigationRequest& input);
+
+MiddlewareMessages_RelocalizationRequest convert(
+  const free_fleet::messages::RelocalizationRequest& input);
+
+MiddlewareMessages_RobotState convert(
+  const free_fleet::messages::RobotState& input);
+
+//==============================================================================
+/// From DDS messages to free_fleet::messages
+rmf_traffic::Time convert(const MiddlewareMessages_Time& input);
+
+messages::Location convert(const MiddlewareMessages_Location& input);
+
+messages::Waypoint convert(const MiddlewareMessages_Waypoint& input);
+
+messages::RobotMode convert(const MiddlewareMessages_RobotMode& input);
+
+messages::PauseRequest convert(const MiddlewareMessages_PauseRequest& input);
+
+messages::ResumeRequest convert(const MiddlewareMessages_ResumeRequest& input);
+
+messages::DockRequest convert(const MiddlewareMessages_DockRequest& input);
+
+messages::NavigationRequest convert(
+  const MiddlewareMessages_NavigationRequest& input);
+
+messages::RelocalizationRequest convert(
+  const MiddlewareMessages_RelocalizationRequest& input);
+
+messages::RobotState convert(const MiddlewareMessages_RobotState& input);
 
 } // namespace cyclonedds
 } // namespace free_fleet
