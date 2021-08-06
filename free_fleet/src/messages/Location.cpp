@@ -99,13 +99,13 @@ std::optional<double> Location::yaw() const
 //=============================================================================
 bool operator==(const Location& lhs, const Location& rhs)
 {
-  if (lhs.map_name() == rhs.map_name() &&      
+  if (lhs.map_name() == rhs.map_name() &&
     (lhs.coordinates() - rhs.coordinates()).norm() < 1e-3)
   {
     if (lhs.yaw().has_value() && rhs.yaw().has_value() &&
       abs(lhs.yaw().value() - rhs.yaw().value()) < 1e-3)
       return true;
-    else if(!lhs.yaw().has_value() && !rhs.yaw().has_value())
+    else if (!lhs.yaw().has_value() && !rhs.yaw().has_value())
       return true;
   }
   return false;

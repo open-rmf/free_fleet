@@ -53,7 +53,8 @@ MiddlewareMessages_Location convert(const messages::Location& input)
   output.map_name = dds_string_alloc_and_copy(input.map_name());
   output.x = input.coordinates()[0];
   output.y = input.coordinates()[1];
-
+  output.yaw_available = false;
+  
   if (bool yaw_available = input.yaw().has_value())
   {
     output.yaw_available = yaw_available;
@@ -200,7 +201,7 @@ MiddlewareMessages_RobotState convert(const messages::RobotState& input)
   output.mode = convert(input.mode());
   output.battery_percent = input.battery_percent();
   output.location  = convert(input.location());
-  output.path_target_index = static_cast<uint32_t>(input.target_path_index());
+  output.target_path_index = static_cast<uint32_t>(input.target_path_index());
 
   return output;
 }
@@ -355,7 +356,7 @@ messages::RobotState convert(const MiddlewareMessages_RobotState& input)
     convert(input.mode),
     input.battery_percent,
     convert(input.location),
-    static_cast<std::size_t>(input.path_target_index));
+    static_cast<std::size_t>(input.target_path_index));
 }
 
 //==============================================================================
