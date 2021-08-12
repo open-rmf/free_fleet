@@ -164,7 +164,7 @@ MiddlewareMessages_NavigationRequest convert(
   output.path._maximum = static_cast<uint32_t>(path_elem_num);
   output.path._length = static_cast<uint32_t>(path_elem_num);
   output.path._buffer =
-    MiddlewareMessages_NavigationRequest_path_seq_allocbuf(path_elem_num);
+    dds_sequence_MiddlewareMessages_Waypoint_allocbuf(path_elem_num);
   for (std::size_t i = 0; i < path_elem_num; ++i)
     output.path._buffer[i] = convert(input.path()[i]);
   return output;

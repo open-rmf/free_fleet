@@ -25,6 +25,7 @@
 namespace free_fleet {
 namespace cyclonedds {
 
+//==============================================================================
 template <typename Message>
 class Publisher
 {
@@ -35,8 +36,7 @@ public:
   static SharedPtr make(
     const dds_entity_t& participant,
     const dds_topic_descriptor_t* topic_desc,
-    const std::string& topic_name,
-    bool transient_local = false)
+    const std::string& topic_name)
   {
     dds_entity_t topic = dds_create_topic(
       participant, topic_desc, topic_name.c_str(), NULL, NULL);
@@ -47,16 +47,7 @@ public:
     }
 
     dds_qos_t* qos = dds_create_qos();
-    if (transient_local)
-    {
-      dds_qset_reliability(qos, DDS_RELIABILITY_RELIABLE, 0);
-      dds_qset_durability(qos, DDS_DURABILITY_TRANSIENT_LOCAL);
-      dds_qset_history(qos, DDS_HISTORY_KEEP_LAST, 1);      
-    }
-    else
-    {
-      dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-    }
+    dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
     
     dds_entity_t writer = dds_create_writer(participant, topic, qos, NULL);
     if (writer < 0)
@@ -95,6 +86,7 @@ private:
   {}
 };
 
+//==============================================================================
 } // namespace cyclonedds
 } // namespace free_fleet
 

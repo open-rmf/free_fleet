@@ -26,7 +26,10 @@ find_package(rmf_utils REQUIRED)
 find_package(free_fleet REQUIRED)
 find_package(CycloneDDS REQUIRED COMPONENTS idlc)
 
-idlc_generate(MiddlewareMessages_lib "idl/MiddlewareMessages.idl")
+idlc_generate(
+  TARGET MiddlewareMessages_lib
+  FILES "idl/MiddlewareMessages.idl"
+)
 
 file(GLOB lib_srcs
   "src/messages/*.cpp"

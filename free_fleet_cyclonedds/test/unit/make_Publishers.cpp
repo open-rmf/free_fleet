@@ -21,10 +21,9 @@
 #include <rmf_utils/catch.hpp>
 
 #include "src/Publisher.hpp"
-#include "src/messages/MiddlewareMessages.h"
+#include "MiddlewareMessages.h"
 
-SCENARIO("Verify that these message type transient local publishers can be"
-  " created")
+SCENARIO("Verify that these message type publishers can be created")
 {
   // Create a DDS participant
   dds_entity_t participant = dds_create_participant(42, NULL, NULL);
@@ -32,62 +31,68 @@ SCENARIO("Verify that these message type transient local publishers can be"
 
   using namespace free_fleet::cyclonedds;
 
-  GIVEN("Location message type")
+  GIVEN("Location")
   {
     auto pub = Publisher<MiddlewareMessages_Location>::make(
       participant,
       &MiddlewareMessages_Location_desc,
-      "make_Location_publisher",
-      true);
-    REQUIRE(pub);
+      "make_Location_publisher");
+    REQUIRE_FALSE(pub == nullptr);
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
   }
 
-  GIVEN("Waypoint message type")
+  GIVEN("Waypoint")
   {
     auto pub = Publisher<MiddlewareMessages_Waypoint>::make(
       participant,
       &MiddlewareMessages_Waypoint_desc,
-      "make_Waypoint_publisher",
-      true);
-    REQUIRE(pub);
+      "make_Waypoint_publisher");
+    REQUIRE_FALSE(pub == nullptr);
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
   }
 
-  GIVEN("ModeParameter message type")
-  {
-    auto pub = Publisher<MiddlewareMessages_ModeParameter>::make(
-      participant,
-      &MiddlewareMessages_ModeParameter_desc,
-      "make_ModeParameter_publisher",
-      true);
-    REQUIRE(pub);
-    dds_return_t rc = dds_delete(participant);
-    REQUIRE(rc == DDS_RETCODE_OK);
-  }
-
-  GIVEN("RobotMode message type")
+  GIVEN("RobotMode")
   {
     auto pub = Publisher<MiddlewareMessages_RobotMode>::make(
       participant,
       &MiddlewareMessages_RobotMode_desc,
-      "make_RobotMode_publisher",
-      true);
-    REQUIRE(pub);
+      "make_RobotMode_publisher");
+    REQUIRE_FALSE(pub == nullptr);
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
   }
 
-  GIVEN("ModeRequest message type")
+  GIVEN("PauseRequest")
   {
-    auto pub = Publisher<MiddlewareMessages_ModeRequest>::make(
+    auto pub = Publisher<MiddlewareMessages_PauseRequest>::make(
       participant,
-      &MiddlewareMessages_ModeRequest_desc,
-      "make_ModeRequest_publisher",
-      true);
-    REQUIRE(pub);
+      &MiddlewareMessages_PauseRequest_desc,
+      "make_PauseRequest_publisher");
+    REQUIRE_FALSE(pub == nullptr);
+    dds_return_t rc = dds_delete(participant);
+    REQUIRE(rc == DDS_RETCODE_OK);
+  }
+
+  GIVEN("ResumeRequest")
+  {
+    auto pub = Publisher<MiddlewareMessages_ResumeRequest>::make(
+      participant,
+      &MiddlewareMessages_ResumeRequest_desc,
+      "make_ResumeRequest_publisher");
+    REQUIRE_FALSE(pub == nullptr);
+    dds_return_t rc = dds_delete(participant);
+    REQUIRE(rc == DDS_RETCODE_OK);
+  }
+
+  GIVEN("DockRequest")
+  {
+    auto pub = Publisher<MiddlewareMessages_DockRequest>::make(
+      participant,
+      &MiddlewareMessages_DockRequest_desc,
+      "make_DockRequest_publisher");
+    REQUIRE_FALSE(pub == nullptr);
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
   }
@@ -97,8 +102,7 @@ SCENARIO("Verify that these message type transient local publishers can be"
     auto pub = Publisher<MiddlewareMessages_NavigationRequest>::make(
       participant,
       &MiddlewareMessages_NavigationRequest_desc,
-      "make_NavigationRequest_publisher",
-      true);
+      "make_NavigationRequest_publisher");
     REQUIRE(pub);
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
@@ -109,8 +113,7 @@ SCENARIO("Verify that these message type transient local publishers can be"
     auto pub = Publisher<MiddlewareMessages_RelocalizationRequest>::make(
       participant,
       &MiddlewareMessages_RelocalizationRequest_desc,
-      "make_RelocalizationRequest_publisher",
-      true);
+      "make_RelocalizationRequest_publisher");
     REQUIRE(pub);
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
@@ -121,11 +124,9 @@ SCENARIO("Verify that these message type transient local publishers can be"
     auto pub = Publisher<MiddlewareMessages_RobotState>::make(
       participant,
       &MiddlewareMessages_RobotState_desc,
-      "make_RobotState_publisher",
-      true);
+      "make_RobotState_publisher");
     REQUIRE(pub);
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
   }
-
 }
