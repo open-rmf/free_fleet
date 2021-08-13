@@ -32,6 +32,7 @@ idlc_generate(
 )
 
 file(GLOB lib_srcs
+  "src/*.cpp"
   "src/messages/*.cpp"
 )
 
@@ -45,6 +46,12 @@ target_link_libraries(free_fleet_cyclonedds
     CycloneDDS::ddsc
     free_fleet::free_fleet
     rmf_utils::rmf_utils
+)
+
+target_include_directories(free_fleet_cyclonedds
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 # Tests

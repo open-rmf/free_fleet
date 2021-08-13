@@ -21,6 +21,7 @@
 
 #include "Publisher.hpp"
 #include "Subscriber.hpp"
+#include "messages/convert.hpp"
 
 namespace free_fleet {
 namespace cyclonedds {
@@ -35,14 +36,14 @@ public:
 
   ~Implementation()
   {
-    dds_return_t rc = dds_delete(_participant);
+    dds_return_t rc = dds_delete(participant);
     if (rc != DDS_RETCODE_OK)
       DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
   }
 
-  dds_entity_t _participant;
+  dds_entity_t participant;
 
-  Publisher<MiddlwareMessages_RobotState>::SharedPtr state_pub;
+  Publisher<MiddlewareMessages_RobotState>::SharedPtr state_pub;
  
   Subscriber<MiddlewareMessages_DockRequest>::SharedPtr dock_req_sub;
  
@@ -50,14 +51,16 @@ public:
  
   Subscriber<MiddlewareMessages_ResumeRequest>::SharedPtr resume_req_sub;
  
-  Subscriber<MiddlewareMessages_NavigationRequest>::SharedPtr nav_req_sub;
+  Subscriber<MiddlewareMessages_NavigationRequest>::SharedPtr
+    navigation_req_sub;
  
-  Subscriber<MiddlewareMessages_RelocalizationRequest>::SharedPtr reloc_req_sub;
+  Subscriber<MiddlewareMessages_RelocalizationRequest>::SharedPtr
+    relocalization_req_sub;
 };
 
 //==============================================================================
 ClientDDSMiddleware::ClientDDSMiddleware()
-: _pimpl(rmf_utils::make_impl<Implementation>(Implementation())
+: _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
 {}
 
 //==============================================================================
@@ -73,55 +76,142 @@ auto ClientDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
     return nullptr;
   }
 
+  auto report_fail = [](const std::string& component)
+  {
+    fferr << "Failed to create " << component << "\n";
+    return nullptr;
+  };
+  
   auto state_pub =
-    free_fleet::cyclonedds::Publisher<MiddlewareMessages_RobotState>::make(
+    Publisher<MiddlewareMessages_RobotState>::make(
       participant,
       &MiddlewareMessages_RobotState_desc,
-      append(Prefix, fleet_name, StateTopicName));
+      namespacify(Prefix, fleet_name, StateTopicName));
   if (!state_pub)
-    return nullptr;
+    return report_fail("RobotState publisher");
 
-  middleware->_pimpl->_participant = std::move(participant);
-  middleware->_pimpl->_state_pub = std::move(state_pub);
+  auto dock_req_sub =
+    Subscriber<MiddlewareMessages_DockRequest>::make(
+      participant,
+      &MiddlewareMessages_DockRequest_desc,
+      namespacify(Prefix, fleet_name, DockRequestTopicName));
+  if (!dock_req_sub)
+    return report_fail("DockRequest subscriber");
+
+  auto pause_req_sub =
+    Subscriber<MiddlewareMessages_PauseRequest>::make(
+      participant,
+      &MiddlewareMessages_PauseRequest_desc,
+      namespacify(Prefix, fleet_name, PauseRequestTopicName));
+  if (!pause_req_sub)
+    return report_fail("PauseRequest subscriber");
+
+  auto resume_req_sub =
+    Subscriber<MiddlewareMessages_ResumeRequest>::make(
+      participant,
+      &MiddlewareMessages_ResumeRequest_desc,
+      namespacify(Prefix, fleet_name, ResumeRequestTopicName));
+  if (!resume_req_sub)
+    return report_fail("ResumeRequest subscriber");
+
+  auto navigation_req_sub =
+    Subscriber<MiddlewareMessages_NavigationRequest>::make(
+      participant,
+      &MiddlewareMessages_NavigationRequest_desc,
+      namespacify(Prefix, fleet_name, NavigationRequestTopicName));
+  if (!navigation_req_sub)
+    return report_fail("NavigationRequest subscriber");    
+
+  auto relocalization_req_sub =
+    Subscriber<MiddlewareMessages_RelocalizationRequest>::make(
+      participant,
+      &MiddlewareMessages_RelocalizationRequest_desc,
+      namespacify(Prefix, fleet_name, RelocalizationRequestTopicName));
+  if (!relocalization_req_sub)
+    return report_fail("RelocalizationRequest subscriber");
+
+  middleware->_pimpl->participant = std::move(participant);
+  middleware->_pimpl->state_pub = std::move(state_pub);
+  middleware->_pimpl->dock_req_sub = std::move(dock_req_sub);
+  middleware->_pimpl->pause_req_sub = std::move(pause_req_sub);
+  middleware->_pimpl->resume_req_sub = std::move(resume_req_sub);
+  middleware->_pimpl->navigation_req_sub = std::move(navigation_req_sub);
+  middleware->_pimpl->relocalization_req_sub =
+    std::move(relocalization_req_sub);
   return middleware;
 }
 
 //==============================================================================
 void ClientDDSMiddleware::send_state(const messages::RobotState& state)
 {
-  // MiddlewareMessages_RobotState* msg = MiddlewareMessages_RobotState__alloc();  
-  // convert(state, *msg);                                                         
-  // if (!_pimpl->_state_pub->write(msg))                                          
-  // {                                                                             
-  //   std::cerr << "[ERROR]: Failed to publish state.\n";                         
-  // }                                                                             
-  // MiddlewareMessages_RobotState_free(msg, DDS_FREE_ALL);
+  auto dds_msg = convert(state);
+  if (!_pimpl->state_pub->write(&dds_msg))
+  {
+    fferr << "Failed to publish RobotState.\n";
+  }
 }
 
 //==============================================================================
 void ClientDDSMiddleware::set_dock_request_callback(
-  std::function<void(const messages:DockRequest&)> callback)
-{}
+  std::function<void(const messages::DockRequest&)> callback)
+{
+  auto dds_cb =
+    [c = std::move(callback)](const MiddlewareMessages_DockRequest& dds_msg)
+  {
+    c(convert(dds_msg));
+  };
+  _pimpl->dock_req_sub->set_callback(std::move(dds_cb));
+}
 
 //==============================================================================
 void ClientDDSMiddleware::set_pause_request_callback(
   std::function<void(const messages::PauseRequest&)> callback)
-{}
+{
+  auto dds_cb =
+    [c = std::move(callback)](const MiddlewareMessages_PauseRequest& dds_msg)
+  {
+    c(convert(dds_msg));
+  };
+  _pimpl->pause_req_sub->set_callback(std::move(dds_cb));
+}
 
 //==============================================================================
 void ClientDDSMiddleware::set_resume_request_callback(
   std::function<void(const messages::ResumeRequest&)> callback)
-{}
+{
+  auto dds_cb =
+    [c = std::move(callback)](const MiddlewareMessages_ResumeRequest& dds_msg)
+  {
+    c(convert(dds_msg));
+  };
+  _pimpl->resume_req_sub->set_callback(std::move(dds_cb));
+}
 
 //==============================================================================
 void ClientDDSMiddleware::set_navigation_request_callback(
   std::function<void(const messages::NavigationRequest&)> callback)
-{}
+{
+  auto dds_cb =
+    [c = std::move(callback)]
+    (const MiddlewareMessages_NavigationRequest& dds_msg)
+  {
+    c(convert(dds_msg));
+  };
+  _pimpl->navigation_req_sub->set_callback(std::move(dds_cb));
+}
 
 //==============================================================================
 void ClientDDSMiddleware::set_relocalization_request_callback(
   std::function<void(const messages::RelocalizationRequest&)> callback)
-{}
+{
+  auto dds_cb =
+    [c = std::move(callback)]
+    (const MiddlewareMessages_RelocalizationRequest& dds_msg)
+  {
+    c(convert(dds_msg));
+  };
+  _pimpl->relocalization_req_sub->set_callback(std::move(dds_cb));
+}
 
 //==============================================================================
 } // namespace cyclonedds

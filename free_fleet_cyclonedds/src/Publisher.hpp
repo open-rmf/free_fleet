@@ -21,6 +21,7 @@
 #include <memory>
 
 #include <dds/dds.h>
+#include <free_fleet/Console.hpp>
 
 namespace free_fleet {
 namespace cyclonedds {

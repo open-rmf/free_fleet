@@ -28,7 +28,7 @@ namespace free_fleet {
 namespace cyclonedds {
 
 //==============================================================================
-class ServerDDSMiddleware : public transport::ServerMiddlware
+class ServerDDSMiddleware : public transport::ServerMiddleware
 {
 public:
   

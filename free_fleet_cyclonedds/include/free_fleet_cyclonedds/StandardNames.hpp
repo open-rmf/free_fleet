@@ -18,6 +18,9 @@
 #ifndef INCLUDE__FREE_FLEET_CYCLONEDDS__STANDARDNAMES_HPP
 #define INCLUDE__FREE_FLEET_CYCLONEDDS__STANDARDNAMES_HPP
 
+#include <string>
+#include <sstream>
+
 namespace free_fleet {
 namespace cyclonedds {
 
@@ -30,8 +33,8 @@ constexpr char NavigationRequestTopicName[] = "navigation_request";
 constexpr char RelocalizationRequestTopicName[] = "relocalization_request";
 
 //==============================================================================
-/// Appends one or more additional string elements to the first passed in
-/// argument.
+/// Creates a namespace by appending one or more additional elements to the
+/// first passed in argument.
 ///
 /// \param[in] args
 ///   The string elements to be appended together.
@@ -39,12 +42,12 @@ constexpr char RelocalizationRequestTopicName[] = "relocalization_request";
 /// \return
 ///   The appended strings.
 template <typename... Args>
-std::string append(Args const&... args)
+std::string namespacify(Args const&... args)
 {
-  std::string result;
-  int unpack[]{0, (result += std::to_string(args) + "/", 0)...};
+  std::stringstream result;
+  int unpack[]{0, (result << args << "/", 0)...};
   static_cast<void>(unpack);
-  return result;
+  return result.str();
 }
 
 //==============================================================================

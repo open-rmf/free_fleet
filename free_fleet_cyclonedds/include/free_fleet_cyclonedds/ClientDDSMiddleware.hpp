@@ -39,7 +39,7 @@ public:
   void send_state(const messages::RobotState& state) override;
 
   void set_dock_request_callback(
-    std::function<void(const messages:DockRequest&)> callback) override;
+    std::function<void(const messages::DockRequest&)> callback) override;
 
   void set_pause_request_callback(
     std::function<void(const messages::PauseRequest&)> callback) override;
@@ -48,10 +48,10 @@ public:
     std::function<void(const messages::ResumeRequest&)> callback) override;
 
   void set_navigation_request_callback(
-    std::function<void(const messages::NavigationRequest&) callback) override;
+    std::function<void(const messages::NavigationRequest&)> callback) override;
 
   void set_relocalization_request_callback(
-    std::function<void(const messages::RelocalizationRequest&) callback)
+    std::function<void(const messages::RelocalizationRequest&)> callback)
     override;
 
   class Implementation;
