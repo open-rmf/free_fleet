@@ -158,6 +158,7 @@ private:
     std::string level_name;
     move_base_msgs::MoveBaseGoal goal;
     bool sent = false;
+    uint32_t aborted_count = 0;
     ros::Time goal_end_time;
   };
 

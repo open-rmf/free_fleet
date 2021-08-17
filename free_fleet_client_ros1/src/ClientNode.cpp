@@ -490,11 +490,40 @@ void ClientNode::handle_requests()
     {
       return;
     }
+    else if (current_goal_state == GoalState::ABORTED)
+    {
+      goal_path.front().aborted_count++;
+
+      // TODO: parameterize the maximum number of retries.
+      if (goal_path.front().aborted_count < 5)
+      {
+        ROS_INFO("robot's navigation stack has aborted the current goal %d "
+            "times, client will trying again...",
+            goal_path.front().aborted_count);
+        fields.move_base_client->cancelGoal();
+        goal_path.front().sent = false;
+        return;
+      }
+      else
+      {
+        ROS_INFO("robot's navigation stack has aborted the current goal %d "
+            "times, please check that there is nothing in the way of the "
+            "robot, client will abort the current path request, and await "
+            "further requests.");
+        fields.move_base_client->cancelGoal();
+        goal_path.clear();
+        return;
+      }
+    }
     else
     {
-      ROS_INFO(
-          "current goal state: %s", current_goal_state.toString().c_str());
-      ROS_INFO("Client: no idea what to do now, doh!");
+      ROS_INFO("Undesirable goal state: %s",
+          current_goal_state.toString().c_str());
+      ROS_INFO("Client will abort the current path request, and await further "
+          "requests or manual intervention.");
+      fields.move_base_client->cancelGoal();
+      goal_path.clear();
+      return;
     }
   }
   
