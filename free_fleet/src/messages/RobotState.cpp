@@ -135,12 +135,17 @@ bool operator==(const RobotState& lhs, const RobotState& rhs)
   if (lhs.time() == rhs.time() &&
     lhs.name() == rhs.name() &&
     lhs.model() == rhs.model() &&
-    lhs.task_id() == rhs.task_id() &&
     lhs.mode() == rhs.mode() &&
     abs(lhs.battery_percent() - rhs.battery_percent()) < 1e-3 &&
     lhs.location() == rhs.location() &&
     lhs.target_path_index() == rhs.target_path_index())
-    return true;
+  {
+    if (lhs.task_id().has_value() && rhs.task_id().has_value() &&
+      lhs.task_id().value() == rhs.task_id().value())
+      return true;
+    else if (!lhs.task_id().has_value() && !rhs.task_id().has_value())
+      return true;
+  }
   return false;
 }
 

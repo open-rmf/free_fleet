@@ -36,9 +36,12 @@ public:
 
   ~Implementation()
   {
-    dds_return_t rc = dds_delete(participant);
-    if (rc != DDS_RETCODE_OK)
-      DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
+    if (participant > 0)
+    {
+      dds_return_t rc = dds_delete(participant);
+      if (rc != DDS_RETCODE_OK)
+        ffwarn << "dds_delete: " << dds_strretcode(-rc) << "\n";
+    }
   }
 
   dds_entity_t participant;
@@ -72,13 +75,19 @@ auto ServerDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
   dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
   if (participant <  0)
   {
-    DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-participant));
+    fferr << "dds_create_participant: " << dds_strretcode(-participant) << "\n";
     return nullptr;
   }
 
-  auto report_fail = [](const std::string& component)
+  auto report_fail = [p = participant](const std::string& component)
   {
     fferr << "Failed to create " << component << "\n";
+    if (p > 0)
+    {
+      dds_return_t rc = dds_delete(p);
+      if (rc != DDS_RETCODE_OK)
+        ffwarn << "dds_delete: " << dds_strretcode(-rc) << "\n";
+    }
     return nullptr;
   };
 
@@ -131,6 +140,7 @@ auto ServerDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
     return report_fail("RelocalizationRequest publisher");
 
   middleware->_pimpl->participant = std::move(participant);
+  middleware->_pimpl->state_sub = std::move(state_sub);
   middleware->_pimpl->dock_req_pub = std::move(dock_req_pub);
   middleware->_pimpl->pause_req_pub = std::move(pause_req_pub);
   middleware->_pimpl->resume_req_pub = std::move(resume_req_pub);
@@ -147,7 +157,11 @@ void ServerDDSMiddleware::set_robot_state_callback(
   auto dds_cb =
     [c = std::move(callback)](const MiddlewareMessages_RobotState& dds_msg)
   {
-    c(convert(dds_msg));
+    auto converted_msg = convert(dds_msg);
+    if (!converted_msg.has_value())
+      return;
+
+    c(converted_msg.value());
   }; 
   _pimpl->state_sub->set_callback(std::move(dds_cb));
 }
@@ -157,7 +171,10 @@ void ServerDDSMiddleware::send_dock_request(
   const messages::DockRequest& request)
 {
   auto dds_msg = convert(request);
-  if (!_pimpl->dock_req_pub->write(&dds_msg))
+  if (!dds_msg.has_value())
+    return;
+
+  if (!_pimpl->dock_req_pub->write(&dds_msg.value()))
   {
     fferr << "Failed to publish DockRequest.\n";
   }
@@ -168,7 +185,10 @@ void ServerDDSMiddleware::send_pause_request(
   const messages::PauseRequest& request)
 {
   auto dds_msg = convert(request);
-  if (!_pimpl->pause_req_pub->write(&dds_msg))
+  if (!dds_msg.has_value())
+    return;
+
+  if (!_pimpl->pause_req_pub->write(&dds_msg.value()))
   {
     fferr << "Failed to publish PauseRequest.\n";
   }
@@ -179,7 +199,10 @@ void ServerDDSMiddleware::send_resume_request(
   const messages::ResumeRequest& request)
 {
   auto dds_msg = convert(request);
-  if (!_pimpl->resume_req_pub->write(&dds_msg))
+  if (!dds_msg.has_value())
+    return;
+
+  if (!_pimpl->resume_req_pub->write(&dds_msg.value()))
   {
     fferr << "Failed to publish ResumeRequest.\n";
   }
@@ -190,7 +213,10 @@ void ServerDDSMiddleware::send_navigation_request(
   const messages::NavigationRequest& request)
 {
   auto dds_msg = convert(request);
-  if (!_pimpl->navigation_req_pub->write(&dds_msg))
+  if (!dds_msg.has_value())
+    return;
+
+  if (!_pimpl->navigation_req_pub->write(&dds_msg.value()))
   {
     fferr << "Failed to publish NavigationRequest.\n";
   }
@@ -201,7 +227,10 @@ void ServerDDSMiddleware::send_relocalization_request(
   const messages::RelocalizationRequest& request)
 {
   auto dds_msg = convert(request);
-  if (!_pimpl->relocalization_req_pub->write(&dds_msg))
+  if (!dds_msg.has_value())
+    return;
+
+  if (!_pimpl->relocalization_req_pub->write(&dds_msg.value()))
   {
     fferr << "Failed to publish RelocalizationRequest.\n";
   }

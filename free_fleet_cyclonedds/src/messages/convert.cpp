@@ -15,12 +15,21 @@
  *
  */
 
+#include <sstream>
 #include <free_fleet/Types.hpp>
+#include <free_fleet/Console.hpp>
 
 #include "convert.hpp"
 
 namespace free_fleet {
 namespace cyclonedds {
+
+//==============================================================================
+inline std::nullopt_t convert_error(const std::string& error_message)
+{
+  fferr << error_message << "\n";
+  return std::nullopt;
+}
 
 //==============================================================================
 char* dds_string_alloc_and_copy(const std::string& _str)
@@ -34,7 +43,7 @@ char* dds_string_alloc_and_copy(const std::string& _str)
 }
 
 //==============================================================================
-MiddlewareMessages_Time convert(const rmf_traffic::Time& input)
+std::optional<MiddlewareMessages_Time> convert(const rmf_traffic::Time& input)
 {
   MiddlewareMessages_Time output;
   output.sec =
@@ -47,10 +56,15 @@ MiddlewareMessages_Time convert(const rmf_traffic::Time& input)
 }
 
 //==============================================================================
-MiddlewareMessages_Location convert(const messages::Location& input)
+std::optional<MiddlewareMessages_Location> convert(
+  const messages::Location& input)
 {
   MiddlewareMessages_Location output;
   output.map_name = dds_string_alloc_and_copy(input.map_name());
+
+  if (!output.map_name)
+    return convert_error("Location::map_name must not be null.");
+
   output.x = input.coordinates()[0];
   output.y = input.coordinates()[1];
   output.yaw_available = false;
@@ -64,23 +78,35 @@ MiddlewareMessages_Location convert(const messages::Location& input)
 }
 
 //==============================================================================
-MiddlewareMessages_Waypoint convert(const messages::Waypoint& input)
+std::optional<MiddlewareMessages_Waypoint> convert(
+  const messages::Waypoint& input)
 {
   MiddlewareMessages_Waypoint output;
   output.index = static_cast<uint32_t>(input.index());
-  output.location = convert(input.location());
+
+  auto dds_loc = convert(input.location());
+  if (!dds_loc.has_value())
+    return convert_error("failed to convert Waypoint::Location.");
+
+  output.location = dds_loc.value();
   output.wait_until_available = false;
 
   if (input.wait_until().has_value())
   {
     output.wait_until_available = true;
-    output.wait_until = convert(input.wait_until().value());
+
+    auto wait_until = convert(input.wait_until().value());
+    if (!wait_until.has_value())
+      return convert_error("failed to convert Waypont::wait_until.");
+
+    output.wait_until = wait_until.value();
   }
   return output;
 }
 
 //==============================================================================
-MiddlewareMessages_RobotMode convert(const messages::RobotMode& input)
+std::optional<MiddlewareMessages_RobotMode> convert(
+  const messages::RobotMode& input)
 {
   using Mode = messages::RobotMode::Mode;
     
@@ -120,44 +146,71 @@ MiddlewareMessages_RobotMode convert(const messages::RobotMode& input)
     default:
       output.mode = MiddlewareMessages_RobotMode_Constants_Undefined; 
   }
+
   output.info = dds_string_alloc_and_copy(input.info());
+  if (!output.info)
+    return convert_error("RobotMode::info must not be null.");
+
   return output;
 }
 
 //==============================================================================
-MiddlewareMessages_PauseRequest convert(const messages::PauseRequest& input)
+std::optional<MiddlewareMessages_PauseRequest> convert(
+  const messages::PauseRequest& input)
 {
   MiddlewareMessages_PauseRequest output;
   output.robot_name = dds_string_alloc_and_copy(input.robot_name());
+
+  if (!output.robot_name)
+    return convert_error("PauseRequest::robot_name must not be null.");
+
   output.task_id = static_cast<uint32_t>(input.task_id());
   return output;
 }
 
 //==============================================================================
-MiddlewareMessages_ResumeRequest convert(const messages::ResumeRequest& input)
+std::optional<MiddlewareMessages_ResumeRequest> convert(
+  const messages::ResumeRequest& input)
 {
   MiddlewareMessages_ResumeRequest output;
   output.robot_name = dds_string_alloc_and_copy(input.robot_name());
+
+  if (!output.robot_name)
+    return convert_error("ResumeRequest::robot_name must not be null.");
+
   output.task_id = static_cast<uint32_t>(input.task_id());
   return output;
 }
 
 //==============================================================================
-MiddlewareMessages_DockRequest convert(const messages::DockRequest& input)
+std::optional<MiddlewareMessages_DockRequest> convert(
+  const messages::DockRequest& input)
 {
   MiddlewareMessages_DockRequest output;
   output.robot_name = dds_string_alloc_and_copy(input.robot_name());
+  
+  if (!output.robot_name)
+    return convert_error("DockRequest::robot_name must not be null.");
+  
   output.task_id = static_cast<uint32_t>(input.task_id());
   output.dock_name = dds_string_alloc_and_copy(input.dock_name());
+  
+  if (!output.dock_name)
+    return convert_error("DockRequest::dock_name must not be null.");
+
   return output;
 }
 
 //==============================================================================
-MiddlewareMessages_NavigationRequest convert(
+std::optional<MiddlewareMessages_NavigationRequest> convert(
   const messages::NavigationRequest& input)
 {
   MiddlewareMessages_NavigationRequest output;
   output.robot_name = dds_string_alloc_and_copy(input.robot_name());
+  
+  if (!output.robot_name)
+    return convert_error("NavigationRequest::robot_name must not be null.");
+  
   output.task_id = static_cast<uint32_t>(input.task_id());
   
   const std::size_t path_elem_num = input.path().size();
@@ -165,32 +218,66 @@ MiddlewareMessages_NavigationRequest convert(
   output.path._length = static_cast<uint32_t>(path_elem_num);
   output.path._buffer =
     dds_sequence_MiddlewareMessages_Waypoint_allocbuf(path_elem_num);
+
+  if (!output.path._buffer)
+    return convert_error("NavigationRequest::path::_buffer must not be null.");
+
   for (std::size_t i = 0; i < path_elem_num; ++i)
-    output.path._buffer[i] = convert(input.path()[i]);
+  {
+    auto wp = convert(input.path()[i]);
+    if (!wp.has_value())
+    {
+      std::stringstream ss;
+      ss << "failed to convert Waypoint " << i
+        << " in NavigationRequest::path.\n";
+      return convert_error(ss.str());
+    }
+
+    output.path._buffer[i] = wp.value();
+  }
   return output;
 }
 
 //==============================================================================
-MiddlewareMessages_RelocalizationRequest convert(
+std::optional<MiddlewareMessages_RelocalizationRequest> convert(
   const messages::RelocalizationRequest& input)
 {
   MiddlewareMessages_RelocalizationRequest output;
   output.robot_name = dds_string_alloc_and_copy(input.robot_name());
+  if (!output.robot_name)
+    return convert_error("RelocalizationRequest::robot_name must not be null.");
+  
   output.task_id = static_cast<uint32_t>(input.task_id());
-  output.location = convert(input.location());
+  
+  auto loc = convert(input.location());
+  if (!loc.has_value())
+    return convert_error("failed to convert RelocalizationRequest::location.");
+  output.location = loc.value();
+  
   output.last_visited_waypoint_index =
     static_cast<uint32_t>(input.last_visited_waypoint_index());
   return output;
 }
 
 //==============================================================================
-MiddlewareMessages_RobotState convert(const messages::RobotState& input)
+std::optional<MiddlewareMessages_RobotState> convert(
+  const messages::RobotState& input)
 {
   MiddlewareMessages_RobotState output;
-  output.time = convert(input.time());
-  output.name = dds_string_alloc_and_copy(input.name());
-  output.model = dds_string_alloc_and_copy(input.model());
   
+  auto time = convert(input.time());
+  if (!time.has_value())
+    return convert_error("failed to convert RobotState::time.");
+  output.time = time.value();
+  
+  output.name = dds_string_alloc_and_copy(input.name());
+  if (!output.name)
+    return convert_error("RobotState::name must not be null.");
+
+  output.model = dds_string_alloc_and_copy(input.model());
+  if (!output.model)
+    return convert_error("RobotState::model must not be null.");
+
   output.task_id_available = false;
   if (input.task_id().has_value())
   {
@@ -198,16 +285,24 @@ MiddlewareMessages_RobotState convert(const messages::RobotState& input)
     output.task_id = static_cast<uint32_t>(input.task_id().value());
   }
 
-  output.mode = convert(input.mode());
-  output.battery_percent = input.battery_percent();
-  output.location  = convert(input.location());
-  output.target_path_index = static_cast<uint32_t>(input.target_path_index());
+  auto mode = convert(input.mode());
+  if (!mode.has_value())
+    return convert_error("failed to convert RobotState::mode.");
+  output.mode = mode.value();
 
+  output.battery_percent = input.battery_percent();
+
+  auto loc = convert(input.location());
+  if (!loc.has_value())
+    return convert_error("failed to convert RobotState::location.");
+  output.location  = loc.value(); 
+
+  output.target_path_index = static_cast<uint32_t>(input.target_path_index());
   return output;
 }
 
 //==============================================================================
-rmf_traffic::Time convert(const MiddlewareMessages_Time& input)
+std::optional<rmf_traffic::Time> convert(const MiddlewareMessages_Time& input)
 {
   auto output = rmf_traffic::Time() +
     std::chrono::seconds(input.sec) +
@@ -216,8 +311,12 @@ rmf_traffic::Time convert(const MiddlewareMessages_Time& input)
 }
 
 //==============================================================================
-messages::Location convert(const MiddlewareMessages_Location& input)
+std::optional<messages::Location> convert(
+  const MiddlewareMessages_Location& input)
 {
+  if (!input.map_name)
+    return convert_error("Location::map_name must not be null.");
+
   if (input.yaw_available)
   {
     return messages::Location(
@@ -230,22 +329,33 @@ messages::Location convert(const MiddlewareMessages_Location& input)
 }
 
 //==============================================================================
-messages::Waypoint convert(const MiddlewareMessages_Waypoint& input)
+std::optional<messages::Waypoint> convert(
+  const MiddlewareMessages_Waypoint& input)
 {
+  auto loc = convert(input.location);
+  if (!loc.has_value())
+    return convert_error("failed to convert Waypoint::location.");
+
   if (input.wait_until_available)
   {
+    auto wait_until = convert(input.wait_until);
+    if (!wait_until.has_value())
+      return convert_error("failed to convert Waypoint::wait_until.");
+
     return messages::Waypoint(
       static_cast<std::size_t>(input.index),
-      convert(input.location),
-      convert(input.wait_until));
+      loc.value(),
+      wait_until.value());
   }
+
   return messages::Waypoint(
     static_cast<std::size_t>(input.index),
-    convert(input.location));
+    loc.value());
 }
 
 //==============================================================================
-messages::RobotMode convert(const MiddlewareMessages_RobotMode& input)
+std::optional<messages::RobotMode> convert(
+  const MiddlewareMessages_RobotMode& input)
 {
   using Mode = messages::RobotMode::Mode;
   Mode m;
@@ -285,31 +395,50 @@ messages::RobotMode convert(const MiddlewareMessages_RobotMode& input)
       m = Mode::Undefined;
   }
 
-  if (input.info)
+  if (!input.info)
+    return convert_error("failed to convert RobotMode::info.");
+
+  std::string info(input.info);
+  if (!info.empty())
     return messages::RobotMode(m, std::string(input.info));
   
   return messages::RobotMode(m);
 }
 
 //==============================================================================
-messages::PauseRequest convert(const MiddlewareMessages_PauseRequest& input)
+std::optional<messages::PauseRequest> convert(
+  const MiddlewareMessages_PauseRequest& input)
 {
+  if (!input.robot_name)
+    return convert_error("PauseRequest::robot_name must not be null.");
+
   return messages::PauseRequest(
     std::string(input.robot_name),
     static_cast<TaskId>(input.task_id));
 }
 
 //==============================================================================
-messages::ResumeRequest convert(const MiddlewareMessages_ResumeRequest& input)
+std::optional<messages::ResumeRequest> convert(
+  const MiddlewareMessages_ResumeRequest& input)
 {
+  if (!input.robot_name)
+    return convert_error("ResumeRequest::robot_name must not be null.");
+
   return messages::ResumeRequest(
     std::string(input.robot_name),
     static_cast<TaskId>(input.task_id));
 }
 
 //==============================================================================
-messages::DockRequest convert(const MiddlewareMessages_DockRequest& input)
+std::optional<messages::DockRequest> convert(
+  const MiddlewareMessages_DockRequest& input)
 {
+  if (!input.robot_name)
+    return convert_error("DockRequest::robot_name must not be null.");
+
+  if (!input.dock_name)
+    return convert_error("DockRequest::dock_name must not be null.");
+
   return messages::DockRequest(
     std::string(input.robot_name),
     static_cast<TaskId>(input.task_id),
@@ -317,12 +446,25 @@ messages::DockRequest convert(const MiddlewareMessages_DockRequest& input)
 }
 
 //==============================================================================
-messages::NavigationRequest convert(
+std::optional<messages::NavigationRequest> convert(
   const MiddlewareMessages_NavigationRequest& input)
 {
+  if (!input.robot_name)
+    return convert_error("NavigationRequest::robot_name must not be null.");
+
   std::vector<messages::Waypoint> path;
   for (uint32_t i = 0; i < input.path._length; ++i)
-    path.push_back(convert(input.path._buffer[i]));
+  {
+    auto wp = convert(input.path._buffer[i]);
+    if (!wp.has_value())
+    {
+      std::stringstream ss;
+      ss << "failed to convert Waypoint " << i
+        << " in NavigationRequest::path.";
+      return convert_error(ss.str());
+    }
+    path.push_back(wp.value());
+  }
 
   return messages::NavigationRequest(
     std::string(input.robot_name),
@@ -331,31 +473,57 @@ messages::NavigationRequest convert(
 }
 
 //==============================================================================
-messages::RelocalizationRequest convert(
+std::optional<messages::RelocalizationRequest> convert(
   const MiddlewareMessages_RelocalizationRequest& input)
 {
+  if (!input.robot_name)
+    return convert_error("RelocalizationRequest::robot_name must not be null.");
+
+  auto loc = convert(input.location);
+  if (!loc.has_value())
+    return convert_error("failed to convert RelocalizationRequest::location.");
+
   return messages::RelocalizationRequest(
     std::string(input.robot_name),
     static_cast<TaskId>(input.task_id),
-    convert(input.location),
+    loc.value(),
     static_cast<std::size_t>(input.last_visited_waypoint_index));
 }
 
 //==============================================================================
-messages::RobotState convert(const MiddlewareMessages_RobotState& input)
+std::optional<messages::RobotState> convert(
+  const MiddlewareMessages_RobotState& input)
 {
+  auto time = convert(input.time);
+  if (!time.has_value())
+    return convert_error("failed to convert RobotState::time.");
+
+  if (!input.name)
+    return convert_error("RobotState::name must not be null.");
+  
+  if (!input.model)
+    return convert_error("RobotState::model must not be null.");
+
+  auto mode = convert(input.mode);
+  if (!mode.has_value())
+    return convert_error("failed to convert RobotState::mode.");
+
+  auto loc = convert(input.location);
+  if (!loc.has_value())
+    return convert_error("failed to convert RobotState::location.");
+
   std::optional<TaskId> task_id = std::nullopt;
   if (input.task_id_available)
     task_id = static_cast<TaskId>(input.task_id);
 
   return messages::RobotState(
-    convert(input.time),
+    time.value(),
     std::string(input.name),
     std::string(input.model),
     task_id,
-    convert(input.mode),
+    mode.value(),
     input.battery_percent,
-    convert(input.location),
+    loc.value(),
     static_cast<std::size_t>(input.target_path_index));
 }
 

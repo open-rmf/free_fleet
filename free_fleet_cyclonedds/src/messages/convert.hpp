@@ -18,6 +18,8 @@
 #ifndef SRC__MESSAGES__CONVERT_HPP
 #define SRC__MESSAGES__CONVERT_HPP
 
+#include <optional>
+
 #include <rmf_traffic/Time.hpp>
 #include <free_fleet/messages/Location.hpp>
 #include <free_fleet/messages/Waypoint.hpp>
@@ -44,58 +46,66 @@ namespace cyclonedds {
 char* dds_string_alloc_and_copy(const std::string& str);
 
 //==============================================================================
-/// From free_fleet::messages to DDS messages
-MiddlewareMessages_Time convert(const rmf_traffic::Time& input);
+/// From free_fleet::messages to DDS messages, nullopt if the conversion failed.
+std::optional<MiddlewareMessages_Time> convert(const rmf_traffic::Time& input);
 
-MiddlewareMessages_Location convert(const messages::Location& input);
+std::optional<MiddlewareMessages_Location> convert(
+  const messages::Location& input);
 
-MiddlewareMessages_Waypoint convert(
+std::optional<MiddlewareMessages_Waypoint> convert(
   const free_fleet::messages::Waypoint& input);
 
-MiddlewareMessages_RobotMode convert(
+std::optional<MiddlewareMessages_RobotMode> convert(
   const free_fleet::messages::RobotMode& input);
 
-MiddlewareMessages_PauseRequest convert(
+std::optional<MiddlewareMessages_PauseRequest> convert(
   const free_fleet::messages::PauseRequest& input);
 
-MiddlewareMessages_ResumeRequest convert(
+std::optional<MiddlewareMessages_ResumeRequest> convert(
   const free_fleet::messages::ResumeRequest& input);
 
-MiddlewareMessages_DockRequest convert(
+std::optional<MiddlewareMessages_DockRequest> convert(
   const free_fleet::messages::DockRequest& input);
 
-MiddlewareMessages_NavigationRequest convert(
+std::optional<MiddlewareMessages_NavigationRequest> convert(
   const free_fleet::messages::NavigationRequest& input);
 
-MiddlewareMessages_RelocalizationRequest convert(
+std::optional<MiddlewareMessages_RelocalizationRequest> convert(
   const free_fleet::messages::RelocalizationRequest& input);
 
-MiddlewareMessages_RobotState convert(
+std::optional<MiddlewareMessages_RobotState> convert(
   const free_fleet::messages::RobotState& input);
 
 //==============================================================================
-/// From DDS messages to free_fleet::messages
-rmf_traffic::Time convert(const MiddlewareMessages_Time& input);
+/// From DDS messages to free_fleet::messages, nullopt if the conversion failed.
+std::optional<rmf_traffic::Time> convert(const MiddlewareMessages_Time& input);
 
-messages::Location convert(const MiddlewareMessages_Location& input);
+std::optional<messages::Location> convert(
+  const MiddlewareMessages_Location& input);
 
-messages::Waypoint convert(const MiddlewareMessages_Waypoint& input);
+std::optional<messages::Waypoint> convert(
+  const MiddlewareMessages_Waypoint& input);
 
-messages::RobotMode convert(const MiddlewareMessages_RobotMode& input);
+std::optional<messages::RobotMode> convert(
+  const MiddlewareMessages_RobotMode& input);
 
-messages::PauseRequest convert(const MiddlewareMessages_PauseRequest& input);
+std::optional<messages::PauseRequest> convert(
+  const MiddlewareMessages_PauseRequest& input);
 
-messages::ResumeRequest convert(const MiddlewareMessages_ResumeRequest& input);
+std::optional<messages::ResumeRequest> convert(
+  const MiddlewareMessages_ResumeRequest& input);
 
-messages::DockRequest convert(const MiddlewareMessages_DockRequest& input);
+std::optional<messages::DockRequest> convert(
+  const MiddlewareMessages_DockRequest& input);
 
-messages::NavigationRequest convert(
+std::optional<messages::NavigationRequest> convert(
   const MiddlewareMessages_NavigationRequest& input);
 
-messages::RelocalizationRequest convert(
+std::optional<messages::RelocalizationRequest> convert(
   const MiddlewareMessages_RelocalizationRequest& input);
 
-messages::RobotState convert(const MiddlewareMessages_RobotState& input);
+std::optional<messages::RobotState> convert(
+  const MiddlewareMessages_RobotState& input);
 
 } // namespace cyclonedds
 } // namespace free_fleet

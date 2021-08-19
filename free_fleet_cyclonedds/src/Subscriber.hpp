@@ -116,7 +116,7 @@ private:
       DDS_FATAL("_s_data_available: Reader not found or has already expired\n");
       return;
     }
-    
+
     dds_return_t return_code =
       dds_take(
         reader,
@@ -135,6 +135,7 @@ private:
       for (std::size_t i = 0; i < MaxSamplesNum; ++i)
       {
         if (it->second->_msg_infos[i].valid_data &&
+          it->second->_msg_infos[i].sample_state == DDS_SST_NOT_READ &&
           it->second->_callback.has_value())
         {
           (*it->second->_callback)(*it->second->_shared_msgs[i]);

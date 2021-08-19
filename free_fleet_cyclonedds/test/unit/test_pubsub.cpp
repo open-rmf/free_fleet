@@ -43,6 +43,8 @@ SCENARIO("Publishing with Subscriber")
   MiddlewareMessages_Location* msg = MiddlewareMessages_Location__alloc();
   std::string map_name = "test_basic_pub_sub";
   msg->map_name = dds_string_alloc_and_copy(map_name);
+  REQUIRE_FALSE(msg->map_name == nullptr);
+  CHECK(std::string(msg->map_name) == "test_basic_pub_sub");
 
   std::string map_name_received = "";
   auto cb = [&](const MiddlewareMessages_Location& msg)
