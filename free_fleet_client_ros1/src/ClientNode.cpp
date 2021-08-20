@@ -385,6 +385,7 @@ bool ClientNode::read_path_request()
               path_request.path[i].level_name,
               location_to_move_base_goal(path_request.path[i]),
               false,
+              0,
               ros::Time(
                   path_request.path[i].sec, path_request.path[i].nanosec)});
     }
@@ -420,6 +421,7 @@ bool ClientNode::read_destination_request()
             destination_request.destination.level_name,
             location_to_move_base_goal(destination_request.destination),
             false,
+            0,
             ros::Time(
                 destination_request.destination.sec, 
                 destination_request.destination.nanosec)});
@@ -509,7 +511,8 @@ void ClientNode::handle_requests()
         ROS_INFO("robot's navigation stack has aborted the current goal %d "
             "times, please check that there is nothing in the way of the "
             "robot, client will abort the current path request, and await "
-            "further requests.");
+            "further requests.",
+            goal_path.front().aborted_count);
         fields.move_base_client->cancelGoal();
         goal_path.clear();
         return;
