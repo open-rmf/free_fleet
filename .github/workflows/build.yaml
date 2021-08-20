@@ -9,6 +9,7 @@ jobs:
 
   ros1_build:
     name: ros1_build
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         ros_distribution:
@@ -37,6 +38,7 @@ jobs:
 
   ros2_build:
     name: ros2_build
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         ros_distribution:
