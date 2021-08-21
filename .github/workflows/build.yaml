@@ -1,94 +1,53 @@
 name: build
-on: push
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'
+
 jobs:
 
-  ros1:
+  ros1_build:
+    name: ros1_build
     runs-on: ubuntu-20.04
-    container:
-      image: docker://ros:noetic-ros-base-focal
     steps:
-    - name: non-ros-deps
-      run: |
-        sudo apt update && sudo apt install \
-          git wget qt5-default \
-          python3-rosdep \
-          python3-vcstool \
-          python3-colcon-common-extensions \
-          -y
-    - name: workspace
-      run: |
-        mkdir -p ros1_ws/src
-        cd ros1_ws/src
-        git clone https://github.com/open-rmf/free_fleet
-        git clone https://github.com/eclipse-cyclonedds/cyclonedds
-    - name: checkout
-      uses: actions/checkout@v2
-      with:
-        path: ros1_ws/src/free_fleet
-    - name: ros-deps
-      run: |
-        cd ros1_ws
-        rosdep update
-        rosdep install \
-          --from-paths src \
-          --ignore-src \
-          --rosdistro noetic \
-          --skip-keys "turtlebot3_bringup turtlebot3_navigation turtlebot3_gazebo rmf_fleet_msgs ament_lint_common rclcpp rclpy builtin_interfaces ament_cmake rosidl_default_generators" \
-          -r -y
-    - name: build
-      shell: bash
-      run: |
-        cd ros1_ws
-        source /opt/ros/noetic/setup.bash
-        colcon build \
-          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
-          --packages-up-to \
-          free_fleet \
-          ff_examples_ros1 \
-          ff_rviz_plugins_ros1 \
-          free_fleet_client_ros1
+      - name: pwd
+        run: pwd
+      - name: deps
+        uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: noetic 
+      - name: build
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          target-ros1-distro: noetic 
+          # build all packages listed in the meta package
+          package-name: |
+            free_fleet
+            ff_examples_ros1
+            ff_rviz_plugins_ros1
+            free_fleet_client_ros1
+          vcs-repo-file-url: |
+            https://raw.githubusercontent.com/open-rmf/free_fleet/main/ff_ros1.repos
 
-  ros2:
+  ros2_build:
+    name: ros2_build
     runs-on: ubuntu-20.04
-    container:
-      image: docker://ros:foxy-ros-core-focal
     steps:
-    - name: non-ros-deps
-      run: |
-        apt update && apt install \
-          git wget qt5-default \
-          python3-rosdep \
-          python3-vcstool \
-          python3-colcon-common-extensions \
-          -y
-    - name: workspace
-      run: |
-        mkdir -p ros2_ws/src
-        cd ros2_ws/src
-        git clone https://github.com/open-rmf/free_fleet
-        git clone https://github.com/open-rmf/rmf_internal_msgs
-    - name: checkout
-      uses: actions/checkout@v2
-      with:
-        path: ros2_ws/src/free_fleet
-    - name: ros-deps
-      run: |
-        cd ros2_ws
-        rosdep init
-        rosdep update
-        rosdep install \
-          --from-paths src \
-          --ignore-src \
-          --rosdistro foxy \
-          -r -y
-    - name: build
-      shell: bash
-      run: |
-        cd ros2_ws
-        source /opt/ros/foxy/setup.bash
-        colcon build \
-          --cmake-args -DCMAKE_BUILD_TYPE=RELEASE \
-          --packages-up-to \
-          free_fleet \
-          ff_examples_ros2 \
-          free_fleet_server_ros2
+      - name: pwd
+        run: pwd
+      - name: deps
+        uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: foxy
+      - name: build
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          target-ros2-distro: foxy
+          # build all packages listed in the meta package
+          package-name: |
+            free_fleet
+            ff_examples_ros2
+            free_fleet_server_ros2
+          vcs-repo-file-url: |
+            https://raw.githubusercontent.com/open-rmf/free_fleet/main/ff_ros2.repos
