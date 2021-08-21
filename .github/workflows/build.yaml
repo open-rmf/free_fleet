@@ -33,22 +33,17 @@ jobs:
   ros2_build:
     name: ros2_build
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        ros_distribution:
-          - foxy 
-          - galactic 
     steps:
       - name: pwd
         run: pwd
       - name: deps
         uses: ros-tooling/setup-ros@v0.2
         with:
-          required-ros-distributions: ${{ matrix.ros_distribution }} 
+          required-ros-distributions: foxy
       - name: build
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          target-ros2-distro: ${{ matrix.ros_distribution }}
+          target-ros2-distro: foxy
           # build all packages listed in the meta package
           package-name: |
             free_fleet
