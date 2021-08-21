@@ -10,23 +10,17 @@ jobs:
   ros1_build:
     name: ros1_build
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        ros_distribution:
-          - kinetic
-          - melodic
-          - noetic
     steps:
       - name: pwd
         run: pwd
       - name: deps
         uses: ros-tooling/setup-ros@v0.2
         with:
-          required-ros-distributions: ${{ matrix.ros_distribution }} 
+          required-ros-distributions: noetic 
       - name: build
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          target-ros1-distro: ${{ matrix.ros_distribution }}
+          target-ros1-distro: noetic 
           # build all packages listed in the meta package
           package-name: |
             free_fleet
