@@ -1,0 +1,9 @@
+repositories:
+  free_fleet:
+    type: git
+    url: https://github.com/open-rmf/free_fleet.git
+    version: main
+  cyclonedds:
+    type: git
+    url: https://github.com/eclipse-cyclonedds/cyclonedds.git
+    version: releases/0.7.x
