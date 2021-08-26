@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.7.0)
 project(free_fleet_cyclonedds VERSION 0.1.0 LANGUAGES C CXX)
 
 # Default to C99
