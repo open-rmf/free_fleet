@@ -48,9 +48,9 @@ SCENARIO("Publishing with Subscriber")
 
   std::string map_name_received = "";
   auto cb = [&](const MiddlewareMessages_Location& msg)
-  {
-    map_name_received = std::string(msg.map_name);
-  };
+    {
+      map_name_received = std::string(msg.map_name);
+    };
   auto sub = Subscriber<MiddlewareMessages_Location, 10>::make(
     participant,
     &MiddlewareMessages_Location_desc,
@@ -65,9 +65,9 @@ SCENARIO("Publishing with Subscriber")
 
   // Test with newly passed in callback
   auto new_cb = [&](const MiddlewareMessages_Location& msg)
-  {
-    map_name_received = std::string(msg.map_name) + "_new";
-  };
+    {
+      map_name_received = std::string(msg.map_name) + "_new";
+    };
   sub->set_callback(new_cb);
 
   REQUIRE(pub->write(msg));

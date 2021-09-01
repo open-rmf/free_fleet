@@ -30,14 +30,13 @@ namespace manager {
 void RobotInfo::Implementation::allocate_task(
   const std::shared_ptr<RequestInfo>& new_request_info)
 {
-  bool request_registered =
-    allocated_requests.insert({
-      new_request_info->id(),
-      new_request_info}).second;
+  bool request_registered = allocated_requests.insert({
+        new_request_info->id(),
+        new_request_info}).second;
   if (!request_registered)
   {
     ffwarn << "Attempted to allocate new task with existing task ID ["
-      << new_request_info->id() << "], ignoring.\n";
+           << new_request_info->id() << "], ignoring.\n";
   }
 }
 
@@ -49,7 +48,7 @@ void RobotInfo::Implementation::update_state(
 {
   if (robot_info.name() != new_state.name())
     return;
-  
+
   const std::optional<uint32_t> task_id = new_state.task_id();
   auto it = robot_info._pimpl->allocated_requests.end();
   std::pair<TrackingState, std::size_t> new_tracking_estimate;
@@ -73,7 +72,7 @@ void RobotInfo::Implementation::update_state(
   else
   {
     ffwarn << "Robot [" << robot_info.name() << "] task ID [" << task_id.value()
-      << "] was not allocated through this manager instance.\n";
+           << "] was not allocated through this manager instance.\n";
 
     new_tracking_estimate = robot_info._pimpl->track_through_graph(new_state);
   }
@@ -87,7 +86,7 @@ void RobotInfo::Implementation::update_state(
 //==============================================================================
 auto RobotInfo::Implementation::track_through_graph(
   const messages::RobotState& new_state) const
-  -> std::pair<TrackingState, std::size_t>
+-> std::pair<TrackingState, std::size_t>
 {
   const Eigen::Vector2d curr_loc = new_state.location().coordinates();
 
@@ -112,7 +111,8 @@ auto RobotInfo::Implementation::track_through_graph(
 
 //==============================================================================
 RobotInfo::RobotInfo()
-{}
+{
+}
 
 //==============================================================================
 std::string RobotInfo::name() const
@@ -151,8 +151,8 @@ std::shared_ptr<const rmf_traffic::agv::Graph> RobotInfo::graph() const
 }
 
 //==============================================================================
-auto RobotInfo::tracking_estimation() const 
-  -> std::pair<TrackingState, std::size_t>
+auto RobotInfo::tracking_estimation() const
+-> std::pair<TrackingState, std::size_t>
 {
   return std::make_pair(_pimpl->tracking_state, _pimpl->tracking_index);
 }

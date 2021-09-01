@@ -50,7 +50,7 @@ void Client::Implementation::complete_task()
 {
   assert(task_id.has_value());
   last_task_id = task_id.value();
-  task_id = std::nullopt; 
+  task_id = std::nullopt;
 }
 
 //==============================================================================
@@ -78,7 +78,7 @@ void Client::Implementation::handle_pause_request(
   task_id = request.task_id();
   task_ids.insert(task_id.value());
   command_handle->stop(
-    [this](){complete_task();});
+    [this]() {complete_task();});
 }
 
 //==============================================================================
@@ -90,7 +90,7 @@ void Client::Implementation::handle_resume_request(
   task_id = request.task_id();
   task_ids.insert(task_id.value());
   command_handle->resume(
-    [this](){complete_task();});
+    [this]() {complete_task();});
 }
 
 //==============================================================================
@@ -103,7 +103,7 @@ void Client::Implementation::handle_dock_request(
   task_ids.insert(task_id.value());
   command_handle->dock(
     request.dock_name(),
-    [this](){complete_task();});
+    [this]() {complete_task();});
 }
 
 //==============================================================================
@@ -116,7 +116,7 @@ void Client::Implementation::handle_navigation_request(
   task_ids.insert(task_id.value());
   command_handle->follow_new_path(
     request.path(),
-    [this](){complete_task();});
+    [this]() {complete_task();});
 }
 
 //==============================================================================
@@ -129,7 +129,7 @@ void Client::Implementation::handle_relocalization_request(
   task_ids.insert(task_id.value());
   command_handle->relocalize(
     request.location(),
-    [this](){complete_task();});
+    [this]() {complete_task();});
 }
 
 //==============================================================================
@@ -139,13 +139,13 @@ auto Client::make(
   std::shared_ptr<client::CommandHandle> command_handle,
   std::shared_ptr<client::StatusHandle> status_handle,
   std::unique_ptr<transport::ClientMiddleware> middleware)
-  -> std::shared_ptr<Client>
+-> std::shared_ptr<Client>
 {
   auto make_error_fn = [](const std::string& error_msg)
-  {
-    fferr << error_msg << "\n";
-    return nullptr;
-  };
+    {
+      fferr << error_msg << "\n";
+      return nullptr;
+    };
 
   if (robot_name.empty())
     return make_error_fn("Provided robot name must not be empty.");
@@ -172,7 +172,8 @@ auto Client::make(
 //==============================================================================
 Client::Client()
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
-{}
+{
+}
 
 //==============================================================================
 void Client::run_once()

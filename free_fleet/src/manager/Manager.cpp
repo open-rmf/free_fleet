@@ -119,13 +119,13 @@ auto Manager::make(
   std::shared_ptr<const manager::CoordinateTransformer> to_robot_transform,
   TimeNow time_now_fn,
   RobotUpdatedCallback robot_updated_callback_fn)
-  -> std::shared_ptr<Manager>
+-> std::shared_ptr<Manager>
 {
   auto make_error_fn = [](const std::string& error_msg)
-  {
-    fferr << error_msg << "\n";
-    return nullptr;
-  };
+    {
+      fferr << error_msg << "\n";
+      return nullptr;
+    };
 
   if (fleet_name.empty())
     return make_error_fn("Provided fleet name must not be empty.");
@@ -153,7 +153,8 @@ auto Manager::make(
 //==============================================================================
 Manager::Manager()
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
-{}
+{
+}
 
 //==============================================================================
 void Manager::run_once()
@@ -179,8 +180,8 @@ auto Manager::robot_names() -> std::vector<std::string>
 }
 
 //==============================================================================
-auto Manager::robot(const std::string& robot_name) 
-  -> std::shared_ptr<const manager::RobotInfo>
+auto Manager::robot(const std::string& robot_name)
+-> std::shared_ptr<const manager::RobotInfo>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   const auto it = _pimpl->robots.find(robot_name);
@@ -191,7 +192,7 @@ auto Manager::robot(const std::string& robot_name)
 
 //==============================================================================
 auto Manager::all_robots()
-  -> std::vector<std::shared_ptr<const manager::RobotInfo>>
+-> std::vector<std::shared_ptr<const manager::RobotInfo>>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   std::vector<std::shared_ptr<const manager::RobotInfo>> infos;
@@ -205,23 +206,23 @@ auto Manager::all_robots()
 
 //==============================================================================
 auto Manager::request_pause(const std::string& robot_name)
-  -> std::optional<TaskId>
+-> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
     return std::nullopt;
 
   const TaskId request_task_id = ++_pimpl->current_task_id;
-  messages::PauseRequest request(robot_name, request_task_id); 
+  messages::PauseRequest request(robot_name, request_task_id);
 
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::PauseRequest>(
       request,
       [this](const messages::PauseRequest& request_msg)
-    {
-      this->_pimpl->middleware->send_pause_request(request_msg);
-    },
-      [this](){return _pimpl->time_now_fn();}));
+      {
+        this->_pimpl->middleware->send_pause_request(request_msg);
+      },
+      [this]() {return _pimpl->time_now_fn();}));
 
   _pimpl->tasks[request_task_id] = request_info;
   _pimpl->unacknowledged_tasks[request_task_id] = request_info;
@@ -231,7 +232,7 @@ auto Manager::request_pause(const std::string& robot_name)
 
 //==============================================================================
 auto Manager::request_resume(const std::string& robot_name)
-  -> std::optional<TaskId>
+-> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -244,11 +245,11 @@ auto Manager::request_resume(const std::string& robot_name)
     new manager::SimpleRequestInfo<messages::ResumeRequest>(
       request,
       [this](const messages::ResumeRequest& request_msg)
-    {
-      this->_pimpl->middleware->send_resume_request(request_msg);
-    },
-      [this](){return _pimpl->time_now_fn();}));
-  
+      {
+        this->_pimpl->middleware->send_resume_request(request_msg);
+      },
+      [this]() {return _pimpl->time_now_fn();}));
+
   _pimpl->tasks[request_task_id] = request_info;
   _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();
@@ -258,7 +259,7 @@ auto Manager::request_resume(const std::string& robot_name)
 //==============================================================================
 auto Manager::request_dock(
   const std::string& robot_name, const std::string& dock_name)
-  -> std::optional<TaskId>
+-> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -274,11 +275,11 @@ auto Manager::request_dock(
     new manager::SimpleRequestInfo<messages::DockRequest>(
       request,
       [this](const messages::DockRequest& request_msg)
-    {
-      this->_pimpl->middleware->send_dock_request(request_msg);
-    },
-      [this](){return _pimpl->time_now_fn();}));
-  
+      {
+        this->_pimpl->middleware->send_dock_request(request_msg);
+      },
+      [this]() {return _pimpl->time_now_fn();}));
+
   _pimpl->tasks[request_task_id] = request_info;
   _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();
@@ -300,7 +301,7 @@ auto Manager::request_relocalization(
   if (last_visited_waypoint_index >= num_wp)
   {
     fferr << "Waypoint [" << last_visited_waypoint_index
-      << "] on the path does not exist on the graph.\n";
+          << "] on the path does not exist on the graph.\n";
     return std::nullopt;
   }
 
@@ -311,7 +312,7 @@ auto Manager::request_relocalization(
   if (dist_from_wp >= 10.0)
   {
     fferr << "Last visited waypoint [" << last_visited_waypoint_index
-      << "] is too far away.\n";
+          << "] is too far away.\n";
     return std::nullopt;
   }
 
@@ -328,13 +329,13 @@ auto Manager::request_relocalization(
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<
       messages::RelocalizationRequest>(
-        request,
-        [this](const messages::RelocalizationRequest& request_msg)
-    {
-      this->_pimpl->middleware->send_relocalization_request(request_msg);
-    },
-        [this](){return _pimpl->time_now_fn();}));
-  
+      request,
+      [this](const messages::RelocalizationRequest& request_msg)
+      {
+        this->_pimpl->middleware->send_relocalization_request(request_msg);
+      },
+      [this]() {return _pimpl->time_now_fn();}));
+
   _pimpl->tasks[request_task_id] = request_info;
   _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();
@@ -345,7 +346,7 @@ auto Manager::request_relocalization(
 auto Manager::request_navigation(
   const std::string& robot_name,
   const std::vector<Manager::NavigationPoint>& path)
-  -> std::optional<TaskId>
+-> std::optional<TaskId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -367,7 +368,7 @@ auto Manager::request_navigation(
     if (nav_point.waypoint_index >= num_wp)
     {
       fferr << "Navigation point [" << i
-        << "] on the path does not exist on the graph.\n";
+            << "] on the path does not exist on the graph.\n";
       return std::nullopt;
     }
 
@@ -376,21 +377,21 @@ auto Manager::request_navigation(
     {
       const rmf_traffic::agv::Graph::Lane* connecting_lane =
         _pimpl->graph->lane_from(
-          nav_point.waypoint_index, path[i+1].waypoint_index);
+        nav_point.waypoint_index, path[i+1].waypoint_index);
       if (!connecting_lane)
       {
         fferr << "No connecting lane between navigation points [" << i
-          << "] & [" << (i+1) << "] on the path.\n";
+              << "] & [" << (i+1) << "] on the path.\n";
         return std::nullopt;
       }
     }
-    
+
     const auto g_wp = _pimpl->graph->get_waypoint(nav_point.waypoint_index);
     if (nav_point.yaw.has_value())
     {
       messages::Location g_loc =
         messages::Location(
-          g_wp.get_map_name(), g_wp.get_location(), nav_point.yaw.value());
+        g_wp.get_map_name(), g_wp.get_location(), nav_point.yaw.value());
 
       transformed_path.push_back(
         messages::Waypoint(
@@ -419,11 +420,11 @@ auto Manager::request_navigation(
     new manager::SimpleRequestInfo<messages::NavigationRequest>(
       request,
       [this](const messages::NavigationRequest& request_msg)
-    {
-      this->_pimpl->middleware->send_navigation_request(request_msg);
-    },
+      {
+        this->_pimpl->middleware->send_navigation_request(request_msg);
+      },
       _pimpl->time_now_fn));
-  
+
   _pimpl->tasks[request_task_id] = request_info;
   _pimpl->unacknowledged_tasks[request_task_id] = request_info;
   request_info->send_request();

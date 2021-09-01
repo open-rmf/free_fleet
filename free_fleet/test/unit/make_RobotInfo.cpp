@@ -54,21 +54,19 @@ SCENARIO("Make RobotInfo")
 
   GIVEN("Valid traffic graph")
   {
-    auto robot_info =
-      free_fleet::manager::RobotInfo::Implementation::make(
-        initial_state,
-        graph,
-        initial_time);
+    auto robot_info = free_fleet::manager::RobotInfo::Implementation::make(
+      initial_state,
+      graph,
+      initial_time);
     CHECK(robot_info);
   }
 
   GIVEN("Invalid traffic graph")
   {
-    auto robot_info =
-      free_fleet::manager::RobotInfo::Implementation::make(
-        initial_state,
-        nullptr,
-        initial_time);
+    auto robot_info = free_fleet::manager::RobotInfo::Implementation::make(
+      initial_state,
+      nullptr,
+      initial_time);
     CHECK(!robot_info);
   }
 }

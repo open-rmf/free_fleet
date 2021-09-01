@@ -65,7 +65,7 @@ public:
 
   /// Gets the last visited waypoint index in the graph.
   std::size_t last_visited_waypoint_index() const;
-  
+
   class Implementation;
 private:
   rmf_utils::impl_ptr<Implementation> _pimpl;

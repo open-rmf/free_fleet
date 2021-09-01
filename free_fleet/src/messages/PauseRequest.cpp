@@ -46,8 +46,8 @@ PauseRequest::PauseRequest(const std::string& robot_name, TaskId task_id)
   }
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
-    robot_name,
-    task_id});
+        robot_name,
+        task_id});
 }
 
 //==============================================================================

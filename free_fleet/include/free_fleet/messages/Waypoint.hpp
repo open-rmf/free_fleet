@@ -49,7 +49,7 @@ public:
   /// \param[in] location
   ///   The Location of this waypoint.
   ///
-  /// \param[in] wait_until 
+  /// \param[in] wait_until
   ///   The time that the robot is expected to wait until on this waypoint
   ///   before proceeding.
   Waypoint(

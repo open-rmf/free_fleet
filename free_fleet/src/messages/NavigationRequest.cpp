@@ -51,9 +51,9 @@ NavigationRequest::NavigationRequest(
   }
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
-    robot_name,
-    task_id,
-    std::move(path)});
+        robot_name,
+        task_id,
+        std::move(path)});
 }
 
 //==============================================================================
@@ -88,7 +88,7 @@ bool operator==(const NavigationRequest& lhs, const NavigationRequest& rhs)
       else
         return false;
     }
-    return true; 
+    return true;
   }
   return false;
 }

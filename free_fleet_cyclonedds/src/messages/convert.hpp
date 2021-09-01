@@ -36,7 +36,7 @@
 namespace free_fleet {
 namespace cyclonedds {
 
-/// Allocates and copies the string into the DDS message char array. 
+/// Allocates and copies the string into the DDS message char array.
 ///
 /// \param[in] str
 ///   The string to be copied.

@@ -50,9 +50,9 @@ Location::Location(
   }
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
-    map_name,
-    coordinates,
-    std::nullopt});
+        map_name,
+        coordinates,
+        std::nullopt});
 }
 
 //==============================================================================
@@ -73,9 +73,9 @@ Location::Location(
   }
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
-    map_name,
-    coordinates,
-    yaw});
+        map_name,
+        coordinates,
+        yaw});
 }
 
 //==============================================================================

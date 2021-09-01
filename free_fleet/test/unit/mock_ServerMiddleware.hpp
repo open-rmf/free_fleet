@@ -30,7 +30,7 @@ public:
   std::optional<messages::ResumeRequest> _prev_resume_request;
   std::optional<messages::NavigationRequest> _prev_nav_request;
   std::optional<messages::RelocalizationRequest> _prev_reloc_request;
-  std::function<void(const messages::RobotState&)> robot_state_callback; 
+  std::function<void(const messages::RobotState&)> robot_state_callback;
 
   MockServerMiddleware()
   {}
@@ -57,7 +57,7 @@ public:
   }
 
   void send_navigation_request(const messages::NavigationRequest& request)
-    override
+  override
   {
     _prev_nav_request = request;
   }

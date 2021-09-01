@@ -31,7 +31,7 @@ namespace cyclonedds {
 class ServerDDSMiddleware : public transport::ServerMiddleware
 {
 public:
-  
+
   static std::shared_ptr<ServerDDSMiddleware> make(
     int dds_domain,
     const std::string& fleet_name);
@@ -46,7 +46,7 @@ public:
   void send_resume_request(const messages::ResumeRequest& request) override;
 
   void send_navigation_request(const messages::NavigationRequest& request)
-    override;
+  override;
 
   void send_relocalization_request(
     const messages::RelocalizationRequest& request) override;

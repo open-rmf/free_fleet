@@ -60,9 +60,9 @@ SCENARIO("Test Manager API")
     0.0,
     0.0);
   free_fleet::Manager::TimeNow time_now_fn =
-    [](){ return std::chrono::steady_clock::now(); };
+    []() { return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const free_fleet::manager::RobotInfo&){};
+    [](const free_fleet::manager::RobotInfo&) {};
 
   auto manager = free_fleet::Manager::make(
     fleet_name,
@@ -156,9 +156,9 @@ SCENARIO("Testing manager API with dummy robots")
     0.0,
     0.0);
   free_fleet::Manager::TimeNow time_now_fn =
-    [](){ return std::chrono::steady_clock::now(); };
+    []() { return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const free_fleet::manager::RobotInfo&){};
+    [](const free_fleet::manager::RobotInfo&) {};
 
   auto manager = free_fleet::Manager::make(
     fleet_name,
@@ -185,11 +185,10 @@ SCENARIO("Testing manager API with dummy robots")
     1.0,
     Location(test_map_name, {0.0, 0.0}, 0.0),
     0);
-  auto robot_info_1 =
-    free_fleet::manager::RobotInfo::Implementation::make(
-      state_1,
-      graph,
-      initial_time);
+  auto robot_info_1 = free_fleet::manager::RobotInfo::Implementation::make(
+    state_1,
+    graph,
+    initial_time);
   REQUIRE(robot_info_1);
 
   RobotState state_2(
@@ -201,11 +200,10 @@ SCENARIO("Testing manager API with dummy robots")
     1.0,
     Location(test_map_name, {0.0, 0.0}, 0.0),
     0);
-  auto robot_info_2 =
-    free_fleet::manager::RobotInfo::Implementation::make(
-      state_2,
-      graph,
-      initial_time);
+  auto robot_info_2 = free_fleet::manager::RobotInfo::Implementation::make(
+    state_2,
+    graph,
+    initial_time);
   REQUIRE(robot_info_2);
 
   RobotState state_3(
@@ -217,11 +215,10 @@ SCENARIO("Testing manager API with dummy robots")
     1.0,
     Location(test_map_name, {0.0, 0.0}, 0.0),
     0);
-  auto robot_info_3 =
-    free_fleet::manager::RobotInfo::Implementation::make(
-      state_3,
-      graph,
-      initial_time);
+  auto robot_info_3 = free_fleet::manager::RobotInfo::Implementation::make(
+    state_3,
+    graph,
+    initial_time);
   REQUIRE(robot_info_3);
 
   impl.robots[robot_info_1->name()] = robot_info_1;
@@ -232,7 +229,7 @@ SCENARIO("Testing manager API with dummy robots")
   {
     auto names = manager->robot_names();
     CHECK(names.size() == 3);
-    
+
     auto all_info = manager->all_robots();
     CHECK(all_info.size() == 3);
 
@@ -469,12 +466,12 @@ SCENARIO("Testing update robot callback with dummy robot")
     0.0,
     0.0);
   free_fleet::Manager::TimeNow time_now_fn =
-    [](){ return std::chrono::steady_clock::now(); };
+    []() { return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
     [](const free_fleet::manager::RobotInfo& updated_robot_info)
-  {
-    CHECK(updated_robot_info.name() == "test_robot");
-  };
+    {
+      CHECK(updated_robot_info.name() == "test_robot");
+    };
 
   auto manager = free_fleet::Manager::make(
     fleet_name,
@@ -499,13 +496,12 @@ SCENARIO("Testing update robot callback with dummy robot")
 
   auto& impl = free_fleet::Manager::Implementation::get(*manager);
 
-  auto robot_info =
-    free_fleet::manager::RobotInfo::Implementation::make(
-      initial_state,
-      graph,
-      initial_time);
+  auto robot_info = free_fleet::manager::RobotInfo::Implementation::make(
+    initial_state,
+    graph,
+    initial_time);
   REQUIRE(robot_info);
 
   impl.robots[robot_info->name()] = robot_info;
-  manager->run_once();  
+  manager->run_once();
 }

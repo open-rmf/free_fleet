@@ -42,10 +42,10 @@ SCENARIO("Test make Manager")
     0.0,
     0.0);
   free_fleet::Manager::TimeNow time_now_fn =
-    [](){ return std::chrono::steady_clock::now(); };
+    []() { return std::chrono::steady_clock::now(); };
   free_fleet::Manager::RobotUpdatedCallback cb =
-    [](const free_fleet::manager::RobotInfo&){};
-  
+    [](const free_fleet::manager::RobotInfo&) {};
+
   GIVEN("All valid")
   {
     auto manager = free_fleet::Manager::make(

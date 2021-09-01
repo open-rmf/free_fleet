@@ -24,7 +24,7 @@ namespace messages {
 class Waypoint::Implementation
 {
 public:
-  
+
   std::size_t index;
 
   Location location;
@@ -34,18 +34,20 @@ public:
 
 //==============================================================================
 Waypoint::Waypoint(std::size_t index, const Location& location)
-: _pimpl(rmf_utils::make_impl<Implementation>(Implementation{
-    index, location, std::nullopt}))
-{}
+: _pimpl(rmf_utils::make_impl<Implementation>(
+      Implementation{index, location, std::nullopt}))
+{
+}
 
 //==============================================================================
 Waypoint::Waypoint(
   std::size_t index,
   const Location& location,
   rmf_traffic::Time wait_until)
-: _pimpl(rmf_utils::make_impl<Implementation>(Implementation{
-    index, location, wait_until}))
-{}
+: _pimpl(rmf_utils::make_impl<Implementation>(
+      Implementation{index, location, wait_until}))
+{
+}
 
 //==============================================================================
 std::size_t Waypoint::index() const

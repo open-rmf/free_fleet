@@ -68,7 +68,7 @@ public:
     TimeNow time_now_fn,
     RobotUpdatedCallback robot_updated_callback_fn);
 
-  /// Running the operations of the manager once. 
+  /// Running the operations of the manager once.
   void run_once() override;
 
   /// Gets all the names of the robots that are currently under this manager.

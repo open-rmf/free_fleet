@@ -51,9 +51,9 @@ DockRequest::DockRequest(
   }
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
-    robot_name,
-    task_id,
-    dock_name});
+        robot_name,
+        task_id,
+        dock_name});
 }
 
 //==============================================================================

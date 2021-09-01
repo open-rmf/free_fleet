@@ -47,12 +47,12 @@ public:
   void run(std::chrono::nanoseconds period)
   {
     auto prev_t = std::chrono::steady_clock::now();
-    while(!stopped.load() && worker)
+    while (!stopped.load() && worker)
     {
       prev_t = std::chrono::steady_clock::now();
       worker->run_once();
-      std::this_thread::sleep_until(prev_t + period); 
-    } 
+      std::this_thread::sleep_until(prev_t + period);
+    }
   }
 
   void start_async(std::chrono::nanoseconds period)
@@ -110,7 +110,7 @@ void Executor::start_async(std::chrono::nanoseconds period)
 //==============================================================================
 bool Executor::started() const
 {
- return !_pimpl->stopped.load();
+  return !_pimpl->stopped.load();
 }
 
 //==============================================================================

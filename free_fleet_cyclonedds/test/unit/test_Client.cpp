@@ -49,24 +49,23 @@ SCENARIO("Single client with mock subscribers and publishers")
     using namespace free_fleet::messages;
 
     PauseRequest p("test_robot", 123);
-    
+
     bool received_req = false;
     bool received_same_req = false;
     auto cb = [&](const messages::PauseRequest& msg)
-    {
-      received_req = true;
-      if (msg == p)
-        received_same_req = true;
-    };
+      {
+        received_req = true;
+        if (msg == p)
+          received_same_req = true;
+      };
     client->set_pause_request_callback(std::move(cb));
 
     dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
     REQUIRE(participant >= 0);
-    auto pause_req_pub =
-      Publisher<MiddlewareMessages_PauseRequest>::make(
-        participant,
-        &MiddlewareMessages_PauseRequest_desc,
-        namespacify(Prefix, fleet_name, PauseRequestTopicName));
+    auto pause_req_pub = Publisher<MiddlewareMessages_PauseRequest>::make(
+      participant,
+      &MiddlewareMessages_PauseRequest_desc,
+      namespacify(Prefix, fleet_name, PauseRequestTopicName));
 
     auto dds_msg = convert(p);
     REQUIRE(dds_msg.has_value());
@@ -86,24 +85,23 @@ SCENARIO("Single client with mock subscribers and publishers")
     using namespace free_fleet::messages;
 
     ResumeRequest r("test_robot", 123);
-    
+
     bool received_req = false;
     bool received_same_req = false;
     auto cb = [&](const messages::ResumeRequest& msg)
-    {
-      received_req = true;
-      if (msg == r)
-        received_same_req = true;
-    };
+      {
+        received_req = true;
+        if (msg == r)
+          received_same_req = true;
+      };
     client->set_resume_request_callback(std::move(cb));
 
     dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
     REQUIRE(participant >= 0);
-    auto resume_req_pub =
-      Publisher<MiddlewareMessages_ResumeRequest>::make(
-        participant,
-        &MiddlewareMessages_ResumeRequest_desc,
-        namespacify(Prefix, fleet_name, ResumeRequestTopicName));
+    auto resume_req_pub = Publisher<MiddlewareMessages_ResumeRequest>::make(
+      participant,
+      &MiddlewareMessages_ResumeRequest_desc,
+      namespacify(Prefix, fleet_name, ResumeRequestTopicName));
 
     auto dds_msg = convert(r);
     REQUIRE(dds_msg.has_value());
@@ -123,24 +121,23 @@ SCENARIO("Single client with mock subscribers and publishers")
     using namespace free_fleet::messages;
 
     DockRequest d("test_robot", 123, "test_dock");
-    
+
     bool received_req = false;
     bool received_same_req = false;
     auto cb = [&](const messages::DockRequest& msg)
-    {
-      received_req = true;
-      if (msg == d)
-        received_same_req = true;
-    };
+      {
+        received_req = true;
+        if (msg == d)
+          received_same_req = true;
+      };
     client->set_dock_request_callback(std::move(cb));
 
     dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
     REQUIRE(participant >= 0);
-    auto dock_req_pub =
-      Publisher<MiddlewareMessages_DockRequest>::make(
-        participant,
-        &MiddlewareMessages_DockRequest_desc,
-        namespacify(Prefix, fleet_name, DockRequestTopicName));
+    auto dock_req_pub = Publisher<MiddlewareMessages_DockRequest>::make(
+      participant,
+      &MiddlewareMessages_DockRequest_desc,
+      namespacify(Prefix, fleet_name, DockRequestTopicName));
 
     auto dds_msg = convert(d);
     REQUIRE(dds_msg.has_value());
@@ -150,7 +147,7 @@ SCENARIO("Single client with mock subscribers and publishers")
 
     REQUIRE(received_req);
     CHECK(received_same_req);
-    
+
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);
   }
@@ -158,7 +155,7 @@ SCENARIO("Single client with mock subscribers and publishers")
   GIVEN("NavigationRequest")
   {
     using namespace free_fleet::messages;
-    
+
     Location loc1("test_map", {1.2, 3.4}, 5.6);
     rmf_traffic::Time t1 = std::chrono::steady_clock::now();
     Waypoint wp1(123, loc1, t1);
@@ -172,20 +169,19 @@ SCENARIO("Single client with mock subscribers and publishers")
     bool received_req = false;
     bool received_same_req = false;
     auto cb = [&](const messages::NavigationRequest& msg)
-    {
-      received_req = true;
-      if (msg == n)
-        received_same_req = true;
-    };
+      {
+        received_req = true;
+        if (msg == n)
+          received_same_req = true;
+      };
     client->set_navigation_request_callback(std::move(cb));
 
     dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
     REQUIRE(participant >= 0);
-    auto nav_req_pub =
-      Publisher<MiddlewareMessages_NavigationRequest>::make(
-        participant,
-        &MiddlewareMessages_NavigationRequest_desc,
-        namespacify(Prefix, fleet_name, NavigationRequestTopicName));
+    auto nav_req_pub = Publisher<MiddlewareMessages_NavigationRequest>::make(
+      participant,
+      &MiddlewareMessages_NavigationRequest_desc,
+      namespacify(Prefix, fleet_name, NavigationRequestTopicName));
 
     auto dds_msg = convert(n);
     REQUIRE(dds_msg.has_value());
@@ -209,20 +205,20 @@ SCENARIO("Single client with mock subscribers and publishers")
     bool received_req = false;
     bool received_same_req = false;
     auto cb = [&](const messages::RelocalizationRequest& msg)
-    {
-      received_req = true;
-      if (msg == reloc)
-        received_same_req = true;
-    };
+      {
+        received_req = true;
+        if (msg == reloc)
+          received_same_req = true;
+      };
     client->set_relocalization_request_callback(std::move(cb));
 
     dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
     REQUIRE(participant >= 0);
     auto reloc_req_pub =
       Publisher<MiddlewareMessages_RelocalizationRequest>::make(
-        participant,
-        &MiddlewareMessages_RelocalizationRequest_desc,
-        namespacify(Prefix, fleet_name, RelocalizationRequestTopicName));
+      participant,
+      &MiddlewareMessages_RelocalizationRequest_desc,
+      namespacify(Prefix, fleet_name, RelocalizationRequestTopicName));
 
     auto dds_msg = convert(reloc);
     REQUIRE(dds_msg.has_value());
@@ -248,27 +244,26 @@ SCENARIO("Single client with mock subscribers and publishers")
     bool received_req = false;
     bool received_same_req = false;
     auto cb = [&](const MiddlewareMessages_RobotState& msg)
-    {
-      received_req = true;
-      auto converted_msg = convert(msg);
-      if (converted_msg.has_value() && converted_msg.value() == s)
-        received_same_req = true;
-    };
+      {
+        received_req = true;
+        auto converted_msg = convert(msg);
+        if (converted_msg.has_value() && converted_msg.value() == s)
+          received_same_req = true;
+      };
     dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
     REQUIRE(participant >= 0);
-    auto state_sub =
-      Subscriber<MiddlewareMessages_RobotState>::make(
-        participant,
-        &MiddlewareMessages_RobotState_desc,
-        namespacify(Prefix, fleet_name, StateTopicName),
-        std::move(cb));
+    auto state_sub = Subscriber<MiddlewareMessages_RobotState>::make(
+      participant,
+      &MiddlewareMessages_RobotState_desc,
+      namespacify(Prefix, fleet_name, StateTopicName),
+      std::move(cb));
     REQUIRE_FALSE(state_sub == nullptr);
-    
+
     client->send_state(s);
     dds_sleepfor(DDS_MSECS(50));
 
     REQUIRE(received_req);
-    REQUIRE(received_same_req); 
+    REQUIRE(received_same_req);
 
     dds_return_t rc = dds_delete(participant);
     REQUIRE(rc == DDS_RETCODE_OK);

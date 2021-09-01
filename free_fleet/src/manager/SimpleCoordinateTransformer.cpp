@@ -39,12 +39,12 @@ auto SimpleCoordinateTransformer::make(
   double translation_x,
   double translation_y,
   double rotation_yaw)
-  -> std::shared_ptr<SimpleCoordinateTransformer>
+-> std::shared_ptr<SimpleCoordinateTransformer>
 {
   if (scale < 0)
   {
     fferr << "Provided scale is invalid, it has to be a double larger than "
-      << "0.\n";
+          << "0.\n";
     return nullptr;
   }
 
@@ -61,7 +61,8 @@ auto SimpleCoordinateTransformer::make(
 
 //==============================================================================
 SimpleCoordinateTransformer::SimpleCoordinateTransformer()
-{}
+{
+}
 
 //==============================================================================
 messages::Location SimpleCoordinateTransformer::forward_transform(

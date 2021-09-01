@@ -28,10 +28,10 @@ namespace free_fleet {
 
 /// Generic executor that calls for task execution from its worker periodically,
 /// when started.
-class Executor 
+class Executor
 {
 public:
-  
+
   /// Constructor.
   ///
   /// \param[in] worker

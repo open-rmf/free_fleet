@@ -41,8 +41,8 @@ constexpr char RelocalizationRequestTopicName[] = "relocalization_request";
 ///
 /// \return
 ///   The appended strings.
-template <typename... Args>
-std::string namespacify(Args const&... args)
+template<typename... Args>
+std::string namespacify(Args const& ... args)
 {
   std::stringstream result;
   int unpack[]{0, (result << args << "/", 0)...};
@@ -54,4 +54,4 @@ std::string namespacify(Args const&... args)
 } // namespace cyclonedds
 } // namespace free_fleet
 
-#endif // INCLUDE__FREE_FLEET_CYCLONEDDS__STANDARDNAMES_HPP 
+#endif // INCLUDE__FREE_FLEET_CYCLONEDDS__STANDARDNAMES_HPP

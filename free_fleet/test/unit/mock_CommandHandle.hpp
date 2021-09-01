@@ -35,8 +35,8 @@ public:
   {}
 
   void follow_new_path(
-      const std::vector<free_fleet::messages::Waypoint>&,
-      RequestCompleted) final
+    const std::vector<free_fleet::messages::Waypoint>&,
+    RequestCompleted) final
   {}
 
   void stop(RequestCompleted) final

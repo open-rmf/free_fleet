@@ -45,9 +45,9 @@ bool is_within_lane(
 /// distance. If there is no such waypoint, the first of the pair will be a
 /// nullptr, and the second should be ignored.
 std::pair<const rmf_traffic::agv::Graph::Waypoint*, double>
-  find_nearest_waypoint(
-    const rmf_traffic::agv::Graph& graph,
-    const Eigen::Vector2d& coordinates);
+find_nearest_waypoint(
+  const rmf_traffic::agv::Graph& graph,
+  const Eigen::Vector2d& coordinates);
 
 } // namespace manager
 } // namespace free_fleet

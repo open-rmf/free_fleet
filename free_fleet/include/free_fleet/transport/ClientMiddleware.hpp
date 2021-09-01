@@ -76,7 +76,7 @@ public:
   /// received through the middleware.
   ///
   /// \param[in] callback
-  ///   Callback function for handling new incoming navigation requests.  
+  ///   Callback function for handling new incoming navigation requests.
   virtual void set_navigation_request_callback(
     std::function<void(const messages::NavigationRequest&)> callback) = 0;
 

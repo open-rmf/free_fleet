@@ -57,7 +57,7 @@ public:
   TaskId task_id() const;
 
   /// Gets the desired path of this request.
-  const std::vector<Waypoint>& path() const; 
+  const std::vector<Waypoint>& path() const;
 
   class Implementation;
 private:

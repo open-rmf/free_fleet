@@ -27,7 +27,7 @@ namespace free_fleet {
 namespace cyclonedds {
 
 //==============================================================================
-template <typename Message>
+template<typename Message>
 class Publisher
 {
 public:
@@ -49,7 +49,7 @@ public:
 
     dds_qos_t* qos = dds_create_qos();
     dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-    
+
     dds_entity_t writer = dds_create_writer(participant, topic, qos, NULL);
     if (writer < 0)
     {

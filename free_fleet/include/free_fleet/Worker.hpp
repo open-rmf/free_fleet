@@ -25,7 +25,7 @@ class Worker
 {
 public:
 
-  /// Have this worker run it's operation once.  
+  /// Have this worker run it's operation once.
   virtual void run_once() = 0;
 };
 

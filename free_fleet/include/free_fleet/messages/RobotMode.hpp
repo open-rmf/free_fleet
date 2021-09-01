@@ -66,7 +66,7 @@ public:
   /// Gets the additional information if any. Returns an empty string if not
   /// set.
   const std::string& info() const;
-  
+
   class Implementation;
 private:
   rmf_utils::impl_ptr<Implementation> _pimpl;

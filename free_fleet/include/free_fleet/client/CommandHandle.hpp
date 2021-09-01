@@ -40,7 +40,7 @@ public:
   /// Have the robot attempt to relocalize remotely.
   ///
   /// \param[in] location
-  ///   The location in the frame of the robot for relocalization. 
+  ///   The location in the frame of the robot for relocalization.
   ///
   /// \param[in] relocalization_finished_callback
   ///   Trigger this callback when the robot is done with relocalization.
@@ -61,8 +61,8 @@ public:
   /// \param[in] path_finished_callback
   ///   Trigger this callback when the robot is done following the new path.
   virtual void follow_new_path(
-      const std::vector<free_fleet::messages::Waypoint>& waypoints,
-      RequestCompleted path_finished_callback) = 0;
+    const std::vector<free_fleet::messages::Waypoint>& waypoints,
+    RequestCompleted path_finished_callback) = 0;
 
   /// Have the robot come to an immediate stop.
   virtual void stop(RequestCompleted stopped_callback) = 0;
@@ -79,8 +79,8 @@ public:
   /// \param[in] docking_finished_callback
   ///   Trigger this callback when the docking is finished.
   virtual void dock(
-      const std::string& dock_name,
-      RequestCompleted docking_finished_callback) = 0;
+    const std::string& dock_name,
+    RequestCompleted docking_finished_callback) = 0;
 
   /// Virtual destructor
   virtual ~CommandHandle() = default;

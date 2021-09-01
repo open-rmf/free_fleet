@@ -55,9 +55,9 @@ SCENARIO("Testing request info API")
     std::shared_ptr<RequestInfo> request_info(
       new free_fleet::manager::SimpleRequestInfo<DockRequest>(
         request,
-        [&](const DockRequest&){request_sent = true;},
-        [](){return std::chrono::steady_clock::now();}));
-    
+        [&](const DockRequest&) {request_sent = true;},
+        []() {return std::chrono::steady_clock::now();}));
+
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
@@ -86,9 +86,9 @@ SCENARIO("Testing request info API")
     std::shared_ptr<RequestInfo> request_info(
       new free_fleet::manager::SimpleRequestInfo<PauseRequest>(
         request,
-        [&](const PauseRequest&){request_sent = true;},
-        [](){return std::chrono::steady_clock::now();})); 
-    
+        [&](const PauseRequest&) {request_sent = true;},
+        []() {return std::chrono::steady_clock::now();}));
+
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
@@ -117,9 +117,9 @@ SCENARIO("Testing request info API")
     std::shared_ptr<RequestInfo> request_info(
       new free_fleet::manager::SimpleRequestInfo<ResumeRequest>(
         request,
-        [&](const ResumeRequest&){request_sent = true;},
-        [](){return std::chrono::steady_clock::now();})); 
-    
+        [&](const ResumeRequest&) {request_sent = true;},
+        []() {return std::chrono::steady_clock::now();}));
+
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
@@ -154,9 +154,9 @@ SCENARIO("Testing request info API")
     std::shared_ptr<RequestInfo> request_info(
       new free_fleet::manager::SimpleRequestInfo<RelocalizationRequest>(
         request,
-        [&](const RelocalizationRequest&){request_sent = true;},
-        [](){return std::chrono::steady_clock::now();})); 
-    
+        [&](const RelocalizationRequest&) {request_sent = true;},
+        []() {return std::chrono::steady_clock::now();}));
+
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
@@ -188,14 +188,14 @@ SCENARIO("Testing request info API")
       robot_name,
       initial_task_id + 1,
       {first_wp, second_wp, third_wp, forth_wp});
-    
+
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
       new free_fleet::manager::SimpleRequestInfo<NavigationRequest>(
         request,
-        [&](const NavigationRequest&){request_sent = true;},
-        [](){return std::chrono::steady_clock::now();})); 
-    
+        [&](const NavigationRequest&) {request_sent = true;},
+        []() {return std::chrono::steady_clock::now();}));
+
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());

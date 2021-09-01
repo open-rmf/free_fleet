@@ -30,52 +30,51 @@ namespace free_fleet {
 namespace manager {
 
 //==============================================================================
-template <>
+template<>
 auto SimpleRequestInfo<messages::DockRequest>::track_robot(
   const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<RobotInfo::TrackingState, std::size_t>
+-> std::pair<RobotInfo::TrackingState, std::size_t>
 {
   return RobotInfo::Implementation::get(robot_info).track_through_graph(
     new_state);
 }
 
 //==============================================================================
-template <>
+template<>
 auto SimpleRequestInfo<messages::PauseRequest>::track_robot(
   const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<RobotInfo::TrackingState, std::size_t>
+-> std::pair<RobotInfo::TrackingState, std::size_t>
 {
   return RobotInfo::Implementation::get(robot_info).track_through_graph(
     new_state);
 }
 
 //==============================================================================
-template <>
+template<>
 auto SimpleRequestInfo<messages::ResumeRequest>::track_robot(
   const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<RobotInfo::TrackingState, std::size_t>
+-> std::pair<RobotInfo::TrackingState, std::size_t>
 {
   return RobotInfo::Implementation::get(robot_info).track_through_graph(
     new_state);
 }
 
 //==============================================================================
-template <>
+template<>
 auto SimpleRequestInfo<messages::RelocalizationRequest>::track_robot(
   const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<RobotInfo::TrackingState, std::size_t>
+-> std::pair<RobotInfo::TrackingState, std::size_t>
 {
   const Eigen::Vector2d curr_loc = new_state.location().coordinates();
   auto impl = RobotInfo::Implementation::get(robot_info);
-  
-  double distance_to_wp =
-    distance_to_waypoint(
-      impl.graph->get_waypoint(_request.last_visited_waypoint_index()),
-      curr_loc);
+
+  double distance_to_wp = distance_to_waypoint(
+    impl.graph->get_waypoint(_request.last_visited_waypoint_index()),
+    curr_loc);
 
   if (distance_to_wp < impl.waypoint_dist_threshold)
   {
@@ -91,11 +90,11 @@ auto SimpleRequestInfo<messages::RelocalizationRequest>::track_robot(
 }
 
 //==============================================================================
-template <>
+template<>
 auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
   const RobotInfo& robot_info,
   const messages::RobotState& new_state) const
-  -> std::pair<RobotInfo::TrackingState, std::size_t>
+-> std::pair<RobotInfo::TrackingState, std::size_t>
 {
   // We will use the target waypoints in the navigation request as
   // additional information to help with tracking.
@@ -106,7 +105,7 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
 
   const std::size_t next_wp_index =
     _request.path()[new_state.target_path_index()].index();
-  
+
   std::optional<std::size_t> prev_wp_index = std::nullopt;
   const rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
   if (new_state.target_path_index() != 0)
@@ -125,9 +124,8 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
   }
   else if (prev_wp_index.has_value())
   {
-    double distance_to_prev_wp =
-      distance_to_waypoint(
-        impl.graph->get_waypoint(prev_wp_index.value()), curr_loc);
+    double distance_to_prev_wp = distance_to_waypoint(
+      impl.graph->get_waypoint(prev_wp_index.value()), curr_loc);
     if (distance_to_prev_wp < impl.waypoint_dist_threshold)
     {
       // The robot is still in the previous waypoint on this navigation
@@ -141,14 +139,14 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
       if (dist_to_lane > impl.lane_dist_threshold)
       {
         ffwarn << "Robot [" << robot_info.name() << "] is "
-          << dist_to_lane << "m away from the lane center.\n";
+               << dist_to_lane << "m away from the lane center.\n";
       }
 
       return std::make_pair(
         RobotInfo::TrackingState::OnLane, curr_lane->index());
     }
   }
-  
+
   ffwarn << "Robot [" << robot_info.name() << "] is far away "
     "from the next waypoint, and there is no path from the previous "
     "waypoint, it is LOST until a trackable state comes in.\n";

@@ -40,7 +40,7 @@ public:
 
   /// Constructor.
   /// \param[in] time
-  ///   The time stamp of this state. 
+  ///   The time stamp of this state.
   ///
   /// \param[in] name
   ///   The name of this robot. A std::invalid_argument will be thrown if this
@@ -48,7 +48,7 @@ public:
   ///
   /// \param[in] model
   ///   The model name of this robot.
-  ///   
+  ///
   /// \param[in] task_id
   ///   The taks id of the task that the robot is currently performing. If the
   ///   robot has completed its previous task and is idle, this should be a
@@ -76,7 +76,7 @@ public:
     double battery_percent,
     const Location& location,
     std::size_t target_path_index);
-  
+
   /// Gets the current time stamp of this state.
   rmf_traffic::Time time() const;
 

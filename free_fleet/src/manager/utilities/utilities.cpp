@@ -40,7 +40,7 @@ double distance_to_lane(
   const Eigen::Vector2d p1 =
     graph.get_waypoint(lane.exit().waypoint_index()).get_location();
   const double lane_length = (p1 - p0).norm();
-  
+
   const Eigen::Vector2d pn = (p1 - p0) / lane_length;
   const Eigen::Vector2d p_l = coordinates - p0;
   const double p_l_projection = p_l.dot(pn);
@@ -59,7 +59,7 @@ bool is_within_lane(
   const Eigen::Vector2d p1 =
     graph.get_waypoint(lane.exit().waypoint_index()).get_location();
   const double lane_length = (p1 - p0).norm();
-  
+
   const Eigen::Vector2d pn = (p1 - p0) / lane_length;
   const Eigen::Vector2d p_l = coordinates - p0;
   const double p_l_projection = p_l.dot(pn);
@@ -71,9 +71,9 @@ bool is_within_lane(
 
 //==============================================================================
 std::pair<const rmf_traffic::agv::Graph::Waypoint*, double>
-  find_nearest_waypoint(
-    const rmf_traffic::agv::Graph& graph,
-    const Eigen::Vector2d& coordinates)
+find_nearest_waypoint(
+  const rmf_traffic::agv::Graph& graph,
+  const Eigen::Vector2d& coordinates)
 {
   const rmf_traffic::agv::Graph::Waypoint* nearest_wp = nullptr;
   double nearest_dist = std::numeric_limits<double>::infinity();

@@ -26,7 +26,7 @@ namespace free_fleet {
 
 //=============================================================================
 // Static pointer to console.
-static std::shared_ptr<Console> g_console; 
+static std::shared_ptr<Console> g_console;
 static std::mutex g_console_mutex;
 
 //=============================================================================
@@ -40,7 +40,8 @@ public:
 //=============================================================================
 Console::ConsoleStream::ConsoleStream(std::ostream* stream)
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation{stream}))
-{}
+{
+}
 
 //=============================================================================
 std::ostream* Console::ConsoleStream::get_stream()
@@ -57,10 +58,11 @@ public:
   : info_stream(ConsoleStream(info)),
     warning_stream(ConsoleStream(warning)),
     error_stream(ConsoleStream(error))
-  {}
+  {
+  }
 
   ConsoleStream info_stream;
-  
+
   ConsoleStream warning_stream;
 
   ConsoleStream error_stream;
@@ -69,8 +71,9 @@ public:
 //=============================================================================
 Console::Console()
 : _pimpl(rmf_utils::make_impl<Implementation>(
-    Implementation(&std::cout, &std::cout, &std::cerr)))
-{}
+      Implementation(&std::cout, &std::cout, &std::cerr)))
+{
+}
 
 //=============================================================================
 auto Console::instance() -> std::shared_ptr<Console>

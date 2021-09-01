@@ -71,14 +71,14 @@ RobotState::RobotState(
   }
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
-    time,
-    name,
-    model,
-    std::move(task_id),
-    mode,
-    battery_percent,
-    location,
-    target_path_index});
+        time,
+        name,
+        model,
+        std::move(task_id),
+        mode,
+        battery_percent,
+        location,
+        target_path_index});
 }
 
 //==============================================================================

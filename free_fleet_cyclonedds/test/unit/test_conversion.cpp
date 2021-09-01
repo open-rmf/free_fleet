@@ -31,10 +31,10 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
   GIVEN("Time")
   {
     rmf_traffic::Time t = std::chrono::steady_clock::now();
-   
+
     auto t_dds = convert(t);
     REQUIRE(t_dds.has_value());
-    
+
     auto converted_t = convert(t_dds.value());
     REQUIRE(converted_t.has_value());
     CHECK(converted_t.value() == t);
@@ -81,7 +81,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     auto wp_dds = convert(wp);
     REQUIRE(wp_dds.has_value());
     CHECK(wp_dds->index == 123);
-    
+
     auto converted_wp_loc = convert(wp_dds->location);
     REQUIRE(converted_wp_loc.has_value());
     CHECK(converted_wp_loc.value() == loc);
@@ -102,7 +102,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     auto wp_dds = convert(wp);
     REQUIRE(wp_dds.has_value());
     CHECK(wp_dds->index == 123);
-    
+
     auto converted_wp_loc = convert(wp_dds->location);
     REQUIRE(converted_wp_loc.has_value());
     CHECK(converted_wp_loc.value() == loc);
@@ -199,7 +199,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     Location loc2("test_map", {3.4, 5.6}, 7.8);
     rmf_traffic::Time t2 = std::chrono::steady_clock::now();
     Waypoint wp2(124, loc2, t2);
-    
+
     NavigationRequest n("test_robot", 123, {wp1, wp2});
 
     auto n_dds = convert(n);
@@ -272,7 +272,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
 
     auto converted_s = convert(s_dds.value());
     REQUIRE(converted_s.has_value());
-    CHECK(converted_s.value() == s); 
+    CHECK(converted_s.value() == s);
   }
 
   GIVEN("RobotState with task_id")
@@ -307,6 +307,6 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
 
     auto converted_s = convert(s_dds.value());
     REQUIRE(converted_s.has_value());
-    CHECK(converted_s.value() == s); 
+    CHECK(converted_s.value() == s);
   }
 }

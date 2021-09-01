@@ -33,12 +33,14 @@ public:
 //==============================================================================
 RobotMode::RobotMode(Mode mode)
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation{mode, ""}))
-{}
+{
+}
 
 //==============================================================================
 RobotMode::RobotMode(Mode mode, const std::string& info)
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation{mode, info}))
-{}
+{
+}
 
 //==============================================================================
 RobotMode::Mode RobotMode::mode() const

@@ -74,7 +74,7 @@ public:
   TaskId current_task_id = 0;
   std::unordered_map<TaskId, std::shared_ptr<manager::RequestInfo>> tasks;
   std::unordered_map<TaskId, std::shared_ptr<manager::RequestInfo>>
-    unacknowledged_tasks;
+  unacknowledged_tasks;
 
   std::atomic<bool> stopped = true;
   std::mutex mutex;

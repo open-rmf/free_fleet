@@ -28,12 +28,13 @@ class CoordinateTransformer
 {
 public:
 
-  /// Forward transformation from 
+  /// Forward transformation, from frame A to frame B.
   virtual messages::Location forward_transform(const messages::Location& input)
-    const = 0;
+  const = 0;
 
+  /// Backward transformation, from frame B to frame A.
   virtual messages::Location backward_transform(const messages::Location& input)
-    const = 0;
+  const = 0;
 };
 
 } // namespace manager

@@ -47,7 +47,7 @@ public:
 
   /// Sends out this request.
   virtual void send_request() const = 0;
- 
+
   /// Acknowledge that this request has been received.
   virtual void acknowledge_request() = 0;
 

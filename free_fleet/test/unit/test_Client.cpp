@@ -80,7 +80,7 @@ public:
 
   void received_dock_request(
     const std::string& robot_name,
-    free_fleet::TaskId task_id, 
+    free_fleet::TaskId task_id,
     const std::string& dock_name)
   {
     if (dock_request_callback)

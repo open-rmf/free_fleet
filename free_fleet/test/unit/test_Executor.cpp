@@ -27,13 +27,13 @@
 
 SCENARIO("Test Executor")
 {
-  std::atomic<bool> ran = false; 
+  std::atomic<bool> ran = false;
   std::unique_ptr<free_fleet::Worker> worker(new free_fleet::MockWorker(
-    123,
-    [&]()
-  {
-    ran = true;
-  }));
+      123,
+      [&]()
+      {
+        ran = true;
+      }));
   REQUIRE(worker != nullptr);
 
   free_fleet::Executor executor(std::move(worker));

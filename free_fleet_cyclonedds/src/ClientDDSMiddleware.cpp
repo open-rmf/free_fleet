@@ -47,16 +47,16 @@ public:
   dds_entity_t participant;
 
   Publisher<MiddlewareMessages_RobotState>::SharedPtr state_pub;
- 
+
   Subscriber<MiddlewareMessages_DockRequest>::SharedPtr dock_req_sub;
- 
+
   Subscriber<MiddlewareMessages_PauseRequest>::SharedPtr pause_req_sub;
- 
+
   Subscriber<MiddlewareMessages_ResumeRequest>::SharedPtr resume_req_sub;
- 
+
   Subscriber<MiddlewareMessages_NavigationRequest>::SharedPtr
     navigation_req_sub;
- 
+
   Subscriber<MiddlewareMessages_RelocalizationRequest>::SharedPtr
     relocalization_req_sub;
 };
@@ -64,14 +64,15 @@ public:
 //==============================================================================
 ClientDDSMiddleware::ClientDDSMiddleware()
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
-{}
+{
+}
 
 //==============================================================================
 auto ClientDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
-  -> std::shared_ptr<ClientDDSMiddleware>
+-> std::shared_ptr<ClientDDSMiddleware>
 {
   std::shared_ptr<ClientDDSMiddleware> middleware(new ClientDDSMiddleware());
-  
+
   dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
   if (participant <  0)
   {
@@ -80,62 +81,58 @@ auto ClientDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
   }
 
   auto report_fail = [p = participant](const std::string& component)
-  {
-    fferr << "Failed to create " << component << "\n";
-    if (p > 0)
     {
-      dds_return_t rc = dds_delete(p);
-      if (rc != DDS_RETCODE_OK)
-        ffwarn << "dds_delete: " << dds_strretcode(-rc) << "\n";
-    }
-    return nullptr;
-  };
-  
-  auto state_pub =
-    Publisher<MiddlewareMessages_RobotState>::make(
-      participant,
-      &MiddlewareMessages_RobotState_desc,
-      namespacify(Prefix, fleet_name, StateTopicName));
+      fferr << "Failed to create " << component << "\n";
+      if (p > 0)
+      {
+        dds_return_t rc = dds_delete(p);
+        if (rc != DDS_RETCODE_OK)
+          ffwarn << "dds_delete: " << dds_strretcode(-rc) << "\n";
+      }
+      return nullptr;
+    };
+
+  auto state_pub = Publisher<MiddlewareMessages_RobotState>::make(
+    participant,
+    &MiddlewareMessages_RobotState_desc,
+    namespacify(Prefix, fleet_name, StateTopicName));
   if (!state_pub)
     return report_fail("RobotState publisher");
 
-  auto dock_req_sub =
-    Subscriber<MiddlewareMessages_DockRequest>::make(
-      participant,
-      &MiddlewareMessages_DockRequest_desc,
-      namespacify(Prefix, fleet_name, DockRequestTopicName));
+  auto dock_req_sub = Subscriber<MiddlewareMessages_DockRequest>::make(
+    participant,
+    &MiddlewareMessages_DockRequest_desc,
+    namespacify(Prefix, fleet_name, DockRequestTopicName));
   if (!dock_req_sub)
     return report_fail("DockRequest subscriber");
 
-  auto pause_req_sub =
-    Subscriber<MiddlewareMessages_PauseRequest>::make(
-      participant,
-      &MiddlewareMessages_PauseRequest_desc,
-      namespacify(Prefix, fleet_name, PauseRequestTopicName));
+  auto pause_req_sub = Subscriber<MiddlewareMessages_PauseRequest>::make(
+    participant,
+    &MiddlewareMessages_PauseRequest_desc,
+    namespacify(Prefix, fleet_name, PauseRequestTopicName));
   if (!pause_req_sub)
     return report_fail("PauseRequest subscriber");
 
-  auto resume_req_sub =
-    Subscriber<MiddlewareMessages_ResumeRequest>::make(
-      participant,
-      &MiddlewareMessages_ResumeRequest_desc,
-      namespacify(Prefix, fleet_name, ResumeRequestTopicName));
+  auto resume_req_sub = Subscriber<MiddlewareMessages_ResumeRequest>::make(
+    participant,
+    &MiddlewareMessages_ResumeRequest_desc,
+    namespacify(Prefix, fleet_name, ResumeRequestTopicName));
   if (!resume_req_sub)
     return report_fail("ResumeRequest subscriber");
 
   auto navigation_req_sub =
     Subscriber<MiddlewareMessages_NavigationRequest>::make(
-      participant,
-      &MiddlewareMessages_NavigationRequest_desc,
-      namespacify(Prefix, fleet_name, NavigationRequestTopicName));
+    participant,
+    &MiddlewareMessages_NavigationRequest_desc,
+    namespacify(Prefix, fleet_name, NavigationRequestTopicName));
   if (!navigation_req_sub)
-    return report_fail("NavigationRequest subscriber");    
+    return report_fail("NavigationRequest subscriber");
 
   auto relocalization_req_sub =
     Subscriber<MiddlewareMessages_RelocalizationRequest>::make(
-      participant,
-      &MiddlewareMessages_RelocalizationRequest_desc,
-      namespacify(Prefix, fleet_name, RelocalizationRequestTopicName));
+    participant,
+    &MiddlewareMessages_RelocalizationRequest_desc,
+    namespacify(Prefix, fleet_name, RelocalizationRequestTopicName));
   if (!relocalization_req_sub)
     return report_fail("RelocalizationRequest subscriber");
 
@@ -169,13 +166,13 @@ void ClientDDSMiddleware::set_dock_request_callback(
 {
   auto dds_cb =
     [c = std::move(callback)](const MiddlewareMessages_DockRequest& dds_msg)
-  {
-    auto converted_msg = convert(dds_msg);
-    if (!converted_msg.has_value())
-      return;
+    {
+      auto converted_msg = convert(dds_msg);
+      if (!converted_msg.has_value())
+        return;
 
-    c(converted_msg.value());
-  };
+      c(converted_msg.value());
+    };
   _pimpl->dock_req_sub->set_callback(std::move(dds_cb));
 }
 
@@ -185,13 +182,13 @@ void ClientDDSMiddleware::set_pause_request_callback(
 {
   auto dds_cb =
     [c = std::move(callback)](const MiddlewareMessages_PauseRequest& dds_msg)
-  {
-    auto converted_msg = convert(dds_msg);
-    if (!converted_msg.has_value())
-      return;
+    {
+      auto converted_msg = convert(dds_msg);
+      if (!converted_msg.has_value())
+        return;
 
-    c(converted_msg.value());
-  };
+      c(converted_msg.value());
+    };
   _pimpl->pause_req_sub->set_callback(std::move(dds_cb));
 }
 
@@ -201,13 +198,13 @@ void ClientDDSMiddleware::set_resume_request_callback(
 {
   auto dds_cb =
     [c = std::move(callback)](const MiddlewareMessages_ResumeRequest& dds_msg)
-  {
-    auto converted_msg = convert(dds_msg);
-    if (!converted_msg.has_value())
-      return;
+    {
+      auto converted_msg = convert(dds_msg);
+      if (!converted_msg.has_value())
+        return;
 
-    c(converted_msg.value());
-  };
+      c(converted_msg.value());
+    };
   _pimpl->resume_req_sub->set_callback(std::move(dds_cb));
 }
 
@@ -217,14 +214,14 @@ void ClientDDSMiddleware::set_navigation_request_callback(
 {
   auto dds_cb =
     [c = std::move(callback)]
-    (const MiddlewareMessages_NavigationRequest& dds_msg)
-  {
-    auto converted_msg = convert(dds_msg);
-    if (!converted_msg.has_value())
-      return;
+      (const MiddlewareMessages_NavigationRequest& dds_msg)
+    {
+      auto converted_msg = convert(dds_msg);
+      if (!converted_msg.has_value())
+        return;
 
-    c(converted_msg.value());
-  };
+      c(converted_msg.value());
+    };
   _pimpl->navigation_req_sub->set_callback(std::move(dds_cb));
 }
 
@@ -234,14 +231,14 @@ void ClientDDSMiddleware::set_relocalization_request_callback(
 {
   auto dds_cb =
     [c = std::move(callback)]
-    (const MiddlewareMessages_RelocalizationRequest& dds_msg)
-  {
-    auto converted_msg = convert(dds_msg);
-    if (!converted_msg.has_value())
-      return;
+      (const MiddlewareMessages_RelocalizationRequest& dds_msg)
+    {
+      auto converted_msg = convert(dds_msg);
+      if (!converted_msg.has_value())
+        return;
 
-    c(converted_msg.value());
-  };
+      c(converted_msg.value());
+    };
   _pimpl->relocalization_req_sub->set_callback(std::move(dds_cb));
 }
 

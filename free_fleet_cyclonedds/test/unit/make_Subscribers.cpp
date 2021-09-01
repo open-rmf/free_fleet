@@ -33,7 +33,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("Location")
   {
-    auto cb = [](const MiddlewareMessages_Location&){};
+    auto cb = [](const MiddlewareMessages_Location&) {};
     auto sub = Subscriber<MiddlewareMessages_Location>::make(
       participant,
       &MiddlewareMessages_Location_desc,
@@ -46,7 +46,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("Waypoint")
   {
-    auto cb = [](const MiddlewareMessages_Waypoint&){};
+    auto cb = [](const MiddlewareMessages_Waypoint&) {};
     auto sub = Subscriber<MiddlewareMessages_Waypoint>::make(
       participant,
       &MiddlewareMessages_Waypoint_desc,
@@ -59,7 +59,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("RobotMode")
   {
-    auto cb = [](const MiddlewareMessages_RobotMode&){};
+    auto cb = [](const MiddlewareMessages_RobotMode&) {};
     auto sub = Subscriber<MiddlewareMessages_RobotMode>::make(
       participant,
       &MiddlewareMessages_RobotMode_desc,
@@ -72,7 +72,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("PauseRequest")
   {
-    auto cb = [](const MiddlewareMessages_PauseRequest&){};
+    auto cb = [](const MiddlewareMessages_PauseRequest&) {};
     auto sub = Subscriber<MiddlewareMessages_PauseRequest>::make(
       participant,
       &MiddlewareMessages_PauseRequest_desc,
@@ -85,7 +85,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("ResumeRequest")
   {
-    auto cb = [](const MiddlewareMessages_ResumeRequest&){};
+    auto cb = [](const MiddlewareMessages_ResumeRequest&) {};
     auto sub = Subscriber<MiddlewareMessages_ResumeRequest>::make(
       participant,
       &MiddlewareMessages_ResumeRequest_desc,
@@ -98,7 +98,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("DockRequest")
   {
-    auto cb = [](const MiddlewareMessages_DockRequest&){};
+    auto cb = [](const MiddlewareMessages_DockRequest&) {};
     auto sub = Subscriber<MiddlewareMessages_DockRequest>::make(
       participant,
       &MiddlewareMessages_DockRequest_desc,
@@ -111,7 +111,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("NavigationRequest message type")
   {
-    auto cb = [](const MiddlewareMessages_NavigationRequest&){};
+    auto cb = [](const MiddlewareMessages_NavigationRequest&) {};
     auto sub = Subscriber<MiddlewareMessages_NavigationRequest>::make(
       participant,
       &MiddlewareMessages_NavigationRequest_desc,
@@ -124,7 +124,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("RelocalizationRequest")
   {
-    auto cb = [](const MiddlewareMessages_RelocalizationRequest&){};
+    auto cb = [](const MiddlewareMessages_RelocalizationRequest&) {};
     auto sub = Subscriber<MiddlewareMessages_RelocalizationRequest>::make(
       participant,
       &MiddlewareMessages_RelocalizationRequest_desc,
@@ -137,7 +137,7 @@ SCENARIO("Verify that these message type subscribers can be created")
 
   GIVEN("RobotState")
   {
-    auto cb = [](const MiddlewareMessages_RobotState&){};
+    auto cb = [](const MiddlewareMessages_RobotState&) {};
     auto sub = Subscriber<MiddlewareMessages_RobotState>::make(
       participant,
       &MiddlewareMessages_RobotState_desc,

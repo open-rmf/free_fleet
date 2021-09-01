@@ -49,14 +49,14 @@ public:
   Subscriber<MiddlewareMessages_RobotState, 10>::SharedPtr state_sub;
 
   Publisher<MiddlewareMessages_DockRequest>::SharedPtr dock_req_pub;
- 
+
   Publisher<MiddlewareMessages_PauseRequest>::SharedPtr pause_req_pub;
- 
+
   Publisher<MiddlewareMessages_ResumeRequest>::SharedPtr resume_req_pub;
- 
+
   Publisher<MiddlewareMessages_NavigationRequest>::SharedPtr
     navigation_req_pub;
- 
+
   Publisher<MiddlewareMessages_RelocalizationRequest>::SharedPtr
     relocalization_req_pub;
 };
@@ -64,14 +64,15 @@ public:
 //==============================================================================
 ServerDDSMiddleware::ServerDDSMiddleware()
 : _pimpl(rmf_utils::make_impl<Implementation>(Implementation()))
-{}
+{
+}
 
 //==============================================================================
 auto ServerDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
-  -> std::shared_ptr<ServerDDSMiddleware>
+-> std::shared_ptr<ServerDDSMiddleware>
 {
   std::shared_ptr<ServerDDSMiddleware> middleware(new ServerDDSMiddleware());
-  
+
   dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
   if (participant <  0)
   {
@@ -80,62 +81,58 @@ auto ServerDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
   }
 
   auto report_fail = [p = participant](const std::string& component)
-  {
-    fferr << "Failed to create " << component << "\n";
-    if (p > 0)
     {
-      dds_return_t rc = dds_delete(p);
-      if (rc != DDS_RETCODE_OK)
-        ffwarn << "dds_delete: " << dds_strretcode(-rc) << "\n";
-    }
-    return nullptr;
-  };
+      fferr << "Failed to create " << component << "\n";
+      if (p > 0)
+      {
+        dds_return_t rc = dds_delete(p);
+        if (rc != DDS_RETCODE_OK)
+          ffwarn << "dds_delete: " << dds_strretcode(-rc) << "\n";
+      }
+      return nullptr;
+    };
 
-  auto state_sub =
-    Subscriber<MiddlewareMessages_RobotState, 10>::make(
-      participant,
-      &MiddlewareMessages_RobotState_desc,
-      namespacify(Prefix, fleet_name, StateTopicName));
+  auto state_sub = Subscriber<MiddlewareMessages_RobotState, 10>::make(
+    participant,
+    &MiddlewareMessages_RobotState_desc,
+    namespacify(Prefix, fleet_name, StateTopicName));
   if (!state_sub)
-    return report_fail("RobotState subscriber"); 
+    return report_fail("RobotState subscriber");
 
-  auto dock_req_pub =
-    Publisher<MiddlewareMessages_DockRequest>::make(
-      participant,
-      &MiddlewareMessages_DockRequest_desc,
-      namespacify(Prefix, fleet_name, DockRequestTopicName));
+  auto dock_req_pub = Publisher<MiddlewareMessages_DockRequest>::make(
+    participant,
+    &MiddlewareMessages_DockRequest_desc,
+    namespacify(Prefix, fleet_name, DockRequestTopicName));
   if (!dock_req_pub)
     return report_fail("DockRequest publisher");
 
-  auto pause_req_pub =
-    Publisher<MiddlewareMessages_PauseRequest>::make(
-      participant,
-      &MiddlewareMessages_PauseRequest_desc,
-      namespacify(Prefix, fleet_name, PauseRequestTopicName));
+  auto pause_req_pub = Publisher<MiddlewareMessages_PauseRequest>::make(
+    participant,
+    &MiddlewareMessages_PauseRequest_desc,
+    namespacify(Prefix, fleet_name, PauseRequestTopicName));
   if (!pause_req_pub)
     return report_fail("PauseRequest publisher");
 
-  auto resume_req_pub =
-    Publisher<MiddlewareMessages_ResumeRequest>::make(
-      participant,
-      &MiddlewareMessages_ResumeRequest_desc,
-      namespacify(Prefix, fleet_name, ResumeRequestTopicName));
+  auto resume_req_pub = Publisher<MiddlewareMessages_ResumeRequest>::make(
+    participant,
+    &MiddlewareMessages_ResumeRequest_desc,
+    namespacify(Prefix, fleet_name, ResumeRequestTopicName));
   if (!resume_req_pub)
     return report_fail("ResumeRequest publisher");
 
   auto navigation_req_pub =
     Publisher<MiddlewareMessages_NavigationRequest>::make(
-      participant,
-      &MiddlewareMessages_NavigationRequest_desc,
-      namespacify(Prefix, fleet_name, NavigationRequestTopicName));
+    participant,
+    &MiddlewareMessages_NavigationRequest_desc,
+    namespacify(Prefix, fleet_name, NavigationRequestTopicName));
   if (!navigation_req_pub)
     return report_fail("NavigationRequest publisher");
 
   auto relocalization_req_pub =
     Publisher<MiddlewareMessages_RelocalizationRequest>::make(
-      participant,
-      &MiddlewareMessages_RelocalizationRequest_desc,
-      namespacify(Prefix, fleet_name, RelocalizationRequestTopicName));
+    participant,
+    &MiddlewareMessages_RelocalizationRequest_desc,
+    namespacify(Prefix, fleet_name, RelocalizationRequestTopicName));
   if (!relocalization_req_pub)
     return report_fail("RelocalizationRequest publisher");
 
@@ -156,13 +153,13 @@ void ServerDDSMiddleware::set_robot_state_callback(
 {
   auto dds_cb =
     [c = std::move(callback)](const MiddlewareMessages_RobotState& dds_msg)
-  {
-    auto converted_msg = convert(dds_msg);
-    if (!converted_msg.has_value())
-      return;
+    {
+      auto converted_msg = convert(dds_msg);
+      if (!converted_msg.has_value())
+        return;
 
-    c(converted_msg.value());
-  }; 
+      c(converted_msg.value());
+    };
   _pimpl->state_sub->set_callback(std::move(dds_cb));
 }
 

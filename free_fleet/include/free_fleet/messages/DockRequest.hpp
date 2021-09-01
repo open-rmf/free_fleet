@@ -31,7 +31,7 @@ namespace messages {
 class DockRequest
 {
 public:
-  
+
   /// Constructor
   ///
   /// \param[in] robot_name
@@ -59,7 +59,7 @@ public:
 
   class Implementation;
 private:
-  rmf_utils::impl_ptr<Implementation> _pimpl;  
+  rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
 //==============================================================================

@@ -45,7 +45,7 @@ public:
   void id(int new_id)
   {
     _worker_id = new_id;
-  } 
+  }
 
 private:
   int _worker_id;

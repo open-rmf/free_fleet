@@ -68,7 +68,7 @@ public:
 
   void set_callbacks();
 
-  template<class T> 
+  template<class T>
   bool is_valid_request(const T& request)
   {
     if (request.robot_name() != robot_name)
@@ -107,7 +107,7 @@ public:
   std::unique_ptr<transport::ClientMiddleware> middleware;
 
   std::optional<TaskId> task_id = std::nullopt;
-  TaskId last_task_id = 0; 
+  TaskId last_task_id = 0;
   std::unordered_set<uint32_t> task_ids;
 
   std::atomic<bool> started = false;

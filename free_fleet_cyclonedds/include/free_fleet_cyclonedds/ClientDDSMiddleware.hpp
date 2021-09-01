@@ -52,7 +52,7 @@ public:
 
   void set_relocalization_request_callback(
     std::function<void(const messages::RelocalizationRequest&)> callback)
-    override;
+  override;
 
   class Implementation;
 private:

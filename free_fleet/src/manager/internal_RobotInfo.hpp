@@ -45,7 +45,7 @@ public:
   std::optional<messages::RobotState> state = std::nullopt;
 
   std::unordered_map<uint32_t, std::shared_ptr<RequestInfo>>
-    allocated_requests;
+  allocated_requests;
 
   const double waypoint_dist_threshold = 0.5;
   const double lane_dist_threshold = 1.0;

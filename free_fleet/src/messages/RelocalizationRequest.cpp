@@ -54,10 +54,10 @@ RelocalizationRequest::RelocalizationRequest(
   }
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
-    robot_name,
-    task_id,
-    location,
-    last_visited_waypoint_index});
+        robot_name,
+        task_id,
+        location,
+        last_visited_waypoint_index});
 }
 
 //==============================================================================
@@ -104,7 +104,7 @@ bool operator!=(
 {
   return !(lhs == rhs);
 }
-  
+
 //==============================================================================
 } // namespace messages
 } // namespace free_fleet

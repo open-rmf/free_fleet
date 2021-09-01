@@ -26,7 +26,7 @@ namespace free_fleet {
 namespace manager {
 
 //==============================================================================
-template <typename T>
+template<typename T>
 class SimpleRequestInfo : public RequestInfo
 {
 public:

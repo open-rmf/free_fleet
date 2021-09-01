@@ -38,10 +38,10 @@ public:
     double rotation_yaw);
 
   messages::Location forward_transform(const messages::Location& input)
-    const final;
+  const final;
 
   messages::Location backward_transform(const messages::Location& input)
-    const final;
+  const final;
 
   class Implementation;
 private:

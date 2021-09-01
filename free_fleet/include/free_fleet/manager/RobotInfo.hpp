@@ -82,7 +82,7 @@ private:
   rmf_utils::impl_ptr<Implementation> _pimpl;
 };
 
-} // namespace manager 
+} // namespace manager
 } // namespace free_fleet
 
 #endif // INCLUDE__FREE_FLEET__MANAGER__ROBOTINFO_HPP

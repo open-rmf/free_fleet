@@ -28,21 +28,21 @@ namespace free_fleet {
 
 /// \brief Output a message
 #define ffinfo (free_fleet::Console::instance()->stream( \
-  "Info", __FILE__, __FUNCTION__, __LINE__, \
-  free_fleet::Console::StreamType::Info))
+    "Info", __FILE__, __FUNCTION__, __LINE__, \
+    free_fleet::Console::StreamType::Info))
 
 /// \brief Output a warning message
 #define ffwarn (free_fleet::Console::instance()->stream( \
-  "Warning", __FILE__, __FUNCTION__, __LINE__, \
-  free_fleet::Console::StreamType::Warning))
+    "Warning", __FILE__, __FUNCTION__, __LINE__, \
+    free_fleet::Console::StreamType::Warning))
 
 /// \brief Output an error message
 #define fferr (free_fleet::Console::instance()->stream( \
-  "Error", __FILE__, __FUNCTION__, __LINE__, \
-  free_fleet::Console::StreamType::Error))
+    "Error", __FILE__, __FUNCTION__, __LINE__, \
+    free_fleet::Console::StreamType::Error))
 
 /// \brief Console class that handles console outputs.
-class Console 
+class Console
 {
 public:
 
@@ -57,17 +57,17 @@ public:
     /// \brief Get the current output stream.
     /// \return Pointer to the current output stream.
     std::ostream* get_stream();
-    
+
     /// \brief Redirects what is passed in to the stream object.
     /// \param[in] rhs Content to be logged.
     /// \return Reference to this ConsoleStream.
-    template <class T>
+    template<class T>
     ConsoleStream& operator<<(const T& rhs);
 
     class Implementation;
   private:
     rmf_utils::impl_ptr<Implementation> _pimpl;
-  }; 
+  };
 
   /// \brief Types of stream outputs.
   enum class StreamType

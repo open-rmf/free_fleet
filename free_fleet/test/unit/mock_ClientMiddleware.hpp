@@ -29,9 +29,9 @@ public:
   std::function<void(const messages::PauseRequest&)> pause_request_callback;
   std::function<void(const messages::ResumeRequest&)> resume_request_callback;
   std::function<void(const messages::NavigationRequest&)>
-    navigation_request_callback;
+  navigation_request_callback;
   std::function<void(const messages::RelocalizationRequest&)>
-    relocalization_request_callback;
+  relocalization_request_callback;
 
   MockClientMiddleware()
   {}
@@ -50,7 +50,7 @@ public:
   {
     pause_request_callback = std::move(callback);
   }
-  
+
   void set_resume_request_callback(
     std::function<void(const messages::ResumeRequest&)> callback) override
   {
@@ -65,7 +65,7 @@ public:
 
   void set_relocalization_request_callback(
     std::function<void(const messages::RelocalizationRequest&)> callback)
-    override
+  override
   {
     relocalization_request_callback = std::move(callback);
   }

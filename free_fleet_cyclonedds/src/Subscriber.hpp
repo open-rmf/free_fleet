@@ -30,20 +30,20 @@ namespace free_fleet {
 namespace cyclonedds {
 
 //==============================================================================
-template <typename Message, size_t MaxSamplesNum = 1>
+template<typename Message, size_t MaxSamplesNum = 1>
 class Subscriber
-: public std::enable_shared_from_this<Subscriber<Message, MaxSamplesNum>>
+  : public std::enable_shared_from_this<Subscriber<Message, MaxSamplesNum>>
 {
 public:
 
   using SharedPtr = std::shared_ptr<Subscriber<Message, MaxSamplesNum>>;
 
   static SharedPtr make(
-    const dds_entity_t& participant, 
-    const dds_topic_descriptor_t* topic_desc, 
+    const dds_entity_t& participant,
+    const dds_topic_descriptor_t* topic_desc,
     const std::string& topic_name,
     std::optional<std::function<void(const Message& message)>>
-      callback = std::nullopt)
+    callback = std::nullopt)
   {
     SharedPtr subscriber(new Subscriber<Message, MaxSamplesNum>());
 
@@ -54,7 +54,7 @@ public:
       DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
       return nullptr;
     }
-    
+
     dds_qos_t* qos = dds_create_qos();
     dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
 
@@ -69,7 +69,7 @@ public:
     for (std::size_t i = 0; i < subscriber->_shared_msgs.size(); ++i)
     {
       subscriber->_shared_msgs[i] =
-          std::shared_ptr<Message>((Message*)dds_alloc(sizeof(Message)));
+        std::shared_ptr<Message>((Message*)dds_alloc(sizeof(Message)));
       subscriber->_raw_msg_samples[i] =
         (void*)subscriber->_shared_msgs[i].get();
     }
@@ -80,7 +80,7 @@ public:
     }
 
     subscriber->_topic = std::move(topic);
-    subscriber->_reader = std::move(reader); 
+    subscriber->_reader = std::move(reader);
     std::lock_guard<std::mutex> callback_lock(subscriber->_callback_mutex);
     subscriber->_callback = callback;
 
@@ -102,28 +102,27 @@ private:
   inline static std::mutex _s_mutex = std::mutex();
 
   inline static std::unordered_map
-    <dds_entity_t, std::shared_ptr<Subscriber<Message, MaxSamplesNum>>>
-      _s_subscriber_map = {};
+  <dds_entity_t, std::shared_ptr<Subscriber<Message, MaxSamplesNum>>>
+  _s_subscriber_map = {};
 
   static void _s_data_available(dds_entity_t reader, void* arg)
   {
     (void)arg;
     std::lock_guard<std::mutex> s_lock(_s_mutex);
     auto it = _s_subscriber_map.find(reader);
-    
+
     if (it == _s_subscriber_map.end())
     {
       DDS_FATAL("_s_data_available: Reader not found or has already expired\n");
       return;
     }
 
-    dds_return_t return_code =
-      dds_take(
-        reader,
-        it->second->_raw_msg_samples,
-        it->second->_msg_infos,
-        MaxSamplesNum,
-        MaxSamplesNum);
+    dds_return_t return_code = dds_take(
+      reader,
+      it->second->_raw_msg_samples,
+      it->second->_msg_infos,
+      MaxSamplesNum,
+      MaxSamplesNum);
     if (return_code < 0)
     {
       DDS_FATAL("dds_take: %s\n", dds_strretcode(-return_code));
