@@ -163,13 +163,17 @@ Additional packages are required for this example, clone in additional packages 
 
 ```bash
 cd ~/client_ws/src
+git clone https://github.com/ros-simulation/gazebo_ros_pkgs -b noetic-devel
 git clone https://github.com/rhaschke/robot_state_publisher -b noetic-devel
 git clone https://github.com/aaronchongth/turtlebot3_simulations -b noetic-devel
 
-cd robot_state_publisher
+cd ~/client_ws/src/robot_state_publisher
 git checkout 661628a76bbb
 
-sudo apt install ros-noetic-gazebo-ros-pkgs ros-noetic-dwa-local-planner
+cd ~/client_ws/src/gazebo_ros_pkgs
+git checkout 05d6cb4acda7
+
+sudo apt install ros-noetic-dwa-local-planner
 
 cd ~/client_ws
 source /opt/ros/noetic/setup.bash
