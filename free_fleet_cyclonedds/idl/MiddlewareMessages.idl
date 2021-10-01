@@ -91,6 +91,8 @@ module MiddlewareMessages
     RobotMode mode;
     double battery_percent;
     Location location;
+
+    boolean target_path_index_available;
     unsigned long target_path_index;
   };
 };

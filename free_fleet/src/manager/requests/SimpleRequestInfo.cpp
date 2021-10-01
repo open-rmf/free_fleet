@@ -103,14 +103,25 @@ auto SimpleRequestInfo<messages::NavigationRequest>::track_robot(
   auto prev_estimation = robot_info.tracking_estimation();
   auto impl = RobotInfo::Implementation::get(robot_info);
 
+  if (!new_state.target_path_index().has_value())
+  {
+    ffwarn << "Robot [" << robot_info.name() << "] is currently not announcing "
+      "its next target path index, which is required for tracking during "
+      "a NavigationRequests, it is LOST until a trackable state comes in.\n";
+    return std::make_pair(
+      RobotInfo::TrackingState::Lost, prev_estimation.second);
+  }
+
+  const std::size_t new_target_path_index =
+    new_state.target_path_index().value();
   const std::size_t next_wp_index =
-    _request.path()[new_state.target_path_index()].index();
+    _request.path()[new_target_path_index].index();
 
   std::optional<std::size_t> prev_wp_index = std::nullopt;
   const rmf_traffic::agv::Graph::Lane* curr_lane = nullptr;
-  if (new_state.target_path_index() != 0)
+  if (new_target_path_index != 0)
   {
-    prev_wp_index = _request.path()[new_state.target_path_index() - 1].index();
+    prev_wp_index = _request.path()[new_target_path_index - 1].index();
     curr_lane = impl.graph->lane_from(prev_wp_index.value(), next_wp_index);
   }
 

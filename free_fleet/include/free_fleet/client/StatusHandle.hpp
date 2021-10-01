@@ -63,11 +63,12 @@ public:
   virtual double battery_percent() const = 0;
 
   /// Obtain the index of the target waypoint in the path array provided in a
-  /// navigation request.
+  /// NavigationRequest.
   ///
   /// \return
-  ///   Target path waypoint index of the robot.
-  virtual std::size_t target_path_waypoint_index() const = 0;
+  ///   Index of the target waypoint in the path array. If the robot is not on a
+  ///   NavigationRequest, returns a nullopt.
+  virtual std::optional<std::size_t> target_path_waypoint_index() const = 0;
 
   /// Virtual destructor
   virtual ~StatusHandle() = default;

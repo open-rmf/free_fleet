@@ -297,7 +297,14 @@ std::optional<MiddlewareMessages_RobotState> convert(
     return convert_error("failed to convert RobotState::location.");
   output.location = loc.value();
 
-  output.target_path_index = static_cast<uint32_t>(input.target_path_index());
+  output.target_path_index_available = false;
+  if (input.target_path_index().has_value())
+  {
+    output.target_path_index_available = true;
+    output.target_path_index =
+      static_cast<uint32_t>(input.target_path_index().value());
+  }
+
   return output;
 }
 

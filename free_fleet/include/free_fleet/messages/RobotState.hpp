@@ -66,7 +66,8 @@ public:
   ///
   /// \param[in] target_path_index
   ///   The target path index for the waypoint, which the robot is currently
-  ///   navigating towards to.
+  ///   navigating towards to. If the robot is not navigating on a path, this
+  ///   should be a nullopt.
   RobotState(
     rmf_traffic::Time time,
     const std::string& name,
@@ -75,7 +76,7 @@ public:
     const RobotMode& mode,
     double battery_percent,
     const Location& location,
-    std::size_t target_path_index);
+    std::optional<std::size_t> target_path_index);
 
   /// Gets the current time stamp of this state.
   rmf_traffic::Time time() const;
@@ -100,8 +101,9 @@ public:
   const Location& location() const;
 
   /// Gets the target path index for the waypoint, which the robot is currently
-  /// navigating towards to.
-  std::size_t target_path_index() const;
+  /// navigating towards to. If the robot is not in the progress of a navigation
+  /// request, this returns a nullopt.
+  std::optional<std::size_t> target_path_index() const;
 
   class Implementation;
 private:

@@ -40,7 +40,7 @@ public:
 
   Location location;
 
-  std::size_t target_path_index;
+  std::optional<std::size_t> target_path_index;
 };
 
 //==============================================================================
@@ -52,7 +52,7 @@ RobotState::RobotState(
   const RobotMode& mode,
   double battery_percent,
   const Location& location,
-  std::size_t target_path_index)
+  std::optional<std::size_t> target_path_index)
 {
   std::string error_message;
 
@@ -78,7 +78,7 @@ RobotState::RobotState(
         mode,
         battery_percent,
         location,
-        target_path_index});
+        std::move(target_path_index)});
 }
 
 //==============================================================================
@@ -124,7 +124,7 @@ const Location& RobotState::location() const
 }
 
 //==============================================================================
-std::size_t RobotState::target_path_index() const
+std::optional<size_t> RobotState::target_path_index() const
 {
   return _pimpl->target_path_index;
 }
@@ -135,16 +135,13 @@ bool operator==(const RobotState& lhs, const RobotState& rhs)
   if (lhs.time() == rhs.time() &&
     lhs.name() == rhs.name() &&
     lhs.model() == rhs.model() &&
+    lhs.task_id() == rhs.task_id() &&
     lhs.mode() == rhs.mode() &&
     abs(lhs.battery_percent() - rhs.battery_percent()) < 1e-3 &&
     lhs.location() == rhs.location() &&
     lhs.target_path_index() == rhs.target_path_index())
   {
-    if (lhs.task_id().has_value() && rhs.task_id().has_value() &&
-      lhs.task_id().value() == rhs.task_id().value())
-      return true;
-    else if (!lhs.task_id().has_value() && !rhs.task_id().has_value())
-      return true;
+    return true;
   }
   return false;
 }

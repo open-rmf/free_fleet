@@ -53,7 +53,7 @@ public:
     return 0.0;
   }
 
-  std::size_t target_path_waypoint_index() const final
+  std::optional<std::size_t> target_path_waypoint_index() const final
   {
     return 0;
   }
