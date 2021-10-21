@@ -76,16 +76,16 @@ private:
       const std::string& fleet_name, const std::string& robot_name);
 
   void transform_fleet_to_rmf(
-      const rmf_fleet_msgs::msg::Location& fleet_frame_location, 
+      const rmf_fleet_msgs::msg::Location& fleet_frame_location,
       rmf_fleet_msgs::msg::Location& rmf_frame_location) const;
 
   void transform_rmf_to_fleet(
-      const rmf_fleet_msgs::msg::Location& rmf_frame_location, 
+      const rmf_fleet_msgs::msg::Location& rmf_frame_location,
       rmf_fleet_msgs::msg::Location& fleet_frame_location) const;
 
   // --------------------------------------------------------------------------
 
-  rclcpp::Subscription<rmf_fleet_msgs::msg::ModeRequest>::SharedPtr 
+  rclcpp::Subscription<rmf_fleet_msgs::msg::ModeRequest>::SharedPtr
       mode_request_sub;
 
   void handle_mode_request(rmf_fleet_msgs::msg::ModeRequest::UniquePtr msg);
@@ -107,25 +107,25 @@ private:
 
   // --------------------------------------------------------------------------
 
-  rclcpp::callback_group::CallbackGroup::SharedPtr update_state_callback_group;
+  rclcpp::CallbackGroup::SharedPtr update_state_callback_group;
 
   rclcpp::TimerBase::SharedPtr update_state_timer;
 
   std::mutex robot_states_mutex;
 
-  std::unordered_map<std::string, rmf_fleet_msgs::msg::RobotState> 
+  std::unordered_map<std::string, rmf_fleet_msgs::msg::RobotState>
       robot_states;
 
   void update_state_callback();
 
   // --------------------------------------------------------------------------
 
-  rclcpp::callback_group::CallbackGroup::SharedPtr 
+  rclcpp::CallbackGroup::SharedPtr
       fleet_state_pub_callback_group;
 
   rclcpp::TimerBase::SharedPtr fleet_state_pub_timer;
 
-  rclcpp::Publisher<rmf_fleet_msgs::msg::FleetState>::SharedPtr 
+  rclcpp::Publisher<rmf_fleet_msgs::msg::FleetState>::SharedPtr
       fleet_state_pub;
 
   void publish_fleet_state();

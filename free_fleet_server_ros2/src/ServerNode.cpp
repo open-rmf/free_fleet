@@ -53,7 +53,7 @@ ServerNode::SharedPtr ServerNode::make(
       break;
     RCLCPP_INFO(
         server_node->get_logger(), "waiting for configuration parameters.");
-    
+
     end_time = std::chrono::steady_clock::now();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
@@ -67,7 +67,7 @@ ServerNode::SharedPtr ServerNode::make(
   server_node->print_config();
 
   // Starting the free fleet server
-  ServerConfig server_config = 
+  ServerConfig server_config =
       server_node->server_node_config.get_server_config();
   Server::SharedPtr server = Server::make(server_config);
   if (!server)
@@ -84,7 +84,7 @@ ServerNode::~ServerNode()
 {}
 
 ServerNode::ServerNode(
-    const ServerNodeConfig& _config, 
+    const ServerNodeConfig& _config,
     const rclcpp::NodeOptions& _node_options) :
   Node(_config.fleet_name + "_node", _node_options),
   server_node_config(_config)
@@ -102,19 +102,19 @@ void ServerNode::setup_config()
   get_parameter("mode_request_topic", server_node_config.mode_request_topic);
   get_parameter("path_request_topic", server_node_config.path_request_topic);
   get_parameter(
-      "destination_request_topic", 
+      "destination_request_topic",
       server_node_config.destination_request_topic);
   get_parameter("dds_domain", server_node_config.dds_domain);
-  get_parameter("dds_robot_state_topic", 
+  get_parameter("dds_robot_state_topic",
       server_node_config.dds_robot_state_topic);
-  get_parameter("dds_mode_request_topic", 
+  get_parameter("dds_mode_request_topic",
       server_node_config.dds_mode_request_topic);
-  get_parameter("dds_path_request_topic", 
+  get_parameter("dds_path_request_topic",
       server_node_config.dds_path_request_topic);
   get_parameter(
       "dds_destination_request_topic",
       server_node_config.dds_destination_request_topic);
-  get_parameter("update_state_frequency", 
+  get_parameter("update_state_frequency",
       server_node_config.update_state_frequency);
   get_parameter(
       "publish_state_frequency", server_node_config.publish_state_frequency);
@@ -148,7 +148,7 @@ void ServerNode::start(Fields _fields)
   // available
 
   update_state_callback_group = create_callback_group(
-      rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
+      rclcpp::CallbackGroupType::MutuallyExclusive);
 
   update_state_timer = create_wall_timer(
       100ms, std::bind(&ServerNode::update_state_callback, this),
@@ -159,9 +159,9 @@ void ServerNode::start(Fields _fields)
   // handling requests from RMF to be sent down to the clients
 
   fleet_state_pub_callback_group = create_callback_group(
-      rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
+      rclcpp::CallbackGroupType::MutuallyExclusive);
 
-  fleet_state_pub = 
+  fleet_state_pub =
       create_publisher<rmf_fleet_msgs::msg::FleetState>(
           server_node_config.fleet_state_topic, 10);
 
@@ -174,7 +174,7 @@ void ServerNode::start(Fields _fields)
   // Mode request handling
 
   auto mode_request_sub_opt = rclcpp::SubscriptionOptions();
-  
+
   mode_request_sub_opt.callback_group = fleet_state_pub_callback_group;
 
   mode_request_sub = create_subscription<rmf_fleet_msgs::msg::ModeRequest>(
@@ -207,7 +207,7 @@ void ServerNode::start(Fields _fields)
 
   destination_request_sub_opt.callback_group = fleet_state_pub_callback_group;
 
-  destination_request_sub = 
+  destination_request_sub =
       create_subscription<rmf_fleet_msgs::msg::DestinationRequest>(
           server_node_config.destination_request_topic, rclcpp::QoS(10),
           [&](rmf_fleet_msgs::msg::DestinationRequest::UniquePtr msg)
@@ -257,10 +257,10 @@ void ServerNode::transform_fleet_to_rmf(
   // RCLCPP_INFO(
   //     get_logger(), "    fleet->rmf scaled: (%.3f, %.3f)",
   //     scaled[0], scaled[1]);
-      
+
   _rmf_frame_location.x = scaled[0];
   _rmf_frame_location.y = scaled[1];
-  _rmf_frame_location.yaw = 
+  _rmf_frame_location.yaw =
       _fleet_frame_location.yaw - server_node_config.rotation;
 
   _rmf_frame_location.t = _fleet_frame_location.t;
@@ -273,8 +273,8 @@ void ServerNode::transform_rmf_to_fleet(
 {
   // It feels easier to read if each operation is a separate statement.
   // The compiler will be super smart and elide all these operations.
-  const Eigen::Vector2d scaled = 
-      server_node_config.scale * 
+  const Eigen::Vector2d scaled =
+      server_node_config.scale *
       Eigen::Vector2d(_rmf_frame_location.x, _rmf_frame_location.y);
 
   // RCLCPP_INFO(
@@ -283,13 +283,13 @@ void ServerNode::transform_rmf_to_fleet(
 
   const Eigen::Vector2d rotated =
       Eigen::Rotation2D<double>(server_node_config.rotation) * scaled;
-  
+
   // RCLCPP_INFO(
   //     get_logger(), "    rmf->fleet rotated: (%.3f, %.3f)",
   //     rotated[0], rotated[1]);
 
   const Eigen::Vector2d translated =
-      rotated + 
+      rotated +
       Eigen::Vector2d(
           server_node_config.translation_x, server_node_config.translation_y);
 
@@ -299,7 +299,7 @@ void ServerNode::transform_rmf_to_fleet(
 
   _fleet_frame_location.x = translated[0];
   _fleet_frame_location.y = translated[1];
-  _fleet_frame_location.yaw = 
+  _fleet_frame_location.yaw =
       _rmf_frame_location.yaw + server_node_config.rotation;
 
   _fleet_frame_location.t = _rmf_frame_location.t;
@@ -356,7 +356,8 @@ void ServerNode::update_state_callback()
     if (it == robot_states.end())
       RCLCPP_INFO(
           get_logger(),
-          "registered a new robot: " + ros_rs.name);
+          "registered a new robot: [%s]",
+          ros_rs.name.c_str());
 
     robot_states[ros_rs.name] = ros_rs;
   }
@@ -377,7 +378,7 @@ void ServerNode::publish_fleet_state()
     transform_fleet_to_rmf(fleet_frame_rs.location, rmf_frame_rs.location);
 
     // RCLCPP_INFO(
-    //     get_logger(), 
+    //     get_logger(),
     //     "robot location: (%.1f, %.1f, %.1f) -> (%.1f, %.1f, %.1f)",
     //     fleet_frame_rs.location.x,
     //     fleet_frame_rs.location.y,
@@ -385,13 +386,13 @@ void ServerNode::publish_fleet_state()
     //     rmf_frame_rs.location.x,
     //     rmf_frame_rs.location.y,
     //     rmf_frame_rs.location.yaw);
-    
+
     rmf_frame_rs.name = fleet_frame_rs.name;
     rmf_frame_rs.model = fleet_frame_rs.model;
     rmf_frame_rs.task_id = fleet_frame_rs.task_id;
     rmf_frame_rs.mode = fleet_frame_rs.mode;
     rmf_frame_rs.battery_percent = fleet_frame_rs.battery_percent;
-  
+
     rmf_frame_rs.path.clear();
     for (const auto& fleet_frame_path_loc : fleet_frame_rs.path)
     {
