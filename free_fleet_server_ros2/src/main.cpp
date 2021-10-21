@@ -27,7 +27,7 @@ int main(int argc, char** argv)
   rclcpp::init(argc, argv);
   std::cout << "Greetings from free_fleet_server_ros2" << std::endl;
 
-  free_fleet::ros2::ServerNodeConfig server_node_config = 
+  free_fleet::ros2::ServerNodeConfig server_node_config =
       free_fleet::ros2::ServerNodeConfig::make();
   server_node_config.fleet_name = "free_fleet_server_ros2";
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     return 1;
 
   rclcpp::executors::MultiThreadedExecutor executor {
-      rclcpp::executor::ExecutorArgs(), 2};
+      rclcpp::ExecutorOptions(), 2};
   executor.add_node(server_node);
   executor.spin();
 
