@@ -80,7 +80,10 @@ public:
     const auto it = task_ids.find(request.task_id());
     if (it == task_ids.end() ||
       rmf_utils::Modular(last_task_id).less_than(request.task_id()))
+    {
       return true;
+    }
+
     return false;
   }
 

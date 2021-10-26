@@ -57,7 +57,7 @@ public:
   {
     if (!graph)
     {
-      fferr << "Provided traffic graph is invalid.\n";
+      fferr << "Provided traffic graph is null.\n";
       return nullptr;
     }
 

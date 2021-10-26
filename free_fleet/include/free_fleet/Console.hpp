@@ -105,8 +105,8 @@ private:
 template<class T>
 Console::ConsoleStream& Console::ConsoleStream::operator<<(const T& rhs)
 {
-  if (get_stream())
-    *get_stream() << rhs;
+  if (auto* stream = get_stream())
+    *stream << rhs;
   else
     std::cout << rhs;
 

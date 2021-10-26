@@ -15,7 +15,6 @@
  *
  */
 
-#include <iostream>
 #include <Eigen/Geometry>
 #include <free_fleet/Console.hpp>
 #include <free_fleet/manager/SimpleCoordinateTransformer.hpp>

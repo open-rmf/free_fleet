@@ -45,13 +45,14 @@ char* dds_string_alloc_and_copy(const std::string& _str)
 //==============================================================================
 std::optional<MiddlewareMessages_Time> convert(const rmf_traffic::Time& input)
 {
+  auto time = input.time_since_epoch();
+  auto sec = std::chrono::duration_cast<std::chrono::seconds>(time);
+  auto nanosec =
+    std::chrono::duration_cast<std::chrono::nanoseconds>(time - sec);
+
   MiddlewareMessages_Time output;
-  output.sec =
-    static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(
-      input.time_since_epoch()).count());
-  output.nanosec =
-    static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
-      input.time_since_epoch()).count() % 1000000000);
+  output.sec = static_cast<int32_t>(sec.count());
+  output.nanosec = static_cast<uint32_t>(nanosec.count());
   return output;
 }
 

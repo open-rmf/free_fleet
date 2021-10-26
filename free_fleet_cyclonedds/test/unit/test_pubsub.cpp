@@ -16,7 +16,6 @@
 */
 
 #include <chrono>
-#include <thread>
 #include <iostream>
 
 #include <dds/dds.h>
