@@ -16,7 +16,6 @@
  */
 
 #include <memory>
-#include <iostream>
 
 #include <rmf_utils/catch.hpp>
 

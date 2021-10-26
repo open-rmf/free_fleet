@@ -15,8 +15,6 @@
  *
 */
 
-#include <iostream>
-
 #include <rmf_utils/catch.hpp>
 
 #include <free_fleet/messages/RobotState.hpp>

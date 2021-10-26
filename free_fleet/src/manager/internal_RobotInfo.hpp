@@ -18,8 +18,6 @@
 #ifndef SRC__MANAGER__INTERNAL__ROBOTINFO_HPP
 #define SRC__MANAGER__INTERNAL__ROBOTINFO_HPP
 
-#include <iostream>
-
 #include <rmf_utils/optional.hpp>
 
 #include <free_fleet/Console.hpp>

@@ -15,8 +15,6 @@
  *
 */
 
-#include <iostream>
-
 #include <dds/dds.h>
 #include <rmf_utils/catch.hpp>
 

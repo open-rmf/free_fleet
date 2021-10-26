@@ -17,7 +17,6 @@
 
 #include <rmf_utils/catch.hpp>
 
-#include <iostream>
 #include <free_fleet/Types.hpp>
 #include <free_fleet/client/Client.hpp>
 

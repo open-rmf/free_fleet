@@ -17,8 +17,6 @@
 
 #include <chrono>
 #include <thread>
-#include <future>
-#include <iostream>
 #include <unordered_set>
 
 #include <rmf_traffic/Time.hpp>
