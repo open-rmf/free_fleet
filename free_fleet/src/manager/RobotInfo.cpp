@@ -50,7 +50,6 @@ void RobotInfo::Implementation::update_state(
     return;
 
   const std::optional<CommandId> command_id = new_state.command_id();
-  auto it = robot_info._pimpl->allocated_requests.end();
   std::pair<TrackingState, std::size_t> new_tracking_estimate;
 
   // Robot is not following any commands at the moment.
@@ -59,23 +58,28 @@ void RobotInfo::Implementation::update_state(
     new_tracking_estimate =
       robot_info._pimpl->track_through_graph(new_state);
   }
-  // Use the implemented track_robot function of each request type to get new
-  // tracking estimates.
-  else if ((it = robot_info._pimpl->allocated_requests.find(command_id.value()))
-    != robot_info._pimpl->allocated_requests.end())
-  {
-    assert(it->second);
-    auto request = it->second;
-    new_tracking_estimate = request->track_robot(robot_info, new_state);
-  }
-  // No such command exists
   else
   {
-    ffwarn << "Robot [" << robot_info.name() << "] command ID ["
-           << command_id.value()
-           << "] was not allocated through this manager instance.\n";
+    const auto it =
+      robot_info._pimpl->allocated_requests.find(command_id.value());
 
-    new_tracking_estimate = robot_info._pimpl->track_through_graph(new_state);
+    // Use the implemented track_robot function of each request type to get new
+    // tracking estimates.
+    if (it != robot_info._pimpl->allocated_requests.end())
+    {
+      assert(it->second);
+      auto request = it->second;
+      new_tracking_estimate = request->track_robot(robot_info, new_state);
+    }
+    // No such command exists
+    else
+    {
+      ffwarn << "Robot [" << robot_info.name() << "] command ID ["
+             << command_id.value()
+             << "] was not allocated through this manager instance.\n";
+
+      new_tracking_estimate = robot_info._pimpl->track_through_graph(new_state);
+    }
   }
 
   robot_info._pimpl->tracking_state = new_tracking_estimate.first;
