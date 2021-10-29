@@ -77,3 +77,38 @@ SCENARIO("Publishing with Subscriber")
   dds_return_t rc = dds_delete(participant);
   REQUIRE(rc == DDS_RETCODE_OK);
 }
+
+SCENARIO("Subscribing with a null callback")
+{
+  dds_entity_t participant = dds_create_participant(42, NULL, NULL);
+  REQUIRE(participant >= 0);
+
+  using namespace free_fleet::cyclonedds;
+
+  auto pub = Publisher<MiddlewareMessages_Location>::make(
+    participant,
+    &MiddlewareMessages_Location_desc,
+    "Location_pubsub_test_null");
+  REQUIRE_FALSE(pub == nullptr);
+
+  MiddlewareMessages_Location* msg = MiddlewareMessages_Location__alloc();
+  std::string map_name = "test_basic_pub_sub_test_null";
+  msg->map_name = dds_string_alloc_and_copy(map_name);
+  REQUIRE_FALSE(msg->map_name == nullptr);
+  CHECK(std::string(msg->map_name) == "test_basic_pub_sub_test_null");
+
+  auto sub = Subscriber<MiddlewareMessages_Location, 10>::make(
+    participant,
+    &MiddlewareMessages_Location_desc,
+    "Location_pubsub_test_null");
+  REQUIRE_FALSE(sub == nullptr);
+
+  CHECK_NOTHROW(sub->set_callback(nullptr));
+
+  CHECK_NOTHROW(pub->write(msg));
+  dds_sleepfor(DDS_MSECS(50));
+
+  MiddlewareMessages_Location_free(msg, DDS_FREE_ALL);
+  dds_return_t rc = dds_delete(participant);
+  REQUIRE(rc == DDS_RETCODE_OK);
+}

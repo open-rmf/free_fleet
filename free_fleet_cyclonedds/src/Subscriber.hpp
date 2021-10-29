@@ -135,7 +135,8 @@ private:
       {
         if (it->second->_msg_infos[i].valid_data &&
           it->second->_msg_infos[i].sample_state == DDS_SST_NOT_READ &&
-          it->second->_callback.has_value())
+          it->second->_callback.has_value() &&
+          *it->second->_callback)
         {
           (*it->second->_callback)(*it->second->_shared_msgs[i]);
         }
