@@ -221,7 +221,7 @@ auto Manager::request_pause(const std::string& robot_name)
       {
         this->_pimpl->middleware->send_pause_request(request_msg);
       },
-      [this]() {return _pimpl->time_now_fn();}));
+      _pimpl->time_now_fn));
 
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
@@ -247,7 +247,7 @@ auto Manager::request_resume(const std::string& robot_name)
       {
         this->_pimpl->middleware->send_resume_request(request_msg);
       },
-      [this]() {return _pimpl->time_now_fn();}));
+      _pimpl->time_now_fn));
 
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
@@ -277,7 +277,7 @@ auto Manager::request_dock(
       {
         this->_pimpl->middleware->send_dock_request(request_msg);
       },
-      [this]() {return _pimpl->time_now_fn();}));
+      _pimpl->time_now_fn));
 
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
@@ -333,7 +333,7 @@ auto Manager::request_relocalization(
       {
         this->_pimpl->middleware->send_relocalization_request(request_msg);
       },
-      [this]() {return _pimpl->time_now_fn();}));
+      _pimpl->time_now_fn));
 
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
