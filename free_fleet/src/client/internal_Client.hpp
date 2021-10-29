@@ -39,16 +39,16 @@ namespace free_fleet {
 
 //==============================================================================
 class Client::Implementation
+: public std::enable_shared_from_this<Client::Implementation>
 {
 public:
 
   Implementation()
   {}
 
-  Implementation(const Implementation&)
-  {
-    // This is only used during the construction of the implementation class.
-  }
+  Implementation(const Implementation& impl)
+  : std::enable_shared_from_this<Implementation>(impl)
+  {}
 
   ~Implementation()
   {
@@ -107,7 +107,7 @@ public:
 
   std::shared_ptr<client::CommandHandle> command_handle;
   std::shared_ptr<client::StatusHandle> status_handle;
-  std::unique_ptr<transport::ClientMiddleware> middleware;
+  std::shared_ptr<transport::ClientMiddleware> middleware;
 
   std::optional<CommandId> command_id = std::nullopt;
   CommandId last_command_id = 0;

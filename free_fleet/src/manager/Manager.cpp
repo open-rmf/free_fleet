@@ -141,7 +141,8 @@ auto Manager::make(
   std::shared_ptr<Manager> manager_ptr(new Manager);
   manager_ptr->_pimpl->fleet_name = fleet_name;
   manager_ptr->_pimpl->graph = std::move(graph);
-  manager_ptr->_pimpl->middleware = std::move(middleware);
+  manager_ptr->_pimpl->middleware =
+    std::shared_ptr<transport::ServerMiddleware>(middleware.release());
   manager_ptr->_pimpl->to_robot_transform = std::move(to_robot_transform);
   manager_ptr->_pimpl->time_now_fn = std::move(time_now_fn);
   manager_ptr->_pimpl->robot_updated_callback_fn =
@@ -217,9 +218,9 @@ auto Manager::request_pause(const std::string& robot_name)
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::PauseRequest>(
       request,
-      [this](const messages::PauseRequest& request_msg)
+      [m = _pimpl->middleware](const messages::PauseRequest& request_msg)
       {
-        this->_pimpl->middleware->send_pause_request(request_msg);
+        m->send_pause_request(request_msg);
       },
       _pimpl->time_now_fn));
 
@@ -243,9 +244,9 @@ auto Manager::request_resume(const std::string& robot_name)
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::ResumeRequest>(
       request,
-      [this](const messages::ResumeRequest& request_msg)
+      [m = _pimpl->middleware](const messages::ResumeRequest& request_msg)
       {
-        this->_pimpl->middleware->send_resume_request(request_msg);
+          m->send_resume_request(request_msg);
       },
       _pimpl->time_now_fn));
 
@@ -273,9 +274,9 @@ auto Manager::request_dock(
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::DockRequest>(
       request,
-      [this](const messages::DockRequest& request_msg)
+      [m = _pimpl->middleware](const messages::DockRequest& request_msg)
       {
-        this->_pimpl->middleware->send_dock_request(request_msg);
+        m->send_dock_request(request_msg);
       },
       _pimpl->time_now_fn));
 
@@ -329,9 +330,10 @@ auto Manager::request_relocalization(
     new manager::SimpleRequestInfo<
       messages::RelocalizationRequest>(
       request,
-      [this](const messages::RelocalizationRequest& request_msg)
+      [m = _pimpl->middleware]
+      (const messages::RelocalizationRequest& request_msg)
       {
-        this->_pimpl->middleware->send_relocalization_request(request_msg);
+        m->send_relocalization_request(request_msg);
       },
       _pimpl->time_now_fn));
 
@@ -418,9 +420,9 @@ auto Manager::request_navigation(
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::NavigationRequest>(
       request,
-      [this](const messages::NavigationRequest& request_msg)
+      [m = _pimpl->middleware](const messages::NavigationRequest& request_msg)
       {
-        this->_pimpl->middleware->send_navigation_request(request_msg);
+        m->send_navigation_request(request_msg);
       },
       _pimpl->time_now_fn));
 

@@ -76,7 +76,13 @@ void Client::Implementation::handle_pause_request(
   command_id = request.command_id();
   command_ids.insert(command_id.value());
   command_handle->stop(
-    [this]() {complete_command();});
+    [w = weak_from_this()]()
+    {
+      if (auto c = w.lock())
+      {
+        c->complete_command();
+      }
+    });
 }
 
 //==============================================================================
@@ -88,7 +94,13 @@ void Client::Implementation::handle_resume_request(
   command_id = request.command_id();
   command_ids.insert(command_id.value());
   command_handle->resume(
-    [this]() {complete_command();});
+    [w = weak_from_this()]()
+    {
+      if (auto c = w.lock())
+      {
+        c->complete_command();
+      }
+    });
 }
 
 //==============================================================================
@@ -101,7 +113,13 @@ void Client::Implementation::handle_dock_request(
   command_ids.insert(command_id.value());
   command_handle->dock(
     request.dock_name(),
-    [this]() {complete_command();});
+    [w = weak_from_this()]()
+    {
+      if (auto c = w.lock())
+      {
+        c->complete_command();
+      }
+    });
 }
 
 //==============================================================================
@@ -114,7 +132,13 @@ void Client::Implementation::handle_navigation_request(
   command_ids.insert(command_id.value());
   command_handle->follow_new_path(
     request.path(),
-    [this]() {complete_command();});
+    [w = weak_from_this()]()
+    {
+      if (auto c = w.lock())
+      {
+        c->complete_command();
+      }
+    });
 }
 
 //==============================================================================
@@ -127,7 +151,13 @@ void Client::Implementation::handle_relocalization_request(
   command_ids.insert(command_id.value());
   command_handle->relocalize(
     request.location(),
-    [this]() {complete_command();});
+    [w = weak_from_this()]()
+    {
+      if (auto c = w.lock())
+      {
+        c->complete_command();
+      }
+    });
 }
 
 //==============================================================================
@@ -162,7 +192,8 @@ auto Client::make(
   new_client->_pimpl->robot_model = robot_model;
   new_client->_pimpl->command_handle = std::move(command_handle);
   new_client->_pimpl->status_handle = std::move(status_handle);
-  new_client->_pimpl->middleware = std::move(middleware);
+  new_client->_pimpl->middleware =
+    std::shared_ptr<transport::ClientMiddleware>(middleware.release());
   new_client->_pimpl->set_callbacks();
   return new_client;
 }
