@@ -71,10 +71,10 @@ public:
 
   std::unordered_map<std::string, std::shared_ptr<manager::RobotInfo>> robots;
 
-  TaskId current_task_id = 0;
-  std::unordered_map<TaskId, std::shared_ptr<manager::RequestInfo>> tasks;
-  std::unordered_map<TaskId, std::shared_ptr<manager::RequestInfo>>
-  unacknowledged_tasks;
+  CommandId current_command_id = 0;
+  std::unordered_map<CommandId, std::shared_ptr<manager::RequestInfo>> commands;
+  std::unordered_map<CommandId, std::shared_ptr<manager::RequestInfo>>
+  unacknowledged_commands;
 
   std::atomic<bool> stopped = true;
   std::mutex mutex;

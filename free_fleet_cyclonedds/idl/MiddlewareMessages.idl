@@ -48,33 +48,33 @@ module MiddlewareMessages
   struct PauseRequest
   {
     string robot_name;
-    unsigned long task_id;
+    unsigned long command_id;
   };
 
   struct ResumeRequest
   {
     string robot_name;
-    unsigned long task_id;
+    unsigned long command_id;
   };
 
   struct DockRequest
   {
     string robot_name;
-    unsigned long task_id;
+    unsigned long command_id;
     string dock_name;
   };
 
   struct NavigationRequest
   {
     string robot_name;
-    unsigned long task_id;
+    unsigned long command_id;
     sequence<Waypoint> path;
   };
 
   struct RelocalizationRequest
   {
     string robot_name;
-    unsigned long task_id;
+    unsigned long command_id;
     Location location;
     unsigned long last_visited_waypoint_index;
   };
@@ -85,8 +85,8 @@ module MiddlewareMessages
     string name;
     string model;
 
-    boolean task_id_available;
-    unsigned long task_id;
+    boolean command_id_available;
+    unsigned long command_id;
 
     RobotMode mode;
     double battery_percent;

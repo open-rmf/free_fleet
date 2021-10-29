@@ -39,8 +39,8 @@ public:
   ///   The name of the robot this request is targeting. A std::invalid_argument
   ///   will be thrown if this is empty.
   ///
-  /// \param[in] task_id
-  ///   The task id associated with this request.
+  /// \param[in] command_id
+  ///   The command id associated with this request.
   ///
   /// \param[in] location
   ///   The desired location for the robot to be relocalized to.
@@ -50,15 +50,15 @@ public:
   ///   robot.
   RelocalizationRequest(
     const std::string& robot_name,
-    TaskId task_id,
+    CommandId command_id,
     const Location& location,
     std::size_t last_visited_waypoint_index);
 
   /// Gets the robot name.
   const std::string& robot_name() const;
 
-  /// Gets the task id for this request.
-  TaskId task_id() const;
+  /// Gets the command id for this request.
+  CommandId command_id() const;
 
   /// Gets the desired relocalization location.
   const Location& location() const;

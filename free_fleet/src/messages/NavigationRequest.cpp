@@ -28,7 +28,7 @@ public:
 
   std::string robot_name;
 
-  TaskId task_id;
+  CommandId command_id;
 
   std::vector<Waypoint> path;
 };
@@ -36,7 +36,7 @@ public:
 //==============================================================================
 NavigationRequest::NavigationRequest(
   const std::string& robot_name,
-  TaskId task_id,
+  CommandId command_id,
   std::vector<Waypoint> path)
 {
   std::string error_message;
@@ -52,7 +52,7 @@ NavigationRequest::NavigationRequest(
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
         robot_name,
-        task_id,
+        command_id,
         std::move(path)});
 }
 
@@ -63,9 +63,9 @@ const std::string& NavigationRequest::robot_name() const
 }
 
 //==============================================================================
-TaskId NavigationRequest::task_id() const
+CommandId NavigationRequest::command_id() const
 {
-  return _pimpl->task_id;
+  return _pimpl->command_id;
 }
 
 //==============================================================================
@@ -78,7 +78,7 @@ const std::vector<Waypoint>& NavigationRequest::path() const
 bool operator==(const NavigationRequest& lhs, const NavigationRequest& rhs)
 {
   if (lhs.robot_name() == rhs.robot_name() &&
-    lhs.task_id() == rhs.task_id() &&
+    lhs.command_id() == rhs.command_id() &&
     lhs.path().size() == rhs.path().size())
   {
     for (std::size_t i = 0; i < lhs.path().size(); ++i)

@@ -38,7 +38,7 @@ SCENARIO("Testing request info API")
   using RequestInfo = free_fleet::manager::RequestInfo;
 
   const std::string robot_name = "test_robot";
-  const free_fleet::TaskId initial_task_id = 0;
+  const free_fleet::CommandId initial_command_id = 0;
   auto time_now = std::chrono::steady_clock::now();
 
   GIVEN("Dock request info")
@@ -47,7 +47,7 @@ SCENARIO("Testing request info API")
 
     DockRequest request(
       robot_name,
-      initial_task_id + 1,
+      initial_command_id + 1,
       "mock_dock");
 
     bool request_sent = false;
@@ -60,7 +60,7 @@ SCENARIO("Testing request info API")
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
-    CHECK(request_info->id() == initial_task_id + 1);
+    CHECK(request_info->id() == initial_command_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
@@ -79,7 +79,7 @@ SCENARIO("Testing request info API")
 
     PauseRequest request(
       robot_name,
-      initial_task_id + 1);
+      initial_command_id + 1);
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
@@ -91,7 +91,7 @@ SCENARIO("Testing request info API")
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
-    CHECK(request_info->id() == initial_task_id + 1);
+    CHECK(request_info->id() == initial_command_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
@@ -110,7 +110,7 @@ SCENARIO("Testing request info API")
 
     ResumeRequest request(
       robot_name,
-      initial_task_id + 1);
+      initial_command_id + 1);
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
@@ -122,7 +122,7 @@ SCENARIO("Testing request info API")
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
-    CHECK(request_info->id() == initial_task_id + 1);
+    CHECK(request_info->id() == initial_command_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
@@ -145,7 +145,7 @@ SCENARIO("Testing request info API")
       0.0);
     RelocalizationRequest request(
       robot_name,
-      initial_task_id + 1,
+      initial_command_id + 1,
       reloc_loc,
       0);
 
@@ -159,7 +159,7 @@ SCENARIO("Testing request info API")
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
-    CHECK(request_info->id() == initial_task_id + 1);
+    CHECK(request_info->id() == initial_command_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 
@@ -185,7 +185,7 @@ SCENARIO("Testing request info API")
 
     NavigationRequest request(
       robot_name,
-      initial_task_id + 1,
+      initial_command_id + 1,
       {first_wp, second_wp, third_wp, forth_wp});
 
     bool request_sent = false;
@@ -198,7 +198,7 @@ SCENARIO("Testing request info API")
     REQUIRE(request_info);
     CHECK(request_info->init_time() >= time_now);
     CHECK(!request_info->acknowledged().has_value());
-    CHECK(request_info->id() == initial_task_id + 1);
+    CHECK(request_info->id() == initial_command_id + 1);
     CHECK_NOTHROW(request_info->send_request());
     CHECK(request_sent);
 

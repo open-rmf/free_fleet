@@ -165,7 +165,7 @@ std::optional<MiddlewareMessages_PauseRequest> convert(
   if (!output.robot_name)
     return convert_error("PauseRequest::robot_name must not be null.");
 
-  output.task_id = static_cast<uint32_t>(input.task_id());
+  output.command_id = static_cast<uint32_t>(input.command_id());
   return output;
 }
 
@@ -179,7 +179,7 @@ std::optional<MiddlewareMessages_ResumeRequest> convert(
   if (!output.robot_name)
     return convert_error("ResumeRequest::robot_name must not be null.");
 
-  output.task_id = static_cast<uint32_t>(input.task_id());
+  output.command_id = static_cast<uint32_t>(input.command_id());
   return output;
 }
 
@@ -193,7 +193,7 @@ std::optional<MiddlewareMessages_DockRequest> convert(
   if (!output.robot_name)
     return convert_error("DockRequest::robot_name must not be null.");
 
-  output.task_id = static_cast<uint32_t>(input.task_id());
+  output.command_id = static_cast<uint32_t>(input.command_id());
   output.dock_name = dds_string_alloc_and_copy(input.dock_name());
 
   if (!output.dock_name)
@@ -212,7 +212,7 @@ std::optional<MiddlewareMessages_NavigationRequest> convert(
   if (!output.robot_name)
     return convert_error("NavigationRequest::robot_name must not be null.");
 
-  output.task_id = static_cast<uint32_t>(input.task_id());
+  output.command_id = static_cast<uint32_t>(input.command_id());
 
   const std::size_t path_elem_num = input.path().size();
   output.path._maximum = static_cast<uint32_t>(path_elem_num);
@@ -248,7 +248,7 @@ std::optional<MiddlewareMessages_RelocalizationRequest> convert(
   if (!output.robot_name)
     return convert_error("RelocalizationRequest::robot_name must not be null.");
 
-  output.task_id = static_cast<uint32_t>(input.task_id());
+  output.command_id = static_cast<uint32_t>(input.command_id());
 
   auto loc = convert(input.location());
   if (!loc.has_value())
@@ -279,11 +279,11 @@ std::optional<MiddlewareMessages_RobotState> convert(
   if (!output.model)
     return convert_error("RobotState::model must not be null.");
 
-  output.task_id_available = false;
-  if (input.task_id().has_value())
+  output.command_id_available = false;
+  if (input.command_id().has_value())
   {
-    output.task_id_available = true;
-    output.task_id = static_cast<uint32_t>(input.task_id().value());
+    output.command_id_available = true;
+    output.command_id = static_cast<uint32_t>(input.command_id().value());
   }
 
   auto mode = convert(input.mode());
@@ -422,7 +422,7 @@ std::optional<messages::PauseRequest> convert(
 
   return messages::PauseRequest(
     std::string(input.robot_name),
-    static_cast<TaskId>(input.task_id));
+    static_cast<CommandId>(input.command_id));
 }
 
 //==============================================================================
@@ -434,7 +434,7 @@ std::optional<messages::ResumeRequest> convert(
 
   return messages::ResumeRequest(
     std::string(input.robot_name),
-    static_cast<TaskId>(input.task_id));
+    static_cast<CommandId>(input.command_id));
 }
 
 //==============================================================================
@@ -449,7 +449,7 @@ std::optional<messages::DockRequest> convert(
 
   return messages::DockRequest(
     std::string(input.robot_name),
-    static_cast<TaskId>(input.task_id),
+    static_cast<CommandId>(input.command_id),
     std::string(input.dock_name));
 }
 
@@ -476,7 +476,7 @@ std::optional<messages::NavigationRequest> convert(
 
   return messages::NavigationRequest(
     std::string(input.robot_name),
-    static_cast<TaskId>(input.task_id),
+    static_cast<CommandId>(input.command_id),
     std::move(path));
 }
 
@@ -493,7 +493,7 @@ std::optional<messages::RelocalizationRequest> convert(
 
   return messages::RelocalizationRequest(
     std::string(input.robot_name),
-    static_cast<TaskId>(input.task_id),
+    static_cast<CommandId>(input.command_id),
     loc.value(),
     static_cast<std::size_t>(input.last_visited_waypoint_index));
 }
@@ -520,15 +520,15 @@ std::optional<messages::RobotState> convert(
   if (!loc.has_value())
     return convert_error("failed to convert RobotState::location.");
 
-  std::optional<TaskId> task_id = std::nullopt;
-  if (input.task_id_available)
-    task_id = static_cast<TaskId>(input.task_id);
+  std::optional<CommandId> command_id = std::nullopt;
+  if (input.command_id_available)
+    command_id = static_cast<CommandId>(input.command_id);
 
   return messages::RobotState(
     time.value(),
     std::string(input.name),
     std::string(input.model),
-    task_id,
+    command_id,
     mode.value(),
     input.battery_percent,
     loc.value(),

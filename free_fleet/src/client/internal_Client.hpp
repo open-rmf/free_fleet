@@ -75,11 +75,11 @@ public:
       return false;
 
     // TODO(AA): Consider if there is the chance that this client idles for more
-    // than 2 billion task ids, and suddenly gets a clashing id that has
-    // overflowed and is slightly lower than the last task id.
-    const auto it = task_ids.find(request.task_id());
-    if (it == task_ids.end() ||
-      rmf_utils::Modular(last_task_id).less_than(request.task_id()))
+    // than 2 billion command ids, and suddenly gets a clashing id that has
+    // overflowed and is slightly lower than the last command id.
+    const auto it = command_ids.find(request.command_id());
+    if (it == command_ids.end() ||
+      rmf_utils::Modular(last_command_id).less_than(request.command_id()))
     {
       return true;
     }
@@ -87,7 +87,7 @@ public:
     return false;
   }
 
-  void complete_task();
+  void complete_command();
 
   void run_once();
 
@@ -109,9 +109,9 @@ public:
   std::shared_ptr<client::StatusHandle> status_handle;
   std::unique_ptr<transport::ClientMiddleware> middleware;
 
-  std::optional<TaskId> task_id = std::nullopt;
-  TaskId last_task_id = 0;
-  std::unordered_set<uint32_t> task_ids;
+  std::optional<CommandId> command_id = std::nullopt;
+  CommandId last_command_id = 0;
+  std::unordered_set<uint32_t> command_ids;
 
   std::atomic<bool> started = false;
   std::thread async_thread;

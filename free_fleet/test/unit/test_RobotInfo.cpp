@@ -133,7 +133,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      initial_state.task_id(),
+      initial_state.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       next_location,
@@ -164,7 +164,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      initial_state.task_id(),
+      initial_state.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       next_location,
@@ -194,7 +194,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      initial_state.task_id(),
+      initial_state.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       next_location,
@@ -223,7 +223,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      initial_state.task_id(),
+      initial_state.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       next_location,
@@ -253,7 +253,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      initial_state.task_id(),
+      initial_state.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       next_location,
@@ -282,7 +282,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      initial_state.task_id(),
+      initial_state.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       second_loc,
@@ -307,7 +307,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      initial_state.task_id(),
+      initial_state.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       third_loc,
@@ -331,10 +331,10 @@ SCENARIO("Tests RobotInfo API")
     using RequestInfo = free_fleet::manager::RequestInfo;
     using DockRequest = free_fleet::messages::DockRequest;
 
-    REQUIRE(initial_state.task_id().has_value());
+    REQUIRE(initial_state.command_id().has_value());
     DockRequest request(
       initial_state.name(),
-      initial_state.task_id().value() + 1,
+      initial_state.command_id().value() + 1,
       "mock_dock");
 
     bool request_sent = false;
@@ -347,7 +347,7 @@ SCENARIO("Tests RobotInfo API")
 
     CHECK_NOTHROW(
       free_fleet::manager::RobotInfo::Implementation::get(
-        *robot_info).allocate_task(request_info));
+        *robot_info).allocate_request(request_info));
   }
 
   GIVEN("Allocated pause request")
@@ -355,10 +355,10 @@ SCENARIO("Tests RobotInfo API")
     using RequestInfo = free_fleet::manager::RequestInfo;
     using PauseRequest = free_fleet::messages::PauseRequest;
 
-    REQUIRE(initial_state.task_id().has_value());
+    REQUIRE(initial_state.command_id().has_value());
     PauseRequest request(
       initial_state.name(),
-      initial_state.task_id().value() + 1);
+      initial_state.command_id().value() + 1);
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
@@ -370,7 +370,7 @@ SCENARIO("Tests RobotInfo API")
 
     CHECK_NOTHROW(
       free_fleet::manager::RobotInfo::Implementation::get(
-        *robot_info).allocate_task(request_info));
+        *robot_info).allocate_request(request_info));
   }
 
   GIVEN("Allocated resume request")
@@ -378,10 +378,10 @@ SCENARIO("Tests RobotInfo API")
     using RequestInfo = free_fleet::manager::RequestInfo;
     using ResumeRequest = free_fleet::messages::ResumeRequest;
 
-    REQUIRE(initial_state.task_id().has_value());
+    REQUIRE(initial_state.command_id().has_value());
     ResumeRequest request(
       initial_state.name(),
-      initial_state.task_id().value() + 1);
+      initial_state.command_id().value() + 1);
 
     bool request_sent = false;
     std::shared_ptr<RequestInfo> request_info(
@@ -393,7 +393,7 @@ SCENARIO("Tests RobotInfo API")
 
     CHECK_NOTHROW(
       free_fleet::manager::RobotInfo::Implementation::get(
-        *robot_info).allocate_task(request_info));
+        *robot_info).allocate_request(request_info));
   }
 
   GIVEN("Allocated relocation request")
@@ -405,10 +405,10 @@ SCENARIO("Tests RobotInfo API")
       test_map_name,
       {10.0 + 0.5 - 1e-3, 0.0},
       0.0);
-    REQUIRE(initial_state.task_id().has_value());
+    REQUIRE(initial_state.command_id().has_value());
     RelocalizationRequest request(
       initial_state.name(),
-      initial_state.task_id().value() + 1,
+      initial_state.command_id().value() + 1,
       reloc_loc,
       3);
 
@@ -422,7 +422,7 @@ SCENARIO("Tests RobotInfo API")
 
     CHECK_NOTHROW(
       free_fleet::manager::RobotInfo::Implementation::get(
-        *robot_info).allocate_task(request_info));
+        *robot_info).allocate_request(request_info));
   }
 
   GIVEN("Allocated navigation request")
@@ -437,10 +437,10 @@ SCENARIO("Tests RobotInfo API")
     Waypoint third_wp(0, Location(test_map_name, {0.0, 0.0}, 0.0));
     Waypoint forth_wp(3, Location(test_map_name, {0.0, 10.0}, 0.0));
 
-    REQUIRE(initial_state.task_id().has_value());
+    REQUIRE(initial_state.command_id().has_value());
     NavigationRequest request(
       initial_state.name(),
-      initial_state.task_id().value() + 1,
+      initial_state.command_id().value() + 1,
       {first_wp, second_wp, third_wp, forth_wp});
 
     bool request_sent = false;
@@ -453,7 +453,7 @@ SCENARIO("Tests RobotInfo API")
 
     CHECK_NOTHROW(
       free_fleet::manager::RobotInfo::Implementation::get(
-        *robot_info).allocate_task(request_info));
+        *robot_info).allocate_request(request_info));
   }
 
   GIVEN(
@@ -470,10 +470,10 @@ SCENARIO("Tests RobotInfo API")
     Waypoint third_wp(0, Location(test_map_name, {0.0, 0.0}, 0.0));
     Waypoint forth_wp(3, Location(test_map_name, {0.0, 10.0}, 0.0));
 
-    REQUIRE(initial_state.task_id().has_value());
+    REQUIRE(initial_state.command_id().has_value());
     NavigationRequest request(
       initial_state.name(),
-      initial_state.task_id().value() + 1,
+      initial_state.command_id().value() + 1,
       {first_wp, second_wp, third_wp, forth_wp});
 
     bool request_sent = false;
@@ -486,14 +486,14 @@ SCENARIO("Tests RobotInfo API")
 
     CHECK_NOTHROW(
       free_fleet::manager::RobotInfo::Implementation::get(
-        *robot_info).allocate_task(request_info));
+        *robot_info).allocate_request(request_info));
 
     // Second state, starting on the path
     RobotState second_state(
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {0.0, 0.0}, 0.0),
@@ -509,7 +509,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {0.0 + 0.5 + 1e-3, 0.0}, 0.0),
@@ -525,7 +525,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {10.0 - 0.5 - 1e-3, 0.0}, 0.0),
@@ -541,7 +541,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {10.0 - 0.5 + 1e-3, 1e-3}, 0.0),
@@ -557,7 +557,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {10.0, 0.5 - 1e-3}, 0.0),
@@ -574,7 +574,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {10.0, 0.5 + 1e-3}, 0.0),
@@ -590,7 +590,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {10.0, 0.5 - 1e-3}, 0.0),
@@ -606,7 +606,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {10.0 - 0.5 - 1e-3, 0.0}, 0.0),
@@ -622,7 +622,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {0.5 - 1e-3, 0.0}, 0.0),
@@ -638,7 +638,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {0.0, 0.5 + 1e-3}, 0.0),
@@ -654,7 +654,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {0.0, 10.0 - 0.5 + 1e-3}, 0.0),
@@ -670,7 +670,7 @@ SCENARIO("Tests RobotInfo API")
       std::chrono::steady_clock::now(),
       initial_state.name(),
       initial_state.model(),
-      request.task_id(),
+      request.command_id(),
       initial_state.mode(),
       initial_state.battery_percent(),
       Location(test_map_name, {0.0, 10.0}, 0.0),
@@ -681,7 +681,7 @@ SCENARIO("Tests RobotInfo API")
       TrackingState::OnWaypoint,
       3);
 
-    // Forteenth state, task done, on waypoint
+    // Forteenth state, command done, on waypoint
     RobotState forteenth_state(
       std::chrono::steady_clock::now(),
       initial_state.name(),
@@ -697,7 +697,7 @@ SCENARIO("Tests RobotInfo API")
       TrackingState::OnWaypoint,
       3);
 
-    // Fifteenth state, task done, lost
+    // Fifteenth state, command done, lost
     RobotState fifteenth_state(
       std::chrono::steady_clock::now(),
       initial_state.name(),
@@ -713,7 +713,7 @@ SCENARIO("Tests RobotInfo API")
       TrackingState::Lost,
       0);
 
-    // Sixteenth state, task done, back on waypoint
+    // Sixteenth state, command done, back on waypoint
     RobotState sixteenth_state(
       std::chrono::steady_clock::now(),
       initial_state.name(),

@@ -28,7 +28,7 @@ public:
 
   std::string robot_name;
 
-  TaskId task_id;
+  CommandId command_id;
 
   std::string dock_name;
 };
@@ -36,7 +36,7 @@ public:
 //==============================================================================
 DockRequest::DockRequest(
   const std::string& robot_name,
-  TaskId task_id,
+  CommandId command_id,
   const std::string& dock_name)
 {
   std::string error_message;
@@ -52,7 +52,7 @@ DockRequest::DockRequest(
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
         robot_name,
-        task_id,
+        command_id,
         dock_name});
 }
 
@@ -63,9 +63,9 @@ const std::string& DockRequest::robot_name() const
 }
 
 //==============================================================================
-TaskId DockRequest::task_id() const
+CommandId DockRequest::command_id() const
 {
-  return _pimpl->task_id;
+  return _pimpl->command_id;
 }
 
 //==============================================================================
@@ -78,7 +78,7 @@ const std::string& DockRequest::dock_name() const
 bool operator==(const DockRequest& lhs, const DockRequest& rhs)
 {
   if (lhs.robot_name() == rhs.robot_name() &&
-    lhs.task_id() == rhs.task_id() &&
+    lhs.command_id() == rhs.command_id() &&
     lhs.dock_name() == rhs.dock_name())
     return true;
   return false;

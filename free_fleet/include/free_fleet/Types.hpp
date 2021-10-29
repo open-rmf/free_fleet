@@ -22,12 +22,12 @@
 
 namespace free_fleet {
 
-/// Task Ids are represented by an unsigned 32-bit integer. This means that the
-/// manager and clients can identify over 4 billion tasks, which will most
-/// likely be more than each server or robot can store.
+/// Commnad Ids are represented by an unsigned 32-bit integer. This means that
+/// the manager and clients can identify over 4 billion commands, which will
+/// most likely be more than each server or robot can store.
 ///
-/// TODO(AA): Handle task culling or exporting in both manager and client.
-using TaskId = uint32_t;
+/// TODO(AA): Handle command culling or exporting in both manager and client.
+using CommandId = uint32_t;
 
 } // namespace free_fleet
 

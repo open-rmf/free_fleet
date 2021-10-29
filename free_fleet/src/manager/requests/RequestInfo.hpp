@@ -42,8 +42,8 @@ public:
   ///   acknowledged, a nullopt is returned.
   virtual std::optional<rmf_traffic::Time> acknowledged() const = 0;
 
-  /// Gets the task ID of this request.
-  virtual TaskId id() const = 0;
+  /// Gets command ID of this request.
+  virtual CommandId id() const = 0;
 
   /// Sends out this request.
   virtual void send_request() const = 0;

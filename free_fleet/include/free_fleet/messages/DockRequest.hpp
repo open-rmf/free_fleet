@@ -38,21 +38,21 @@ public:
   ///   The name of the robot this request is targeting. A std::invalid_argument
   ///   will be thrown if this is empty.
   ///
-  /// \param[in] task_id
-  ///   The task id associated with this request.
+  /// \param[in] command_id
+  ///   The command id associated with this request.
   ///
   /// \param[in] dock_name
   ///   The name of the desired docking station.
   DockRequest(
     const std::string& robot_name,
-    TaskId task_id,
+    CommandId command_id,
     const std::string& dock_name);
 
   /// Gets the robot name.
   const std::string& robot_name() const;
 
-  /// Gets the task id for this request.
-  TaskId task_id() const;
+  /// Gets the command id for this request.
+  CommandId command_id() const;
 
   /// Gets the name of the docking station.
   const std::string& dock_name() const;

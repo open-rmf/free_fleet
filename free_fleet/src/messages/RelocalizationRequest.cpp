@@ -28,7 +28,7 @@ public:
 
   std::string robot_name;
 
-  TaskId task_id;
+  CommandId command_id;
 
   Location location;
 
@@ -38,7 +38,7 @@ public:
 //==============================================================================
 RelocalizationRequest::RelocalizationRequest(
   const std::string& robot_name,
-  TaskId task_id,
+  CommandId command_id,
   const Location& location,
   std::size_t last_visited_waypoint_index)
 {
@@ -55,7 +55,7 @@ RelocalizationRequest::RelocalizationRequest(
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
         robot_name,
-        task_id,
+        command_id,
         location,
         last_visited_waypoint_index});
 }
@@ -67,9 +67,9 @@ const std::string& RelocalizationRequest::robot_name() const
 }
 
 //==============================================================================
-TaskId RelocalizationRequest::task_id() const
+CommandId RelocalizationRequest::command_id() const
 {
-  return _pimpl->task_id;
+  return _pimpl->command_id;
 }
 
 //==============================================================================
@@ -90,7 +90,7 @@ bool operator==(
   const RelocalizationRequest& rhs)
 {
   if (lhs.robot_name() == rhs.robot_name() &&
-    lhs.task_id() == rhs.task_id() &&
+    lhs.command_id() == rhs.command_id() &&
     lhs.location() == rhs.location() &&
     lhs.last_visited_waypoint_index() == rhs.last_visited_waypoint_index())
     return true;

@@ -67,7 +67,7 @@ public:
   /// Have the robot come to an immediate stop.
   virtual void stop(RequestCompleted stopped_callback) = 0;
 
-  /// Have the robot resume performing its task before it was stopped.
+  /// Have the robot resume following its command before it was stopped.
   virtual void resume(RequestCompleted resumed_callback) = 0;
 
   /// Have the robot begin a pre-defined docking procedure. Implement this

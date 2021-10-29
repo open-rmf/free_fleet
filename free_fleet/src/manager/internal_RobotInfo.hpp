@@ -89,12 +89,11 @@ public:
     const messages::RobotState& new_state,
     rmf_traffic::Time time_now);
 
-  /// Allocates this task to this robot.
+  /// Allocate the provided request to this robot.
   ///
   /// \param[in] new_request_info
   ///   Pointer to a request.
-  void allocate_task(
-    const std::shared_ptr<RequestInfo>& new_request_info);
+  void allocate_request(const std::shared_ptr<RequestInfo>& new_request_info);
 
   /// Gets the tracking estimation purely based on the incoming new state as
   /// well as it's previous tracking estimation.

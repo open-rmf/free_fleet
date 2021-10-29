@@ -27,7 +27,7 @@ namespace free_fleet {
 namespace manager {
 
 //==============================================================================
-void RobotInfo::Implementation::allocate_task(
+void RobotInfo::Implementation::allocate_request(
   const std::shared_ptr<RequestInfo>& new_request_info)
 {
   bool request_registered = allocated_requests.insert({
@@ -35,7 +35,7 @@ void RobotInfo::Implementation::allocate_task(
         new_request_info}).second;
   if (!request_registered)
   {
-    ffwarn << "Attempted to allocate new task with existing task ID ["
+    ffwarn << "Attempted to allocate new request with existing command ID ["
            << new_request_info->id() << "], ignoring.\n";
   }
 }
@@ -49,29 +49,30 @@ void RobotInfo::Implementation::update_state(
   if (robot_info.name() != new_state.name())
     return;
 
-  const std::optional<uint32_t> task_id = new_state.task_id();
+  const std::optional<CommandId> command_id = new_state.command_id();
   auto it = robot_info._pimpl->allocated_requests.end();
   std::pair<TrackingState, std::size_t> new_tracking_estimate;
 
-  // Robot is not doing any task at the moment.
-  if (!task_id.has_value())
+  // Robot is not following any commands at the moment.
+  if (!command_id.has_value())
   {
     new_tracking_estimate =
       robot_info._pimpl->track_through_graph(new_state);
   }
   // Use the implemented track_robot function of each request type to get new
   // tracking estimates.
-  else if ((it = robot_info._pimpl->allocated_requests.find(task_id.value()))
+  else if ((it = robot_info._pimpl->allocated_requests.find(command_id.value()))
     != robot_info._pimpl->allocated_requests.end())
   {
     assert(it->second);
     auto request = it->second;
     new_tracking_estimate = request->track_robot(robot_info, new_state);
   }
-  // No such task exists
+  // No such command exists
   else
   {
-    ffwarn << "Robot [" << robot_info.name() << "] task ID [" << task_id.value()
+    ffwarn << "Robot [" << robot_info.name() << "] command ID ["
+           << command_id.value()
            << "] was not allocated through this manager instance.\n";
 
     new_tracking_estimate = robot_info._pimpl->track_through_graph(new_state);
@@ -103,7 +104,7 @@ auto RobotInfo::Implementation::track_through_graph(
     return std::make_pair(
       RobotInfo::TrackingState::OnWaypoint, nearest_wp.first->index());
 
-  ffwarn << "Robot [" << name << "] has no task and "
+  ffwarn << "Robot [" << name << "] has no command and "
     "is far away from any waypoints, it has diverged from the navigation graph "
     "and is LOST.\n";
   return std::make_pair(RobotInfo::TrackingState::Lost, tracking_index);

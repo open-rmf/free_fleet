@@ -57,9 +57,9 @@ public:
     return _acknowledged_time;
   }
 
-  TaskId id() const override
+  CommandId id() const override
   {
-    return _request.task_id();
+    return _request.command_id();
   }
 
   void send_request() const override

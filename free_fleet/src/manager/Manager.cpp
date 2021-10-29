@@ -54,13 +54,13 @@ void Manager::Implementation::handle_robot_state(
   std::lock_guard<std::mutex> lock(mutex);
 
   const std::string robot_name = state.name();
-  const auto task_id = state.task_id();
+  const auto command_id = state.command_id();
 
   messages::RobotState transformed_state(
     state.time(),
     robot_name,
     state.model(),
-    task_id,
+    command_id,
     state.mode(),
     state.battery_percent(),
     to_robot_transform->backward_transform(state.location()),
@@ -98,14 +98,14 @@ void Manager::Implementation::handle_robot_state(
   if (r_it != robots.end() && robot_updated_callback_fn)
     robot_updated_callback_fn(*r_it->second);
 
-  // for each robot figure out whether any tasks were not received yet
-  if (task_id.has_value())
+  // for each robot figure out whether any commands were not received yet
+  if (command_id.has_value())
   {
-    const auto t_it = unacknowledged_tasks.find(task_id.value());
-    if (t_it != unacknowledged_tasks.end())
+    const auto t_it = unacknowledged_commands.find(command_id.value());
+    if (t_it != unacknowledged_commands.end())
     {
       t_it->second->acknowledge_request();
-      unacknowledged_tasks.erase(t_it);
+      unacknowledged_commands.erase(t_it);
     }
   }
 }
@@ -158,8 +158,8 @@ Manager::Manager()
 //==============================================================================
 void Manager::run_once()
 {
-  // Send out all unreceived tasks again
-  for (const auto t_it : _pimpl->unacknowledged_tasks)
+  // Send out all unreceived commands again
+  for (const auto t_it : _pimpl->unacknowledged_commands)
   {
     t_it.second->send_request();
   }
@@ -205,14 +205,14 @@ auto Manager::all_robots()
 
 //==============================================================================
 auto Manager::request_pause(const std::string& robot_name)
--> std::optional<TaskId>
+-> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
     return std::nullopt;
 
-  const TaskId request_task_id = ++_pimpl->current_task_id;
-  messages::PauseRequest request(robot_name, request_task_id);
+  const CommandId request_command_id = ++_pimpl->current_command_id;
+  messages::PauseRequest request(robot_name, request_command_id);
 
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::PauseRequest>(
@@ -223,22 +223,22 @@ auto Manager::request_pause(const std::string& robot_name)
       },
       [this]() {return _pimpl->time_now_fn();}));
 
-  _pimpl->tasks[request_task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
+  _pimpl->commands[request_command_id] = request_info;
+  _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
-  return _pimpl->current_task_id;
+  return _pimpl->current_command_id;
 }
 
 //==============================================================================
 auto Manager::request_resume(const std::string& robot_name)
--> std::optional<TaskId>
+-> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
     return std::nullopt;
 
-  const TaskId request_task_id = ++_pimpl->current_task_id;
-  messages::ResumeRequest request(robot_name, request_task_id);
+  const CommandId request_command_id = ++_pimpl->current_command_id;
+  messages::ResumeRequest request(robot_name, request_command_id);
 
   std::shared_ptr<manager::RequestInfo> request_info(
     new manager::SimpleRequestInfo<messages::ResumeRequest>(
@@ -249,25 +249,25 @@ auto Manager::request_resume(const std::string& robot_name)
       },
       [this]() {return _pimpl->time_now_fn();}));
 
-  _pimpl->tasks[request_task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
+  _pimpl->commands[request_command_id] = request_info;
+  _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
-  return _pimpl->current_task_id;
+  return _pimpl->current_command_id;
 }
 
 //==============================================================================
 auto Manager::request_dock(
   const std::string& robot_name, const std::string& dock_name)
--> std::optional<TaskId>
+-> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
     return std::nullopt;
 
-  const TaskId request_task_id = ++_pimpl->current_task_id;
+  const CommandId request_command_id = ++_pimpl->current_command_id;
   messages::DockRequest request(
     robot_name,
-    request_task_id,
+    request_command_id,
     dock_name);
 
   std::shared_ptr<manager::RequestInfo> request_info(
@@ -279,17 +279,17 @@ auto Manager::request_dock(
       },
       [this]() {return _pimpl->time_now_fn();}));
 
-  _pimpl->tasks[request_task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
+  _pimpl->commands[request_command_id] = request_info;
+  _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
-  return _pimpl->current_task_id;
+  return _pimpl->current_command_id;
 }
 
 //==============================================================================
 auto Manager::request_relocalization(
   const std::string& robot_name,
   const messages::Location& location,
-  std::size_t last_visited_waypoint_index) -> std::optional<TaskId>
+  std::size_t last_visited_waypoint_index) -> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -318,10 +318,10 @@ auto Manager::request_relocalization(
   messages::Location transformed_location =
     _pimpl->to_robot_transform->forward_transform(location);
 
-  const TaskId request_task_id = ++_pimpl->current_task_id;
+  const CommandId request_command_id = ++_pimpl->current_command_id;
   messages::RelocalizationRequest request(
     robot_name,
-    request_task_id,
+    request_command_id,
     transformed_location,
     last_visited_waypoint_index);
 
@@ -335,17 +335,17 @@ auto Manager::request_relocalization(
       },
       [this]() {return _pimpl->time_now_fn();}));
 
-  _pimpl->tasks[request_task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
+  _pimpl->commands[request_command_id] = request_info;
+  _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
-  return _pimpl->current_task_id;
+  return _pimpl->current_command_id;
 }
 
 //==============================================================================
 auto Manager::request_navigation(
   const std::string& robot_name,
   const std::vector<Manager::NavigationPoint>& path)
--> std::optional<TaskId>
+-> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
   if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
@@ -409,10 +409,10 @@ auto Manager::request_navigation(
     }
   }
 
-  const TaskId request_task_id = ++_pimpl->current_task_id;
+  const CommandId request_command_id = ++_pimpl->current_command_id;
   messages::NavigationRequest request(
     robot_name,
-    request_task_id,
+    request_command_id,
     transformed_path);
 
   std::shared_ptr<manager::RequestInfo> request_info(
@@ -424,10 +424,10 @@ auto Manager::request_navigation(
       },
       _pimpl->time_now_fn));
 
-  _pimpl->tasks[request_task_id] = request_info;
-  _pimpl->unacknowledged_tasks[request_task_id] = request_info;
+  _pimpl->commands[request_command_id] = request_info;
+  _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
-  return _pimpl->current_task_id;
+  return _pimpl->current_command_id;
 }
 
 //==============================================================================

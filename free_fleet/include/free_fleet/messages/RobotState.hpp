@@ -49,10 +49,10 @@ public:
   /// \param[in] model
   ///   The model name of this robot.
   ///
-  /// \param[in] task_id
-  ///   The taks id of the task that the robot is currently performing. If the
-  ///   robot has completed its previous task and is idle, this should be a
-  ///   nullopt.
+  /// \param[in] command_id
+  ///   The command id of the command that the robot is currently performing.
+  ///   If the robot has completed its previous command and is idle, this should
+  ///   be a nullopt.
   ///
   /// \param[in] mode
   ///   The current mode of the robot.
@@ -72,7 +72,7 @@ public:
     rmf_traffic::Time time,
     const std::string& name,
     const std::string& model,
-    std::optional<TaskId> task_id,
+    std::optional<CommandId> command_id,
     const RobotMode& mode,
     double battery_percent,
     const Location& location,
@@ -87,9 +87,9 @@ public:
   /// Gets the robot model.
   const std::string& model() const;
 
-  /// Gets the current task id. If the robot has completed its task and is idle,
-  /// returns a nullopt.
-  std::optional<TaskId> task_id() const;
+  /// Gets the current command id. If the robot has completed its command and is
+  /// idle, returns a nullopt.
+  std::optional<CommandId> command_id() const;
 
   /// Gets the robot mode.
   const RobotMode& mode() const;

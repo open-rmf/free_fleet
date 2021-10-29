@@ -28,11 +28,11 @@ public:
 
   std::string robot_name;
 
-  TaskId task_id;
+  CommandId command_id;
 };
 
 //==============================================================================
-PauseRequest::PauseRequest(const std::string& robot_name, TaskId task_id)
+PauseRequest::PauseRequest(const std::string& robot_name, CommandId command_id)
 {
   std::string error_message;
 
@@ -47,7 +47,7 @@ PauseRequest::PauseRequest(const std::string& robot_name, TaskId task_id)
 
   _pimpl = rmf_utils::make_impl<Implementation>(Implementation{
         robot_name,
-        task_id});
+        command_id});
 }
 
 //==============================================================================
@@ -57,16 +57,16 @@ const std::string& PauseRequest::robot_name() const
 }
 
 //==============================================================================
-TaskId PauseRequest::task_id() const
+CommandId PauseRequest::command_id() const
 {
-  return _pimpl->task_id;
+  return _pimpl->command_id;
 }
 
 //==============================================================================
 bool operator==(const PauseRequest& lhs, const PauseRequest& rhs)
 {
   if (lhs.robot_name() == rhs.robot_name() &&
-    lhs.task_id() == rhs.task_id())
+    lhs.command_id() == rhs.command_id())
     return true;
   return false;
 }

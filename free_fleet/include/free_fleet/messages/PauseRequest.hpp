@@ -38,15 +38,15 @@ public:
   ///   The name of the robot this request is targeting. A std::invalid_argument
   ///   will be thrown if this is empty.
   ///
-  /// \param[in] task_id
-  ///   The task id associated with this request.
-  PauseRequest(const std::string& robot_name, TaskId task_id);
+  /// \param[in] command_id
+  ///   The command id associated with this request.
+  PauseRequest(const std::string& robot_name, CommandId command_id);
 
   /// Gets the robot name.
   const std::string& robot_name() const;
 
-  /// Gets the task ID.
-  TaskId task_id() const;
+  /// Gets the command ID.
+  CommandId command_id() const;
 
   class Implementation;
 private:

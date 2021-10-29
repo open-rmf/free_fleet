@@ -32,7 +32,7 @@ public:
 
   std::string model;
 
-  std::optional<TaskId> task_id;
+  std::optional<CommandId> command_id;
 
   RobotMode mode;
 
@@ -48,7 +48,7 @@ RobotState::RobotState(
   rmf_traffic::Time time,
   const std::string& name,
   const std::string& model,
-  std::optional<TaskId> task_id,
+  std::optional<CommandId> command_id,
   const RobotMode& mode,
   double battery_percent,
   const Location& location,
@@ -74,7 +74,7 @@ RobotState::RobotState(
         time,
         name,
         model,
-        std::move(task_id),
+        std::move(command_id),
         mode,
         battery_percent,
         location,
@@ -100,9 +100,9 @@ const std::string& RobotState::model() const
 }
 
 //==============================================================================
-std::optional<TaskId> RobotState::task_id() const
+std::optional<CommandId> RobotState::command_id() const
 {
-  return _pimpl->task_id;
+  return _pimpl->command_id;
 }
 
 //==============================================================================
@@ -135,7 +135,7 @@ bool operator==(const RobotState& lhs, const RobotState& rhs)
   if (lhs.time() == rhs.time() &&
     lhs.name() == rhs.name() &&
     lhs.model() == rhs.model() &&
-    lhs.task_id() == rhs.task_id() &&
+    lhs.command_id() == rhs.command_id() &&
     lhs.mode() == rhs.mode() &&
     abs(lhs.battery_percent() - rhs.battery_percent()) < 1e-3 &&
     lhs.location() == rhs.location() &&

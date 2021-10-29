@@ -153,7 +153,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     auto p_dds = convert(p);
     REQUIRE(p_dds.has_value());
     CHECK(std::string(p_dds->robot_name) == "test_robot");
-    CHECK(p_dds->task_id == 123);
+    CHECK(p_dds->command_id == 123);
 
     auto converted_p = convert(p_dds.value());
     REQUIRE(converted_p.has_value());
@@ -167,7 +167,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     auto r_dds = convert(r);
     REQUIRE(r_dds.has_value());
     CHECK(std::string(r_dds->robot_name) == "test_robot");
-    CHECK(r_dds->task_id == 123);
+    CHECK(r_dds->command_id == 123);
 
     auto converted_r = convert(r_dds.value());
     REQUIRE(converted_r.has_value());
@@ -181,7 +181,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     auto d_dds = convert(d);
     REQUIRE(d_dds.has_value());
     CHECK(std::string(d_dds->robot_name) == "test_robot");
-    CHECK(d_dds->task_id == 123);
+    CHECK(d_dds->command_id == 123);
     CHECK(std::string(d_dds->dock_name) == "test_dock");
 
     auto converted_d = convert(d_dds.value());
@@ -204,7 +204,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     auto n_dds = convert(n);
     REQUIRE(n_dds.has_value());
     CHECK(std::string(n_dds->robot_name) == "test_robot");
-    CHECK(n_dds->task_id == 123);
+    CHECK(n_dds->command_id == 123);
     REQUIRE(n_dds->path._length == 2);
 
     auto converted_wp1 = convert(n_dds->path._buffer[0]);
@@ -228,7 +228,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     auto reloc_dds = convert(reloc);
     REQUIRE(reloc_dds.has_value());
     CHECK(std::string(reloc_dds->robot_name) == "test_robot");
-    CHECK(reloc_dds->task_id == 123);
+    CHECK(reloc_dds->command_id == 123);
     CHECK(reloc_dds->last_visited_waypoint_index == 321);
 
     auto converted_loc = convert(reloc_dds->location);
@@ -240,7 +240,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     CHECK(converted_reloc.value() == reloc);
   }
 
-  GIVEN("RobotState without task_id")
+  GIVEN("RobotState without command_id")
   {
     rmf_traffic::Time t = std::chrono::steady_clock::now();
     RobotMode m(RobotMode::Mode::Charging, "test_info");
@@ -253,7 +253,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
 
     CHECK(std::string(s_dds->name) == "test_robot");
     CHECK(std::string(s_dds->model) == "test_model");
-    CHECK_FALSE(s_dds->task_id_available);
+    CHECK_FALSE(s_dds->command_id_available);
     CHECK(s_dds->battery_percent == Approx(0.9));
     CHECK(s_dds->target_path_index == 321);
 
@@ -274,7 +274,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     CHECK(converted_s.value() == s);
   }
 
-  GIVEN("RobotState with task_id")
+  GIVEN("RobotState with command_id")
   {
     rmf_traffic::Time t = std::chrono::steady_clock::now();
     RobotMode m(RobotMode::Mode::Charging, "test_info");
@@ -287,8 +287,8 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
 
     CHECK(std::string(s_dds->name) == "test_robot");
     CHECK(std::string(s_dds->model) == "test_model");
-    REQUIRE(s_dds->task_id_available);
-    CHECK(s_dds->task_id == 123);
+    REQUIRE(s_dds->command_id_available);
+    CHECK(s_dds->command_id == 123);
     CHECK(s_dds->battery_percent == Approx(0.9));
     CHECK(s_dds->target_path_index == 321);
 

@@ -40,21 +40,21 @@ public:
   ///   The name of the robot this request is targeting. A std::invalid_argument
   ///   will be thrown if this is empty.
   ///
-  /// \param[in] task_id
-  ///   The task id associated with this request.
+  /// \param[in] command_id
+  ///   The command id associated with this request.
   ///
   /// \param[in] path
   ///   The desired path for this navigation request.
   NavigationRequest(
     const std::string& robot_name,
-    TaskId task_id,
+    CommandId command_id,
     std::vector<Waypoint> path);
 
   /// Gets the robot name.
   const std::string& robot_name() const;
 
-  /// Gets the task id.
-  TaskId task_id() const;
+  /// Gets the command id.
+  CommandId command_id() const;
 
   /// Gets the desired path of this request.
   const std::vector<Waypoint>& path() const;
