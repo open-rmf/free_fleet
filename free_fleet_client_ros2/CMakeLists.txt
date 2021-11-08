@@ -22,6 +22,9 @@ if (ament_cmake_FOUND)
     tf2
     tf2_ros
     nav2_util
+    std_srvs
+    sensor_msgs
+    nav2_msgs
     geometry_msgs
     rmf_fleet_msgs
     free_fleet
@@ -31,15 +34,38 @@ if (ament_cmake_FOUND)
     find_package(${dep} REQUIRED)
   endforeach()
 
+  #=============================================================================
+
+  include_directories(include)
   add_executable(free_fleet_client_ros2
     src/main.cpp
+    src/utilities.cpp
+    src/client_node.cpp
+    src/client_node_config.cpp
   )
-
   ament_target_dependencies(free_fleet_client_ros2
     ${dependencies}
   )
 
+  #=============================================================================
+
+  set(testing_targets
+    fake_action_server
+    fake_docking_server
+  )
+  foreach(target ${testing_targets})
+    add_executable(${target}
+      src/tests/${target}.cpp
+    )
+    ament_target_dependencies(${target}
+      ${dependencies}
+    )
+  endforeach()
+
+  #=============================================================================
+
   install(TARGETS free_fleet_client_ros2
+    ${testing_targets}
     RUNTIME DESTINATION lib/${PROJECT_NAME}
   )
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Open Source Robotics Foundation
+ * Copyright (C) 2020 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,24 @@
  *
  */
 
-#include <iostream>
-#include <memory>
-
 #include <rclcpp/rclcpp.hpp>
-#include "free_fleet/ros2/client_node.hpp"
+#include <std_srvs/srv/trigger.hpp>
+
+void trigger(
+  const std::shared_ptr<std_srvs::srv::Trigger::Request> req,
+  std::shared_ptr<std_srvs::srv::Trigger::Response> res)
+{
+  res->success = true;
+  RCLCPP_INFO(rclcpp::get_logger("trigger_fn"), "Docking trigger received.");
+}
 
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<free_fleet::ros2::ClientNode>();
+
+  auto node = std::make_shared<rclcpp::Node>("fake_docking_server");
+  using namespace std::placeholders;  // for _1, _2, _3...
+  auto service = node->create_service<std_srvs::srv::Trigger>("dock_fake", std::bind(trigger, _1, _2));
   rclcpp::spin(node);
   
   // Cleanup and exit
