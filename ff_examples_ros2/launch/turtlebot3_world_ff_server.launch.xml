@@ -1,0 +1,34 @@
+<?xml version='1.0' ?>
+
+<launch>
+
+  <node pkg="free_fleet_server_ros2"
+      exec="free_fleet_server_ros2"
+      name="turtlebot3_fleet_server_node"
+      output="both">
+
+    <param name="fleet_name" value="turtlebot3"/>
+
+    <param name="fleet_state_topic" value="fleet_states"/>
+    <param name="mode_request_topic" value="robot_mode_requests"/>
+    <param name="path_request_topic" value="robot_path_requests"/>
+    <param name="destination_request_topic" value="robot_destination_requests"/>
+
+    <param name="dds_domain" value="42"/>
+    <param name="dds_robot_state_topic" value="robot_state"/>
+    <param name="dds_mode_request_topic" value="mode_request"/>
+    <param name="dds_path_request_topic" value="path_request"/>
+    <param name="dds_destination_request_topic" value="destination_request"/>
+
+    <param name="update_state_frequency" value="20.0"/>
+    <param name="publish_state_frequency" value="2.0"/>
+
+    <param name="translation_x" value="0.0"/>
+    <param name="translation_y" value="0.0"/>
+    <param name="rotation" value="0.0"/>
+    <param name="scale" value="1.0"/>
+
+  </node>
+
+</launch>
+
