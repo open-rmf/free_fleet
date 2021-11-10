@@ -5,6 +5,7 @@
   <version>0.0.1</version>
   <description>TODO</description>
   <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
+  <maintainer email="elias@tractonomy.com">Elias De Coninck</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
