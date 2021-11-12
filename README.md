@@ -9,11 +9,13 @@
   - [Prerequisites](#prerequisites)
   - [Message Generation](#message-generation)
   - [Client in ROS 1](#client-in-ros-1)
-  - [Server in ROS 2](#server-in-ros-2)
+  - [Client and Server in ROS 2](#client-and-server-in-ros-2)
 - **[Examples](#examples)**
   - [Barebones Example](#barebones-example)
-  - [Turtlebot3 Simulation](#turtlebot3-simulation)
-  - [Multi Turtlebot3 Simulation](#multi-turtlebot3-simulation)
+  - [Turtlebot3 Fleet Server](#turtlebot3-fleet-server)
+  - [ROS 1 Turtlebot3 Simulation](#ros-1-turtlebot3-simulation)
+  - [ROS 2 Turtlebot3 Simulation](#ros-2-turtlebot3-simulation)
+  - [ROS 1 Multi Turtlebot3 Simulation](#ros-1-multi-turtlebot3-simulation)
   - [Commands and Requests](#commands-and-requests)
 - **[Plans](#plans)**
 
@@ -164,7 +166,7 @@ Next, to send requests and commands, check out the example scripts and their use
 
 </br>
 
-### Turtlebot3 fleet Server
+### Turtlebot3 Fleet Server
 
 This launches a server for a fleet of simulated turtlebot3 robots.
 
