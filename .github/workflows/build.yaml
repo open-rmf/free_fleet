@@ -39,11 +39,11 @@ jobs:
       - name: deps
         uses: ros-tooling/setup-ros@v0.2
         with:
-          required-ros-distributions: foxy
+          required-ros-distributions: galactic
       - name: build
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          target-ros2-distro: foxy
+          target-ros2-distro: galactic
           # build all packages listed in the meta package
           package-name: |
             free_fleet
