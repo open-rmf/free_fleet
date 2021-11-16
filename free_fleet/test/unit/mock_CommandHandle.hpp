@@ -45,10 +45,12 @@ public:
   void resume(RequestCompleted) final
   {}
 
-  void dock(
+  bool dock(
     const std::string&,
     RequestCompleted) final
-  {}
+  {
+    return true;
+  }
 
 };
 

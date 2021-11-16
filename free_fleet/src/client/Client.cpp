@@ -77,14 +77,20 @@ void Client::Implementation::DataHandle::handle_dock_request(
 {
   if (!is_valid_request(request))
     return;
+
+  if (!command_handle->dock(
+      request.dock_name(),
+      [d = shared_from_this()]()
+      {
+        d->complete_command();
+      }))
+  {
+    fferr << "Dock request unrecognized by client.\n";
+    return;
+  }
+
   command_id = request.command_id();
   command_ids.insert(command_id.value());
-  command_handle->dock(
-    request.dock_name(),
-    [d = shared_from_this()]()
-    {
-      d->complete_command();
-    });
 }
 
 //==============================================================================

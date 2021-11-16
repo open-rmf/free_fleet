@@ -70,15 +70,19 @@ public:
   /// Have the robot resume following its command before it was stopped.
   virtual void resume(RequestCompleted resumed_callback) = 0;
 
-  /// Have the robot begin a pre-defined docking procedure. Implement this
-  /// function as a no-op if your robots do not perform docking procedures.
+  /// Have the robot begin a pre-defined docking procedure. If the robot has no
+  /// docking capabilities, implement this by simply triggering
+  /// docking_finished_callback immediately.
   ///
   /// \param[in] dock_name
   ///   The predefined name of the docking procedure to use.
   ///
   /// \param[in] docking_finished_callback
   ///   Trigger this callback when the docking is finished.
-  virtual void dock(
+  ///
+  /// \return True if the docking command and dock_name is recognized, false
+  /// otherwise.
+  virtual bool dock(
     const std::string& dock_name,
     RequestCompleted docking_finished_callback) = 0;
 
