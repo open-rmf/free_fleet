@@ -39,22 +39,57 @@ namespace free_fleet {
 
 //==============================================================================
 class Client::Implementation
-: public std::enable_shared_from_this<Client::Implementation>
 {
 public:
+  struct DataHandle : std::enable_shared_from_this<DataHandle>
+  {
+    std::string robot_name;
+
+    std::string robot_model;
+
+    std::shared_ptr<client::CommandHandle> command_handle;
+
+    std::optional<CommandId> command_id = std::nullopt;
+
+    CommandId last_command_id = 0;
+
+    std::unordered_set<uint32_t> command_ids;
+
+    void complete_command();
+
+    void handle_pause_request(const messages::PauseRequest& request);
+
+    void handle_resume_request(const messages::ResumeRequest& request);
+
+    void handle_dock_request(const messages::DockRequest& request);
+
+    void handle_navigation_request(const messages::NavigationRequest& request);
+
+    void handle_relocalization_request(
+      const messages::RelocalizationRequest& request);
+
+    template<class T>
+    bool is_valid_request(const T& request)
+    {
+      if (request.robot_name() != robot_name)
+        return false;
+
+      // TODO(AA): Consider if there is the chance that this client idles for
+      // more than 2 billion command ids, and suddenly gets a clashing id that
+      // has overflowed and is slightly lower than the last command id.
+      const auto it = command_ids.find(request.command_id());
+      if (it == command_ids.end() ||
+        rmf_utils::Modular(last_command_id).less_than(request.command_id()))
+      {
+        return true;
+      }
+
+      return false;
+    }
+  };
 
   Implementation()
   {}
-
-  Implementation(const Implementation& impl)
-  : std::enable_shared_from_this<Implementation>(impl)
-  {}
-
-  ~Implementation()
-  {
-    if (started.load() && async_thread.joinable())
-      async_thread.join();
-  }
 
   static Implementation& get(Client& client)
   {
@@ -68,53 +103,9 @@ public:
 
   void set_callbacks();
 
-  template<class T>
-  bool is_valid_request(const T& request)
-  {
-    if (request.robot_name() != robot_name)
-      return false;
-
-    // TODO(AA): Consider if there is the chance that this client idles for more
-    // than 2 billion command ids, and suddenly gets a clashing id that has
-    // overflowed and is slightly lower than the last command id.
-    const auto it = command_ids.find(request.command_id());
-    if (it == command_ids.end() ||
-      rmf_utils::Modular(last_command_id).less_than(request.command_id()))
-    {
-      return true;
-    }
-
-    return false;
-  }
-
-  void complete_command();
-
-  void run_once();
-
-  void handle_pause_request(const messages::PauseRequest& request);
-
-  void handle_resume_request(const messages::ResumeRequest& request);
-
-  void handle_dock_request(const messages::DockRequest& request);
-
-  void handle_navigation_request(const messages::NavigationRequest& request);
-
-  void handle_relocalization_request(
-    const messages::RelocalizationRequest& request);
-
-  std::string robot_name;
-  std::string robot_model;
-
-  std::shared_ptr<client::CommandHandle> command_handle;
   std::shared_ptr<client::StatusHandle> status_handle;
   std::shared_ptr<transport::ClientMiddleware> middleware;
-
-  std::optional<CommandId> command_id = std::nullopt;
-  CommandId last_command_id = 0;
-  std::unordered_set<uint32_t> command_ids;
-
-  std::atomic<bool> started = false;
-  std::thread async_thread;
+  std::shared_ptr<DataHandle> data;
 };
 
 } // namespace free_fleet

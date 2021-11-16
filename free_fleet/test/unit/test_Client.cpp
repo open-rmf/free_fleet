@@ -65,8 +65,7 @@ SCENARIO("Verify that a client can run")
       sh,
       std::move(m));
     REQUIRE(client);
-    auto& impl = free_fleet::Client::Implementation::get(*client);
-    CHECK_NOTHROW(impl.run_once());
+    CHECK_NOTHROW(client->run_once());
   }
 }
 
@@ -158,104 +157,104 @@ SCENARIO("Testing receiving requests")
   MockClientMiddlewareWithServer* middleware =
     dynamic_cast<MockClientMiddlewareWithServer*>(impl.middleware.get());
   REQUIRE(impl.middleware);
-  REQUIRE(!impl.command_id.has_value());
+  REQUIRE(!impl.data->command_id.has_value());
 
   GIVEN("Receiving another robot's dock request")
   {
     middleware->received_dock_request("wrong_robot", 1, "mock_dock");
-    CHECK(!impl.command_id.has_value());
-    CHECK(impl.command_ids.find(1) == impl.command_ids.end());
+    CHECK(!impl.data->command_id.has_value());
+    CHECK(impl.data->command_ids.find(1) == impl.data->command_ids.end());
   }
 
   GIVEN("Receiving another robot's pause request")
   {
     middleware->received_pause_request("wrong_robot", 1);
-    CHECK(!impl.command_id.has_value());
-    CHECK(impl.command_ids.find(1) == impl.command_ids.end());
+    CHECK(!impl.data->command_id.has_value());
+    CHECK(impl.data->command_ids.find(1) == impl.data->command_ids.end());
   }
 
   GIVEN("Receiving another robot's resume request")
   {
     middleware->received_resume_request("wrong_robot", 1);
-    CHECK(!impl.command_id.has_value());
-    CHECK(impl.command_ids.find(1) == impl.command_ids.end());
+    CHECK(!impl.data->command_id.has_value());
+    CHECK(impl.data->command_ids.find(1) == impl.data->command_ids.end());
   }
 
   GIVEN("Receiving another robot's navigation request")
   {
     middleware->received_navigation_request("wrong_robot", 1);
-    CHECK(!impl.command_id.has_value());
-    CHECK(impl.command_ids.find(1) == impl.command_ids.end());
+    CHECK(!impl.data->command_id.has_value());
+    CHECK(impl.data->command_ids.find(1) == impl.data->command_ids.end());
   }
 
   GIVEN("Receiving another robot's relocalization request")
   {
     middleware->received_relocalization_request("wrong_robot", 1);
-    CHECK(!impl.command_id.has_value());
-    CHECK(impl.command_ids.find(1) == impl.command_ids.end());
+    CHECK(!impl.data->command_id.has_value());
+    CHECK(impl.data->command_ids.find(1) == impl.data->command_ids.end());
   }
 
   GIVEN("Receiving dock request")
   {
     middleware->received_dock_request(robot_name, 1, "mock_dock");
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 1);
-    CHECK(impl.command_ids.find(1) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 1);
+    CHECK(impl.data->command_ids.find(1) != impl.data->command_ids.end());
   }
 
   GIVEN("Receiving pause request")
   {
     middleware->received_pause_request(robot_name, 1);
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 1);
-    CHECK(impl.command_ids.find(1) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 1);
+    CHECK(impl.data->command_ids.find(1) != impl.data->command_ids.end());
   }
 
   GIVEN("Receiving resume request")
   {
     middleware->received_resume_request(robot_name, 1);
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 1);
-    CHECK(impl.command_ids.find(1) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 1);
+    CHECK(impl.data->command_ids.find(1) != impl.data->command_ids.end());
   }
 
   GIVEN("Receiving navigation request")
   {
     middleware->received_navigation_request(robot_name, 1);
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 1);
-    CHECK(impl.command_ids.find(1) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 1);
+    CHECK(impl.data->command_ids.find(1) != impl.data->command_ids.end());
   }
 
   GIVEN("Receiving relocalization request")
   {
     middleware->received_relocalization_request(robot_name, 1);
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 1);
-    CHECK(impl.command_ids.find(1) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 1);
+    CHECK(impl.data->command_ids.find(1) != impl.data->command_ids.end());
   }
 
   GIVEN("Receiving multiple requests")
   {
     middleware->received_dock_request(robot_name, 1, "mock_dock");
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 1);
-    CHECK(impl.command_ids.find(1) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 1);
+    CHECK(impl.data->command_ids.find(1) != impl.data->command_ids.end());
     middleware->received_pause_request(robot_name, 2);
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 2);
-    CHECK(impl.command_ids.find(2) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 2);
+    CHECK(impl.data->command_ids.find(2) != impl.data->command_ids.end());
     middleware->received_resume_request(robot_name, 3);
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 3);
-    CHECK(impl.command_ids.find(3) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 3);
+    CHECK(impl.data->command_ids.find(3) != impl.data->command_ids.end());
     middleware->received_navigation_request(robot_name, 4);
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 4);
-    CHECK(impl.command_ids.find(4) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 4);
+    CHECK(impl.data->command_ids.find(4) != impl.data->command_ids.end());
     middleware->received_relocalization_request(robot_name, 5);
-    REQUIRE(impl.command_id.has_value());
-    CHECK(impl.command_id.value() == 5);
-    CHECK(impl.command_ids.find(5) != impl.command_ids.end());
+    REQUIRE(impl.data->command_id.has_value());
+    CHECK(impl.data->command_id.value() == 5);
+    CHECK(impl.data->command_ids.find(5) != impl.data->command_ids.end());
   }
 }

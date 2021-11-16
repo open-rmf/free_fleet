@@ -29,7 +29,7 @@
 
 namespace free_fleet {
 
-class Client : public Worker
+class Client : public Worker, public std::enable_shared_from_this<Client>
 {
 public:
 
