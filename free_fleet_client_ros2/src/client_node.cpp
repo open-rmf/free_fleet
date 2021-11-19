@@ -442,8 +442,10 @@ bool ClientNode::read_path_request()
             client_node_config.max_dist_to_first_waypoint);
         
         fields.move_base_client->async_cancel_all_goals();
-        WriteLock goal_path_lock(goal_path_mutex);
-        goal_path.clear();
+        {
+          WriteLock goal_path_lock(goal_path_mutex);
+          goal_path.clear();
+        }
 
         request_error = true;
         emergency = false;
@@ -453,22 +455,26 @@ bool ClientNode::read_path_request()
     }
 
     fields.move_base_client->async_cancel_all_goals();
-    WriteLock goal_path_lock(goal_path_mutex);
-    goal_path.clear();
-    for (size_t i = 0; i < path_request.path.size(); ++i)
     {
-      goal_path.push_back(
-          Goal {
-              path_request.path[i].level_name,
-              location_to_nav_goal(path_request.path[i]),
-              false,
-              0,
-              rclcpp::Time(
-                  path_request.path[i].sec, path_request.path[i].nanosec)});
+      WriteLock goal_path_lock(goal_path_mutex);
+      goal_path.clear();
+      for (size_t i = 0; i < path_request.path.size(); ++i)
+      {
+        goal_path.push_back(
+            Goal {
+                path_request.path[i].level_name,
+                location_to_nav_goal(path_request.path[i]),
+                false,
+                0,
+                rclcpp::Time(
+                    path_request.path[i].sec, path_request.path[i].nanosec)});
+      }
     }
-
-    WriteLock task_id_lock(task_id_mutex);
-    current_task_id = path_request.task_id;
+    
+    {
+      WriteLock task_id_lock(task_id_mutex);
+      current_task_id = path_request.task_id;
+    }
 
     if (paused)
       paused = false;
@@ -492,20 +498,24 @@ bool ClientNode::read_destination_request()
         destination_request.destination.yaw);
     
     fields.move_base_client->async_cancel_all_goals();
-    WriteLock goal_path_lock(goal_path_mutex);
-    goal_path.clear();
-    goal_path.push_back(
-        Goal {
-            destination_request.destination.level_name,
-            location_to_nav_goal(destination_request.destination),
-            false,
-            0,
-            rclcpp::Time(
-                destination_request.destination.sec, 
-                destination_request.destination.nanosec)});
+    {
+      WriteLock goal_path_lock(goal_path_mutex);
+      goal_path.clear();
+      goal_path.push_back(
+          Goal {
+              destination_request.destination.level_name,
+              location_to_nav_goal(destination_request.destination),
+              false,
+              0,
+              rclcpp::Time(
+                  destination_request.destination.sec,
+                  destination_request.destination.nanosec)});
+    }
 
-    WriteLock task_id_lock(task_id_mutex);
-    current_task_id = destination_request.task_id;
+    {
+      WriteLock task_id_lock(task_id_mutex);
+      current_task_id = destination_request.task_id;
+    }
 
     if (paused)
       paused = false;
