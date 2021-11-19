@@ -7,7 +7,10 @@ find_package(ament_cmake QUIET)
 if (ament_cmake_FOUND)
 
   install(
-    DIRECTORY launch
+    DIRECTORY
+      launch
+      maps
+      params
     DESTINATION share/${PROJECT_NAME}
   )
 

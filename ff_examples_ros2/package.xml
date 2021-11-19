@@ -9,7 +9,10 @@
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>rmf_fleet_msgs</exec_depend>
+  <exec_depend>free_fleet_client_ros2</exec_depend>
   <exec_depend>free_fleet_server_ros2</exec_depend>
+  <exec_depend>turtlebot3_gazebo</exec_depend>
+  <exec_depend>turtlebot3_navigation2</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -9,7 +9,7 @@
 
   <node pkg="free_fleet_client_ros2" exec="free_fleet_client_ros2" name="fake_client_node" output="both">
     <param name="fleet_name" value="fake_fleet"/>
-    <param name="robot_name" value="fake_robot"/>
+    <param name="robot_name" value="fake_ros2_robot"/>
     <param name="robot_model" value="fake_robot_model"/>
     <param name="level_name" value="L1"/>
     <param name="dds_domain" value="42"/>

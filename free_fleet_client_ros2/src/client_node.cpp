@@ -132,8 +132,7 @@ ClientNode::ClientNode(const rclcpp::NodeOptions & options)
     get_node_base_interface(), get_node_timers_interface());
   tf2_buffer->setCreateTimerInterface(timer_interface);
   tf2_buffer->setUsingDedicatedThread(true);
-  tf2_listener =
-    std::make_shared<tf2_ros::TransformListener>(*tf2_buffer, this, false);
+  tf2_listener = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer);
 
   start(
     Fields{
