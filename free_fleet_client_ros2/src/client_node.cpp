@@ -543,7 +543,7 @@ void ClientNode::handle_requests()
     return;
 
   // ooooh we have goals
-  WriteLock goal_path_lock(goal_path_mutex);
+  ReadLock goal_path_lock(goal_path_mutex);
   if (!goal_path.empty())
   {
     auto send_goal_options = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
