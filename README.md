@@ -141,7 +141,7 @@ This example emulates a running ROS 2 robot,
 
 ```bash
 source ~/ff_ros2_ws/install/setup.bash
-ros2 launch ff_examples_ros2 fake_client.launch
+ros2 launch ff_examples_ros2 fake_client.launch.xml
 ```
 
 The clients will then start subscribing to all the necessary topics, and start publishing robot states over DDS to the server. Start the server using
@@ -227,7 +227,7 @@ Launch the basic simulation of a single Turtlebot3, with a free fleet client att
 
 ```bash
 source ~/ff_ros2_ws/install/setup.bash
-export TURTLEBOT3_MODEL=burger; ros2 launch ff_examples_ros2 turtlebot3_world_ff.launch
+export TURTLEBOT3_MODEL=burger; ros2 launch ff_examples_ros2 turtlebot3_world_ff.launch.xml
 ```
 
 This launch file starts the simulation in `gazebo`, visualization in `rviz2`, as well as the simulated navigation stack of the single turtlebot3. Once the simulation and visualization show up, the robot can be commanded as per normal through `rviz2` with `2D Nav Goal`.
