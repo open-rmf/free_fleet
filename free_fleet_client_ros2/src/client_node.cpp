@@ -189,8 +189,6 @@ bool ClientNode::get_robot_pose()
       client_node_config.map_frame,
       client_node_config.robot_frame,
       client_node_config.wait_timeout)) {
-    // TODO is this necessary?
-    tmp_pose_stamped.header.stamp = now();
     WriteLock robot_transform_lock(robot_pose_mutex);
     previous_robot_pose = current_robot_pose;
     current_robot_pose = tmp_pose_stamped;
