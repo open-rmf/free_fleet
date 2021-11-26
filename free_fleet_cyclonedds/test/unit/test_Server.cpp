@@ -40,7 +40,7 @@ SCENARIO("Single server with mock subscribers and publishers")
   const std::string robot_name = "test_robot";
   const std::string fleet_name = "test_fleet";
 
-  auto server = ServerDDSMiddleware::make(dds_domain, fleet_name);
+  auto server = ServerDDSMiddleware::make_unique(dds_domain, fleet_name);
   REQUIRE_FALSE(server == nullptr);
 
   GIVEN("RobotState")

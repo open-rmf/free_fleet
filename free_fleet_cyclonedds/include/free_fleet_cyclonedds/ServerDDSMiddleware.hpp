@@ -32,7 +32,11 @@ class ServerDDSMiddleware : public transport::ServerMiddleware
 {
 public:
 
-  static std::shared_ptr<ServerDDSMiddleware> make(
+  static std::unique_ptr<ServerDDSMiddleware> make_unique(
+    int dds_domain,
+    const std::string& fleet_name);
+
+  static std::shared_ptr<ServerDDSMiddleware> make_shared(
     int dds_domain,
     const std::string& fleet_name);
 

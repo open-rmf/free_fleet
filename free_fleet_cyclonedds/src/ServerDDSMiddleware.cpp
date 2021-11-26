@@ -68,10 +68,11 @@ ServerDDSMiddleware::ServerDDSMiddleware()
 }
 
 //==============================================================================
-auto ServerDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
--> std::shared_ptr<ServerDDSMiddleware>
+auto ServerDDSMiddleware::make_unique(
+  int dds_domain, const std::string& fleet_name)
+-> std::unique_ptr<ServerDDSMiddleware>
 {
-  std::shared_ptr<ServerDDSMiddleware> middleware(new ServerDDSMiddleware());
+  std::unique_ptr<ServerDDSMiddleware> middleware(new ServerDDSMiddleware());
 
   dds_entity_t participant = dds_create_participant(dds_domain, NULL, NULL);
   if (participant <  0)
@@ -145,6 +146,18 @@ auto ServerDDSMiddleware::make(int dds_domain, const std::string& fleet_name)
   middleware->_pimpl->relocalization_req_pub =
     std::move(relocalization_req_pub);
   return middleware;
+}
+
+//==============================================================================
+auto ServerDDSMiddleware::make_shared(
+  int dds_domain, const std::string& fleet_name)
+-> std::shared_ptr<ServerDDSMiddleware>
+{
+  if (auto unique_server = make_unique(dds_domain, fleet_name))
+  {
+    return std::shared_ptr<ServerDDSMiddleware>(unique_server.release());
+  }
+  return nullptr;
 }
 
 //==============================================================================
