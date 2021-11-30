@@ -147,6 +147,9 @@ auto Manager::make(
   manager_ptr->_pimpl->time_now_fn = std::move(time_now_fn);
   manager_ptr->_pimpl->robot_updated_callback_fn =
     std::move(robot_updated_callback_fn);
+
+  manager_ptr->_pimpl->set_callbacks();
+
   return manager_ptr;
 }
 
@@ -209,8 +212,10 @@ auto Manager::request_pause(const std::string& robot_name)
 -> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
+  auto it = _pimpl->robots.find(robot_name);
+  if (it == _pimpl->robots.end())
     return std::nullopt;
+  auto robot_info = it->second;
 
   const CommandId request_command_id = ++_pimpl->current_command_id;
   messages::PauseRequest request(robot_name, request_command_id);
@@ -227,6 +232,10 @@ auto Manager::request_pause(const std::string& robot_name)
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
+
+  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  robot_impl.allocate_request(request_info);
+
   return _pimpl->current_command_id;
 }
 
@@ -235,8 +244,10 @@ auto Manager::request_resume(const std::string& robot_name)
 -> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
+  auto it = _pimpl->robots.find(robot_name);
+  if (it == _pimpl->robots.end())
     return std::nullopt;
+  auto robot_info = it->second;
 
   const CommandId request_command_id = ++_pimpl->current_command_id;
   messages::ResumeRequest request(robot_name, request_command_id);
@@ -253,6 +264,10 @@ auto Manager::request_resume(const std::string& robot_name)
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
+
+  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  robot_impl.allocate_request(request_info);
+
   return _pimpl->current_command_id;
 }
 
@@ -262,8 +277,10 @@ auto Manager::request_dock(
 -> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
+  auto it = _pimpl->robots.find(robot_name);
+  if (it == _pimpl->robots.end())
     return std::nullopt;
+  auto robot_info = it->second;
 
   const CommandId request_command_id = ++_pimpl->current_command_id;
   messages::DockRequest request(
@@ -283,6 +300,10 @@ auto Manager::request_dock(
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
+
+  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  robot_impl.allocate_request(request_info);
+
   return _pimpl->current_command_id;
 }
 
@@ -293,8 +314,10 @@ auto Manager::request_relocalization(
   std::size_t last_visited_waypoint_index) -> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
+  auto it = _pimpl->robots.find(robot_name);
+  if (it == _pimpl->robots.end())
     return std::nullopt;
+  auto robot_info = it->second;
 
   // Check if the waypoint exists
   const std::size_t num_wp = _pimpl->graph->num_waypoints();
@@ -340,6 +363,10 @@ auto Manager::request_relocalization(
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
+
+  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  robot_impl.allocate_request(request_info);
+
   return _pimpl->current_command_id;
 }
 
@@ -350,8 +377,10 @@ auto Manager::request_navigation(
 -> std::optional<CommandId>
 {
   std::lock_guard<std::mutex> lock(_pimpl->mutex);
-  if (_pimpl->robots.find(robot_name) == _pimpl->robots.end())
+  auto it = _pimpl->robots.find(robot_name);
+  if (it == _pimpl->robots.end())
     return std::nullopt;
+  auto robot_info = it->second;
 
   if (path.empty())
   {
@@ -374,7 +403,7 @@ auto Manager::request_navigation(
     }
 
     // Check if the connection exists
-    if (i + 1 != path.size())
+    if (i + 1 != path.size() && nav_point.waypoint_index!=path[i+1].waypoint_index)
     {
       const rmf_traffic::agv::Graph::Lane* connecting_lane =
         _pimpl->graph->lane_from(
@@ -429,6 +458,10 @@ auto Manager::request_navigation(
   _pimpl->commands[request_command_id] = request_info;
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
+
+  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  robot_impl.allocate_request(request_info);
+
   return _pimpl->current_command_id;
 }
 
