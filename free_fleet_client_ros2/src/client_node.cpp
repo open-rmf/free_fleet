@@ -465,7 +465,9 @@ bool ClientNode::read_path_request()
                 false,
                 0,
                 rclcpp::Time(
-                    path_request.path[i].sec, path_request.path[i].nanosec)});
+                    path_request.path[i].sec,
+                    path_request.path[i].nanosec,
+                    RCL_ROS_TIME)}); // messages use RCL_ROS_TIME instead of default RCL_SYSTEM_TIME
       }
     }
     
@@ -507,7 +509,8 @@ bool ClientNode::read_destination_request()
               0,
               rclcpp::Time(
                   destination_request.destination.sec,
-                  destination_request.destination.nanosec)});
+                  destination_request.destination.nanosec,
+                  RCL_ROS_TIME)}); // messages use RCL_ROS_TIME instead of default RCL_SYSTEM_TIME
     }
 
     {
@@ -564,7 +567,7 @@ void ClientNode::handle_requests()
           // By some stroke of good fortune, we may have arrived at our goal
           // earlier than we were scheduled to reach it. If that is the case,
           // we need to wait here until it's time to proceed.
-          if (now().nanoseconds() >= goal_path.front().goal_end_time.nanoseconds())
+          if (now() >= goal_path.front().goal_end_time)
           {
             if (!goal_path.empty()) // TODO: fix race condition instead
               goal_path.pop_front();
@@ -575,14 +578,14 @@ void ClientNode::handle_requests()
               [&]() {
                 {
                   ReadLock goal_path_lock(goal_path_mutex);
-                  while (now().nanoseconds() < goal_path.front().goal_end_time.nanoseconds()) {
+                  while (now() < goal_path.front().goal_end_time) {
                     rclcpp::Duration wait_time_remaining =
                         goal_path.front().goal_end_time - now();
                     RCLCPP_INFO(get_logger(), 
-                        "we reached our goal early! Waiting %.1f more seconds",
+                        "we reached our goal early! Waiting %.2f more seconds",
                         wait_time_remaining.seconds());
                     std::this_thread::sleep_for(
-                      std::chrono::duration<double>(wait_time_remaining.seconds()));
+                      std::chrono::nanoseconds(wait_time_remaining.nanoseconds()));
                   }
                 }
                 WriteLock goal_path_lock(goal_path_mutex);
