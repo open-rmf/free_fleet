@@ -19,7 +19,7 @@
 #define FREE_FLEET__ROS2__CLIENTNODE_HPP
 
 #include <deque>
-#include <mutex>
+#include <shared_mutex>
 #include <atomic>
 #include <memory>
 #include <thread>
@@ -62,8 +62,9 @@ class ClientNode : public rclcpp::Node
 {
 public:
   using SharedPtr = std::shared_ptr<ClientNode>;
-  using ReadLock = std::unique_lock<std::mutex>;
-  using WriteLock = std::unique_lock<std::mutex>;
+  using Mutex = std::shared_mutex;
+  using ReadLock = std::shared_lock<Mutex>;
+  using WriteLock = std::unique_lock<Mutex>;
 
   using NavigateToPose = nav2_msgs::action::NavigateToPose;
   using GoalHandleNavigateToPose = rclcpp_action::ClientGoalHandle<NavigateToPose>;
@@ -90,7 +91,7 @@ private:
   // Battery handling
 
   rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr  battery_percent_sub;
-  std::mutex battery_state_mutex;
+  Mutex battery_state_mutex;
   sensor_msgs::msg::BatteryState current_battery_state;
   void battery_state_callback_fn(const sensor_msgs::msg::BatteryState& msg);
 
@@ -99,7 +100,7 @@ private:
 
   std::shared_ptr<tf2_ros::Buffer> tf2_buffer;
   std::shared_ptr<tf2_ros::TransformListener> tf2_listener;
-  std::mutex robot_pose_mutex;
+  Mutex robot_pose_mutex;
   geometry_msgs::msg::PoseStamped current_robot_pose;
   geometry_msgs::msg::PoseStamped previous_robot_pose;
 
@@ -136,7 +137,7 @@ private:
       const std::string& request_robot_name,
       const std::string& request_task_id);
 
-  std::mutex task_id_mutex;
+  Mutex task_id_mutex;
   std::string current_task_id;
 
   NavigateToPose::Goal location_to_nav_goal(
@@ -151,7 +152,7 @@ private:
     rclcpp::Time goal_end_time;
   };
 
-  std::mutex goal_path_mutex;
+  Mutex goal_path_mutex;
   std::deque<Goal> goal_path;
 
   void read_requests();

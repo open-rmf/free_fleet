@@ -189,8 +189,6 @@ bool ClientNode::get_robot_pose()
       client_node_config.map_frame,
       client_node_config.robot_frame,
       client_node_config.wait_timeout)) {
-    // TODO is this necessary?
-    tmp_pose_stamped.header.stamp = now();
     WriteLock robot_transform_lock(robot_pose_mutex);
     previous_robot_pose = current_robot_pose;
     current_robot_pose = tmp_pose_stamped;
@@ -442,8 +440,10 @@ bool ClientNode::read_path_request()
             client_node_config.max_dist_to_first_waypoint);
         
         fields.move_base_client->async_cancel_all_goals();
-        WriteLock goal_path_lock(goal_path_mutex);
-        goal_path.clear();
+        {
+          WriteLock goal_path_lock(goal_path_mutex);
+          goal_path.clear();
+        }
 
         request_error = true;
         emergency = false;
@@ -453,22 +453,26 @@ bool ClientNode::read_path_request()
     }
 
     fields.move_base_client->async_cancel_all_goals();
-    WriteLock goal_path_lock(goal_path_mutex);
-    goal_path.clear();
-    for (size_t i = 0; i < path_request.path.size(); ++i)
     {
-      goal_path.push_back(
-          Goal {
-              path_request.path[i].level_name,
-              location_to_nav_goal(path_request.path[i]),
-              false,
-              0,
-              rclcpp::Time(
-                  path_request.path[i].sec, path_request.path[i].nanosec)});
+      WriteLock goal_path_lock(goal_path_mutex);
+      goal_path.clear();
+      for (size_t i = 0; i < path_request.path.size(); ++i)
+      {
+        goal_path.push_back(
+            Goal {
+                path_request.path[i].level_name,
+                location_to_nav_goal(path_request.path[i]),
+                false,
+                0,
+                rclcpp::Time(
+                    path_request.path[i].sec, path_request.path[i].nanosec)});
+      }
     }
-
-    WriteLock task_id_lock(task_id_mutex);
-    current_task_id = path_request.task_id;
+    
+    {
+      WriteLock task_id_lock(task_id_mutex);
+      current_task_id = path_request.task_id;
+    }
 
     if (paused)
       paused = false;
@@ -492,20 +496,24 @@ bool ClientNode::read_destination_request()
         destination_request.destination.yaw);
     
     fields.move_base_client->async_cancel_all_goals();
-    WriteLock goal_path_lock(goal_path_mutex);
-    goal_path.clear();
-    goal_path.push_back(
-        Goal {
-            destination_request.destination.level_name,
-            location_to_nav_goal(destination_request.destination),
-            false,
-            0,
-            rclcpp::Time(
-                destination_request.destination.sec, 
-                destination_request.destination.nanosec)});
+    {
+      WriteLock goal_path_lock(goal_path_mutex);
+      goal_path.clear();
+      goal_path.push_back(
+          Goal {
+              destination_request.destination.level_name,
+              location_to_nav_goal(destination_request.destination),
+              false,
+              0,
+              rclcpp::Time(
+                  destination_request.destination.sec,
+                  destination_request.destination.nanosec)});
+    }
 
-    WriteLock task_id_lock(task_id_mutex);
-    current_task_id = destination_request.task_id;
+    {
+      WriteLock task_id_lock(task_id_mutex);
+      current_task_id = destination_request.task_id;
+    }
 
     if (paused)
       paused = false;
@@ -533,7 +541,7 @@ void ClientNode::handle_requests()
     return;
 
   // ooooh we have goals
-  WriteLock goal_path_lock(goal_path_mutex);
+  ReadLock goal_path_lock(goal_path_mutex);
   if (!goal_path.empty())
   {
     auto send_goal_options = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
