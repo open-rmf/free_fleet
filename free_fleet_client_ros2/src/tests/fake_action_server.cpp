@@ -70,8 +70,6 @@ void execute(const std::shared_ptr<GoalHandleNavigateToPose> goal_handle)
     }
     // Update navigation time
     feedback->navigation_time = clock.now() - start;
-    feedback->estimated_time_remaining =
-      rclcpp::Duration::from_seconds(5) - feedback->navigation_time;
     // Publish feedback
     goal_handle->publish_feedback(feedback);
     RCLCPP_INFO(rclcpp::get_logger("execute_fn"), "Publish feedback");

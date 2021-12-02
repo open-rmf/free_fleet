@@ -93,7 +93,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr  battery_percent_sub;
   Mutex battery_state_mutex;
   sensor_msgs::msg::BatteryState current_battery_state;
-  void battery_state_callback_fn(const sensor_msgs::msg::BatteryState& msg);
+  void battery_state_callback_fn(const sensor_msgs::msg::BatteryState::SharedPtr msg);
 
   // --------------------------------------------------------------------------
   // Robot pose handling
