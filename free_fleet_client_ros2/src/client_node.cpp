@@ -19,6 +19,7 @@
 #include <exception>
 #include <thread>
 
+#include <rcl/time.h>
 #include <rclcpp/rclcpp.hpp>
 #include <std_srvs/srv/trigger.hpp>
 
@@ -40,10 +41,10 @@ ClientNode::ClientNode(const rclcpp::NodeOptions & options)
   RCLCPP_INFO(get_logger(), "Greetings from %s", get_name());
 
   // parameter declarations
-  declare_parameter<std::string>("fleet_name");
-  declare_parameter<std::string>("robot_name");
-  declare_parameter<std::string>("robot_model");
-  declare_parameter<std::string>("level_name");
+  declare_parameter("fleet_name", client_node_config.fleet_name);
+  declare_parameter("robot_name", client_node_config.robot_name);
+  declare_parameter("robot_model", client_node_config.robot_model);
+  declare_parameter("level_name", client_node_config.level_name);
   // defaults declared in header
   declare_parameter("battery_state_topic", client_node_config.battery_state_topic);
   declare_parameter("map_frame", client_node_config.map_frame);
@@ -175,10 +176,10 @@ void ClientNode::print_config()
 }
 
 void ClientNode::battery_state_callback_fn(
-  const sensor_msgs::msg::BatteryState & _msg)
+  const sensor_msgs::msg::BatteryState::SharedPtr _msg)
 {
   WriteLock battery_state_lock(battery_state_mutex);
-  current_battery_state = _msg;
+  current_battery_state = *_msg;
 }
 
 bool ClientNode::get_robot_pose()
@@ -465,7 +466,9 @@ bool ClientNode::read_path_request()
                 false,
                 0,
                 rclcpp::Time(
-                    path_request.path[i].sec, path_request.path[i].nanosec)});
+                    path_request.path[i].sec,
+                    path_request.path[i].nanosec,
+                    RCL_ROS_TIME)}); // messages use RCL_ROS_TIME instead of default RCL_SYSTEM_TIME
       }
     }
     
@@ -507,7 +510,8 @@ bool ClientNode::read_destination_request()
               0,
               rclcpp::Time(
                   destination_request.destination.sec,
-                  destination_request.destination.nanosec)});
+                  destination_request.destination.nanosec,
+                  RCL_ROS_TIME)}); // messages use RCL_ROS_TIME instead of default RCL_SYSTEM_TIME
     }
 
     {
@@ -564,7 +568,7 @@ void ClientNode::handle_requests()
           // By some stroke of good fortune, we may have arrived at our goal
           // earlier than we were scheduled to reach it. If that is the case,
           // we need to wait here until it's time to proceed.
-          if (now().nanoseconds() >= goal_path.front().goal_end_time.nanoseconds())
+          if (now() >= goal_path.front().goal_end_time)
           {
             if (!goal_path.empty()) // TODO: fix race condition instead
               goal_path.pop_front();
@@ -575,14 +579,14 @@ void ClientNode::handle_requests()
               [&]() {
                 {
                   ReadLock goal_path_lock(goal_path_mutex);
-                  while (now().nanoseconds() < goal_path.front().goal_end_time.nanoseconds()) {
+                  while (now() < goal_path.front().goal_end_time) {
                     rclcpp::Duration wait_time_remaining =
                         goal_path.front().goal_end_time - now();
                     RCLCPP_INFO(get_logger(), 
-                        "we reached our goal early! Waiting %.1f more seconds",
+                        "we reached our goal early! Waiting %.2f more seconds",
                         wait_time_remaining.seconds());
                     std::this_thread::sleep_for(
-                      std::chrono::duration<double>(wait_time_remaining.seconds()));
+                      std::chrono::nanoseconds(wait_time_remaining.nanoseconds()));
                   }
                 }
                 WriteLock goal_path_lock(goal_path_mutex);

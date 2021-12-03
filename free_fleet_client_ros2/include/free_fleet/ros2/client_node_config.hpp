@@ -32,10 +32,10 @@ namespace ros2
 struct ClientNodeConfig
 {
 
-  std::string fleet_name;
-  std::string robot_name;
-  std::string robot_model;
-  std::string level_name;
+  std::string fleet_name = "fleet_name";
+  std::string robot_name = "robot_name";
+  std::string robot_model = "robot_model";
+  std::string level_name = "level_name";
 
   std::string battery_state_topic = "/battery_state";
 
