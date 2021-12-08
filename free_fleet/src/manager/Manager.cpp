@@ -233,7 +233,8 @@ auto Manager::request_pause(const std::string& robot_name)
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
 
-  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  manager::RobotInfo::Implementation& robot_impl =
+    manager::RobotInfo::Implementation::get(*robot_info);
   robot_impl.allocate_request(request_info);
 
   return _pimpl->current_command_id;
@@ -257,7 +258,7 @@ auto Manager::request_resume(const std::string& robot_name)
       request,
       [m = _pimpl->middleware](const messages::ResumeRequest& request_msg)
       {
-          m->send_resume_request(request_msg);
+        m->send_resume_request(request_msg);
       },
       _pimpl->time_now_fn));
 
@@ -265,7 +266,8 @@ auto Manager::request_resume(const std::string& robot_name)
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
 
-  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  manager::RobotInfo::Implementation& robot_impl =
+    manager::RobotInfo::Implementation::get(*robot_info);
   robot_impl.allocate_request(request_info);
 
   return _pimpl->current_command_id;
@@ -301,7 +303,8 @@ auto Manager::request_dock(
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
 
-  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  manager::RobotInfo::Implementation& robot_impl =
+    manager::RobotInfo::Implementation::get(*robot_info);
   robot_impl.allocate_request(request_info);
 
   return _pimpl->current_command_id;
@@ -354,7 +357,7 @@ auto Manager::request_relocalization(
       messages::RelocalizationRequest>(
       request,
       [m = _pimpl->middleware]
-      (const messages::RelocalizationRequest& request_msg)
+        (const messages::RelocalizationRequest& request_msg)
       {
         m->send_relocalization_request(request_msg);
       },
@@ -364,7 +367,8 @@ auto Manager::request_relocalization(
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
 
-  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  manager::RobotInfo::Implementation& robot_impl =
+    manager::RobotInfo::Implementation::get(*robot_info);
   robot_impl.allocate_request(request_info);
 
   return _pimpl->current_command_id;
@@ -403,7 +407,8 @@ auto Manager::request_navigation(
     }
 
     // Check if the connection exists
-    if (i + 1 != path.size() && nav_point.waypoint_index!=path[i+1].waypoint_index)
+    if (i + 1 != path.size() &&
+      nav_point.waypoint_index != path[i+1].waypoint_index)
     {
       const rmf_traffic::agv::Graph::Lane* connecting_lane =
         _pimpl->graph->lane_from(
@@ -459,7 +464,8 @@ auto Manager::request_navigation(
   _pimpl->unacknowledged_commands[request_command_id] = request_info;
   request_info->send_request();
 
-  manager::RobotInfo::Implementation& robot_impl = manager::RobotInfo::Implementation::get(*robot_info);
+  manager::RobotInfo::Implementation& robot_impl =
+    manager::RobotInfo::Implementation::get(*robot_info);
   robot_impl.allocate_request(request_info);
 
   return _pimpl->current_command_id;
