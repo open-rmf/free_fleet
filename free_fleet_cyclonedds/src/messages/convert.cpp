@@ -524,6 +524,10 @@ std::optional<messages::RobotState> convert(
   if (input.command_id_available)
     command_id = static_cast<CommandId>(input.command_id);
 
+  std::optional<std::size_t> target_path_index = std::nullopt;
+  if (input.target_path_index_available)
+    target_path_index = static_cast<uint32_t>(input.target_path_index);
+
   return messages::RobotState(
     time.value(),
     std::string(input.name),
@@ -532,7 +536,7 @@ std::optional<messages::RobotState> convert(
     mode.value(),
     input.battery_percent,
     loc.value(),
-    static_cast<std::size_t>(input.target_path_index));
+    target_path_index);
 }
 
 //==============================================================================
