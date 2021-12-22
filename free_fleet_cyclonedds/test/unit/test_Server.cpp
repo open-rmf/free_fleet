@@ -50,7 +50,8 @@ SCENARIO("Single server with mock subscribers and publishers")
     rmf_traffic::Time t = std::chrono::steady_clock::now();
     RobotMode m(RobotMode::Mode::Charging, "test_info");
     Location loc("test_map", {1.2, 3.4}, 5.6);
-    RobotState s(t, "test_robot", "test_model", std::nullopt, m, 0.9, loc, 321);
+    RobotState s(t, "test_robot", "test_model", std::nullopt, false, m, 0.9,
+      loc, 321);
 
     bool received_req = false;
     bool received_same_req = false;

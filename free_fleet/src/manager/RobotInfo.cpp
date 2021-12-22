@@ -53,7 +53,7 @@ void RobotInfo::Implementation::update_state(
   std::pair<TrackingState, std::size_t> new_tracking_estimate;
 
   // Robot is not following any commands at the moment.
-  if (!command_id.has_value())
+  if (!command_id.has_value() || new_state.command_completed())
   {
     new_tracking_estimate =
       robot_info._pimpl->track_through_graph(new_state);

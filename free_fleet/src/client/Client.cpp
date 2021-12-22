@@ -37,7 +37,7 @@ void Client::Implementation::DataHandle::complete_command()
   }
 
   last_command_id = command_id.value();
-  command_id = std::nullopt;
+  command_completed = true;
 }
 
 //==============================================================================
@@ -47,6 +47,7 @@ void Client::Implementation::DataHandle::handle_pause_request(
   if (!is_valid_request(request))
     return;
 
+  command_completed = false;
   command_id = request.command_id();
   command_ids.insert(command_id.value());
   command_handle->stop(
@@ -62,6 +63,7 @@ void Client::Implementation::DataHandle::handle_resume_request(
 {
   if (!is_valid_request(request))
     return;
+  command_completed = false;
   command_id = request.command_id();
   command_ids.insert(command_id.value());
   command_handle->resume(
@@ -77,6 +79,7 @@ void Client::Implementation::DataHandle::handle_dock_request(
 {
   if (!is_valid_request(request))
     return;
+  command_completed = false;
 
   if (!command_handle->dock(
       request.dock_name(),
@@ -99,6 +102,7 @@ void Client::Implementation::DataHandle::handle_navigation_request(
 {
   if (!is_valid_request(request))
     return;
+  command_completed = false;
   command_id = request.command_id();
   command_ids.insert(command_id.value());
   command_handle->follow_new_path(
@@ -115,6 +119,7 @@ void Client::Implementation::DataHandle::handle_relocalization_request(
 {
   if (!is_valid_request(request))
     return;
+  command_completed = false;
   command_id = request.command_id();
   command_ids.insert(command_id.value());
   command_handle->relocalize(
@@ -211,6 +216,7 @@ void Client::run_once()
     _pimpl->data->robot_name,
     _pimpl->data->robot_model,
     _pimpl->data->command_id,
+    _pimpl->data->command_completed,
     _pimpl->status_handle->mode(),
     _pimpl->status_handle->battery_percent(),
     _pimpl->status_handle->location(),

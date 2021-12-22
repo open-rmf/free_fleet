@@ -246,7 +246,8 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     RobotMode m(RobotMode::Mode::Charging, "test_info");
     Location loc("test_map", {1.2, 3.4}, 5.6);
 
-    RobotState s(t, "test_robot", "test_model", std::nullopt, m, 0.9, loc, 321);
+    RobotState s(t, "test_robot", "test_model", std::nullopt, false, m, 0.9,
+      loc, 321);
 
     auto s_dds = convert(s);
     REQUIRE(s_dds.has_value());
@@ -280,7 +281,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     RobotMode m(RobotMode::Mode::Charging, "test_info");
     Location loc("test_map", {1.2, 3.4}, 5.6);
 
-    RobotState s(t, "test_robot", "test_model", 123, m, 0.9, loc, 321);
+    RobotState s(t, "test_robot", "test_model", 123, false, m, 0.9, loc, 321);
 
     auto s_dds = convert(s);
     REQUIRE(s_dds.has_value());
@@ -289,6 +290,7 @@ SCENARIO("Testing conversion between free fleet messags and DDS messages")
     CHECK(std::string(s_dds->model) == "test_model");
     REQUIRE(s_dds->command_id_available);
     CHECK(s_dds->command_id == 123);
+    CHECK(s_dds->command_completed == false);
     CHECK(s_dds->battery_percent == Approx(0.9));
     CHECK(s_dds->target_path_index == 321);
 

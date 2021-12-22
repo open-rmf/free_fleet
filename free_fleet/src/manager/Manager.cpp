@@ -61,6 +61,7 @@ void Manager::Implementation::handle_robot_state(
     robot_name,
     state.model(),
     command_id,
+    state.command_completed(),
     state.mode(),
     state.battery_percent(),
     to_robot_transform->backward_transform(state.location()),

@@ -51,6 +51,8 @@ public:
 
     std::optional<CommandId> command_id = std::nullopt;
 
+    bool command_completed = false;
+
     CommandId last_command_id = 0;
 
     std::unordered_set<uint32_t> command_ids;

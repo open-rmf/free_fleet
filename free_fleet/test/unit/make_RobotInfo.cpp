@@ -42,6 +42,7 @@ SCENARIO("Make RobotInfo")
     "test_robot",
     "test_model",
     0,
+    false,
     initial_mode,
     1.0,
     initial_location,
