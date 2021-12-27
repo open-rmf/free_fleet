@@ -55,7 +55,7 @@ public:
   Waypoint(
     std::size_t index,
     const Location& location,
-    rmf_traffic::Time wait_until);
+    std::optional<rmf_traffic::Time> wait_until);
 
   /// Gets the index of this waypoint.
   std::size_t index() const;

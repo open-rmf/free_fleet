@@ -155,6 +155,11 @@ public:
     /// Orientation yaw value in radians for this location. If there is no
     /// preference for the orientation, this field can be left as a nullopt.
     std::optional<double> yaw = std::nullopt;
+
+    /// The time that the robot is expected to wait until on this waypoint
+    /// before proceeding. If the robot is expected to move on
+    /// immediately, this will be a nullopt.
+    std::optional<rmf_traffic::Time> wait_until = std::nullopt;
   };
 
   /// Sends out a navigation request to a robot.

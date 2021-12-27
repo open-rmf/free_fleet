@@ -432,7 +432,8 @@ auto Manager::request_navigation(
       transformed_path.push_back(
         messages::Waypoint(
           nav_point.waypoint_index,
-          _pimpl->to_robot_transform->forward_transform(g_loc)));
+          _pimpl->to_robot_transform->forward_transform(g_loc),
+          nav_point.wait_until));
     }
     else
     {
@@ -442,7 +443,8 @@ auto Manager::request_navigation(
       transformed_path.push_back(
         messages::Waypoint(
           nav_point.waypoint_index,
-          _pimpl->to_robot_transform->forward_transform(g_loc)));
+          _pimpl->to_robot_transform->forward_transform(g_loc),
+          nav_point.wait_until));
     }
   }
 
