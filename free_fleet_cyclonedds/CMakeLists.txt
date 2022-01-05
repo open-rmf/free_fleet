@@ -137,5 +137,3 @@ export(
   FILE ${CMAKE_CURRENT_BINARY_DIR}/free_fleet_cyclonedds-targets.cmake
   NAMESPACE free_fleet_cyclonedds::
 )
-
-export(PACKAGE free_fleet_cyclonedds)
