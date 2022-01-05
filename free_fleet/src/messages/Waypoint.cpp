@@ -43,7 +43,7 @@ Waypoint::Waypoint(std::size_t index, const Location& location)
 Waypoint::Waypoint(
   std::size_t index,
   const Location& location,
-  rmf_traffic::Time wait_until)
+  std::optional<rmf_traffic::Time> wait_until)
 : _pimpl(rmf_utils::make_impl<Implementation>(
       Implementation{index, location, wait_until}))
 {

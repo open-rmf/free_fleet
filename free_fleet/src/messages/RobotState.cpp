@@ -34,6 +34,8 @@ public:
 
   std::optional<CommandId> command_id;
 
+  bool command_completed;
+
   RobotMode mode;
 
   double battery_percent;
@@ -49,6 +51,7 @@ RobotState::RobotState(
   const std::string& name,
   const std::string& model,
   std::optional<CommandId> command_id,
+  const bool command_completed,
   const RobotMode& mode,
   double battery_percent,
   const Location& location,
@@ -75,6 +78,7 @@ RobotState::RobotState(
         name,
         model,
         std::move(command_id),
+        command_completed,
         mode,
         battery_percent,
         location,
@@ -103,6 +107,12 @@ const std::string& RobotState::model() const
 std::optional<CommandId> RobotState::command_id() const
 {
   return _pimpl->command_id;
+}
+
+//==============================================================================
+bool RobotState::command_completed() const
+{
+  return _pimpl->command_completed;
 }
 
 //==============================================================================

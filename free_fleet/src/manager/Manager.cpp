@@ -61,6 +61,7 @@ void Manager::Implementation::handle_robot_state(
     robot_name,
     state.model(),
     command_id,
+    state.command_completed(),
     state.mode(),
     state.battery_percent(),
     to_robot_transform->backward_transform(state.location()),
@@ -431,7 +432,8 @@ auto Manager::request_navigation(
       transformed_path.push_back(
         messages::Waypoint(
           nav_point.waypoint_index,
-          _pimpl->to_robot_transform->forward_transform(g_loc)));
+          _pimpl->to_robot_transform->forward_transform(g_loc),
+          nav_point.wait_until));
     }
     else
     {
@@ -441,7 +443,8 @@ auto Manager::request_navigation(
       transformed_path.push_back(
         messages::Waypoint(
           nav_point.waypoint_index,
-          _pimpl->to_robot_transform->forward_transform(g_loc)));
+          _pimpl->to_robot_transform->forward_transform(g_loc),
+          nav_point.wait_until));
     }
   }
 

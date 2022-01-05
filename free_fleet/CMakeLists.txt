@@ -131,5 +131,3 @@ export(
   FILE ${CMAKE_CURRENT_BINARY_DIR}/free_fleet-targets.cmake
   NAMESPACE free_fleet::
 )
-
-export(PACKAGE free_fleet)

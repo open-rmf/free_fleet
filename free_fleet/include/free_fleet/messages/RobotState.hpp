@@ -50,9 +50,10 @@ public:
   ///   The model name of this robot.
   ///
   /// \param[in] command_id
-  ///   The command id of the command that the robot is currently performing.
-  ///   If the robot has completed its previous command and is idle, this should
-  ///   be a nullopt.
+  ///   The command id of the command that the robot is currently performing, or has just completed.
+  ///
+  /// \param[in] command_completed
+  ///   True if the current command has been completed.
   ///
   /// \param[in] mode
   ///   The current mode of the robot.
@@ -73,6 +74,7 @@ public:
     const std::string& name,
     const std::string& model,
     std::optional<CommandId> command_id,
+    bool command_completed,
     const RobotMode& mode,
     double battery_percent,
     const Location& location,
@@ -87,9 +89,11 @@ public:
   /// Gets the robot model.
   const std::string& model() const;
 
-  /// Gets the current command id. If the robot has completed its command and is
-  /// idle, returns a nullopt.
+  /// Gets the current command id.
   std::optional<CommandId> command_id() const;
+
+  /// Gets the completion status of the current command.
+  bool command_completed() const;
 
   /// Gets the robot mode.
   const RobotMode& mode() const;

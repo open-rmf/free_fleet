@@ -286,6 +286,8 @@ std::optional<MiddlewareMessages_RobotState> convert(
     output.command_id = static_cast<uint32_t>(input.command_id().value());
   }
 
+  output.command_completed = input.command_completed();
+
   auto mode = convert(input.mode());
   if (!mode.has_value())
     return convert_error("failed to convert RobotState::mode.");
@@ -533,6 +535,7 @@ std::optional<messages::RobotState> convert(
     std::string(input.name),
     std::string(input.model),
     command_id,
+    input.command_completed,
     mode.value(),
     input.battery_percent,
     loc.value(),

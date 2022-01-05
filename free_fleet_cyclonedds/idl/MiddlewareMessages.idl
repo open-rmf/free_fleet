@@ -87,6 +87,7 @@ module MiddlewareMessages
 
     boolean command_id_available;
     unsigned long command_id;
+    boolean command_completed;
 
     RobotMode mode;
     double battery_percent;
