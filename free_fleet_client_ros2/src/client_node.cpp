@@ -549,9 +549,8 @@ void ClientNode::handle_requests()
   if (!goal_path.empty())
   {
     auto send_goal_options = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
-    send_goal_options.goal_response_callback = [&](std::shared_future<GoalHandleNavigateToPose::SharedPtr> future) {
-      auto goal_handle = future.get();
-      if (!goal_handle) {
+    send_goal_options.goal_response_callback = [&](const GoalHandleNavigateToPose::SharedPtr & goal) {
+      if (!goal) {
         RCLCPP_ERROR(get_logger(), "Goal was rejected by server");
       } else {
         RCLCPP_INFO(get_logger(), "Goal accepted by server, waiting for result");
