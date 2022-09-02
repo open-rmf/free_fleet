@@ -336,9 +336,9 @@ nav2_msgs::action::NavigateToPose::Goal ClientNode::location_to_nav_goal(
 bool ClientNode::read_mode_request()
 {
   messages::ModeRequest mode_request;
-  if (fields.client->read_mode_request(mode_request) && 
+  if (fields.client->read_mode_request(mode_request) &&
       is_valid_request(
-          mode_request.fleet_name, mode_request.robot_name, 
+          mode_request.fleet_name, mode_request.robot_name,
           mode_request.task_id))
   {
     if (mode_request.mode.mode == messages::RobotMode::MODE_PAUSED)
@@ -424,7 +424,7 @@ bool ClientNode::read_path_request()
     {
       ReadLock robot_transform_lock(robot_pose_mutex);
       const double dx =
-          path_request.path[0].x - 
+          path_request.path[0].x -
           current_robot_pose.pose.position.x;
       const double dy =
           path_request.path[0].y -
@@ -433,13 +433,13 @@ bool ClientNode::read_path_request()
 
       RCLCPP_INFO(get_logger(), "distance to first waypoint: %.2f\n", dist_to_first_waypoint);
 
-      if (dist_to_first_waypoint > 
+      if (dist_to_first_waypoint >
           client_node_config.max_dist_to_first_waypoint)
       {
         RCLCPP_WARN(get_logger(), "distance was over threshold of %.2f ! Rejecting path,"
             "waiting for next valid request.\n",
             client_node_config.max_dist_to_first_waypoint);
-        
+
         fields.move_base_client->async_cancel_all_goals();
         {
           WriteLock goal_path_lock(goal_path_mutex);
@@ -454,11 +454,19 @@ bool ClientNode::read_path_request()
     }
 
     fields.move_base_client->async_cancel_all_goals();
+    // TODO(AA): Use a scoped lock for these mutexes, and rework the time
+    // remaining wait logic. We are currently relying on the task to be updated
+    // to indicate that the client does not need to wait anymore.
+    {
+      WriteLock task_id_lock(task_id_mutex);
+      current_task_id = path_request.task_id;
+    }
     {
       WriteLock goal_path_lock(goal_path_mutex);
       goal_path.clear();
       for (size_t i = 0; i < path_request.path.size(); ++i)
       {
+        RCLCPP_INFO(get_logger(), "sec: %u", path_request.path[i].sec);
         goal_path.push_back(
             Goal {
                 path_request.path[i].level_name,
@@ -470,11 +478,6 @@ bool ClientNode::read_path_request()
                     path_request.path[i].nanosec,
                     RCL_ROS_TIME)}); // messages use RCL_ROS_TIME instead of default RCL_SYSTEM_TIME
       }
-    }
-    
-    {
-      WriteLock task_id_lock(task_id_mutex);
-      current_task_id = path_request.task_id;
     }
 
     if (paused)
@@ -497,7 +500,7 @@ bool ClientNode::read_destination_request()
     RCLCPP_INFO(get_logger(), "received a Destination command, x: %.2f, y: %.2f, yaw: %.2f",
         destination_request.destination.x, destination_request.destination.y,
         destination_request.destination.yaw);
-    
+
     fields.move_base_client->async_cancel_all_goals();
     {
       WriteLock goal_path_lock(goal_path_mutex);
@@ -574,24 +577,44 @@ void ClientNode::handle_requests()
               goal_path.pop_front();
           }
           else
-          { 
+          {
             std::thread{
-              [&]() {
+              [&]()
+              {
+                std::string goal_task_id;
+                {
+                  ReadLock task_id_lock(task_id_mutex);
+                  goal_task_id = current_task_id;
+                }
+
                 {
                   ReadLock goal_path_lock(goal_path_mutex);
-                  while (now() < goal_path.front().goal_end_time) {
+                  while (now() < goal_path.front().goal_end_time)
+                  {
+                    {
+                      ReadLock task_id_lock(task_id_mutex);
+                      if (current_task_id != goal_task_id)
+                      {
+                        RCLCPP_INFO(get_logger(),
+                          "a new task has come in, moving on to new task.");
+                        return;
+                      }
+                    }
+
                     rclcpp::Duration wait_time_remaining =
                         goal_path.front().goal_end_time - now();
-                    RCLCPP_INFO(get_logger(), 
+                    RCLCPP_INFO(get_logger(),
                         "we reached our goal early! Waiting %.2f more seconds",
                         wait_time_remaining.seconds());
-                    std::this_thread::sleep_for(
-                      std::chrono::nanoseconds(wait_time_remaining.nanoseconds()));
+                    std::this_thread::sleep_for(std::chrono::seconds(2));
                   }
                 }
-                WriteLock goal_path_lock(goal_path_mutex);
-                if (!goal_path.empty()) // TODO: fix race condition instead
+
+                std::scoped_lock goal_lock{task_id_mutex, goal_path_mutex};
+                if (!goal_path.empty() && current_task_id == goal_task_id)
+                {
                   goal_path.pop_front();
+                }
               }
             }.detach();
           }
@@ -643,7 +666,7 @@ void ClientNode::handle_requests()
       return;
     }
   }
-  
+
   // otherwise, mode is correct, nothing in queue, nothing else to do then
 }
 
