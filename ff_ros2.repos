@@ -3,7 +3,3 @@ repositories:
     type: git
     url: https://github.com/open-rmf/free_fleet.git
     version: main
-  rmf_internal_msgs:
-    type: git
-    url: https://github.com/open-rmf/rmf_internal_msgs.git
-    version: main
