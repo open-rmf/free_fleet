@@ -16,11 +16,11 @@ jobs:
       - name: deps
         uses: ros-tooling/setup-ros@v0.2
         with:
-          required-ros-distributions: noetic 
+          required-ros-distributions: noetic
       - name: build
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          target-ros1-distro: noetic 
+          target-ros1-distro: noetic
           # build all packages listed in the meta package
           package-name: |
             free_fleet
@@ -32,18 +32,18 @@ jobs:
 
   ros2_build:
     name: ros2_build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: pwd
         run: pwd
       - name: deps
         uses: ros-tooling/setup-ros@v0.2
         with:
-          required-ros-distributions: galactic
+          required-ros-distributions: humble
       - name: build
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          target-ros2-distro: galactic
+          target-ros2-distro: humble
           # build all packages listed in the meta package
           package-name: |
             free_fleet
