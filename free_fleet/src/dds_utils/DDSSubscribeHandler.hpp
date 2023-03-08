@@ -116,7 +116,7 @@ public:
     {
       for (size_t i = 0; i < MaxSamplesNum; ++i)
       {
-        if (infos[i].valid_data)
+        if (infos[i].valid_data == true)
           msgs.push_back(std::shared_ptr<const Message>(shared_msgs[i]));
       }
       return msgs;
