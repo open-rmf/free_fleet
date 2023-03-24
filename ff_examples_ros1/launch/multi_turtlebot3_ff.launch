@@ -3,7 +3,7 @@
   <arg name="set_map_frame"  default="map"/>
 
   <!-- launches the basic multi turtlebot3 world -->
-  <include file="$(find turtlebot3_gazebo)/launch/multi_turtlebot3.launch">
+  <include file="$(find ff_examples_ros1)/launch/include/multi_turtlebot3.launch">
     <arg name="model" value="$(arg model)"/>
   </include>
 
