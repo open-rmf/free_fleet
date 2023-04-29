@@ -39,6 +39,9 @@ void to_ff_message(
     const rmf_fleet_msgs::msg::Location& in_msg, messages::Location& out_msg);
 
 void to_ff_message(
+    const rmf_fleet_msgs::msg::ModeParameter& in_msg, messages::ModeParameter& out_msg);
+
+void to_ff_message(
     const rmf_fleet_msgs::msg::ModeRequest& in_msg, 
     messages::ModeRequest& out_msg);
 
