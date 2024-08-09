@@ -83,7 +83,7 @@
       ////                      - "regex" is a regular expression matching a Publisher interface name
       ////                      - "float" is the maximum frequency in Hertz;
       ////                        if publication rate is higher, downsampling will occur when routing.
-      // pub_max_frequencies: [".*/laser_scan=5", "/tf=10"],
+      pub_max_frequencies: [".*/navigate_to_pose/*=1", "/tf=1"],
 
       ////
       //// pub_priorities: Specify a list of priorities of publications routing over zenoh for a set of Publishers.

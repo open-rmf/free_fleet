@@ -20,3 +20,13 @@ Start `zenoh-bridge-ros2dds`
 ```bash
 ./zenoh-bridge-ros2dds -c PATH_TO_WORKSPACE/src/free_fleet/free_fleet_examples/configs/example.json5
 ```
+
+Start a `navigate_to_pose` action over `zenoh`,
+
+```bash
+source PATH_TO_WORKSPACE/install/setup.bash
+ros2 run free_fleet_examples test_navigate_to_pose.py \
+    --frame-id map \
+    --x X_COORDINATES \
+    --y Y_COORDDIATES
+```

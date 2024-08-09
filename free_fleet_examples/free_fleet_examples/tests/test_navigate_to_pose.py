@@ -19,103 +19,21 @@ import sys
 import time
 import zenoh
 
-import pycdr2
-from pycdr2 import IdlStruct
-from dataclasses import dataclass
-
-
-@dataclass
-class Time(IdlStruct, typename="Time"):
-    sec: pycdr2.types.int32
-    nanosec: pycdr2.types.uint32
-
-
-@dataclass
-class Duration(IdlStruct, typename="Duration"):
-    sec: pycdr2.types.int32
-    nanosec: pycdr2.types.uint32
-
-
-@dataclass
-class Header(IdlStruct, typename="Header"):
-    stamp: Time
-    frame_id: str
-
-
-@dataclass
-class GeometryMsgs_Point(IdlStruct, typename="GeometryMsgs_Point"):
-    x: pycdr2.types.float64
-    y: pycdr2.types.float64
-    z: pycdr2.types.float64
-
-
-@dataclass
-class GeometryMsgs_Quaternion(IdlStruct, typename="GeometryMsgs_Quaternion"):
-    x: pycdr2.types.float64 = 0
-    y: pycdr2.types.float64 = 0
-    z: pycdr2.types.float64 = 0
-    w: pycdr2.types.float64 = 1
-
-
-@dataclass
-class GeometryMsgs_Pose(IdlStruct, typename="GeometryMsgs_Pose"):
-    position: GeometryMsgs_Point
-    orientation: GeometryMsgs_Quaternion
-
-
-@dataclass
-class GeometryMsgs_PoseStamped(IdlStruct, typename="GeometryMsgs_PoseStamped"):
-    header: Header
-    pose: GeometryMsgs_Pose
-
-
-@dataclass
-class NavigateToPose_SendGoal_Request(
-    IdlStruct,
-    typename="NavigateToPose_SendGoal_Request"
-):
-    goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
-    pose: GeometryMsgs_PoseStamped
-    behavior_tree: str
-
-
-@dataclass
-class NavigateToPose_SendGoal_Response(
-    IdlStruct,
-    typename="NavigateToPose_SendGoal_Response"
-):
-    accepted: bool
-    stamp: Time
-
-
-@dataclass
-class NavigateToPose_GetResult_Request(
-    IdlStruct,
-    typename="NavigateToPose_GetResult_Request"
-):
-    goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
-
-
-@dataclass
-class NavigateToPose_GetResult_Response(
-    IdlStruct,
-    typename="NavigateToPose_GetResult_Response"
-):
-    status: pycdr2.types.int8
-
-
-@dataclass
-class NavigateToPose_Feedback(IdlStruct, typename="NavigateToPose_Feedback"):
-    goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
-    current_pose: GeometryMsgs_PoseStamped
-    navigation_time: Duration
-    estimated_time_remaining: Duration
-    number_of_recoveries: pycdr2.types.int16
-    distance_remaining: pycdr2.types.float32
+from free_fleet_examples.types import (
+    GeometryMsgs_Point,
+    GeometryMsgs_Pose,
+    GeometryMsgs_PoseStamped,
+    GeometryMsgs_Quaternion,
+    Header,
+    NavigateToPose_Feedback,
+    NavigateToPose_GetResult_Request,
+    NavigateToPose_SendGoal_Request,
+    NavigateToPose_SendGoal_Response,
+    Time,
+)
 
 
 def feedback_callback(sample: zenoh.Sample):
-    # Deserialize the message
     feedback = NavigateToPose_Feedback.deserialize(sample.payload)
     print(f"Distance remaining: {feedback.distance_remaining}")
 
