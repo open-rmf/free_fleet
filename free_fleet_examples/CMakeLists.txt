@@ -9,7 +9,7 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}
 )
 
-ament_package()
+ament_python_install_package(${PROJECT_NAME})
 
 file(GLOB_RECURSE traffic_editor_paths "maps/*.building.yaml")
 
@@ -45,3 +45,10 @@ foreach(path ${traffic_editor_paths})
   )
 
 endforeach()
+
+install(PROGRAMS
+  ${PROJECT_NAME}/navigate_to_pose.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_package()
