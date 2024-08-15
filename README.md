@@ -88,7 +88,7 @@ Source ROS 1 and build,
 ```bash
 cd ~/ff_ros1_ws
 source /opt/ros/noetic/setup.bash
-colcon build
+catkin build
 ```
 
 </br>
