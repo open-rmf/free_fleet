@@ -19,12 +19,34 @@ import sys
 import time
 import zenoh
 
-from free_fleet_examples.types import TFMessage
+from geometry_msgs.msg import TransformStamped
+from rclpy.time import Time
+from tf2_ros import Buffer
+
+from free_fleet.types import TFMessage
+from free_fleet.utils import namespace_topic
+
+
+tf_buffer = Buffer()
 
 
 def tf_callback(sample: zenoh.Sample):
     transform = TFMessage.deserialize(sample.payload)
-    print("got a tf!")
+    for zt in transform.transforms:
+        time = Time(seconds=zt.header.stamp.sec, nanoseconds=zt.header.stamp.nanosec)
+        t = TransformStamped()
+        t.header.stamp = time.to_msg()
+        t.header.stamp
+        t.header.frame_id = zt.header.frame_id
+        t.child_frame_id = zt.child_frame_id
+        t.transform.translation.x = zt.transform.translation.x
+        t.transform.translation.y = zt.transform.translation.y
+        t.transform.translation.z = zt.transform.translation.z
+        t.transform.rotation.x = zt.transform.rotation.x
+        t.transform.rotation.y = zt.transform.rotation.y
+        t.transform.rotation.z = zt.transform.rotation.z
+        t.transform.rotation.w = zt.transform.rotation.w
+        tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
 
 
 def main(argv=sys.argv):
@@ -45,14 +67,26 @@ def main(argv=sys.argv):
     # Open Zenoh Session
     session = zenoh.open(conf)
 
-    # Declare a subscriber for feedbacks
-    tf_topic = 'tf'
-    if len(args.namespace) != 0:
-        tf_topic = args.namespace + '/' + tf_topic
-    pub = session.declare_subscriber(tf_topic, tf_callback)
+    # Subscribe to TF
+    pub = session.declare_subscriber(
+        namespace_topic("tf", args.namespace),
+        tf_callback
+    )
 
     try:
         while True:
+            try:
+                transform = tf_buffer.lookup_transform(
+                    'base_footprint',
+                    'map',
+                    Time()
+                )
+                print(transform)
+            except Exception as err:
+                print(
+                    f'Unable to get transform between base_footprint and map: {type(err)}: {err}'
+                )
+
             time.sleep(1)
     except (KeyboardInterrupt):
         pass

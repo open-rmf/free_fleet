@@ -19,7 +19,7 @@ import sys
 import time
 import zenoh
 
-from free_fleet_examples.types import (
+from free_fleet.types import (
     GeometryMsgs_Point,
     GeometryMsgs_Pose,
     GeometryMsgs_PoseStamped,
@@ -27,10 +27,12 @@ from free_fleet_examples.types import (
     Header,
     NavigateToPose_Feedback,
     NavigateToPose_GetResult_Request,
+    NavigateToPose_GetResult_Response,
     NavigateToPose_SendGoal_Request,
     NavigateToPose_SendGoal_Response,
     Time,
 )
+from free_fleet.utils import namespace_topic
 
 
 def feedback_callback(sample: zenoh.Sample):
@@ -60,10 +62,10 @@ def main(argv=sys.argv):
     session = zenoh.open(conf)
 
     # Declare a subscriber for feedbacks
-    feedback_topic = 'navigate_to_pose/_action/feedback'
-    if len(args.namespace) != 0:
-        feedback_topic = args.namespace + '/' + feedback_topic
-    pub = session.declare_subscriber(feedback_topic, feedback_callback)
+    pub = session.declare_subscriber(
+        namespace_topic('navigate_to_pose/_action/feedback', args.namespace),
+        feedback_callback
+    )
 
     time = Time(sec=0, nanosec=0)
     header = Header(stamp=time, frame_id=args.frame_id)
@@ -74,7 +76,7 @@ def main(argv=sys.argv):
 
     pose_stamped = GeometryMsgs_PoseStamped(header=header, pose=pose)
 
-    goal_id = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    goal_id = [i for i in range(1, 17)]
     req = NavigateToPose_SendGoal_Request(
         goal_id=goal_id,
         pose=pose_stamped,
@@ -84,7 +86,7 @@ def main(argv=sys.argv):
     # Send the query with the serialized request
     print('Sending goal')
     replies = session.get(
-        'navigate_to_pose/_action/send_goal',
+        namespace_topic('navigate_to_pose/_action/send_goal', args.namespace),
         zenoh.Queue(),
         value=req.serialize()
     )
@@ -99,7 +101,7 @@ def main(argv=sys.argv):
         # Deserialize the response
         rep = NavigateToPose_SendGoal_Response.deserialize(reply.ok.payload)
         if not rep.accepted:
-            print('Goal rejected :(')
+            print('Goal rejected')
             return
 
     print('Goal accepted by server, waiting for result')
@@ -107,12 +109,15 @@ def main(argv=sys.argv):
     req = NavigateToPose_GetResult_Request(goal_id)
     # Send the query with the serialized request
     replies = session.get(
-        'navigate_to_pose/_action/get_result',
+        namespace_topic('navigate_to_pose/_action/get_result', args.namespace),
         zenoh.Queue(),
         value=req.serialize()
     )
     # Zenoh could get several replies for a request (e.g. from several "Service Servers" using the same name)
     for reply in replies.receiver:
+        if not reply.ok:
+            print("Reply was not ok!")
+            continue
         # Deserialize the response
         rep = NavigateToPose_GetResult_Response.deserialize(reply.ok.payload)
         # print('Result: {0}'.format(rep.sequence))

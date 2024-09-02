@@ -125,7 +125,7 @@ class GeometryMsgs_Transform(IdlStruct, typename="GeometryMsgs_Transform"):
 @dataclass
 class GeometryMsgs_TransformStamped(IdlStruct, typename="GeometryMsgs_TransformStamped"):
     header: Header
-    frame_id: str
+    child_frame_id: str
     transform: GeometryMsgs_Transform
 
 
