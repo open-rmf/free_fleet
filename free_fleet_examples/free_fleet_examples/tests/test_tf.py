@@ -46,18 +46,18 @@ def tf_callback(sample: zenoh.Sample):
         t.transform.rotation.y = zt.transform.rotation.y
         t.transform.rotation.z = zt.transform.rotation.z
         t.transform.rotation.w = zt.transform.rotation.w
-        tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
+        tf_buffer.set_transform(t, "free_fleet_examples_test_tf")
 
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
-        prog='tf_listener',
-        description='Zenoh/ROS2 tf example')
-    parser.add_argument('--zenoh-config', '-c', dest='config',
-        metavar='FILE',
+        prog="tf_listener",
+        description="Zenoh/ROS2 tf example")
+    parser.add_argument("--zenoh-config", "-c", dest="config",
+        metavar="FILE",
         type=str,
-        help='A configuration file.')
-    parser.add_argument('--namespace', '-n', type=str, default='')
+        help="A configuration file.")
+    parser.add_argument("--namespace", "-n", type=str, default="")
 
     args = parser.parse_args()
 
@@ -77,14 +77,14 @@ def main(argv=sys.argv):
         while True:
             try:
                 transform = tf_buffer.lookup_transform(
-                    'base_footprint',
-                    'map',
+                    "base_footprint",
+                    "map",
                     Time()
                 )
                 print(transform)
             except Exception as err:
                 print(
-                    f'Unable to get transform between base_footprint and map: {type(err)}: {err}'
+                    f"Unable to get transform between base_footprint and map: {type(err)}: {err}"
                 )
 
             time.sleep(1)

@@ -14,5 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from free_fleet.types import (
+    ActionMsgs_CancelGoal_Request,
+    ActionMsgs_GoalInfo,
+    Time,
+    UUID
+)
+
+
 def namespace_topic(topic:str , namespace: str) -> str:
     return f"{namespace}/{topic}" if len(namespace) != 0 else topic
+
+
+def make_cancel_all_goals_request() -> ActionMsgs_CancelGoal_Request:
+    return ActionMsgs_CancelGoal_Request(
+        goal_info=ActionMsgs_GoalInfo(
+            UUID(uuid=[0 for i in range(16)]),
+            Time(sec=0, nanosec=0)
+        )
+    )

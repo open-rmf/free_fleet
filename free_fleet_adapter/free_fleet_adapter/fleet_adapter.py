@@ -40,6 +40,8 @@ from free_fleet.types import (
 )
 from free_fleet.utils import namespace_topic
 
+from geometry_msgs.msg import TransformStamped
+
 import rclpy
 import rclpy.node
 from rclpy.parameter import Parameter
@@ -49,6 +51,9 @@ import rmf_adapter
 from rmf_adapter import Adapter
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter import Transformation
+
+from tf2_ros import Buffer
+
 
 # ------------------------------------------------------------------------------
 # Helper functions
@@ -148,11 +153,14 @@ def main(argv=sys.argv):
         if args.zenoh_config is not None else zenoh.Config()
     zenoh_session = zenoh.open(zenoh_config)
 
+    # Set up tf2 buffer
+    tf_buffer = Buffer()
+
     robots = {}
     for robot_name in fleet_config.known_robots:
         robot_config = fleet_config.get_known_robot_configuration(robot_name)
         robots[robot_name] = RobotAdapter(
-            robot_name, robot_config, node, zenoh_session, fleet_handle
+            robot_name, robot_config, node, zenoh_session, fleet_handle, tf_buffer
         )
 
     update_period = 1.0/config_yaml['rmf_fleet'].get(
@@ -201,7 +209,8 @@ class RobotAdapter:
         configuration,
         node,
         zenoh_session,
-        fleet_handle
+        fleet_handle,
+        tf_buffer
     ):
         self.name = name
         self.execution = None
@@ -210,12 +219,42 @@ class RobotAdapter:
         self.node = node
         self.zenoh_session = zenoh_session
         self.fleet_handle = fleet_handle
+        self.tf_buffer = tf_buffer
 
-        self.tf_sub = None
-        self.navigate_to_pose_action
+        def _tf_callback(sample: zenoh.Sample):
+            transform = TFMessage.deserialize(sample.payload)
+            for zt in transform.transforms:
+                time = Time(
+                    seconds=zt.header.stamp.sec,
+                    nanoseconds=zt.header.stamp.nanosec
+                )
+                t = TransformStamped()
+                t.header.stamp = time.to_msg()
+                t.header.stamp
+                t.header.frame_id = f"{self.name}/{zt.header.frame_id}"
+                t.child_frame_id = f"{self.name}/{zt.child_frame_id}"
+                t.transform.translation.x = zt.transform.translation.x
+                t.transform.translation.y = zt.transform.translation.y
+                t.transform.translation.z = zt.transform.translation.z
+                t.transform.rotation.x = zt.transform.rotation.x
+                t.transform.rotation.y = zt.transform.rotation.y
+                t.transform.rotation.z = zt.transform.rotation.z
+                t.transform.rotation.w = zt.transform.rotation.w
+                self.tf_buffer.set_transform(t, f"{self.name}_RobotAdapter")
 
-    def __del__(self):
-        if
+        self.tf_sub = self.zenoh_session.declare_subscriber(
+            namespace_topic("tf", name),
+            _tf_callback
+        )
+
+        def _feedback_callback(sample: zenoh.Sample):
+            feedback = NavigateToPose_Feedback.deserialize(sample.payload)
+            print(f"Distance remaining: {feedback.distance_remaining}")
+
+        self.navigate_to_pose_action_feedback = self.zenoh_session.declare_subscriber(
+            namespace_topic("navigate_to_pose/_action/feedback", name),
+            _feedback_callback
+        )
 
     def update(self, state):
         activity_identifier = None

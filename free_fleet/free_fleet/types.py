@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from enum import Enum
 import pycdr2
 from pycdr2 import IdlStruct
 from dataclasses import dataclass
@@ -91,6 +92,16 @@ class NavigateToPose_GetResult_Request(
     goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
 
 
+class GoalStatus(Enum):
+    STATUS_UNKNOWN: pycdr2.types.int8 = 0
+    STATUS_ACCEPTED: pycdr2.types.int8 = 1
+    STATUS_EXECUTING: pycdr2.types.int8 = 2
+    STATUS_CANCELING: pycdr2.types.int8 = 3
+    STATUS_SUCCEEDED: pycdr2.types.int8 = 4
+    STATUS_CANCELED: pycdr2.types.int8 = 5
+    STATUS_ABORTED: pycdr2.types.int8 = 6
+
+
 @dataclass
 class NavigateToPose_GetResult_Response(
     IdlStruct,
@@ -132,3 +143,25 @@ class GeometryMsgs_TransformStamped(IdlStruct, typename="GeometryMsgs_TransformS
 @dataclass
 class TFMessage(IdlStruct, typename="TFMessage"):
     transforms: pycdr2.types.sequence[GeometryMsgs_TransformStamped]
+
+
+@dataclass
+class UUID(IdlStruct, typename="UUID"):
+    uuid: pycdr2.types.array[pycdr2.types.uint8, 16]
+
+
+@dataclass
+class ActionMsgs_GoalInfo(IdlStruct, typename="ActionMsgs_GoalInfo"):
+    goal_id: UUID
+    stamp: Time
+
+
+@dataclass
+class ActionMsgs_CancelGoal_Request(IdlStruct, typename="ActionMsgs_CancelGoal_Request"):
+    goal_info: ActionMsgs_GoalInfo
+
+
+@dataclass
+class ActionMsgs_CancelGoal_Response(IdlStruct, typename="ActionMsgs_CancelGoal_Response"):
+    return_code: pycdr2.types.int8
+    goals_canceling: pycdr2.types.sequence[ActionMsgs_GoalInfo]

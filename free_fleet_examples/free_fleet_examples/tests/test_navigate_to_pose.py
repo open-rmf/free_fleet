@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import numpy as np
 import sys
 import time
 import zenoh
@@ -24,6 +25,7 @@ from free_fleet.types import (
     GeometryMsgs_Pose,
     GeometryMsgs_PoseStamped,
     GeometryMsgs_Quaternion,
+    GoalStatus,
     Header,
     NavigateToPose_Feedback,
     NavigateToPose_GetResult_Request,
@@ -42,16 +44,16 @@ def feedback_callback(sample: zenoh.Sample):
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
-        prog='navigate_to_pose_action_client',
-        description='Zenoh/ROS2 navigate_to_pose_action_client example')
-    parser.add_argument('--zenoh-config', '-c', dest='config',
-        metavar='FILE',
+        prog="navigate_to_pose_action_client",
+        description="Zenoh/ROS2 navigate_to_pose_action_client example")
+    parser.add_argument("--zenoh-config", "-c", dest="config",
+        metavar="FILE",
         type=str,
-        help='A configuration file.')
-    parser.add_argument('--namespace', '-n', type=str, default='')
-    parser.add_argument('--frame-id', '-f', type=str, default='odom')
-    parser.add_argument('-x', type=float)
-    parser.add_argument('-y', type=float)
+        help="A configuration file.")
+    parser.add_argument("--namespace", "-n", type=str, default="")
+    parser.add_argument("--frame-id", "-f", type=str, default="odom")
+    parser.add_argument("-x", type=float)
+    parser.add_argument("-y", type=float)
 
     args = parser.parse_args()
 
@@ -62,13 +64,13 @@ def main(argv=sys.argv):
     session = zenoh.open(conf)
 
     # Declare a subscriber for feedbacks
-    pub = session.declare_subscriber(
-        namespace_topic('navigate_to_pose/_action/feedback', args.namespace),
+    feedback_sub = session.declare_subscriber(
+        namespace_topic("navigate_to_pose/_action/feedback", args.namespace),
         feedback_callback
     )
 
-    time = Time(sec=0, nanosec=0)
-    header = Header(stamp=time, frame_id=args.frame_id)
+    stamp = Time(sec=0, nanosec=0)
+    header = Header(stamp=stamp, frame_id=args.frame_id)
 
     position = GeometryMsgs_Point(x=args.x, y=args.y, z=0)
     orientation = GeometryMsgs_Quaternion()
@@ -76,7 +78,9 @@ def main(argv=sys.argv):
 
     pose_stamped = GeometryMsgs_PoseStamped(header=header, pose=pose)
 
-    goal_id = [i for i in range(1, 17)]
+    # goal_id = [i for i in range(1, 17)]
+    goal_id = np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
+    print(goal_id)
     req = NavigateToPose_SendGoal_Request(
         goal_id=goal_id,
         pose=pose_stamped,
@@ -84,9 +88,9 @@ def main(argv=sys.argv):
     )
 
     # Send the query with the serialized request
-    print('Sending goal')
+    print("Sending goal")
     replies = session.get(
-        namespace_topic('navigate_to_pose/_action/send_goal', args.namespace),
+        namespace_topic("navigate_to_pose/_action/send_goal", args.namespace),
         zenoh.Queue(),
         value=req.serialize()
     )
@@ -97,33 +101,47 @@ def main(argv=sys.argv):
         if not reply.ok:
             print("Reply was not ok!")
             continue
-        print('handling a reply!')
+        print("handling a reply!")
         # Deserialize the response
         rep = NavigateToPose_SendGoal_Response.deserialize(reply.ok.payload)
         if not rep.accepted:
-            print('Goal rejected')
+            print("Goal rejected")
             return
 
-    print('Goal accepted by server, waiting for result')
+    print("Goal accepted by server, waiting for result")
 
     req = NavigateToPose_GetResult_Request(goal_id)
-    # Send the query with the serialized request
-    replies = session.get(
-        namespace_topic('navigate_to_pose/_action/get_result', args.namespace),
-        zenoh.Queue(),
-        value=req.serialize()
-    )
-    # Zenoh could get several replies for a request (e.g. from several "Service Servers" using the same name)
-    for reply in replies.receiver:
-        if not reply.ok:
-            print("Reply was not ok!")
-            continue
-        # Deserialize the response
-        rep = NavigateToPose_GetResult_Response.deserialize(reply.ok.payload)
-        # print('Result: {0}'.format(rep.sequence))
-        print(f"Result: {rep.status}")
+    try:
+        while True:
+            # Send the query with the serialized request
+            replies = session.get(
+                namespace_topic("navigate_to_pose/_action/get_result", args.namespace),
+                zenoh.Queue(),
+                value=req.serialize(),
+                timeout=0.5
+            )
 
-    session.close()
+            # Zenoh could get several replies for a request (e.g. from several "Service Servers" using the same name)
+            for reply in replies.receiver:
+                try:
+                    # Deserialize the response
+                    rep = NavigateToPose_GetResult_Response.deserialize(reply.ok.payload)
+                    # print("Result: {0}".format(rep.sequence))
+                    print(f"Result: {rep.status}")
+                    if rep.status == GoalStatus.STATUS_SUCCEEDED:
+                        done = True
+                        break
+                except:
+                    print("Received (ERROR: '{}')"
+                        .format(reply.err.payload.decode("utf-8")))
+                    continue
+
+            time.sleep(1)
+    except (KeyboardInterrupt):
+        pass
+    finally:
+        feedback_sub.undeclare()
+        session.close()
 
 
 if __name__ == "__main__":
