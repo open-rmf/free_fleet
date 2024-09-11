@@ -22,7 +22,11 @@ from free_fleet.types import (
 )
 
 
-def namespace_topic(topic:str , namespace: str) -> str:
+def namespace_frame(frame: str, namespace: str) -> str:
+    return f"{namespace}/{frame}" if len(namespace) != 0 else frame
+
+
+def namespace_topic(topic: str , namespace: str) -> str:
     return f"{namespace}/{topic}" if len(namespace) != 0 else topic
 
 

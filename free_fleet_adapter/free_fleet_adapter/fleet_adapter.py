@@ -21,31 +21,13 @@ import time
 import threading
 import asyncio
 import nudged
-from typing import Optional
 import zenoh
-
-from free_fleet.types import (
-    GeometryMsgs_Point,
-    GeometryMsgs_Pose,
-    GeometryMsgs_PoseStamped,
-    GeometryMsgs_Quaternion,
-    Header,
-    NavigateToPose_Feedback,
-    NavigateToPose_GetResult_Request,
-    NavigateToPose_GetResult_Response,
-    NavigateToPose_SendGoal_Request,
-    NavigateToPose_SendGoal_Response,
-    TFMessage,
-    Time,
-)
-from free_fleet.utils import namespace_topic
-
-from geometry_msgs.msg import TransformStamped
 
 import rclpy
 import rclpy.node
-from rclpy.parameter import Parameter
 from rclpy.duration import Duration
+from rclpy.parameter import Parameter
+from rclpy.time import Time
 
 import rmf_adapter
 from rmf_adapter import Adapter
@@ -53,6 +35,13 @@ import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter import Transformation
 
 from tf2_ros import Buffer
+
+from free_fleet.utils import namespace_frame
+
+from nav2_robot_adapter import Nav2RobotAdapter
+
+from tf_transformations import euler_from_quaternion
+
 
 
 # ------------------------------------------------------------------------------
@@ -159,7 +148,7 @@ def main(argv=sys.argv):
     robots = {}
     for robot_name in fleet_config.known_robots:
         robot_config = fleet_config.get_known_robot_configuration(robot_name)
-        robots[robot_name] = RobotAdapter(
+        robots[robot_name] = Nav2RobotAdapter(
             robot_name, robot_config, node, zenoh_session, fleet_handle, tf_buffer
         )
 
@@ -175,7 +164,7 @@ def main(argv=sys.argv):
             # Update all the robots in parallel using a thread pool
             update_jobs = []
             for robot in robots.values():
-                update_jobs.append(update_robot(robot))
+                update_jobs.append(update_robot(robot, tf_buffer))
 
             asyncio.get_event_loop().run_until_complete(
                 asyncio.wait(update_jobs)
@@ -202,113 +191,6 @@ def main(argv=sys.argv):
     zenoh_session.close()
 
 
-class RobotAdapter:
-    def __init__(
-        self,
-        name: str,
-        configuration,
-        node,
-        zenoh_session,
-        fleet_handle,
-        tf_buffer
-    ):
-        self.name = name
-        self.execution = None
-        self.update_handle = None
-        self.configuration = configuration
-        self.node = node
-        self.zenoh_session = zenoh_session
-        self.fleet_handle = fleet_handle
-        self.tf_buffer = tf_buffer
-
-        def _tf_callback(sample: zenoh.Sample):
-            transform = TFMessage.deserialize(sample.payload)
-            for zt in transform.transforms:
-                time = Time(
-                    seconds=zt.header.stamp.sec,
-                    nanoseconds=zt.header.stamp.nanosec
-                )
-                t = TransformStamped()
-                t.header.stamp = time.to_msg()
-                t.header.stamp
-                t.header.frame_id = f"{self.name}/{zt.header.frame_id}"
-                t.child_frame_id = f"{self.name}/{zt.child_frame_id}"
-                t.transform.translation.x = zt.transform.translation.x
-                t.transform.translation.y = zt.transform.translation.y
-                t.transform.translation.z = zt.transform.translation.z
-                t.transform.rotation.x = zt.transform.rotation.x
-                t.transform.rotation.y = zt.transform.rotation.y
-                t.transform.rotation.z = zt.transform.rotation.z
-                t.transform.rotation.w = zt.transform.rotation.w
-                self.tf_buffer.set_transform(t, f"{self.name}_RobotAdapter")
-
-        self.tf_sub = self.zenoh_session.declare_subscriber(
-            namespace_topic("tf", name),
-            _tf_callback
-        )
-
-        def _feedback_callback(sample: zenoh.Sample):
-            feedback = NavigateToPose_Feedback.deserialize(sample.payload)
-            print(f"Distance remaining: {feedback.distance_remaining}")
-
-        self.navigate_to_pose_action_feedback = self.zenoh_session.declare_subscriber(
-            namespace_topic("navigate_to_pose/_action/feedback", name),
-            _feedback_callback
-        )
-
-    def update(self, state):
-        activity_identifier = None
-        if self.execution:
-            if self.api.is_command_completed():
-                self.execution.finished()
-                self.execution = None
-            else:
-                activity_identifier = self.execution.identifier
-
-        self.update_handle.update(state, activity_identifier)
-
-    def make_callbacks(self):
-        return rmf_easy.RobotCallbacks(
-            lambda destination, execution: self.navigate(
-                destination, execution
-            ),
-            lambda activity: self.stop(activity),
-            lambda category, description, execution: self.execute_action(
-                category, description, execution
-            )
-        )
-
-    def navigate(self, destination, execution):
-        self.execution = execution
-        self.node.get_logger().info(
-            f'Commanding [{self.name}] to navigate to {destination.position} '
-            f'on map [{destination.map}]'
-        )
-
-        self.api.navigate(
-            self.name,
-            destination.position,
-            destination.map,
-            destination.speed_limit
-        )
-
-    def stop(self, activity):
-        if self.execution is not None:
-            if self.execution.identifier.is_same(activity):
-                self.execution = None
-                self.api.stop(self.name)
-
-    def execute_action(self, category: str, description: dict, execution):
-        ''' Trigger a custom action you would like your robot to perform.
-        You may wish to use RobotAPI.start_activity to trigger different
-        types of actions to your robot.'''
-        self.execution = execution
-        # ------------------------ #
-        # IMPLEMENT YOUR CODE HERE #
-        # ------------------------ #
-        return
-
-
 # Parallel processing solution derived from
 # https://stackoverflow.com/a/59385935
 def parallel(f):
@@ -321,15 +203,38 @@ def parallel(f):
 
 
 @parallel
-def update_robot(robot: RobotAdapter):
-    data = robot.api.get_data(robot.name)
-    if data is None:
+def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
+    try:
+        # TODO(ac): parameterize the frames for lookup
+        transform = tf_buffer.lookup_transform(
+            namespace_frame("base_footprint", robot.name),
+            namespace_frame("map", robot.name),
+            Time()
+        )
+        orientation = euler_from_quaternion([
+            transform.transform.rotation.x,
+            transform.transform.rotation.y,
+            transform.transform.rotation.z,
+            transform.transform.rotation.w
+        ])
+    except Exception as err:
+        robot.node.get_logger().error(
+            f"Unable to get transform between base_footprint and map: {type(err)}: {err}"
+        )
+        robot.node.get_logger().error(
+            f"Failed to update robot [{robot.name}]"
+        )
         return
+    robot_pose = [
+        transform.transform.translation.x,
+        transform.transform.translation.y,
+        orientation[2]
+    ]
 
     state = rmf_easy.RobotState(
-        data.map,
-        data.position,
-        data.battery_soc
+        robot.map,
+        robot_pose,
+        robot.battery_soc
     )
 
     if robot.update_handle is None:

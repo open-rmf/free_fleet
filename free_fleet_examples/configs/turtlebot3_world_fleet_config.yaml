@@ -34,11 +34,17 @@ rmf_fleet:
   responsive_wait: True # Should responsive wait be on/off for the whole fleet by default? False if not specified.
   robots:
     turtlebot3_1:
-        charger: "turtlebot3_1_charger"
-        responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
+      charger: "turtlebot3_1_charger"
+      responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
+      initial_map: "L1"
+      maps:
+        L1:
+          map_url: "/opt/ros/humble/share/nav2_bringup/maps/turtlebot3_world.yaml"
+      initial_pose: [-1.6000019311904907, -0.5031192898750305, 0]
+
     # turtlebot3_2:
-    #     charger: "turtlebot3_2_charger"
-    #     # No mention of responsive_wait means the fleet-wide setting will be used
+    #   charger: "turtlebot3_2_charger"
+    #   # No mention of responsive_wait means the fleet-wide setting will be used
 
   robot_state_update_frequency: 10.0 # Hz
 
