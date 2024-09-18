@@ -1,0 +1,22 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <arg name="use_sim_time" default="false"/>
+
+  <!-- Common launch -->
+  <include file="$(find-pkg-share rmf_demos)/common.launch.xml">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+    <arg name="config_file" value="$(find-pkg-share free_fleet_examples)/turtlebot3_world/turtlebot3_world.building.yaml"/>
+    <arg name="headless" value="true"/>
+  </include>
+
+  <!-- Free fleet adapter -->
+  <group>
+    <include file="$(find-pkg-share free_fleet_adapter)/launch/fleet_adapter.launch.xml">
+      <arg name="use_sim_time" value="$(var use_sim_time)"/>
+      <arg name="nav_graph_file" value="$(find-pkg-share free_fleet_examples)/maps/turtlebot3_world/nav_graphs/0.yaml" />
+      <arg name="config_file" value="$(find-pkg-share free_fleet_examples)/configs/turtlebot3_world/turtlebot3_world_fleet_config.yaml"/>
+    </include>
+  </group>
+
+</launch>

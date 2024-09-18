@@ -25,7 +25,7 @@ Listen to transforms,
 
 ```bash
 source PATH_TO_WORKSPACE/install/setup.bash
-ros2 run free_fleet_exmples test_tf.py \
+ros2 run free_fleet_examples test_tf.py \
     --namespace robot_ns
 ```
 

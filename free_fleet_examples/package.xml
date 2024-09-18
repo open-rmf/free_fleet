@@ -12,6 +12,8 @@
   <buildtool_depend>ros2run</buildtool_depend>
 
   <exec_depend>free_fleet</exec_depend>
+  <exec_depend>free_fleet_adapter</exec_depend>
+  <exec_depend>rmf_demos</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
 
   <export>

@@ -46,11 +46,12 @@ import rmf_adapter.easy_full_control as rmf_easy
 from tf_transformations import quaternion_from_euler
 
 
-class RobotAdapter:
+class Nav2RobotAdapter:
     def __init__(
         self,
         name: str,
         configuration,
+        robot_config_yaml,
         node,
         zenoh_session,
         fleet_handle,
@@ -60,13 +61,14 @@ class RobotAdapter:
         self.execution = None
         self.update_handle = None
         self.configuration = configuration
+        self.robot_config_yaml = robot_config_yaml
         self.node = node
         self.zenoh_session = zenoh_session
         self.fleet_handle = fleet_handle
         self.tf_buffer = tf_buffer
 
         self.nav_goal_id = None
-        self.map = self.configuration["initial_map"]
+        self.map = self.robot_config_yaml["initial_map"]
         self.battery_soc = None
 
         def _tf_callback(sample: zenoh.Sample):
@@ -88,6 +90,7 @@ class RobotAdapter:
                 t.transform.rotation.y = zt.transform.rotation.y
                 t.transform.rotation.z = zt.transform.rotation.z
                 t.transform.rotation.w = zt.transform.rotation.w
+                print("adding transform")
                 self.tf_buffer.set_transform(t, f"{self.name}_RobotAdapter")
 
         self.tf_sub = self.zenoh_session.declare_subscriber(
@@ -108,7 +111,7 @@ class RobotAdapter:
             self.battery_soc = None
 
         self.battery_state_sub = self.zenoh_session.declare_subscriber(
-            namespace_topic("battery_state"),
+            namespace_topic("battery_state", name),
             _battery_state_callback
         )
 
@@ -236,9 +239,8 @@ class RobotAdapter:
                 self.nav_goal_id = None
                 return
             except:
-                self.node.get_logger().error(
-                    f"Received (ERROR: '{reply.err.payload.decode("utf-8")}')"
-                )
+                payload = reply.err.payload.decode("utf-8")
+                self.node.get_logger().error(f"Received (ERROR: {payload})")
                 continue
 
     def stop(self, activity):

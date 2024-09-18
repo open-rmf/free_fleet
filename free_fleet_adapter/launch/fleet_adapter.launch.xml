@@ -11,7 +11,7 @@
   <!-- Fleet adapter -->
   <group>
     <group if="$(var use_sim_time)">
-      <node pkg="rmf_demos_fleet_adapter"
+      <node pkg="free_fleet_adapter"
             exec="fleet_adapter"
             args="-c $(var config_file) -n $(var nav_graph_file) -sim"
             output="both">
@@ -22,7 +22,7 @@
     </group>
 
     <group unless="$(var use_sim_time)">
-      <node pkg="rmf_demos_fleet_adapter"
+      <node pkg="free_fleet_adapter"
             exec="fleet_adapter"
             args="-c $(var config_file) -n $(var nav_graph_file)"
             output="both">

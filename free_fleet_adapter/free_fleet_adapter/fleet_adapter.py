@@ -28,20 +28,17 @@ import rclpy.node
 from rclpy.duration import Duration
 from rclpy.parameter import Parameter
 from rclpy.time import Time
+from tf_transformations import euler_from_quaternion
+from tf2_ros import Buffer
 
 import rmf_adapter
 from rmf_adapter import Adapter
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter import Transformation
 
-from tf2_ros import Buffer
-
 from free_fleet.utils import namespace_frame
 
-from nav2_robot_adapter import Nav2RobotAdapter
-
-from tf_transformations import euler_from_quaternion
-
+from .nav2_robot_adapter import Nav2RobotAdapter
 
 
 # ------------------------------------------------------------------------------
@@ -49,8 +46,8 @@ from tf_transformations import euler_from_quaternion
 # ------------------------------------------------------------------------------
 def compute_transforms(level, coords, node=None):
     """Get transforms between RMF and robot coordinates."""
-    rmf_coords = coords['rmf']
-    robot_coords = coords['robot']
+    rmf_coords = coords["rmf"]
+    robot_coords = coords["robot"]
     tf = nudged.estimate(rmf_coords, robot_coords)
     if node:
         mse = nudged.estimate_error(tf, rmf_coords, robot_coords)
@@ -83,12 +80,12 @@ def main(argv=sys.argv):
     parser.add_argument("-s", "--server_uri", type=str, required=False, default="",
                         help="URI of the api server to transmit state and task information.")
     parser.add_argument("-sim", "--use_sim_time", action="store_true",
-                        help='Use sim time, default: false')
+                        help="Use sim time, default: false")
     parser.add_argument(
-        '--zenoh-config',
+        "--zenoh-config",
         type=str,
-        help='Path to custom zenoh configuration file to be used, if not '
-        'provided the default config will be used'
+        help="Path to custom zenoh configuration file to be used, if not "
+        "provided the default config will be used"
     )
     args = parser.parse_args(args_without_ros[1:])
     print(f"Starting fleet adapter...")
@@ -99,7 +96,7 @@ def main(argv=sys.argv):
     fleet_config = rmf_easy.FleetConfiguration.from_config_files(
         config_path, nav_graph_path
     )
-    assert fleet_config, f'Failed to parse config file [{config_path}]'
+    assert fleet_config, f"Failed to parse config file [{config_path}]"
 
     # Parse the yaml in Python to get the fleet_manager info
     with open(config_path, "r") as f:
@@ -107,11 +104,11 @@ def main(argv=sys.argv):
 
     # ROS 2 node for the command handle
     fleet_name = fleet_config.fleet_name
-    node = rclpy.node.Node(f'{fleet_name}_command_handle')
-    adapter = Adapter.make(f'{fleet_name}_fleet_adapter')
+    node = rclpy.node.Node(f"{fleet_name}_command_handle")
+    adapter = Adapter.make(f"{fleet_name}_fleet_adapter")
     assert adapter, (
-        'Unable to initialize fleet adapter. '
-        'Please ensure RMF Schedule Node is running'
+        "Unable to initialize fleet adapter. "
+        "Please ensure RMF Schedule Node is running"
     )
 
     # Enable sim time for testing offline
@@ -123,7 +120,7 @@ def main(argv=sys.argv):
     adapter.start()
     time.sleep(1.0)
 
-    if args.server_uri == '':
+    if args.server_uri == "":
         server_uri = None
     else:
         server_uri = args.server_uri
@@ -131,7 +128,7 @@ def main(argv=sys.argv):
     fleet_config.server_uri = server_uri
 
     # Configure the transforms between robot and RMF frames
-    for level, coords in config_yaml['reference_coordinates'].items():
+    for level, coords in config_yaml["reference_coordinates"].items():
         tf = compute_transforms(level, coords, node)
         fleet_config.add_robot_coordinates_transformation(level, tf)
 
@@ -147,13 +144,14 @@ def main(argv=sys.argv):
 
     robots = {}
     for robot_name in fleet_config.known_robots:
+        robot_config_yaml = config_yaml["rmf_fleet"]["robots"][robot_name]
         robot_config = fleet_config.get_known_robot_configuration(robot_name)
         robots[robot_name] = Nav2RobotAdapter(
-            robot_name, robot_config, node, zenoh_session, fleet_handle, tf_buffer
+            robot_name, robot_config, robot_config_yaml, node, zenoh_session, fleet_handle, tf_buffer
         )
 
-    update_period = 1.0/config_yaml['rmf_fleet'].get(
-        'robot_state_update_frequency', 10.0
+    update_period = 1.0/config_yaml["rmf_fleet"].get(
+        "robot_state_update_frequency", 10.0
     )
 
     def update_loop():
@@ -207,8 +205,8 @@ def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
     try:
         # TODO(ac): parameterize the frames for lookup
         transform = tf_buffer.lookup_transform(
-            namespace_frame("base_footprint", robot.name),
             namespace_frame("map", robot.name),
+            namespace_frame("base_footprint", robot.name),
             Time()
         )
         orientation = euler_from_quaternion([
@@ -249,5 +247,5 @@ def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
     robot.update(state)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv)
