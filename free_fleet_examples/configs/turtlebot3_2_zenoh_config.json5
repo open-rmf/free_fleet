@@ -1,0 +1,214 @@
+////
+//// This file presents the default configuration used by both the `zenoh-plugin-ros2dds` plugin and the `zenoh-bridge-ros2dds` standalone executable.
+//// The "ros2" JSON5 object below can be used as such in the "plugins" part of a config file for the zenoh router (zenohd).
+////
+{
+  plugins: {
+    ////
+    //// ROS2 related configuration
+    //// All settings are optional and are unset by default - uncomment the ones you want to set
+    ////
+    ros2dds: {
+      ////
+      //// id: An identifier for this bridge, which must be unique in the system.
+      ///      The bridge will use this identifier in it's administration space: `@ros2/<id>/**`.
+      ///      This identifier will also appears in the logs of all other bridges on discovery events.
+      ///      By default a random UUID
+      ////
+      // id: "robot-1",
+
+      ////
+      //// nodename: A ROS node name to be used by this bridge.
+      ////            Default: "zenoh_bridge_ros2dds"
+      ////
+      // nodename: "zenoh_bridge_ros2dds",
+
+      ////
+      //// namespace: A ROS namespace which:
+      ////             - is used for the "zenoh_bridge_ros2dds" node itself
+      ////             - is added to all discovered interfaces when routed to Zenoh
+      ////               (i.e. a "cmd_vel" topic in the robot will be seen as "namespace/cmd_vel" outside the robot)
+      ////               Note that this also applies to topics with absolute path such as "/rosout", "/tf" and "/tf_static".
+      ////            Default: "/"
+      ////
+      namespace: "/turtlebot3_2",
+
+      ////
+      //// domain: The DDS Domain ID. By default set to 0, or to "$ROS_DOMAIN_ID" is this environment variable is defined.
+      ////
+      // domain: 0,
+
+      ////
+      //// ros_localhost_only: If set to true, the DDS discovery and traffic will occur only on the localhost interface (127.0.0.1).
+      ////                     By default set to false, unless the "ROS_LOCALHOST_ONLY=1" environment variable is defined.
+      ////
+      // ros_localhost_only: true,
+
+      ////
+      //// shm_enabled: If set to true, the DDS implementation will use Iceoryx shared memory.
+      ////              Requires the bridge to be built with the 'dds_shm' feature for this option to valid.
+      ////              By default set to false.
+      ////
+      // shm_enabled: false,
+
+      ////
+      //// allow / deny: Specify the lists of ROS 2 interfaces that are allowed or denied to be routed over Zenoh.
+      ////               Each element of the lists is a regular expression that must match the full interface name.
+      ////               You cannot set both 'allow' and 'deny' in the same configuration.
+      ////               If neither 'allow' nor 'deny' are set, all interfaces are allowed.
+      ////               Use 'allow' to allow only the specified interfaces. If an interface type is set to an empty list
+      ////               or is not specified at all, it means that NO such interface is allowed.
+      ////               Use 'deny' to allow all except the specified interfaces. If an interface type is set to an empty list
+      ////               or is not specified at all, it means that ALL such interface are allowed.
+      allow: {
+        publishers: [".*/tf"],
+        subscribers: [],
+        service_servers: [],
+        service_clients: [],
+        action_servers: [".*/navigate_to_pose"],
+        action_clients: [],
+      },
+      // deny: {
+      //   publishers: ["/rosout", "/parameter_events"],
+      //   subscribers: ["/rosout"],
+      //   service_servers: [".*/set_parameters"],
+      //   service_clients: [".*/set_parameters"],
+      //   action_servers: [],
+      //   action_clients: [],
+      // },
+
+      ////
+      //// pub_max_frequencies: Specify a list of maximum frequency of publications routing over zenoh for a set of Publishers.
+      ////                      The strings must have the format "<regex>=<float>":
+      ////                      - "regex" is a regular expression matching a Publisher interface name
+      ////                      - "float" is the maximum frequency in Hertz;
+      ////                        if publication rate is higher, downsampling will occur when routing.
+      // pub_max_frequencies: [".*/navigate_to_pose/*=1", ".*/tf=10"],
+      pub_max_frequencies: [".*/navigate_to_pose/*=1"],
+      ////
+      //// pub_priorities: Specify a list of priorities of publications routing over zenoh for a set of Publishers.
+      ////                 In case of high traffic, the publications with higher priorities will overtake
+      ////                 the publications with lower priorities in Zenoh publication queues.
+      ////                 The strings must have the format "<regex>=<integer>":
+      ////                 - "regex" is a regular expression matching a Publisher interface name
+      ////                 - "integer" is a priority value in the range [1-7]. Highest priority is 1, lowest is 7 and default is 5.
+      ////                   (see Zenoh Priority definition here: https://docs.rs/zenoh/latest/zenoh/publication/enum.Priority.html)
+      ////
+      // pub_priorities: ["/pose=2", "/rosout=7"],
+
+      ////
+      //// reliable_routes_blocking: When true, the publications from a RELIABLE DDS Writer will be
+      ////                           routed to zenoh using the CongestionControl::Block option.
+      ////                           Meaning the routing will be blocked in case of network congestion,
+      ////                           blocking the DDS Reader and the RELIABLE DDS Writer in return.
+      ////                           When false (or for BERST_EFFORT DDS Writers), CongestionControl::Drop
+      ////                           is used, meaning the route might drop some data in case of congestion.
+      ////
+      // reliable_routes_blocking: true,
+
+      ////
+      //// queries_timeout: Timeouts configuration for various Zenoh queries.
+      ////                  Each field is optional. If not set, the 'default' timeout (5.0 seconds by default) applies to all queries.
+      ////                  Each value can be either a float in seconds that will apply as a timeout to all queries,
+      ////                  either a list of strings with format "<regex>=<float>" where:
+      ////                      - "regex" is a regular expression matching an interface name
+      ////                      - "float" is the timeout in seconds
+      // queries_timeout: {
+      //   //// default timeout that will apply to all query, except the ones specified below
+      //   //// in 'transient_local_subscribers', 'services' and 'actions'
+      //   default: 5.0,
+      //   //// timeouts for TRANSIENT_LOCAL subscriber when querying publishers for historical publications
+      //   transient_local_subscribers: 1.0,
+      //   //// timeouts for Service clients calling a Service server
+      //   services: ["add_two_ints=0.5", ".*=1.0"],
+      //   //// timeouts for Action clients calling an Action server (send_goal, cancel_goal and get_result services)
+      //   actions: {
+      //     send_goal: 1.0,
+      //     cancel_goal: 1.0,
+      //     get_result: [".*long_mission=3600", ".*short_action=10.0"],
+      //   }
+      // }
+    },
+
+    ////
+    //// REST API configuration (active only if this part is defined)
+    ////
+    // rest: {
+    //   ////
+    //   //// The HTTP port number (for all network interfaces).
+    //   //// You can bind on a specific interface setting a "<local_ip>:<port>" string.
+    //   ////
+    //   http_port: 8000,
+    // },
+  },
+
+  ////
+  //// Zenoh related configuration.
+  //// Only the most relevant sections are displayed here.
+  //// For a complete view of configuration possibilities, see https://github.com/eclipse-zenoh/zenoh/blob/main/DEFAULT_CONFIG.json5
+  ////
+
+  ////
+  //// mode: The bridge's mode (router, peer or client)
+  ////
+  //mode: "router",
+
+  ////
+  //// Which endpoints to connect to. E.g. tcp/localhost:7447.
+  //// By configuring the endpoints, it is possible to tell zenoh which remote router or other zenoh-bridge-ros2dds to connect to at startup.
+  ////
+  connect: {
+    endpoints: [
+      // "<proto>/<ip>:<port>"
+    ]
+  },
+
+  ////
+  //// Which endpoints to listen on.
+  //// By configuring the endpoints, it is possible to tell zenoh which are the endpoints that other routers,
+  //// peers, or client can use to establish a zenoh session.
+  //// In 'router' mode (default) the zenoh-bridge-ros2dds is listening by default on `tcp/0.0.0.0:7447` (`0.0.0.0` meaning all the available network interfaces)
+  ////
+  listen: {
+    endpoints: [
+      // "<proto>/<ip>:<port>"
+    ]
+  },
+
+  ////
+  //// Configure the scouting mechanisms and their behaviours
+  ////
+  //scouting: {
+  //  /// The UDP multicast scouting configuration.
+  //  multicast: {
+  //    /// Whether multicast scouting is enabled or not
+  //    enabled: true,
+  //    /// The socket which should be used for multicast scouting
+  //    address: "224.0.0.224:7446",
+  //    /// The network interface which should be used for multicast scouting
+  //    interface: "auto", // If not set or set to "auto" the interface if picked automatically
+  //    /// Which type of Zenoh instances to automatically establish sessions with upon discovery on UDP multicast.
+  //    /// Accepts a single value or different values for router, peer and client.
+  //    /// Each value is bit-or-like combinations of "peer", "router" and "client".
+  //    autoconnect: { router: "", peer: "router|peer" },
+  //    /// Whether or not to listen for scout messages on UDP multicast and reply to them.
+  //    listen: true,
+  //  },
+  //  /// The gossip scouting configuration.
+  //  gossip: {
+  //    /// Whether gossip scouting is enabled or not
+  //    enabled: true,
+  //    /// When true, gossip scouting informations are propagated multiple hops to all nodes in the local network.
+  //    /// When false, gossip scouting informations are only propagated to the next hop.
+  //    /// Activating multihop gossip implies more scouting traffic and a lower scalability.
+  //    /// It mostly makes sense when using "linkstate" routing mode where all nodes in the subsystem don't have
+  //    /// direct connectivity with each other.
+  //    multihop: false,
+  //    /// Which type of Zenoh instances to automatically establish sessions with upon discovery on gossip.
+  //    /// Accepts a single value or different values for router, peer and client.
+  //    /// Each value is bit-or-like combinations of "peer", "router" and "client".
+  //    autoconnect: { router: "", peer: "router|peer" },
+  //  },
+  //},
+
+}

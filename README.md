@@ -61,3 +61,11 @@ ros2 run rmf_demos_tasks dispatch_patrol \
   -st 0 \
   --use_sim_time
 ```
+
+# TODO
+
+* battery SOC
+* multiple tb3
+* tb4
+* ROS 1 nav support
+* map switching support
