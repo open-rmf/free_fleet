@@ -41,6 +41,7 @@ from free_fleet.utils import (
     namespace_topic,
 )
 
+import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
 
 from tf_transformations import quaternion_from_euler
@@ -69,12 +70,12 @@ class Nav2RobotAdapter:
 
         self.nav_goal_id = None
         self.map = self.robot_config_yaml["initial_map"]
-        self.battery_soc = None
+        self.battery_soc = 1.0
 
         def _tf_callback(sample: zenoh.Sample):
             transform = TFMessage.deserialize(sample.payload)
             for zt in transform.transforms:
-                time = Time(
+                time = rclpy.time.Time(
                     seconds=zt.header.stamp.sec,
                     nanoseconds=zt.header.stamp.nanosec
                 )
@@ -90,7 +91,6 @@ class Nav2RobotAdapter:
                 t.transform.rotation.y = zt.transform.rotation.y
                 t.transform.rotation.z = zt.transform.rotation.z
                 t.transform.rotation.w = zt.transform.rotation.w
-                print("adding transform")
                 self.tf_buffer.set_transform(t, f"{self.name}_RobotAdapter")
 
         self.tf_sub = self.zenoh_session.declare_subscriber(
@@ -159,7 +159,7 @@ class Nav2RobotAdapter:
         if self.execution:
             # TODO(ac): use an enum to record what type of execution it is,
             # whether navigation or custom executions
-            if self.nav_goal_id is not None and self._is_navigation_done(self):
+            if self.nav_goal_id is not None and self._is_navigation_done():
                 self.execution.finished()
                 self.execution = None
                 self.nav_goal_id = None
@@ -192,8 +192,8 @@ class Nav2RobotAdapter:
             )
             return
 
-        time_now = self.node.get_clock().now()
-        stamp = Time(sec=time_now.seconds, nanosec=time_now.nanoseconds)
+        time_now = self.node.get_clock().now().seconds_nanoseconds()
+        stamp = Time(sec=time_now[0], nanosec=time_now[1])
         header = Header(stamp=stamp, frame_id="map")
         position = GeometryMsgs_Point(
             x=destination.position[0],
@@ -258,10 +258,10 @@ class Nav2RobotAdapter:
                     namespace_topic(
                         "navigate_to_pose/_action/cancel_goal",
                         self.name,
-                        timeout=0.5
                     ),
                     zenoh.Queue(),
-                    value=req.serialize()
+                    value=req.serialize(),
+                    timeout=0.5
                 )
                 for reply in replies.receiver:
                     rep = ActionMsgs_CancelGoal_Response.deserialize(

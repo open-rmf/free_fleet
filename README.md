@@ -43,3 +43,21 @@ ros2 run free_fleet_examples test_navigate_to_pose.py \
 # x: 1.808
 # y: 0.503
 ```
+
+Start fleet adapter on a different `ROS_DOMAIN_ID`,
+
+```bash
+export ROS_DOMAIN_ID=55;
+ros2 launch free_fleet_examples turtlebot3_world.launch.xml
+```
+
+Dispatch patrol tasks,
+
+```bash
+export ROS_DOMAIN_ID=48;
+ros2 run rmf_demos_tasks dispatch_patrol \
+  -p north_west north_east south_east south_west \
+  -n 2 \
+  -st 0 \
+  --use_sim_time
+```
