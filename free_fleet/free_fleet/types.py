@@ -165,3 +165,22 @@ class ActionMsgs_CancelGoal_Request(IdlStruct, typename="ActionMsgs_CancelGoal_R
 class ActionMsgs_CancelGoal_Response(IdlStruct, typename="ActionMsgs_CancelGoal_Response"):
     return_code: pycdr2.types.int8
     goals_canceling: pycdr2.types.sequence[ActionMsgs_GoalInfo]
+
+
+@dataclass
+class SensorMsgs_BatteryState(IdlStruct, typename="SensorMsgs_BatteryState"):
+    voltage: pycdr2.types.float32
+    temperature: pycdr2.types.float32
+    current: pycdr2.types.float32
+    charge: pycdr2.types.float32
+    capacity: pycdr2.types.float32
+    design_capacity: pycdr2.types.float32
+    percentage: pycdr2.types.float32
+    power_supply_status: pycdr2.types.uint8
+    power_supply_health: pycdr2.types.uint8
+    power_supply_technology: pycdr2.types.uint8
+    present: bool
+    cell_voltage: pycdr2.types.sequence[pycdr2.types.float32]
+    cell_temperature: pycdr2.types.sequence[pycdr2.types.float32]
+    location: str
+    serial_number: str

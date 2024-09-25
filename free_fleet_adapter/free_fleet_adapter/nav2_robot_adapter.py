@@ -27,11 +27,11 @@ from free_fleet.types import (
     GeometryMsgs_Quaternion,
     GoalStatus,
     Header,
-    NavigateToPose_Feedback,
     NavigateToPose_GetResult_Request,
     NavigateToPose_GetResult_Response,
     NavigateToPose_SendGoal_Request,
     NavigateToPose_SendGoal_Response,
+    SensorMsgs_BatteryState,
     TFMessage,
     Time,
 )
@@ -70,6 +70,8 @@ class Nav2RobotAdapter:
 
         self.nav_goal_id = None
         self.map = self.robot_config_yaml["initial_map"]
+
+        # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
 
         def _tf_callback(sample: zenoh.Sample):
@@ -98,17 +100,9 @@ class Nav2RobotAdapter:
             _tf_callback
         )
 
-        # def _feedback_callback(sample: zenoh.Sample):
-        #     feedback = NavigateToPose_Feedback.deserialize(sample.payload)
-        #     print(f"Distance remaining: {feedback.distance_remaining}")
-
-        # self.navigate_to_pose_action_feedback = self.zenoh_session.declare_subscriber(
-        #     namespace_topic("navigate_to_pose/_action/feedback", name),
-        #     _feedback_callback
-        # )
-
         def _battery_state_callback(sample: zenoh.Sample):
-            self.battery_soc = None
+            battery_state = SensorMsgs_BatteryState.deserialize(sample.payload)
+            self.battery_soc = battery_state.percentage
 
         self.battery_state_sub = self.zenoh_session.declare_subscriber(
             namespace_topic("battery_state", name),

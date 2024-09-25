@@ -54,7 +54,7 @@ ros2 launch free_fleet_examples turtlebot3_world.launch.xml
 Dispatch patrol tasks,
 
 ```bash
-export ROS_DOMAIN_ID=48;
+export ROS_DOMAIN_ID=55;
 ros2 run rmf_demos_tasks dispatch_patrol \
   -p north_west north_east south_east south_west \
   -n 2 \
@@ -64,7 +64,6 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 # TODO
 
-* battery SOC
 * multiple tb3
 * tb4
 * ROS 1 nav support
