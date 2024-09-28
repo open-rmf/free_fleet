@@ -64,7 +64,7 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 # TODO
 
-* multiple tb3
+* multiple tb3 sim, prefix argument
 * tb4
 * ROS 1 nav support
 * map switching support
