@@ -31,7 +31,7 @@
       ////               Note that this also applies to topics with absolute path such as "/rosout", "/tf" and "/tf_static".
       ////            Default: "/"
       ////
-      namespace: "/turtlebot3_2",
+      namespace: "/turtlebot3_1",
 
       ////
       //// domain: The DDS Domain ID. By default set to 0, or to "$ROS_DOMAIN_ID" is this environment variable is defined.
@@ -61,7 +61,7 @@
       ////               Use 'deny' to allow all except the specified interfaces. If an interface type is set to an empty list
       ////               or is not specified at all, it means that ALL such interface are allowed.
       allow: {
-        publishers: [".*/tf"],
+        publishers: [".*/tf", ".*/battery_state"],
         subscribers: [],
         service_servers: [],
         service_clients: [],
@@ -83,8 +83,7 @@
       ////                      - "regex" is a regular expression matching a Publisher interface name
       ////                      - "float" is the maximum frequency in Hertz;
       ////                        if publication rate is higher, downsampling will occur when routing.
-      // pub_max_frequencies: [".*/navigate_to_pose/*=1", ".*/tf=10"],
-      pub_max_frequencies: [".*/navigate_to_pose/*=1"],
+      pub_max_frequencies: [".*/navigate_to_pose/*=1", ".*/battery_state=1"],
       ////
       //// pub_priorities: Specify a list of priorities of publications routing over zenoh for a set of Publishers.
       ////                 In case of high traffic, the publications with higher priorities will overtake

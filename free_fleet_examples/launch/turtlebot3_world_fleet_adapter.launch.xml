@@ -2,6 +2,7 @@
 
 <launch>
   <arg name="use_sim_time" default="false"/>
+  <arg name="fleet_config" description="Fleet config for setting up the fleet adapter"/>
 
   <!-- Common launch -->
   <include file="$(find-pkg-share rmf_demos)/common.launch.xml">
@@ -15,8 +16,7 @@
     <include file="$(find-pkg-share free_fleet_adapter)/launch/fleet_adapter.launch.xml">
       <arg name="use_sim_time" value="$(var use_sim_time)"/>
       <arg name="nav_graph_file" value="$(find-pkg-share free_fleet_examples)/maps/turtlebot3_world/nav_graphs/0.yaml" />
-      <arg name="config_file" value="$(find-pkg-share free_fleet_examples)/configs/turtlebot3_world/turtlebot3_world_fleet_config.yaml"/>
+      <arg name="config_file" value="$(var fleet_config)"/>
     </include>
   </group>
-
 </launch>

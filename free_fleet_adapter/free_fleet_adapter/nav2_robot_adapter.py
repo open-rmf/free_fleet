@@ -94,9 +94,10 @@ class Nav2RobotAdapter:
                 t.transform.rotation.z = zt.transform.rotation.z
                 t.transform.rotation.w = zt.transform.rotation.w
                 self.tf_buffer.set_transform(t, f"{self.name}_RobotAdapter")
+                # print(f"setting tf for {namespace_frame(zt.header.frame_id, self.name)} to {namespace_frame(zt.child_frame_id, self.name)}")
 
         self.tf_sub = self.zenoh_session.declare_subscriber(
-            namespace_topic("tf", name),
+            namespace_topic("tf", self.name),
             _tf_callback
         )
 
