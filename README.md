@@ -14,7 +14,7 @@ Free fleet is a python implementation of the Open-RMF Fleet Adapter, based on th
 
 Using `zenoh` bridges to pipe the necessary ROS 2 messages between each robot and the `free_fleet_adapter`, users have the flexibility to configure and customize their network setups accordingly following the [official guide](https://github.com/eclipse-zenoh/zenoh?tab=readme-ov-file#configuration-options). Examples provided in this repository are using [these configurations](./free_fleet_examples/zenoh_configs/), do take note of the selective topics that are required for the `free_fleet_adapter` to work. The `zenoh` configuration conveniently allows users to filter and limit the rate of messages based on topics as well, which will be helpful in deployments with limited network bandwidth.
 
-TODO architecture image
+![](../media/architecture.jpg)
 
 Each robot's navigation stack is expected to be non-namespaced, while its `zenoh` bridge is expected to be set up with it's robot name as the namespace. This allows the `free_fleet_adapter` to integrate with each robot in the fleet individually using `zenoh` namespaces.
 
@@ -81,7 +81,7 @@ git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations ~/turtlebot3_sim
 
 ### Single turtlebot3 world
 
-TODO gif
+![](../media/ff_tb3_faster_smaller.gif)
 
 This simulates running an isolated (by `ROS_DOMAIN_ID`) turtlebot3 with a ROS 2 navigation stack, and setting up RMF with `free_fleet_adapter` (on a different `ROS_DOMAIN_ID`), allowing the fleet adapter to command the robot via a configured `zenoh-bridge-ros2dds` with the namespace `turtlebot3_1`.
 
@@ -99,12 +99,13 @@ ros2 launch nav2_bringup tb3_simulation_launch.py headless:=0
 # ros2 launch nav2_bringup tb3_simulation_launch.py
 ```
 
-Start `zenoh-bridge-ros2dds`
+Start `zenoh-bridge-ros2dds` with the appropriate zenoh configuration,
 
 ```bash
 source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
+cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
 ./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/zenoh_configs/turtlebot3_1_zenoh_config.json5
 ```
 
@@ -133,7 +134,6 @@ Start the RMF core packages on a different `ROS_DOMAIN_ID` to simulate running o
 source ~/ff_ws/install/setup.bash
 export ROS_DOMAIN_ID=55
 
-# Remember to use absolute paths for the config file
 ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml
 ```
 
@@ -146,7 +146,7 @@ export ROS_DOMAIN_ID=55
 ros2 launch free_fleet_examples tb3_simulation_fleet_adapter.launch.xml
 ```
 
-Dispatch an example RMF patrol tasks, on the same `ROS_DOMAIN_ID` as the RMF core packages,
+Dispatch an example RMF patrol tasks using [`rmf-web`](https://github.com/open-rmf/rmf-web) on the same `ROS_DOMAIN_ID` as the RMF core packages, or use the `dispatch_patrol` script,
 
 ```bash
 source ~/ff_ws/install/setup.bash
@@ -160,39 +160,80 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 ### Multiple turtlebot3 world
 
-TODO explain the ideal scenario and difference between this sim and a real deployment
+> [!NOTE]
+> This multi-robot simulation example is only for testing purposes, as it is a different setup than `free_fleet` is intended to be used. The simulation spawns 2 already namespaced robots, while the `free_fleet` architecture expects individual non-namespaced robots to be partnered with a namespaced `zenoh-bridge-ros2dds`.
 
-TODO gifs
+![](../media/multirobot_sim_architecture.jpg)
 
-Start the RMF core packages as well as the `free_fleet_adapter` on a different `ROS_DOMAIN_ID` to simulate running on a different machine,
+In this example, there will only be one non-namespaced zenoh bridge for both robots, which will produce the same zenoh message outputs as 2 individual namespaced zenoh bridge with non-namespaced robots. This allows the `free_fleet_adapter` to work with both robots on the same simulation.
+
+![](../media/ff_unique_faster_smaller.gif)
+
+Launch simulation, start the robots, and set up the initial positions (see gif),
 
 ```bash
+source /opt/ros/jazzy/setup.bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/turtlebot3_simulations/turtlebot3_gazebo/models
+
 ros2 launch nav2_bringup unique_multi_tb3_simulation_launch.py
 ```
 
+Start `zenoh-bridge-ros2dds` with the appropriate zenoh configuration,
+
 ```bash
+source /opt/ros/jazzy/setup.bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
 ./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/zenoh_configs/unique_multi_tb3_zenoh_config.json5
 ```
 
+Start the RMF core packages on a different `ROS_DOMAIN_ID` to simulate running on a different machine,
+
 ```bash
 source ~/ff_ws/install/setup.bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export ROS_DOMAIN_ID=55
 
-ros2 launch free_fleet_examples turtlebot3_world_fleet_adapter.launch.xml \
-  fleet_config:=~/ff_ws/src/free_fleet/free_fleet_examples/fleet_configs/tb3_simulation_fleet_config.yaml
+ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml
 ```
 
-Dispatch an example RMF patrol tasks, on the same `ROS_DOMAIN_ID` as the RMF core packages,
+Launch the `free_fleet_adapter` with the current example's configurations, verify that `turtlebot3_1` has been added to fleet `turtletbot`.
 
 ```bash
 source ~/ff_ws/install/setup.bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export ROS_DOMAIN_ID=55
 
+ros2 launch free_fleet_examples unique_multi_tb3_simulation_fleet_adapter.launch.xml
+
+# Or launch with the rmf-web API server address
+# ros2 launch free_fleet_examples unique_multi_tb3_simulation_fleet_adapter.launch.xml  server_uri:="ws://localhost:8000/_internal"
+```
+
+Dispatch example RMF patrol tasks using [`rmf-web`](https://github.com/open-rmf/rmf-web) on the same `ROS_DOMAIN_ID` as the RMF core packages, or use the `dispatch_patrol` scripts, which will cause the robot to negotiate as they perform their tasks.
+
+```bash
+source ~/ff_ws/install/setup.bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export ROS_DOMAIN_ID=55
+
+# robot1 to run clockwise around the map
 ros2 run rmf_demos_tasks dispatch_patrol \
   -p north_west north_east south_east south_west \
-  -n 2 \
+  -n 3 \
   -st 0 \
-  --use_sim_time
+  -F turtlebot3 \
+  -R robot1
+
+# robot2 to run anti-clockwise around the map
+ros2 run rmf_demos_tasks dispatch_patrol \
+  -p south_west south_east north_east north_west \
+  -n 3 \
+  -st 0 \
+  -F turtlebot3 \
+  -R robot2
 ```
 
 ## Troubleshooting
@@ -204,6 +245,10 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 * Failing to start `free_fleet_adapter` due to missing API in `rmf_fleet_adapter_python`? This may be due to using outdated `rmf_fleet_adapter_python` released binaries, either perform a `sudo apt update && sudo apt upgrade`, or build RMF from source following the [official guide](https://github.com/open-rmf/rmf).
 
 * Simulations don't seem to work properly anymore? Try `ros2 deamon stop`, `ros2 daemon start`, or explicitly kill the `ros` and `gazebo` processes, or restart your machine. It's been noticed that if the ROS 2 or gazebo process are not terminated properly (happens rarely), the network traffic between the simulation robots and the fleet adapter get affected.
+
+* Why is RMF not run with `use_sim_time:=true` in the examples? This is because it is on a different `ROS_DOMAIN_ID` than the simulation, therefore it will not have access to the simulation `clock` topic, the examples running RMF, `free_fleet_adapter` and the tasks will not be using sim time.
+
+* For potential bandwidth issues, especially during multirobot sim example, spinning up a dedicated zenoh router and routing the `zenoh-bridge-ros2dds` manually to it, could help alleviate such issues.
 
 ## TODOs
 

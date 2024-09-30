@@ -13,7 +13,7 @@
     <group if="$(var use_sim_time)">
       <node pkg="free_fleet_adapter"
             exec="fleet_adapter"
-            args="-c $(var config_file) -n $(var nav_graph_file) -sim"
+            args="-c $(var config_file) -n $(var nav_graph_file) -s $(var server_uri) -sim"
             output="both">
 
         <param name="use_sim_time" value="$(var use_sim_time)"/>
@@ -24,7 +24,7 @@
     <group unless="$(var use_sim_time)">
       <node pkg="free_fleet_adapter"
             exec="fleet_adapter"
-            args="-c $(var config_file) -n $(var nav_graph_file)"
+            args="-c $(var config_file) -n $(var nav_graph_file) -s $(var server_uri)"
             output="both">
 
         <param name="use_sim_time" value="$(var use_sim_time)"/>
