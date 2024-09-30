@@ -207,7 +207,7 @@ def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
         transform = tf_buffer.lookup_transform(
             namespace_frame("map", robot.name),
             namespace_frame("base_footprint", robot.name),
-            Time()
+            rclpy.time.Time()
         )
         orientation = euler_from_quaternion([
             transform.transform.rotation.x,
@@ -216,13 +216,10 @@ def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
             transform.transform.rotation.w
         ])
     except Exception as err:
-        robot.node.get_logger().error(
-            f"Unable to get transform between base_footprint and map: {type(err)}: {err}"
+        robot.node.get_logger().info(
+            f"Failed to update robot [{robot.name}]: Unable to get transform between base_footprint and map: {type(err)}: {err}"
         )
-        robot.node.get_logger().error(
-            f"Failed to update robot [{robot.name}]"
-        )
-        return
+        return None
     robot_pose = [
         transform.transform.translation.x,
         transform.transform.translation.y,

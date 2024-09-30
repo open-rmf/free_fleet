@@ -1,0 +1,11 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <group>
+    <include file="$(find-pkg-share free_fleet_adapter)/launch/fleet_adapter.launch.xml">
+      <arg name="use_sim_time" value="false"/>
+      <arg name="nav_graph_file" value="$(find-pkg-share free_fleet_examples)/maps/turtlebot3_world/nav_graphs/0.yaml" />
+      <arg name="config_file" value="$(find-pkg-share free_fleet_examples)/fleet_configs/tb3_simulation_fleet_config.yaml"/>
+    </include>
+  </group>
+</launch>

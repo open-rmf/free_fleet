@@ -69,6 +69,8 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 ## Simulation examples
 
+Examples for running a single robot or multiple robots in simulation has been up in `free_fleet_examples`, along with example configuration files for `zenoh` as well as fleet configuration files for `free_fleet_adapter`.
+
 For ROS 2, simulations will be launched using the `nav2_bringup` package. Since the `turtlebot3_gazebo` package is not being released past jazzy, users will need to clone the package to access the gazebo models,
 
 ```
@@ -125,14 +127,23 @@ ros2 run free_fleet_examples test_navigate_to_pose.py \
     -y 0.503
 ```
 
-Start the RMF core packages as well as the `free_fleet_adapter` on a different `ROS_DOMAIN_ID` to simulate running on a different machine,
+Start the RMF core packages on a different `ROS_DOMAIN_ID` to simulate running on a different machine,
 
 ```bash
 source ~/ff_ws/install/setup.bash
 export ROS_DOMAIN_ID=55
 
-ros2 launch free_fleet_examples turtlebot3_world_fleet_adapter.launch.xml \
-  fleet_config:=~/ff_ws/src/free_fleet/free_fleet_examples/fleet_configs/tb3_simulation_fleet_config.yaml
+# Remember to use absolute paths for the config file
+ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml
+```
+
+Launch the `free_fleet_adapter` with the current example's configurations, verify that `turtlebot3_1` has been added to fleet `turtletbot`.
+
+```bash
+source ~/ff_ws/install/setup.bash
+export ROS_DOMAIN_ID=55
+
+ros2 launch free_fleet_examples tb3_simulation_fleet_adapter.launch.xml
 ```
 
 Dispatch an example RMF patrol tasks, on the same `ROS_DOMAIN_ID` as the RMF core packages,
@@ -144,8 +155,7 @@ export ROS_DOMAIN_ID=55
 ros2 run rmf_demos_tasks dispatch_patrol \
   -p north_west north_east south_east south_west \
   -n 2 \
-  -st 0 \
-  --use_sim_time
+  -st 0
 ```
 
 ### Multiple turtlebot3 world
@@ -155,6 +165,14 @@ TODO explain the ideal scenario and difference between this sim and a real deplo
 TODO gifs
 
 Start the RMF core packages as well as the `free_fleet_adapter` on a different `ROS_DOMAIN_ID` to simulate running on a different machine,
+
+```bash
+ros2 launch nav2_bringup unique_multi_tb3_simulation_launch.py
+```
+
+```bash
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/zenoh_configs/unique_multi_tb3_zenoh_config.json5
+```
 
 ```bash
 source ~/ff_ws/install/setup.bash
@@ -185,12 +203,12 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 * Failing to start `free_fleet_adapter` due to missing API in `rmf_fleet_adapter_python`? This may be due to using outdated `rmf_fleet_adapter_python` released binaries, either perform a `sudo apt update && sudo apt upgrade`, or build RMF from source following the [official guide](https://github.com/open-rmf/rmf).
 
-* Simulations don't seem to work properly anymore? Try `ros2 deamon stop`, `ros2 daemon start`, or explicitly kill the `ros` and `gazebo` processes, or restart your machine. It's been noticed that if the ROS 2 or gazebo process are not terminated properly (happens rarely), the network traffic between the simulation robots and the fleet adapter get affected. 
+* Simulations don't seem to work properly anymore? Try `ros2 deamon stop`, `ros2 daemon start`, or explicitly kill the `ros` and `gazebo` processes, or restart your machine. It's been noticed that if the ROS 2 or gazebo process are not terminated properly (happens rarely), the network traffic between the simulation robots and the fleet adapter get affected.
 
 ## TODOs
 
-* multiple tb3 sim, prefix argument
 * hardware testing
+* attempt to optimize tf messages (not all are needed)
 * ROS 1 nav support
 * map switching support
 * update to use zenoh 1.0

@@ -1,0 +1,9 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <include file="$(find-pkg-share rmf_demos)/common.launch.xml">
+    <arg name="use_sim_time" value="false"/>
+    <arg name="config_file" value="$(find-pkg-share free_fleet_examples)/turtlebot3_world/turtlebot3_world.building.yaml"/>
+    <arg name="headless" value="true"/>
+  </include>
+</launch>

@@ -75,7 +75,11 @@ class Nav2RobotAdapter:
         self.battery_soc = 1.0
 
         def _tf_callback(sample: zenoh.Sample):
-            transform = TFMessage.deserialize(sample.payload)
+            try:
+                transform = TFMessage.deserialize(sample.payload)
+            except:
+                self.node.get_logger().debug("Failed to deserialize TF payload")
+                return None
             for zt in transform.transforms:
                 time = rclpy.time.Time(
                     seconds=zt.header.stamp.sec,
@@ -94,7 +98,6 @@ class Nav2RobotAdapter:
                 t.transform.rotation.z = zt.transform.rotation.z
                 t.transform.rotation.w = zt.transform.rotation.w
                 self.tf_buffer.set_transform(t, f"{self.name}_RobotAdapter")
-                # print(f"setting tf for {namespace_frame(zt.header.frame_id, self.name)} to {namespace_frame(zt.child_frame_id, self.name)}")
 
         self.tf_sub = self.zenoh_session.declare_subscriber(
             namespace_topic("tf", self.name),
@@ -123,7 +126,7 @@ class Nav2RobotAdapter:
             namespace_topic("navigate_to_pose/_action/get_result", self.name),
             zenoh.Queue(),
             value=req.serialize(),
-            timeout=0.5
+            # timeout=0.5
         )
         for reply in replies.receiver:
             try:
@@ -131,7 +134,7 @@ class Nav2RobotAdapter:
                 rep = NavigateToPose_GetResult_Response.deserialize(
                     reply.ok.payload
                 )
-                print(f"Result: {rep.status}")
+                self.node.get_logger().debug(f"Result: {rep.status}")
                 if rep.status == GoalStatus.STATUS_EXECUTING:
                     return False
                 elif rep.status == GoalStatus.STATUS_SUCCEEDED:
@@ -145,7 +148,7 @@ class Nav2RobotAdapter:
                     )
                     return True
             except:
-                print("Received (ERROR: '{}')"
+                self.node.get_logger().debug("Received (ERROR: '{}')"
                     .format(reply.err.payload.decode("utf-8")))
                 continue
 
@@ -216,7 +219,7 @@ class Nav2RobotAdapter:
             namespace_topic("navigate_to_pose/_action/send_goal", self.name),
             zenoh.Queue(),
             value=req.serialize(),
-            timeout=0.5
+            # timeout=0.5
         )
         for reply in replies.receiver:
             try:
@@ -256,7 +259,7 @@ class Nav2RobotAdapter:
                     ),
                     zenoh.Queue(),
                     value=req.serialize(),
-                    timeout=0.5
+                    # timeout=0.5
                 )
                 for reply in replies.receiver:
                     rep = ActionMsgs_CancelGoal_Response.deserialize(
