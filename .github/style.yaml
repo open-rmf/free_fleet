@@ -1,7 +1,5 @@
 name: style
-on:
-  pull_request
-  push
+on: [pull_request, push]
 jobs:
   linter:
     runs-on: ubuntu-latest
