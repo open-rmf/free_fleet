@@ -77,8 +77,9 @@ class Nav2RobotAdapter:
         def _tf_callback(sample: zenoh.Sample):
             try:
                 transform = TFMessage.deserialize(sample.payload)
-            except:
-                self.node.get_logger().debug("Failed to deserialize TF payload")
+            except Exception as _:
+                self.node.get_logger().debug(
+                    "Failed to deserialize TF payload")
                 return None
             for zt in transform.transforms:
                 time = rclpy.time.Time(
@@ -88,8 +89,10 @@ class Nav2RobotAdapter:
                 t = TransformStamped()
                 t.header.stamp = time.to_msg()
                 t.header.stamp
-                t.header.frame_id = namespace_frame(zt.header.frame_id, self.name)
-                t.child_frame_id = namespace_frame(zt.child_frame_id, self.name)
+                t.header.frame_id = namespace_frame(zt.header.frame_id,
+                                                    self.name)
+                t.child_frame_id = namespace_frame(zt.child_frame_id,
+                                                   self.name)
                 t.transform.translation.x = zt.transform.translation.x
                 t.transform.translation.y = zt.transform.translation.y
                 t.transform.translation.z = zt.transform.translation.z
@@ -114,7 +117,7 @@ class Nav2RobotAdapter:
         )
 
     def _make_random_goal_id(self):
-        return np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
+        return np.random.randint(0, 255, size=(16)).astype("uint8").tolist()
 
     def _is_navigation_done(self) -> bool:
         if self.nav_goal_id is None:
@@ -144,11 +147,12 @@ class Nav2RobotAdapter:
                     return True
                 else:
                     self.node.get_logger().error(
-                        f"Navigation goal {self.nav_goal_id} status {rep.status}"
-                    )
+                        f"Navigation goal {self.nav_goal_id} status "
+                        f"{rep.status}")
                     return True
-            except:
-                self.node.get_logger().debug("Received (ERROR: '{}')"
+            except Exception as _:
+                self.node.get_logger().debug(
+                    "Received (ERROR: '{}')"
                     .format(reply.err.payload.decode("utf-8")))
                 continue
 
@@ -180,13 +184,14 @@ class Nav2RobotAdapter:
     def navigate(self, destination, execution):
         self.execution = execution
         self.node.get_logger().info(
-            f'Commanding [{self.name}] to navigate to {destination.position} '
-            f'on map [{destination.map}]'
+            f"Commanding [{self.name}] to navigate to {destination.position} "
+            f"on map [{destination.map}]"
         )
 
         if destination.map != self.map:
             self.node.get_logger().error(
-                f"Destination is on map [{destination.map}], while robot [{self.name}] is on map [{self.map}]"
+                f"Destination is on map [{destination.map}], while robot "
+                f"[{self.name}] is on map [{self.map}]"
             )
             return
 
@@ -223,7 +228,8 @@ class Nav2RobotAdapter:
         )
         for reply in replies.receiver:
             try:
-                rep = NavigateToPose_SendGoal_Response.deserialize(reply.ok.payload)
+                rep = NavigateToPose_SendGoal_Response.deserialize(
+                    reply.ok.payload)
                 if rep.accepted:
                     self.node.get_logger().info(
                         f"Navigation goal {nav_goal_id} accepted"
@@ -236,7 +242,7 @@ class Nav2RobotAdapter:
                 )
                 self.nav_goal_id = None
                 return
-            except:
+            except Exception as _:
                 payload = reply.err.payload.decode("utf-8")
                 self.node.get_logger().error(f"Received (ERROR: {payload})")
                 continue

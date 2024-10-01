@@ -134,7 +134,10 @@ class GeometryMsgs_Transform(IdlStruct, typename="GeometryMsgs_Transform"):
 
 
 @dataclass
-class GeometryMsgs_TransformStamped(IdlStruct, typename="GeometryMsgs_TransformStamped"):
+class GeometryMsgs_TransformStamped(
+    IdlStruct,
+    typename="GeometryMsgs_TransformStamped"
+):
     header: Header
     child_frame_id: str
     transform: GeometryMsgs_Transform
@@ -157,12 +160,18 @@ class ActionMsgs_GoalInfo(IdlStruct, typename="ActionMsgs_GoalInfo"):
 
 
 @dataclass
-class ActionMsgs_CancelGoal_Request(IdlStruct, typename="ActionMsgs_CancelGoal_Request"):
+class ActionMsgs_CancelGoal_Request(
+    IdlStruct,
+    typename="ActionMsgs_CancelGoal_Request"
+):
     goal_info: ActionMsgs_GoalInfo
 
 
 @dataclass
-class ActionMsgs_CancelGoal_Response(IdlStruct, typename="ActionMsgs_CancelGoal_Response"):
+class ActionMsgs_CancelGoal_Response(
+    IdlStruct,
+    typename="ActionMsgs_CancelGoal_Response"
+):
     return_code: pycdr2.types.int8
     goals_canceling: pycdr2.types.sequence[ActionMsgs_GoalInfo]
 

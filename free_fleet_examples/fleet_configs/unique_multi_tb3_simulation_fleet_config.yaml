@@ -53,7 +53,7 @@ rmf_fleet:
           map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml"
       # initial_pose: [-0.03754809871315956, -0.5848855972290039, 0]
 
-  robot_state_update_frequency: 2.0 # Hz
+  robot_state_update_frequency: 10.0 # Hz
 
 
 # TRANSFORM CONFIG =============================================================

@@ -61,6 +61,7 @@ def compute_transforms(level, coords, node=None):
         tf.get_translation()
     )
 
+
 # ------------------------------------------------------------------------------
 # Main
 # ------------------------------------------------------------------------------
@@ -77,8 +78,10 @@ def main(argv=sys.argv):
                         help="Path to the config.yaml file")
     parser.add_argument("-n", "--nav_graph", type=str, required=True,
                         help="Path to the nav_graph for this fleet adapter")
-    parser.add_argument("-s", "--server_uri", type=str, required=False, default="",
-                        help="URI of the api server to transmit state and task information.")
+    parser.add_argument("-s", "--server_uri", type=str, required=False,
+                        default="",
+                        help="URI of the api server to transmit state and "
+                             "task information.")
     parser.add_argument("-sim", "--use_sim_time", action="store_true",
                         help="Use sim time, default: false")
     parser.add_argument(
@@ -147,8 +150,8 @@ def main(argv=sys.argv):
         robot_config_yaml = config_yaml["rmf_fleet"]["robots"][robot_name]
         robot_config = fleet_config.get_known_robot_configuration(robot_name)
         robots[robot_name] = Nav2RobotAdapter(
-            robot_name, robot_config, robot_config_yaml, node, zenoh_session, fleet_handle, tf_buffer
-        )
+            robot_name, robot_config, robot_config_yaml, node, zenoh_session,
+            fleet_handle, tf_buffer)
 
     update_period = 1.0/config_yaml["rmf_fleet"].get(
         "robot_state_update_frequency", 10.0
@@ -217,7 +220,8 @@ def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
         ])
     except Exception as err:
         robot.node.get_logger().info(
-            f"Failed to update robot [{robot.name}]: Unable to get transform between base_footprint and map: {type(err)}: {err}"
+            f"Failed to update robot [{robot.name}]: Unable to get transform "
+            f"between base_footprint and map: {type(err)}: {err}"
         )
         return None
     robot_pose = [

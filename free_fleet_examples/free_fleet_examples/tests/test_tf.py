@@ -33,7 +33,8 @@ tf_buffer = Buffer()
 def tf_callback(sample: zenoh.Sample):
     transform = TFMessage.deserialize(sample.payload)
     for zt in transform.transforms:
-        time = Time(seconds=zt.header.stamp.sec, nanoseconds=zt.header.stamp.nanosec)
+        time = Time(seconds=zt.header.stamp.sec,
+                    nanoseconds=zt.header.stamp.nanosec)
         t = TransformStamped()
         t.header.stamp = time.to_msg()
         t.header.stamp
@@ -53,10 +54,8 @@ def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
         prog="tf_listener",
         description="Zenoh/ROS2 tf example")
-    parser.add_argument("--zenoh-config", "-c", dest="config",
-        metavar="FILE",
-        type=str,
-        help="A configuration file.")
+    parser.add_argument("--zenoh-config", "-c", dest="config", metavar="FILE",
+                        type=str, help="A configuration file.")
     parser.add_argument("--namespace", "-n", type=str, default="")
 
     args = parser.parse_args()
@@ -83,9 +82,8 @@ def main(argv=sys.argv):
                 )
                 print(transform)
             except Exception as err:
-                print(
-                    f"Unable to get transform between base_footprint and map: {type(err)}: {err}"
-                )
+                print(f"Unable to get transform between base_footprint and "
+                      f"map: {type(err)}: {err}")
 
             time.sleep(1)
     except (KeyboardInterrupt):

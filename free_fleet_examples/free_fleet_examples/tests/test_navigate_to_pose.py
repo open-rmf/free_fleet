@@ -46,10 +46,8 @@ def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
         prog="navigate_to_pose_action_client",
         description="Zenoh/ROS2 navigate_to_pose_action_client example")
-    parser.add_argument("--zenoh-config", "-c", dest="config",
-        metavar="FILE",
-        type=str,
-        help="A configuration file.")
+    parser.add_argument("--zenoh-config", "-c", dest="config", metavar="FILE",
+                        type=str, help="A configuration file.")
     parser.add_argument("--namespace", "-n", type=str, default="")
     parser.add_argument("--frame-id", "-f", type=str, default="odom")
     parser.add_argument("-x", type=float)
@@ -79,7 +77,7 @@ def main(argv=sys.argv):
     pose_stamped = GeometryMsgs_PoseStamped(header=header, pose=pose)
 
     # goal_id = [i for i in range(1, 17)]
-    goal_id = np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
+    goal_id = np.random.randint(0, 255, size=(16)).astype("uint8").tolist()
     print(goal_id)
     req = NavigateToPose_SendGoal_Request(
         goal_id=goal_id,
@@ -115,25 +113,29 @@ def main(argv=sys.argv):
         while True:
             # Send the query with the serialized request
             replies = session.get(
-                namespace_topic("navigate_to_pose/_action/get_result", args.namespace),
+                namespace_topic(
+                    "navigate_to_pose/_action/get_result",
+                    args.namespace),
                 zenoh.Queue(),
                 value=req.serialize(),
                 timeout=0.5
             )
 
-            # Zenoh could get several replies for a request (e.g. from several "Service Servers" using the same name)
+            # Zenoh could get several replies for a request (e.g. from several
+            # "Service Servers" using the same name)
             for reply in replies.receiver:
                 try:
                     # Deserialize the response
-                    rep = NavigateToPose_GetResult_Response.deserialize(reply.ok.payload)
+                    rep = NavigateToPose_GetResult_Response.deserialize(
+                        reply.ok.payload
+                    )
                     # print("Result: {0}".format(rep.sequence))
                     print(f"Result: {rep.status}")
                     if rep.status == GoalStatus.STATUS_SUCCEEDED:
-                        done = True
                         break
-                except:
-                    print("Received (ERROR: '{}')"
-                        .format(reply.err.payload.decode("utf-8")))
+                except Exception as _:
+                    print("Received (ERROR: '{}')".format(
+                        reply.err.payload.decode("utf-8")))
                     continue
 
             time.sleep(1)

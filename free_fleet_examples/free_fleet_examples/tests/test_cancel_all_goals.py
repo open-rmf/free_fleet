@@ -27,10 +27,8 @@ def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
         prog="cancel_all_goals",
         description="Zenoh/ROS2 cancel all goals example")
-    parser.add_argument("--zenoh-config", "-c", dest="config",
-        metavar="FILE",
-        type=str,
-        help="A configuration file.")
+    parser.add_argument("--zenoh-config", "-c", dest="config", metavar="FILE",
+                        type=str, help="A configuration file.")
     parser.add_argument("--namespace", "-n", type=str, default="")
 
     args = parser.parse_args()
@@ -45,18 +43,21 @@ def main(argv=sys.argv):
 
     # Send the query with the serialized request
     replies = session.get(
-        namespace_topic("navigate_to_pose/_action/cancel_goal", args.namespace),
+        namespace_topic(
+            "navigate_to_pose/_action/cancel_goal",
+            args.namespace
+        ),
         zenoh.Queue(),
         value=req.serialize()
     )
-    # Zenoh could get several replies for a request (e.g. from several "Service Servers" using the same name)
+    # Zenoh could get several replies for a request (e.g. from several
+    # "Service Servers" using the same name)
     for reply in replies.receiver:
         # Deserialize the response
         rep = ActionMsgs_CancelGoal_Response.deserialize(reply.ok.payload)
         print("Return code: %d" % rep.return_code)
 
     session.close()
-
 
 
 if __name__ == "__main__":
