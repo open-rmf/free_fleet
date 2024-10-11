@@ -22,15 +22,24 @@ from free_fleet.types import (
 )
 
 
-def namespace_frame(frame: str, namespace: str) -> str:
-    return f"{namespace}/{frame}" if len(namespace) != 0 else frame
+def namespacify(base_name: str, namespace: str, delimiter: str = '/') -> str:
+    """
+    Namespaces a base_name with namespace and delimiter.
 
-
-def namespace_topic(topic: str, namespace: str) -> str:
-    return f"{namespace}/{topic}" if len(namespace) != 0 else topic
+    If no namespace is provided, returns the base_name. Otherwise, naively
+    prefixes the base_name with namespace and delimiter, returning the result.
+    """
+    return f'{namespace}{delimiter}{base_name}' if len(namespace) != 0 \
+        else base_name
 
 
 def make_cancel_all_goals_request() -> ActionMsgs_CancelGoal_Request:
+    """
+    Return a Nav2 CancelGoal request targeting all ongoing goals.
+
+    According to action_msgs/srv/CancelGoal.srv, if goal ID is zero and
+    timestamp is zero, cancel all goals.
+    """
     return ActionMsgs_CancelGoal_Request(
         goal_info=ActionMsgs_GoalInfo(
             UUID(uuid=[0 for i in range(16)]),
