@@ -16,8 +16,7 @@ jobs:
     uses: open-rmf/rmf_ci_templates/.github/workflows/reusable_build.yaml@main
     with:
       # NOTE: Avoid adding comments in the package lines, this can break some of the called scripts in github actions
-      repos-branch-override: "main"
       packages: |
-            free_fleet
-            free_fleet_examples
-            free_fleet_adapter
+        free_fleet
+        free_fleet_examples
+        free_fleet_adapter
