@@ -1,22 +1,28 @@
 name: build
 # on:
 #   pull_request:
-#   push:
-#     branches:
-#       - main
-#   workflow_dispatch:
 #   schedule:
-#     - cron: '23 0 * * *'
-
+#     - cron: '0 0 * * *'
 on: push
 
 jobs:
   build_and_test:
-    name: free_fleet
-    uses: open-rmf/rmf_ci_templates/.github/workflows/reusable_build.yaml@main
-    with:
-      # NOTE: Avoid adding comments in the package lines, this can break some of the called scripts in github actions
-      packages: |
-        free_fleet
-        free_fleet_examples
-        free_fleet_adapter
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ros_distribution:
+          - jazzy
+          - rolling
+    steps:
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+      - name: install dependencies
+        run: |
+          sudo apt update && sudo apt install python3-pip
+          pip3 install eclipse-zenoh==0.11.0 pycdr2
+      - name: build and test
+        uses: ros-tooling/action-ros-ci@v0.3
+        with:
+          package-name: free_fleet free_fleet_adapter free_fleet_examples
+          target-ros2-distro: ${{ matrix.ros_distribution }}
