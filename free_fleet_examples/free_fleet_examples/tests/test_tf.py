@@ -17,14 +17,14 @@
 import argparse
 import sys
 import time
-import zenoh
 
-from geometry_msgs.msg import TransformStamped
+from free_fleet.convert import transform_stamped_to_ros2_msg
+from free_fleet.types import TFMessage
+from free_fleet.utils import namespacify
 from rclpy.time import Time
 from tf2_ros import Buffer
 
-from free_fleet.types import TFMessage
-from free_fleet.utils import namespace_topic
+import zenoh
 
 
 tf_buffer = Buffer()
@@ -33,30 +33,21 @@ tf_buffer = Buffer()
 def tf_callback(sample: zenoh.Sample):
     transform = TFMessage.deserialize(sample.payload)
     for zt in transform.transforms:
-        time = Time(seconds=zt.header.stamp.sec,
-                    nanoseconds=zt.header.stamp.nanosec)
-        t = TransformStamped()
-        t.header.stamp = time.to_msg()
-        t.header.stamp
-        t.header.frame_id = zt.header.frame_id
-        t.child_frame_id = zt.child_frame_id
-        t.transform.translation.x = zt.transform.translation.x
-        t.transform.translation.y = zt.transform.translation.y
-        t.transform.translation.z = zt.transform.translation.z
-        t.transform.rotation.x = zt.transform.rotation.x
-        t.transform.rotation.y = zt.transform.rotation.y
-        t.transform.rotation.z = zt.transform.rotation.z
-        t.transform.rotation.w = zt.transform.rotation.w
-        tf_buffer.set_transform(t, "free_fleet_examples_test_tf")
+        t = transform_stamped_to_ros2_msg(zt)
+        tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
 
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
-        prog="tf_listener",
-        description="Zenoh/ROS2 tf example")
-    parser.add_argument("--zenoh-config", "-c", dest="config", metavar="FILE",
-                        type=str, help="A configuration file.")
-    parser.add_argument("--namespace", "-n", type=str, default="")
+        prog='tf_listener',
+        description='Zenoh/ROS2 tf example')
+    parser.add_argument('--zenoh-config', '-c', dest='config', metavar='FILE',
+                        type=str, help='A configuration file.')
+    parser.add_argument('--namespace', '-n', type=str, default='')
+    parser.add_argument(
+        '-b', '--base-footprint-frame', default='base_footprint'
+    )
+    parser.add_argument('-m', '--map-frame', default='map')
 
     args = parser.parse_args()
 
@@ -68,7 +59,7 @@ def main(argv=sys.argv):
 
     # Subscribe to TF
     pub = session.declare_subscriber(
-        namespace_topic("tf", args.namespace),
+        namespacify('tf', args.namespace),
         tf_callback
     )
 
@@ -76,14 +67,14 @@ def main(argv=sys.argv):
         while True:
             try:
                 transform = tf_buffer.lookup_transform(
-                    "base_footprint",
-                    "map",
+                    args.base_footprint_frame,
+                    args.map_frame,
                     Time()
                 )
                 print(transform)
             except Exception as err:
-                print(f"Unable to get transform between base_footprint and "
-                      f"map: {type(err)}: {err}")
+                print(f'Unable to get transform between base_footprint and '
+                      f'map: {type(err)}: {err}')
 
             time.sleep(1)
     except (KeyboardInterrupt):
@@ -93,5 +84,5 @@ def main(argv=sys.argv):
         session.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(sys.argv)

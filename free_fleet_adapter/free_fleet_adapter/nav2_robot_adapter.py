@@ -14,11 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import zenoh
-
-from geometry_msgs.msg import TransformStamped
-
 from free_fleet.types import (
     ActionMsgs_CancelGoal_Response,
     GeometryMsgs_Point,
@@ -37,14 +32,15 @@ from free_fleet.types import (
 )
 from free_fleet.utils import (
     make_cancel_all_goals_request,
-    namespace_frame,
-    namespace_topic,
+    namespacify,
 )
+from geometry_msgs.msg import TransformStamped
 
+import numpy as np
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
-
 from tf_transformations import quaternion_from_euler
+import zenoh
 
 
 class Nav2RobotAdapter:
@@ -69,7 +65,7 @@ class Nav2RobotAdapter:
         self.tf_buffer = tf_buffer
 
         self.nav_goal_id = None
-        self.map = self.robot_config_yaml["initial_map"]
+        self.map = self.robot_config_yaml['initial_map']
 
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
@@ -77,9 +73,10 @@ class Nav2RobotAdapter:
         def _tf_callback(sample: zenoh.Sample):
             try:
                 transform = TFMessage.deserialize(sample.payload)
-            except Exception as _:
+            except Exception as e:
                 self.node.get_logger().debug(
-                    "Failed to deserialize TF payload")
+                    f'Failed to deserialize TF payload: {type(e)}: {e}'
+                )
                 return None
             for zt in transform.transforms:
                 time = rclpy.time.Time(
@@ -89,10 +86,10 @@ class Nav2RobotAdapter:
                 t = TransformStamped()
                 t.header.stamp = time.to_msg()
                 t.header.stamp
-                t.header.frame_id = namespace_frame(zt.header.frame_id,
-                                                    self.name)
-                t.child_frame_id = namespace_frame(zt.child_frame_id,
-                                                   self.name)
+                t.header.frame_id = namespacify(zt.header.frame_id,
+                                                self.name)
+                t.child_frame_id = namespacify(zt.child_frame_id,
+                                               self.name)
                 t.transform.translation.x = zt.transform.translation.x
                 t.transform.translation.y = zt.transform.translation.y
                 t.transform.translation.z = zt.transform.translation.z
@@ -100,10 +97,10 @@ class Nav2RobotAdapter:
                 t.transform.rotation.y = zt.transform.rotation.y
                 t.transform.rotation.z = zt.transform.rotation.z
                 t.transform.rotation.w = zt.transform.rotation.w
-                self.tf_buffer.set_transform(t, f"{self.name}_RobotAdapter")
+                self.tf_buffer.set_transform(t, f'{self.name}_RobotAdapter')
 
         self.tf_sub = self.zenoh_session.declare_subscriber(
-            namespace_topic("tf", self.name),
+            namespacify('tf', self.name),
             _tf_callback
         )
 
@@ -112,12 +109,12 @@ class Nav2RobotAdapter:
             self.battery_soc = battery_state.percentage
 
         self.battery_state_sub = self.zenoh_session.declare_subscriber(
-            namespace_topic("battery_state", name),
+            namespacify('battery_state', name),
             _battery_state_callback
         )
 
     def _make_random_goal_id(self):
-        return np.random.randint(0, 255, size=(16)).astype("uint8").tolist()
+        return np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
 
     def _is_navigation_done(self) -> bool:
         if self.nav_goal_id is None:
@@ -126,7 +123,7 @@ class Nav2RobotAdapter:
         req = NavigateToPose_GetResult_Request(goal_id=self.nav_goal_id)
         # TODO(ac): parameterize the service call timeout
         replies = self.zenoh_session.get(
-            namespace_topic("navigate_to_pose/_action/get_result", self.name),
+            namespacify('navigate_to_pose/_action/get_result', self.name),
             zenoh.Queue(),
             value=req.serialize(),
             # timeout=0.5
@@ -137,23 +134,27 @@ class Nav2RobotAdapter:
                 rep = NavigateToPose_GetResult_Response.deserialize(
                     reply.ok.payload
                 )
-                self.node.get_logger().debug(f"Result: {rep.status}")
+                self.node.get_logger().debug(f'Result: {rep.status}')
                 if rep.status == GoalStatus.STATUS_EXECUTING:
                     return False
                 elif rep.status == GoalStatus.STATUS_SUCCEEDED:
                     self.node.get_logger().info(
-                        f"Navigation goal {self.nav_goal_id} reached"
+                        f'Navigation goal {self.nav_goal_id} reached'
                     )
                     return True
                 else:
                     self.node.get_logger().error(
-                        f"Navigation goal {self.nav_goal_id} status "
-                        f"{rep.status}")
+                        f'Navigation goal {self.nav_goal_id} status '
+                        f'{rep.status}')
                     return True
-            except Exception as _:
+            except Exception as e:
                 self.node.get_logger().debug(
-                    "Received (ERROR: '{}')"
-                    .format(reply.err.payload.decode("utf-8")))
+                    'Received (ERROR: "{}"): {}: {}'
+                    .format(
+                        reply.err.payload.decode('utf-8'),
+                        type(e),
+                        e
+                    ))
                 continue
 
     def update(self, state):
@@ -184,20 +185,20 @@ class Nav2RobotAdapter:
     def navigate(self, destination, execution):
         self.execution = execution
         self.node.get_logger().info(
-            f"Commanding [{self.name}] to navigate to {destination.position} "
-            f"on map [{destination.map}]"
+            f'Commanding [{self.name}] to navigate to {destination.position} '
+            f'on map [{destination.map}]'
         )
 
         if destination.map != self.map:
             self.node.get_logger().error(
-                f"Destination is on map [{destination.map}], while robot "
-                f"[{self.name}] is on map [{self.map}]"
+                f'Destination is on map [{destination.map}], while robot '
+                f'[{self.name}] is on map [{self.map}]'
             )
             return
 
         time_now = self.node.get_clock().now().seconds_nanoseconds()
         stamp = Time(sec=time_now[0], nanosec=time_now[1])
-        header = Header(stamp=stamp, frame_id="map")
+        header = Header(stamp=stamp, frame_id='map')
         position = GeometryMsgs_Point(
             x=destination.position[0],
             y=destination.position[1],
@@ -217,11 +218,11 @@ class Nav2RobotAdapter:
         req = NavigateToPose_SendGoal_Request(
             goal_id=nav_goal_id,
             pose=pose_stamped,
-            behavior_tree=""
+            behavior_tree=''
         )
 
         replies = self.zenoh_session.get(
-            namespace_topic("navigate_to_pose/_action/send_goal", self.name),
+            namespacify('navigate_to_pose/_action/send_goal', self.name),
             zenoh.Queue(),
             value=req.serialize(),
             # timeout=0.5
@@ -232,19 +233,21 @@ class Nav2RobotAdapter:
                     reply.ok.payload)
                 if rep.accepted:
                     self.node.get_logger().info(
-                        f"Navigation goal {nav_goal_id} accepted"
+                        f'Navigation goal {nav_goal_id} accepted'
                     )
                     self.nav_goal_id = nav_goal_id
                     return
 
                 self.node.get_logger().error(
-                    f"Navigation goal {nav_goal_id} was rejected"
+                    f'Navigation goal {nav_goal_id} was rejected'
                 )
                 self.nav_goal_id = None
                 return
-            except Exception as _:
-                payload = reply.err.payload.decode("utf-8")
-                self.node.get_logger().error(f"Received (ERROR: {payload})")
+            except Exception as e:
+                payload = reply.err.payload.decode('utf-8')
+                self.node.get_logger().error(
+                    f'Received (ERROR: {payload}: {type(e)}: {e})'
+                )
                 continue
 
     def stop(self, activity):
@@ -259,8 +262,8 @@ class Nav2RobotAdapter:
             if self.nav_goal_id is not None:
                 req = make_cancel_all_goals_request()
                 replies = self.zenoh_session.get(
-                    namespace_topic(
-                        "navigate_to_pose/_action/cancel_goal",
+                    namespacify(
+                        'navigate_to_pose/_action/cancel_goal',
                         self.name,
                     ),
                     zenoh.Queue(),
@@ -272,7 +275,7 @@ class Nav2RobotAdapter:
                         reply.ok.payload
                     )
                     self.node.get_logger().info(
-                        "Return code: %d" % rep.return_code
+                        'Return code: %d' % rep.return_code
                     )
                 self.nav_goal_id = None
 

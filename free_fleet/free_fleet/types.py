@@ -14,39 +14,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import dataclass
 from enum import Enum
+
 import pycdr2
 from pycdr2 import IdlStruct
-from dataclasses import dataclass
 
 
 @dataclass
-class Time(IdlStruct, typename="Time"):
+class Time(IdlStruct, typename='Time'):
     sec: pycdr2.types.int32
     nanosec: pycdr2.types.uint32
 
 
 @dataclass
-class Duration(IdlStruct, typename="Duration"):
+class Duration(IdlStruct, typename='Duration'):
     sec: pycdr2.types.int32
     nanosec: pycdr2.types.uint32
 
 
 @dataclass
-class Header(IdlStruct, typename="Header"):
+class Header(IdlStruct, typename='Header'):
     stamp: Time
     frame_id: str
 
 
 @dataclass
-class GeometryMsgs_Point(IdlStruct, typename="GeometryMsgs_Point"):
+class GeometryMsgs_Point(IdlStruct, typename='GeometryMsgs_Point'):
     x: pycdr2.types.float64
     y: pycdr2.types.float64
     z: pycdr2.types.float64
 
 
 @dataclass
-class GeometryMsgs_Quaternion(IdlStruct, typename="GeometryMsgs_Quaternion"):
+class GeometryMsgs_Quaternion(IdlStruct, typename='GeometryMsgs_Quaternion'):
     x: pycdr2.types.float64 = 0
     y: pycdr2.types.float64 = 0
     z: pycdr2.types.float64 = 0
@@ -54,13 +55,13 @@ class GeometryMsgs_Quaternion(IdlStruct, typename="GeometryMsgs_Quaternion"):
 
 
 @dataclass
-class GeometryMsgs_Pose(IdlStruct, typename="GeometryMsgs_Pose"):
+class GeometryMsgs_Pose(IdlStruct, typename='GeometryMsgs_Pose'):
     position: GeometryMsgs_Point
     orientation: GeometryMsgs_Quaternion
 
 
 @dataclass
-class GeometryMsgs_PoseStamped(IdlStruct, typename="GeometryMsgs_PoseStamped"):
+class GeometryMsgs_PoseStamped(IdlStruct, typename='GeometryMsgs_PoseStamped'):
     header: Header
     pose: GeometryMsgs_Pose
 
@@ -68,7 +69,7 @@ class GeometryMsgs_PoseStamped(IdlStruct, typename="GeometryMsgs_PoseStamped"):
 @dataclass
 class NavigateToPose_SendGoal_Request(
     IdlStruct,
-    typename="NavigateToPose_SendGoal_Request"
+    typename='NavigateToPose_SendGoal_Request'
 ):
     goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
     pose: GeometryMsgs_PoseStamped
@@ -78,7 +79,7 @@ class NavigateToPose_SendGoal_Request(
 @dataclass
 class NavigateToPose_SendGoal_Response(
     IdlStruct,
-    typename="NavigateToPose_SendGoal_Response"
+    typename='NavigateToPose_SendGoal_Response'
 ):
     accepted: bool
     stamp: Time
@@ -87,7 +88,7 @@ class NavigateToPose_SendGoal_Response(
 @dataclass
 class NavigateToPose_GetResult_Request(
     IdlStruct,
-    typename="NavigateToPose_GetResult_Request"
+    typename='NavigateToPose_GetResult_Request'
 ):
     goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
 
@@ -105,13 +106,13 @@ class GoalStatus(Enum):
 @dataclass
 class NavigateToPose_GetResult_Response(
     IdlStruct,
-    typename="NavigateToPose_GetResult_Response"
+    typename='NavigateToPose_GetResult_Response'
 ):
     status: pycdr2.types.int8
 
 
 @dataclass
-class NavigateToPose_Feedback(IdlStruct, typename="NavigateToPose_Feedback"):
+class NavigateToPose_Feedback(IdlStruct, typename='NavigateToPose_Feedback'):
     goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
     current_pose: GeometryMsgs_PoseStamped
     navigation_time: Duration
@@ -121,14 +122,14 @@ class NavigateToPose_Feedback(IdlStruct, typename="NavigateToPose_Feedback"):
 
 
 @dataclass
-class GeometryMsgs_Vector3(IdlStruct, typename="GeometryMsgs_Vector3"):
+class GeometryMsgs_Vector3(IdlStruct, typename='GeometryMsgs_Vector3'):
     x: pycdr2.types.float64
     y: pycdr2.types.float64
     z: pycdr2.types.float64
 
 
 @dataclass
-class GeometryMsgs_Transform(IdlStruct, typename="GeometryMsgs_Transform"):
+class GeometryMsgs_Transform(IdlStruct, typename='GeometryMsgs_Transform'):
     translation: GeometryMsgs_Vector3
     rotation: GeometryMsgs_Quaternion
 
@@ -136,7 +137,7 @@ class GeometryMsgs_Transform(IdlStruct, typename="GeometryMsgs_Transform"):
 @dataclass
 class GeometryMsgs_TransformStamped(
     IdlStruct,
-    typename="GeometryMsgs_TransformStamped"
+    typename='GeometryMsgs_TransformStamped'
 ):
     header: Header
     child_frame_id: str
@@ -144,17 +145,17 @@ class GeometryMsgs_TransformStamped(
 
 
 @dataclass
-class TFMessage(IdlStruct, typename="TFMessage"):
+class TFMessage(IdlStruct, typename='TFMessage'):
     transforms: pycdr2.types.sequence[GeometryMsgs_TransformStamped]
 
 
 @dataclass
-class UUID(IdlStruct, typename="UUID"):
+class UUID(IdlStruct, typename='UUID'):
     uuid: pycdr2.types.array[pycdr2.types.uint8, 16]
 
 
 @dataclass
-class ActionMsgs_GoalInfo(IdlStruct, typename="ActionMsgs_GoalInfo"):
+class ActionMsgs_GoalInfo(IdlStruct, typename='ActionMsgs_GoalInfo'):
     goal_id: UUID
     stamp: Time
 
@@ -162,7 +163,7 @@ class ActionMsgs_GoalInfo(IdlStruct, typename="ActionMsgs_GoalInfo"):
 @dataclass
 class ActionMsgs_CancelGoal_Request(
     IdlStruct,
-    typename="ActionMsgs_CancelGoal_Request"
+    typename='ActionMsgs_CancelGoal_Request'
 ):
     goal_info: ActionMsgs_GoalInfo
 
@@ -170,14 +171,14 @@ class ActionMsgs_CancelGoal_Request(
 @dataclass
 class ActionMsgs_CancelGoal_Response(
     IdlStruct,
-    typename="ActionMsgs_CancelGoal_Response"
+    typename='ActionMsgs_CancelGoal_Response'
 ):
     return_code: pycdr2.types.int8
     goals_canceling: pycdr2.types.sequence[ActionMsgs_GoalInfo]
 
 
 @dataclass
-class SensorMsgs_BatteryState(IdlStruct, typename="SensorMsgs_BatteryState"):
+class SensorMsgs_BatteryState(IdlStruct, typename='SensorMsgs_BatteryState'):
     voltage: pycdr2.types.float32
     temperature: pycdr2.types.float32
     current: pycdr2.types.float32
