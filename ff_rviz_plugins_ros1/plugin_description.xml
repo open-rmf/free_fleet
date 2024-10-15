@@ -1,9 +1,0 @@
-<library path="/libff_rviz_plugins_ros1">
-  <class name="ff_rviz_plugins_ros1/FFNavToolPanel"
-      type="free_fleet::FFNavToolPanel"
-      base_class_type="rviz::Panel">
-    <description>
-      A panel widget that allows sending simple navigation commands.
-    </description>
-  </class>
-</library>
