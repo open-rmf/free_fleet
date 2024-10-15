@@ -23,7 +23,7 @@ Supports
 * [ROS 2 Jazzy](https://docs.ros.org/en/jazzy/index.html)
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
 * [Open-RMF on main](https://github.com/open-rmf/rmf)
-* [zenoh-bridge-ros2dds v0.11](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/0.11.0)
+* [zenoh-bridge-ros2dds v1.0.0-beta.4](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.0.0-beta.4)
 
 We recommend setting up `zenoh-bridge-ros2dds` with the standalone binaries. After downloading the appropriate released version and platform, extract and use the standalone binaries as is. For source builds of `zenoh-bridge-ros2dds`, please follow the [official guides](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds).
 
@@ -43,7 +43,7 @@ sudo apt install python3-pip ros-jazzy-rmw-cyclonedds-cpp
 The dependencies `eclipse-zenoh` and `pycdr2` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
 
 ```bash
-pip3 install eclipse-zenoh==0.11.0 pycdr2 --break-system-packages
+pip3 install pip install eclipse-zenoh==1.0.0b4 pycdr2 --break-system-packages
 ```
 
 > [!NOTE]
@@ -256,7 +256,6 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 * attempt to optimize tf messages (not all are needed)
 * ROS 1 nav support
 * map switching support
-* update to use zenoh 1.0
 * static testing
 * end-to-end testing
 * support for Rolling

@@ -219,13 +219,12 @@ class Nav2RobotAdapter:
             behavior_tree=''
         )
 
-        print("about to get the action")
         replies = self.zenoh_session.get(
             namespacify('navigate_to_pose/_action/send_goal', self.name),
             payload=req.serialize(),
             # timeout=0.5
         )
-        print("finished to get the action")
+
         for reply in replies:
             try:
                 rep = NavigateToPose_SendGoal_Response.deserialize(
