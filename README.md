@@ -124,7 +124,7 @@ source ~/ff_ws/install/setup.bash
 ros2 run free_fleet_examples test_navigate_to_pose.py \
     --frame-id map \
     --namespace turtlebot3_1 \
-    -x 1.808
+    -x 1.808 \
     -y 0.503
 ```
 
