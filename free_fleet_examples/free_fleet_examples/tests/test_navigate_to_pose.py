@@ -39,7 +39,7 @@ import zenoh
 
 
 def feedback_callback(sample: zenoh.Sample):
-    feedback = NavigateToPose_Feedback.deserialize(sample.payload)
+    feedback = NavigateToPose_Feedback.deserialize(sample.payload.to_bytes())
     print(f'Distance remaining: {feedback.distance_remaining}')
 
 
@@ -90,19 +90,18 @@ def main(argv=sys.argv):
     print('Sending goal')
     replies = session.get(
         namespacify('navigate_to_pose/_action/send_goal', args.namespace),
-        zenoh.Queue(),
-        value=req.serialize()
+        payload=req.serialize(),
     )
 
     # Zenoh could get several replies for a request (e.g. from several
     # 'Service Servers' using the same name)
-    for reply in replies.receiver:
+    for reply in replies:
         if not reply.ok:
             print('Reply was not ok!')
             continue
         print('handling a reply!')
         # Deserialize the response
-        rep = NavigateToPose_SendGoal_Response.deserialize(reply.ok.payload)
+        rep = NavigateToPose_SendGoal_Response.deserialize(reply.ok.payload.to_bytes())
         if not rep.accepted:
             print('Goal rejected')
             return
@@ -117,27 +116,28 @@ def main(argv=sys.argv):
                 namespacify(
                     'navigate_to_pose/_action/get_result',
                     args.namespace),
-                zenoh.Queue(),
-                value=req.serialize(),
-                timeout=0.5
+                payload=req.serialize(),
+                timeout=5.5
             )
 
             # Zenoh could get several replies for a request (e.g. from several
             # 'Service Servers' using the same name)
-            for reply in replies.receiver:
+            for reply in replies:
                 try:
                     # Deserialize the response
                     rep = NavigateToPose_GetResult_Response.deserialize(
-                        reply.ok.payload
+                        reply.ok.payload.to_bytes()
                     )
-                    # print('Result: {0}'.format(rep.sequence))
-                    print(f'Result: {rep.status}')
+                    # print("Result: {0}".format(rep.sequence))
+                    print(f"Result: {rep.status}")
+                    if rep.status == GoalStatus.STATUS_ABORTED:
+                        print("Received (ERROR: 'Plan aborted by planner_server')")
+                        break
                     if rep.status == GoalStatus.STATUS_SUCCEEDED:
                         break
-                except Exception as e:
-                    e  # to prevent unused variable
-                    print('Received (ERROR: "{}")'.format(
-                        reply.err.payload.decode('utf-8')))
+                except Exception as _:
+                    print("Received (ERROR: '{}')".format(
+                        reply.err.payload.to_string()))
                     continue
 
             time.sleep(1)

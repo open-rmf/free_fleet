@@ -47,14 +47,13 @@ def main(argv=sys.argv):
             'navigate_to_pose/_action/cancel_goal',
             args.namespace
         ),
-        zenoh.Queue(),
-        value=req.serialize()
+        payload=req.serialize()
     )
     # Zenoh could get several replies for a request (e.g. from several
     # 'Service Servers' using the same name)
-    for reply in replies.receiver:
+    for reply in replies:
         # Deserialize the response
-        rep = ActionMsgs_CancelGoal_Response.deserialize(reply.ok.payload)
+        rep = ActionMsgs_CancelGoal_Response.deserialize(reply.ok.payload.to_bytes())
         print('Return code: %d' % rep.return_code)
 
     session.close()

@@ -20,6 +20,10 @@ setup(
             os.path.join('share', package_name, 'launch'),
             glob('launch/*.launch.xml'),
         ),
+        (
+            os.path.join("share", package_name, "fleet_configs"),
+            glob("fleet_configs/*.yaml"),
+        ),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
