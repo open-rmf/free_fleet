@@ -42,6 +42,7 @@ import rmf_adapter.easy_full_control as rmf_easy
 from tf_transformations import quaternion_from_euler
 import zenoh
 
+
 class Nav2RobotAdapter:
     def __init__(
         self,
@@ -104,7 +105,9 @@ class Nav2RobotAdapter:
         )
 
         def _battery_state_callback(sample: zenoh.Sample):
-            battery_state = SensorMsgs_BatteryState.deserialize(sample.payload.to_bytes())
+            battery_state = SensorMsgs_BatteryState.deserialize(
+                sample.payload.to_bytes()
+            )
             self.battery_soc = battery_state.percentage
 
         self.battery_state_sub = self.zenoh_session.declare_subscriber(

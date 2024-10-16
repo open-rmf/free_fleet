@@ -64,31 +64,31 @@ def main(argv=sys.argv):
         print(f"routers: {info.routers_zid()}")
         print(f"peers: {info.peers_zid()}")
 
-    # Subscribe to TF
-    pub = session.declare_subscriber(
-        namespacify('tf', args.namespace),
-        tf_callback
-    )
+        # Subscribe to TF
+        pub = session.declare_subscriber(
+            namespacify('tf', args.namespace),
+            tf_callback
+        )
 
-    try:
-        while True:
-            try:
-                transform = tf_buffer.lookup_transform(
-                    args.base_footprint_frame,
-                    args.map_frame,
-                    Time()
-                )
-                print(transform)
-            except Exception as err:
-                print(f'Unable to get transform between base_footprint and '
-                      f'map: {type(err)}: {err}')
+        try:
+            while True:
+                try:
+                    transform = tf_buffer.lookup_transform(
+                        args.base_footprint_frame,
+                        args.map_frame,
+                        Time()
+                    )
+                    print(transform)
+                except Exception as err:
+                    print(f'Unable to get transform between base_footprint and '
+                        f'map: {type(err)}: {err}')
 
-            time.sleep(1)
-    except (KeyboardInterrupt):
-        pass
-    finally:
-        pub.undeclare()
-        session.close()
+                time.sleep(1)
+        except (KeyboardInterrupt):
+            pass
+        finally:
+            pub.undeclare()
+            session.close()
 
 
 if __name__ == '__main__':

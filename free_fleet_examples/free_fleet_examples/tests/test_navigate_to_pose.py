@@ -101,7 +101,9 @@ def main(argv=sys.argv):
             continue
         print('handling a reply!')
         # Deserialize the response
-        rep = NavigateToPose_SendGoal_Response.deserialize(reply.ok.payload.to_bytes())
+        rep = NavigateToPose_SendGoal_Response.deserialize(
+            reply.ok.payload.to_bytes()
+        )
         if not rep.accepted:
             print('Goal rejected')
             return
@@ -131,7 +133,9 @@ def main(argv=sys.argv):
                     # print("Result: {0}".format(rep.sequence))
                     print(f"Result: {rep.status}")
                     if rep.status == GoalStatus.STATUS_ABORTED:
-                        print("Received (ERROR: 'Plan aborted by planner_server')")
+                        print(
+                        "Received (ERROR: 'Plan aborted by planner_server')"
+                        )
                         break
                     if rep.status == GoalStatus.STATUS_SUCCEEDED:
                         break

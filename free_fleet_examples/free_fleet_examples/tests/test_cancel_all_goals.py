@@ -53,7 +53,9 @@ def main(argv=sys.argv):
     # 'Service Servers' using the same name)
     for reply in replies:
         # Deserialize the response
-        rep = ActionMsgs_CancelGoal_Response.deserialize(reply.ok.payload.to_bytes())
+        rep = ActionMsgs_CancelGoal_Response.deserialize(
+            reply.ok.payload.to_bytes()
+        )
         print('Return code: %d' % rep.return_code)
 
     session.close()
