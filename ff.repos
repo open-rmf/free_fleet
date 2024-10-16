@@ -14,4 +14,4 @@ repositories:
   cyclonedds:
     type: git
     url: https://github.com/eclipse-cyclonedds/cyclonedds.git
-    version: 0.8.0beta5
+    version: 0.10.4

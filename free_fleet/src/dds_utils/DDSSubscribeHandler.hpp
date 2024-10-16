@@ -18,6 +18,7 @@
 #ifndef FREE_FLEET__SRC__DDS_UTILS__DDSSUBSCRIBEHANDLER_HPP
 #define FREE_FLEET__SRC__DDS_UTILS__DDSSUBSCRIBEHANDLER_HPP
 
+#include <array>
 #include <memory>
 #include <vector>
 
@@ -40,9 +41,9 @@ private:
   const dds_topic_descriptor_t* topic_desc;
 
   dds_entity_t topic;
-  
+
   dds_entity_t reader;
-  
+
   std::array<std::shared_ptr<Message>, MaxSamplesNum> shared_msgs;
 
   void* samples[MaxSamplesNum];
@@ -54,8 +55,8 @@ private:
 public:
 
   DDSSubscribeHandler(
-      const dds_entity_t& _participant, 
-      const dds_topic_descriptor_t* _topic_desc, 
+      const dds_entity_t& _participant,
+      const dds_topic_descriptor_t* _topic_desc,
       const std::string& _topic_name) :
     topic_desc(_topic_desc)
   {
@@ -111,7 +112,7 @@ public:
       msgs.clear();
       return msgs;
     }
-    
+
     if (return_code > 0)
     {
       for (size_t i = 0; i < MaxSamplesNum; ++i)
