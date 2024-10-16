@@ -24,7 +24,7 @@
 
 ## About
 
-Welcome to `free_fleet`, an open-source robot fleet management system. 
+Welcome to `free_fleet`, an open-source robot fleet management system.
 Sometimes it is called the "Fun Free Fleet For Friends" (F5).
 
 **Note**, this repository is under active development. Things will be quite unstable
@@ -52,6 +52,9 @@ sudo apt update && sudo apt install \
   python3-colcon-common-extensions \
   # maven default-jdk   # Uncomment to install dependencies for message generation
 ```
+
+> [!IMPORTANT]
+> In order to ensure messages using `cyclonedds` are sent, received, serialized and deserialized properly between the ROS 1 and ROS 2 systems, the version of `cyclonedds` used/built should be the same, this can be checked with `dpkg -l | grep cyclonedds` on ROS 2 systems, while ROS 1 systems will need to build `cyclonedds` from source. For ROS 2 versions above `galactic`, users will need to manage the versions of `cyclonedds` themselves. We are working on a newer iteration of `free_fleet` that does not use DDS and has access to newer features of `Open-RMF`, stay tuned!
 
 </br>
 
@@ -111,7 +114,7 @@ cd ~/ff_ros2_ws
 rosdep install --from-paths src --ignore-src --rosdistro galactic -yr
 ```
 
-Source ROS 2 and build, 
+Source ROS 2 and build,
 
 ```bash
 cd ~/ff_ros2_ws
