@@ -34,6 +34,13 @@ void to_ff_message(
 }
 
 void to_ff_message(
+    const rmf_fleet_msgs::msg::ModeParameter& _in_msg, messages::ModeParameter& _out_msg)
+{
+  _out_msg.name = _in_msg.name;
+  _out_msg.value = _in_msg.value;
+}
+
+void to_ff_message(
     const rmf_fleet_msgs::msg::ModeRequest& _in_msg, 
     messages::ModeRequest& _out_msg)
 {
@@ -41,6 +48,15 @@ void to_ff_message(
   _out_msg.robot_name = _in_msg.robot_name;
   _out_msg.mode.mode = _in_msg.mode.mode;
   _out_msg.task_id = _in_msg.task_id;
+
+  _out_msg.parameters.clear();
+  for (size_t i = 0; i < _in_msg.parameters.size(); ++i)
+  {
+    messages::ModeParameter tmp_loc_msg;
+    to_ff_message(_in_msg.parameters[i], tmp_loc_msg);
+    _out_msg.parameters.push_back(tmp_loc_msg);
+  }
+
 }
 
 void to_ff_message(
