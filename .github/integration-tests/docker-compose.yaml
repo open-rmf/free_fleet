@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  minimal-nav2:
+    image: minimal-nav2
+    build:
+      context: .github/minimal-nav2
+      # dockerfile: .github/minimal-nav2
+    container_name: minimal-nav2
+    stop_signal: SIGINT
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    environment:
+      - ROS_DOMAIN_ID=42
+    # command: ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False
+
+  zenoh-bridge:
+    image: minimal-zenoh-bridge
+    build:
+      context: .github/minimal-zenoh-bridge
+      # dockerfile: docker/task_manager/Dockerfile
+    container_name: minimal-zenoh-bridge
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - ROS_DOMAIN_ID=42
+    # command: ros2 launch task_manager task_manager.launch.py params_file:=/examples/nav2_example_params.yaml
