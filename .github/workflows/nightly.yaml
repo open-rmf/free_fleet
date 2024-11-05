@@ -11,12 +11,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
 
-    - name: Install dependencies
-      run: |
-        sudo apt update && sudo apt install docker-compose -y
-
     - name: Start containers
-      run: docker-compose -f ".github/integration-tests/docker-compose.yaml" up -d --build
+      run: docker compose -f ".github/integration-tests/docker-compose.yaml" up -d --build
 
     # - name: Install node
     #   uses: actions/setup-node@v1
