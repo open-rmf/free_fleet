@@ -26,38 +26,38 @@ import zenoh
 
 
 def test_tf():
-    # Open Zenoh Session
-    session = zenoh.open(zenoh.Config())
+    zenoh.try_init_log_from_env()
+    with zenoh.open(zenoh.Config()) as session:
+        tf_buffer = Buffer()
 
-    tf_buffer = Buffer()
+        def tf_callback(sample: zenoh.Sample):
+            transform = TFMessage.deserialize(sample.payload.to_bytes())
+            for zt in transform.transforms:
+                t = transform_stamped_to_ros2_msg(zt)
+                tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
 
-    def tf_callback(sample: zenoh.Sample):
-        transform = TFMessage.deserialize(sample.payload)
-        for zt in transform.transforms:
-            t = transform_stamped_to_ros2_msg(zt)
-            tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
+        # Subscribe to TF
+        pub = session.declare_subscriber(
+            namespacify('tf', 'turtlebot3_1'),
+            tf_callback
+        )
 
-    # Subscribe to TF
-    pub = session.declare_subscriber(
-        namespacify('tf', 'turtlebot3_1'),
-        tf_callback
-    )
+        transform_exists = False
+        for i in range(10):
+            try:
+                tf_buffer.lookup_transform(
+                    'base_footprint',
+                    'map',
+                    Time()
+                )
+                transform_exists = True
+            except Exception as err:
+                print(f'Unable to get transform between base_footprint and '
+                      f'map: {type(err)}: {err}')
 
-    transform_exists = False
-    for i in range(10):
-        try:
-            tf_buffer.lookup_transform(
-                'base_footprint',
-                'map',
-                Time()
-            )
-            transform_exists = True
-        except Exception as err:
-            print(f'Unable to get transform between base_footprint and '
-                  f'map: {type(err)}: {err}')
+            time.sleep(1)
 
-        time.sleep(1)
-    pub.undeclare()
-    session.close()
+        pub.undeclare()
+        session.close()
 
-    assert transform_exists
+        assert transform_exists
