@@ -46,7 +46,7 @@ def test_tf():
     transform_exists = False
     for i in range(10):
         try:
-            transform = tf_buffer.lookup_transform(
+            tf_buffer.lookup_transform(
                 'base_footprint',
                 'map',
                 Time()

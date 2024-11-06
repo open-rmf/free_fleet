@@ -19,10 +19,6 @@ jobs:
           sudo apt update && sudo apt install python3-pip docker-compose -y
           pip3 install eclipse-zenoh==0.11.0 pycdr2 --break-system-packages
 
-      - uses: ros-tooling/setup-ros@v0.7
-        with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
-
       - name: Checkout
         uses: actions/checkout@v1
 
