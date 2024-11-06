@@ -28,3 +28,13 @@ services:
     environment:
       - ROS_DOMAIN_ID=42
     # command: ros2 launch task_manager task_manager.launch.py params_file:=/examples/nav2_example_params.yaml
+
+  zenoh:
+    image: zenoh
+    build:
+      context: ../../
+      dockerfile: ./github/minimal-zenoh/Dockerfile
+    network_mode: host
+    stdin_open: true
+    tty: true
+    command: zenohd

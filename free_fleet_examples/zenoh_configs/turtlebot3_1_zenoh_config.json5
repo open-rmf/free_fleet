@@ -150,7 +150,7 @@
   ////
   //// mode: The bridge's mode (router, peer or client)
   ////
-  //mode: "router",
+  mode: "client",
 
   ////
   //// Which endpoints to connect to. E.g. tcp/localhost:7447.
