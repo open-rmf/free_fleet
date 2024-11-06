@@ -6,25 +6,37 @@ jobs:
   integration-tests:
     timeout-minutes: 10
     runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+    strategy:
+      matrix:
+        ros_distribution:
+          - jazzy
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt install python3-pip -y
+          pip3 install eclipse-zenoh==0.11.0 pycdr2 --break-system-packages
 
-    - name: Start containers
-      run: docker compose -f ".github/integration-tests/docker-compose.yaml" up -d --build
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
 
-    # - name: Install node
-    #   uses: actions/setup-node@v1
-    #   with:
-    #     node-version: 14.x
+      - name: Checkout
+        uses: actions/checkout@v1
 
-    # - name: Install dependencies
-    #   run: npm install
+      - name: Start containers
+        run: docker compose -f ".github/integration-tests/docker-compose.yaml" up -d --build
 
-    # - name: Run tests
-    #   run: npm run test
+      - name: build and test
+        uses: ros-tooling/action-ros-ci@v0.3
+        env:
+          INTEGRATION_TESTING: true
+        with:
+          package-name: free_fleet free_fleet_adapter free_fleet_examples
+          target-ros2-distro: ${{ matrix.ros_distribution }}
 
-    - name: Stop containers
-      if: always()
-      run: docker compose -f ".github/integration-tests/docker-compose.yaml"  down
+      - name: Stop containers
+        if: always()
+        run: docker compose -f ".github/integration-tests/docker-compose.yaml"  down

@@ -14,5 +14,9 @@ RUN rm -rf \
   /var/lib/apt/lists \
   /dist
 
-# TODO(ac): set up proper parameter file
-ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && ros2 launch nav2_bringup tb3_simulation_launch.py"]
+# Modify existing params file to add initial pose
+RUN mkdir -p /params && cd /params \
+  && cp /opt/ros/$ROS_DISTRO/share/nav2_bringup/params/nav2_params.yaml . \
+  && sed -z 's|amcl:\n  ros__parameters:\n|amcl:\n  ros__parameters:\n    set_initial_pose: true\n    initial_pose:{x: -2.0, y: -0.5, z: 0.0, yaw: 0.0}\n|' nav2_params.yaml > nav2_params_edited.yaml
+
+ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && ros2 launch nav2_bringup tb3_simulation_launch.py params_file:=/params/nav2_params_edited.yaml"]

@@ -25,6 +25,8 @@ jobs:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - name: build and test
         uses: ros-tooling/action-ros-ci@v0.3
+        env:
+          INTEGRATION_TESTING: false
         with:
           package-name: free_fleet free_fleet_adapter free_fleet_examples
           target-ros2-distro: ${{ matrix.ros_distribution }}
