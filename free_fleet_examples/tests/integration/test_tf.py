@@ -54,7 +54,7 @@ def test_tf():
             transform_exists = True
         except Exception as err:
             print(f'Unable to get transform between base_footprint and '
-                    f'map: {type(err)}: {err}')
+                  f'map: {type(err)}: {err}')
 
         time.sleep(1)
     pub.undeclare()

@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          sudo apt update && sudo apt install python3-pip -y
+          sudo apt update && sudo apt install python3-pip docker-compose -y
           pip3 install eclipse-zenoh==0.11.0 pycdr2 --break-system-packages
 
       - uses: ros-tooling/setup-ros@v0.7
@@ -26,8 +26,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Start containers
-        run: docker compose -f ".github/integration-tests/docker-compose.yaml" up -d --build
+      - name: Start test fixture containers
+        run: docker-compose -f ".github/integration-tests/docker-compose.yaml" up -d --build
 
       - name: build and test
         uses: ros-tooling/action-ros-ci@v0.3
@@ -37,6 +37,6 @@ jobs:
           package-name: free_fleet free_fleet_adapter free_fleet_examples
           target-ros2-distro: ${{ matrix.ros_distribution }}
 
-      - name: Stop containers
+      - name: Stop test fixture containers
         if: always()
-        run: docker compose -f ".github/integration-tests/docker-compose.yaml"  down
+        run: docker-compose -f ".github/integration-tests/docker-compose.yaml"  down
