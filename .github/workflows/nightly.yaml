@@ -25,13 +25,23 @@ jobs:
       - name: Start test fixture containers
         run: docker-compose -f ".github/integration-tests/docker-compose.yaml" up -d --build
 
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+
       - name: build and test
         uses: ros-tooling/action-ros-ci@v0.3
-        env:
-          INTEGRATION_TESTING: true
         with:
           package-name: free_fleet free_fleet_adapter free_fleet_examples
           target-ros2-distro: ${{ matrix.ros_distribution }}
+          colcon-defaults: |
+            {
+              "build": {
+                "cmake-args": [
+                    "-DINTEGRATION_TESTING=ON"
+                ]
+              }
+            }
 
       - name: Stop test fixture containers
         if: always()
