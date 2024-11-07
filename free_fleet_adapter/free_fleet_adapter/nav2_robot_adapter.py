@@ -72,7 +72,7 @@ class Nav2RobotAdapter:
 
         def _tf_callback(sample: zenoh.Sample):
             try:
-                transform = TFMessage.deserialize(sample.payload)
+                transform = TFMessage.deserialize(sample.payload.to_bytes())
             except Exception as e:
                 self.node.get_logger().debug(
                     f'Failed to deserialize TF payload: {type(e)}: {e}'
@@ -105,7 +105,9 @@ class Nav2RobotAdapter:
         )
 
         def _battery_state_callback(sample: zenoh.Sample):
-            battery_state = SensorMsgs_BatteryState.deserialize(sample.payload)
+            battery_state = SensorMsgs_BatteryState.deserialize(
+                sample.payload.to_bytes()
+            )
             self.battery_soc = battery_state.percentage
 
         self.battery_state_sub = self.zenoh_session.declare_subscriber(
@@ -124,15 +126,14 @@ class Nav2RobotAdapter:
         # TODO(ac): parameterize the service call timeout
         replies = self.zenoh_session.get(
             namespacify('navigate_to_pose/_action/get_result', self.name),
-            zenoh.Queue(),
-            value=req.serialize(),
+            payload=req.serialize(),
             # timeout=0.5
         )
-        for reply in replies.receiver:
+        for reply in replies:
             try:
                 # Deserialize the response
                 rep = NavigateToPose_GetResult_Response.deserialize(
-                    reply.ok.payload
+                    reply.ok.payload.to_bytes()
                 )
                 self.node.get_logger().debug(f'Result: {rep.status}')
                 if rep.status == GoalStatus.STATUS_EXECUTING:
@@ -151,7 +152,7 @@ class Nav2RobotAdapter:
                 self.node.get_logger().debug(
                     'Received (ERROR: "{}"): {}: {}'
                     .format(
-                        reply.err.payload.decode('utf-8'),
+                        reply.err.payload.to_string(),
                         type(e),
                         e
                     ))
@@ -223,14 +224,14 @@ class Nav2RobotAdapter:
 
         replies = self.zenoh_session.get(
             namespacify('navigate_to_pose/_action/send_goal', self.name),
-            zenoh.Queue(),
-            value=req.serialize(),
+            payload=req.serialize(),
             # timeout=0.5
         )
-        for reply in replies.receiver:
+
+        for reply in replies:
             try:
                 rep = NavigateToPose_SendGoal_Response.deserialize(
-                    reply.ok.payload)
+                    reply.ok.payload.to_bytes())
                 if rep.accepted:
                     self.node.get_logger().info(
                         f'Navigation goal {nav_goal_id} accepted'
@@ -244,7 +245,7 @@ class Nav2RobotAdapter:
                 self.nav_goal_id = None
                 return
             except Exception as e:
-                payload = reply.err.payload.decode('utf-8')
+                payload = reply.err.payload.to_string()
                 self.node.get_logger().error(
                     f'Received (ERROR: {payload}: {type(e)}: {e})'
                 )
@@ -266,13 +267,12 @@ class Nav2RobotAdapter:
                         'navigate_to_pose/_action/cancel_goal',
                         self.name,
                     ),
-                    zenoh.Queue(),
-                    value=req.serialize(),
+                    payload=req.serialize(),
                     # timeout=0.5
                 )
-                for reply in replies.receiver:
+                for reply in replies:
                     rep = ActionMsgs_CancelGoal_Response.deserialize(
-                        reply.ok.payload
+                        reply.ok.payload.to_bytes()
                     )
                     self.node.get_logger().info(
                         'Return code: %d' % rep.return_code
