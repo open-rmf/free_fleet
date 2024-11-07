@@ -1,11 +1,11 @@
 version: "3"
 
 services:
-  minimal-nav2:
-    image: minimal-nav2
+  minimal-nav2-bringup:
+    image: minimal-nav2-bringup
     build:
-      context: ../../
-      dockerfile: .github/minimal-nav2/Dockerfile
+      context: ../../../
+      dockerfile: .github/docker/minimal-nav2-bringup/Dockerfile
     stop_signal: SIGINT
     network_mode: host
     privileged: true
@@ -17,19 +17,19 @@ services:
   minimal-zenoh-bridge:
     image: minimal-zenoh-bridge
     build:
-      context: ../../
-      dockerfile: .github/minimal-zenoh-bridge/Dockerfile
+      context: ../../../
+      dockerfile: .github/docker/minimal-zenoh-bridge/Dockerfile
     network_mode: host
     stdin_open: true
     tty: true
     environment:
       - ROS_DOMAIN_ID=42
 
-  minimal-zenoh:
-    image: minimal-zenoh
+  minimal-zenoh-router:
+    image: minimal-zenoh-router
     build:
-      context: ../../
-      dockerfile: .github/minimal-zenoh/Dockerfile
+      context: ../../../
+      dockerfile: .github/docker/minimal-zenoh-router/Dockerfile
     network_mode: host
     stdin_open: true
     tty: true
