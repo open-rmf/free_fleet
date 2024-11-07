@@ -131,15 +131,17 @@ def main(argv=sys.argv):
                         reply.ok.payload.to_bytes()
                     )
                     # print("Result: {0}".format(rep.sequence))
-                    print(f"Result: {rep.status}")
+                    print(f'Result: {rep.status}')
                     if rep.status == GoalStatus.STATUS_ABORTED:
                         print(
-                        "Received (ERROR: 'Plan aborted by planner_server')"
+                            'Received (ERROR: "Plan aborted by '
+                            'planner_server")'
                         )
                         break
                     if rep.status == GoalStatus.STATUS_SUCCEEDED:
                         break
-                except Exception as _:
+                except Exception as e:
+                    print(e)
                     print("Received (ERROR: '{}')".format(
                         reply.err.payload.to_string()))
                     continue

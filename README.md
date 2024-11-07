@@ -23,7 +23,8 @@ Supports
 * [ROS 2 Jazzy](https://docs.ros.org/en/jazzy/index.html)
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
 * [Open-RMF on main](https://github.com/open-rmf/rmf)
-* [zenoh-bridge-ros2dds v1.0.0-beta.4](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.0.0-beta.4)
+* [zenoh-bridge-ros2dds v1.0.1](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.0.1)
+* [zenoh router v1.0.1](https://github.com/eclipse-zenoh/zenoh/releases/tag/1.0.1)
 
 We recommend setting up `zenoh-bridge-ros2dds` with the standalone binaries. After downloading the appropriate released version and platform, extract and use the standalone binaries as is. For source builds of `zenoh-bridge-ros2dds`, please follow the [official guides](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds).
 
@@ -34,16 +35,16 @@ Most of the tests have been performed using `rmw-cyclonedds-cpp`, while other RM
 
 ## Source build and setup
 
-Other system depenendencies,
+Other system dependencies,
 
 ```bash
-sudo apt install python3-pip ros-jazzy-rmw-cyclonedds-cpp
+sudo apt update && sudo apt install python3-pip ros-jazzy-rmw-cyclonedds-cpp
 ```
 
 The dependencies `eclipse-zenoh` and `pycdr2` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
 
 ```bash
-pip3 install pip install eclipse-zenoh==1.0.0b4 pycdr2 --break-system-packages
+pip3 install pip install eclipse-zenoh==1.0.1 pycdr2 --break-system-packages
 ```
 
 > [!NOTE]
@@ -67,6 +68,20 @@ rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -yr
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
+Download and extract standalone binaries for `zenohd` and `zenoh-bridge-ros2dds` with the correct architecture, system setup and version. The following example instructions are for `x86_64-unknown-linux-gnu`,
+
+```bash
+export ZENOH_VERSION=1.0.1
+
+# Download and extract Zenoh release
+wget -O zenoh.zip https://github.com/eclipse-zenoh/zenoh/releases/download/$ZENOH_VERSION/zenoh-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip
+unzip zenoh.zip
+
+# Download and extract zenoh-bridge-ros2dds release
+wget -O zenoh-plugin-ros2dds.zip https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/download/$ZENOH_VERSION/zenoh-plugin-ros2dds-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip
+unzip zenoh-plugin-ros2dds.zip
+```
+
 ## Simulation examples
 
 Examples for running a single robot or multiple robots in simulation has been up in `free_fleet_examples`, along with example configuration files for `zenoh` as well as fleet configuration files for `free_fleet_adapter`.
@@ -74,7 +89,7 @@ Examples for running a single robot or multiple robots in simulation has been up
 For ROS 2, simulations will be launched using the `nav2_bringup` package. Since the `turtlebot3_gazebo` package is not being released past jazzy, users will need to clone the package to access the gazebo models,
 
 ```
-sudo apt install ros-jazzy-nav2-bringup
+sudo apt update && sudo apt install ros-jazzy-nav2-bringup
 
 git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations ~/turtlebot3_simulations
 ```

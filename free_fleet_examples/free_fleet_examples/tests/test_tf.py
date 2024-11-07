@@ -60,9 +60,9 @@ def main(argv=sys.argv):
     # Open Zenoh Session
     with zenoh.open(conf) as session:
         info = session.info
-        print(f"zid: {info.zid()}")
-        print(f"routers: {info.routers_zid()}")
-        print(f"peers: {info.peers_zid()}")
+        print(f'zid: {info.zid()}')
+        print(f'routers: {info.routers_zid()}')
+        print(f'peers: {info.peers_zid()}')
 
         # Subscribe to TF
         pub = session.declare_subscriber(
@@ -80,8 +80,8 @@ def main(argv=sys.argv):
                     )
                     print(transform)
                 except Exception as err:
-                    print(f'Unable to get transform between base_footprint and '
-                        f'map: {type(err)}: {err}')
+                    print(f'Unable to get transform between base_footprint and'
+                          f' map: {type(err)}: {err}')
 
                 time.sleep(1)
         except (KeyboardInterrupt):
