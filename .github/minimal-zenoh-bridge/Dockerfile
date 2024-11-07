@@ -21,4 +21,4 @@ RUN rm -rf \
   /var/lib/apt/lists \
   /dist
 
-ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && . /zenoh-bridge/zenoh-bridge-ros2dds -c /zenoh-brdige/free_fleet/free_fleet_examples/zenoh_configs/turtlebot3_1_zenoh_config.json5"]
+ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-bridge-ros2dds -c /zenoh-bridge/free_fleet/free_fleet_examples/zenoh_configs/turtlebot3_1_zenoh_config.json5"]
