@@ -25,13 +25,11 @@ services:
     environment:
       - ROS_DOMAIN_ID=42
 
-  # zenoh:
-  #   image: minimal-zenoh
-  #   # build:
-  #   #   context: ../../
-  #   #   dockerfile: .github/minimal-zenoh/Dockerfile
-  #   container_name: minimal-zenoh
-  #   network_mode: host
-  #   stdin_open: true
-  #   tty: true
-  #   # command: zenohd
+  minimal-zenoh:
+    image: minimal-zenoh
+    build:
+      context: ../../
+      dockerfile: .github/minimal-zenoh/Dockerfile
+    network_mode: host
+    stdin_open: true
+    tty: true
