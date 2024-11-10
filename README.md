@@ -269,10 +269,13 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 * hardware testing
 * attempt to optimize tf messages (not all are needed)
+* robot adapter to be abstracted
 * ROS 1 nav support
+* custom actions to be abstracted
 * map switching support
 * static testing
 * end-to-end testing
+* test replanning behavior
 * support for Rolling
 * docker images
 * releases
