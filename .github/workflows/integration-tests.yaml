@@ -17,6 +17,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: Install docker-compose
+        run: |
+          sudo apt update && sudo apt install docker-compose -y
+
       - name: Start test fixture containers
         run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml" up -d --build
 
