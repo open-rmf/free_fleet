@@ -3,89 +3,81 @@ name: Nightly
 on: push
 
 jobs:
-  # build-minimal-docker-images:
-  #   name: Push minimal-rmf Docker image to GitHub Packages
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       ros_distribution: [jazzy]
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v3
-  #     - name: Login to docker
-  #       uses: docker/login-action@v3
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-  #     - name: Build and push minimal-nav2-bringup
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         push: true
-  #         build-args: |
-  #           ROS_DISTRO=${{ matrix.ros_distribution }}
-  #         tags: ghcr.io/${{ github.repository }}/minimal-nav2-bringup:${{ matrix.ros_distribution }}-latest
-  #         context: .github/docker/minimal-nav2-bringup
-  #     - name: Build and push minimal-zenoh-bridge
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         push: true
-  #         build-args: |
-  #           ROS_DISTRO=${{ matrix.ros_distribution }}
-  #           ZENOH_VERSION=1.0.1
-  #           FREE_FLEET_BRANCH=efc/integration-testing
-  #         tags: ghcr.io/${{ github.repository }}/minimal-nav2-bringup:${{ matrix.ros_distribution }}-latest
-  #         context: .github/docker/minimal-nav2-bringup
-  #     - name: Build and push minimal-zenoh-router
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         push: true
-  #         build-args: |
-  #           ROS_DISTRO=${{ matrix.ros_distribution }}
-  #         tags: ghcr.io/${{ github.repository }}/minimal-nav2-bringup:${{ matrix.ros_distribution }}-latest
-  #         context: .github/docker/minimal-nav2-bringup
-
-  integration-tests:
-    timeout-minutes: 10
+  build-minimal-docker-images:
+    name: Push minimal docker images to GitHub Packages
     runs-on: ubuntu-latest
-    container:
-      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
     strategy:
       matrix:
-        ros_distribution:
-          - jazzy
-
+        ros_distribution: [jazzy]
     steps:
-      - name: Install dependencies
-        run: |
-          sudo apt update && sudo apt install python3-pip docker-compose -y
-          pip3 install eclipse-zenoh==1.0.1 pycdr2 --break-system-packages
-
-      - name: Checkout
-        uses: actions/checkout@v1
-
-      - name: Start test fixture containers
-        run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml" up -d --build
-
-      - uses: ros-tooling/setup-ros@v0.7
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to docker
+        uses: docker/login-action@v3
         with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
-
-      - name: build and test
-        uses: ros-tooling/action-ros-ci@v0.3
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push minimal-nav2-bringup
+        uses: docker/build-push-action@v5
         with:
-          package-name: free_fleet free_fleet_adapter free_fleet_examples
-          target-ros2-distro: ${{ matrix.ros_distribution }}
-          colcon-defaults: |
-            {
-              "build": {
-                "cmake-args": [
-                    "-DINTEGRATION_TESTING=ON"
-                ]
-              }
-            }
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+          tags: ghcr.io/${{ github.repository }}/minimal-nav2-bringup:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-nav2-bringup
+      - name: Build and push minimal-zenoh-bridge
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+            ZENOH_VERSION=1.0.1
+            FREE_FLEET_BRANCH=efc/integration-testing
+          tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-zenoh-bridge
 
-      - name: Stop test fixture containers
-        if: always()
-        run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml"  down
+  # integration-tests:
+  #   timeout-minutes: 10
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+  #   strategy:
+  #     matrix:
+  #       ros_distribution:
+  #         - jazzy
+
+  #   steps:
+  #     - name: Install dependencies
+  #       run: |
+  #         sudo apt update && sudo apt install python3-pip docker-compose -y
+  #         pip3 install eclipse-zenoh==1.0.1 pycdr2 --break-system-packages
+
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
+
+  #     - name: Start test fixture containers
+  #       run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml" up -d --build
+
+  #     - uses: ros-tooling/setup-ros@v0.7
+  #       with:
+  #         required-ros-distributions: ${{ matrix.ros_distribution }}
+
+  #     - name: build and test
+  #       uses: ros-tooling/action-ros-ci@v0.3
+  #       with:
+  #         package-name: free_fleet free_fleet_adapter free_fleet_examples
+  #         target-ros2-distro: ${{ matrix.ros_distribution }}
+  #         colcon-defaults: |
+  #           {
+  #             "build": {
+  #               "cmake-args": [
+  #                   "-DINTEGRATION_TESTING=ON"
+  #               ]
+  #             }
+  #           }
+
+  #     - name: Stop test fixture containers
+  #       if: always()
+  #       run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml"  down

@@ -26,10 +26,10 @@ services:
       - ROS_DOMAIN_ID=42
 
   minimal-zenoh-router:
-    image: minimal-zenoh-router
-    build:
-      context: ../../../
-      dockerfile: .github/docker/minimal-zenoh-router/Dockerfile
+    image: eclipse/zenoh
+    restart: unless-stopped
     network_mode: host
     stdin_open: true
     tty: true
+    environment:
+      - RUST_LOG=debug

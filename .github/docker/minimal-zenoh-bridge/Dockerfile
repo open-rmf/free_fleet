@@ -11,7 +11,7 @@ RUN mkdir -p /zenoh-bridge && cd /zenoh-bridge \
   && rm zenoh-plugin-ros2dds.zip
 
 RUN cd /zenoh-bridge \
-  && wget -O turtlebot3_1_zenoh_config.json5 https://raw.githubusercontent.com/open-rmf/free_fleet/refs/heads/$FREE_FLEET_BRANCH/free_fleet_examples/zenoh_configs/turtlebot3_1_zenoh_config.json5
+  && wget -O turtlebot3_1_client_zenoh_config.json5 https://raw.githubusercontent.com/open-rmf/free_fleet/refs/heads/$FREE_FLEET_BRANCH/free_fleet_examples/zenoh_configs/turtlebot3_1_client_zenoh_config.json5
 
 ENV RMW_IMPLEMENTATION rmw_cyclonedds_cpp
 
@@ -19,4 +19,4 @@ RUN rm -rf \
   /var/lib/apt/lists \
   /dist
 
-ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-bridge-ros2dds -c /zenoh-bridge/turtlebot3_1_zenoh_config.json5"]
+ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-bridge-ros2dds -c /zenoh-bridge/turtlebot3_1_client_zenoh_config.json5"]

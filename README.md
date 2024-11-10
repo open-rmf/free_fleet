@@ -1,7 +1,7 @@
 # Free Fleet
 
 - **[Introduction](#introduction)**
-- **[Source build and setup](#source-build-and-setup)**
+- **[Dependency installation, source build and setup](#dependency-installation-source-build-and-setup)**
 - **[Simulation examples](#simulation-examples)**
   - [Single turtlebot3 world](#single-turtlebot3-world)
   - [Multiple turtlebot3 world](#multiple-turtlebot3-world)
@@ -24,18 +24,18 @@ Supports
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
 * [Open-RMF on main](https://github.com/open-rmf/rmf)
 * [zenoh-bridge-ros2dds v1.0.1](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.0.1)
-* [zenoh router v1.0.1](https://github.com/eclipse-zenoh/zenoh/releases/tag/1.0.1)
+* [zenoh router](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian)
 
-We recommend setting up `zenoh-bridge-ros2dds` with the standalone binaries. After downloading the appropriate released version and platform, extract and use the standalone binaries as is. For source builds of `zenoh-bridge-ros2dds`, please follow the [official guides](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds).
+We recommend setting up `zenoh-bridge-ros2dds` with the released standalone binaries. After downloading the appropriate released version and platform, extract and use the standalone binaries as is. For source builds of `zenoh-bridge-ros2dds`, please follow the [official guides](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds).
 
 Most of the tests have been performed using `rmw-cyclonedds-cpp`, while other RMW implementations have shown varying results. Support and testing with other RMW implementations will be set up down the road.
 
 > [!WARNING]
 > This has so far only been tested in simulation, and will undergo updates and changes as more testing is performed. Use at your own risk. For the legacy implementation, check out the [`legacy`](https://github.com/open-rmf/free_fleet/tree/legacy) branch.
 
-## Source build and setup
+## Dependency installation, source build and setup
 
-Other system dependencies,
+System dependencies,
 
 ```bash
 sudo apt update && sudo apt install python3-pip ros-jazzy-rmw-cyclonedds-cpp
@@ -46,6 +46,8 @@ The dependencies `eclipse-zenoh` and `pycdr2` are available through `pip`. Users
 ```bash
 pip3 install pip install eclipse-zenoh==1.0.1 pycdr2 --break-system-packages
 ```
+
+Install `zenohd` from the [official guide](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian).
 
 > [!NOTE]
 > If an Open-RMF workspace has already been set up, users can choose to only set up an overlay workspace, which reduces build time. The following steps will assume a fresh new workspace is required.
@@ -68,18 +70,19 @@ rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -yr
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
-Download and extract standalone binaries for `zenohd` and `zenoh-bridge-ros2dds` with the correct architecture, system setup and version. The following example instructions are for `x86_64-unknown-linux-gnu`,
+Download and extract standalone binaries for `zenoh-bridge-ros2dds` (optionally `zenohd` if a non-latest version is desired) with the correct architecture, system setup and version. The following example instructions are for `x86_64-unknown-linux-gnu`,
 
 ```bash
+# Change preferred zenoh version here
 export ZENOH_VERSION=1.0.1
-
-# Download and extract Zenoh release
-wget -O zenoh.zip https://github.com/eclipse-zenoh/zenoh/releases/download/$ZENOH_VERSION/zenoh-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip
-unzip zenoh.zip
 
 # Download and extract zenoh-bridge-ros2dds release
 wget -O zenoh-plugin-ros2dds.zip https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/download/$ZENOH_VERSION/zenoh-plugin-ros2dds-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip
 unzip zenoh-plugin-ros2dds.zip
+
+# If using released standalone binaries of zenoh router, download and extract the release
+# wget -O zenoh.zip https://github.com/eclipse-zenoh/zenoh/releases/download/$ZENOH_VERSION/zenoh-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip
+# unzip zenoh.zip
 ```
 
 ## Simulation examples
@@ -114,7 +117,17 @@ ros2 launch nav2_bringup tb3_simulation_launch.py headless:=0
 # ros2 launch nav2_bringup tb3_simulation_launch.py
 ```
 
-Start `zenoh-bridge-ros2dds` with the appropriate zenoh configuration,
+Start `zenoh` router,
+
+```bash
+zenohd
+
+# If using released standalaone binaries
+# cd PATH_TO_EXTRACTED_ZENOH_ROUTER
+# ./zenohd 
+```
+
+Start `zenoh-bridge-ros2dds` with the appropriate zenoh client configuration,
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -194,7 +207,17 @@ export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/turtlebot3_simulations/turtlebot3_
 ros2 launch nav2_bringup unique_multi_tb3_simulation_launch.py
 ```
 
-Start `zenoh-bridge-ros2dds` with the appropriate zenoh configuration,
+Start `zenoh` router,
+
+```bash
+zenohd
+
+# If using released standalaone binaries
+# cd PATH_TO_EXTRACTED_ZENOH_ROUTER
+# ./zenohd 
+```
+
+Start `zenoh-bridge-ros2dds` with the appropriate zenoh client configuration,
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -264,6 +287,8 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 * Why is RMF not run with `use_sim_time:=true` in the examples? This is because it is on a different `ROS_DOMAIN_ID` than the simulation, therefore it will not have access to the simulation `clock` topic, the examples running RMF, `free_fleet_adapter` and the tasks will not be using sim time.
 
 * For potential bandwidth issues, especially during multirobot sim example, spinning up a dedicated zenoh router and routing the `zenoh-bridge-ros2dds` manually to it, could help alleviate such issues.
+
+* If `zenoh` messages are not received, make sure the versions between the `eclipse-zenoh` in `pip`, `zenoh-bridge-ros2dds` and `zenohd` are all the same. If the debian binary releases of `zenohd` have breaking changes, and the repo has not yet migrate to the newer version, please open an issue ticket and we will look into migrating as soon as possible. In the meantime, using an older standalone release of `zenohd` would be a temporary workaround. Our integration tests will attempt to catch these breaking changes too.
 
 ## TODOs
 
