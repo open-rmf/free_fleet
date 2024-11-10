@@ -122,7 +122,7 @@ class NavigateToPose_GetResult_Response(
     typename='NavigateToPose_GetResult_Response'
 ):
     status: pycdr2.types.int8
-    NONE: pycdr2.types.uint16 = 0
+    NONE: pycdr2.types.uint16
     error_code: pycdr2.types.uint16
     error_msg: str
 
