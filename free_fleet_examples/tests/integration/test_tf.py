@@ -16,9 +16,10 @@
 
 import time
 
-from free_fleet.convert import transform_stamped_to_ros2_msg
-from free_fleet.types import TFMessage
-from free_fleet.utils import namespacify
+# from free_fleet.convert import transform_stamped_to_ros2_msg
+# from free_fleet.types import TFMessage
+# from free_fleet.utils import namespacify
+from free_fleet_adapter.nav2_robot_adapter import TfListener
 from rclpy.time import Time
 from tf2_ros import Buffer
 
@@ -30,17 +31,20 @@ def test_tf():
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
 
-        def tf_callback(sample: zenoh.Sample):
-            transform = TFMessage.deserialize(sample.payload.to_bytes())
-            for zt in transform.transforms:
-                t = transform_stamped_to_ros2_msg(zt)
-                tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
+        listener = TfListener('free_fleet_examples_test', session, tf_buffer)
+        listener
 
-        # Subscribe to TF
-        pub = session.declare_subscriber(
-            namespacify('tf', 'turtlebot3_1'),
-            tf_callback
-        )
+        # def tf_callback(sample: zenoh.Sample):
+        #     transform = TFMessage.deserialize(sample.payload.to_bytes())
+        #     for zt in transform.transforms:
+        #         t = transform_stamped_to_ros2_msg(zt)
+        #         tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
+
+        # # Subscribe to TF
+        # pub = session.declare_subscriber(
+        #     namespacify('tf', 'turtlebot3_1'),
+        #     tf_callback
+        # )
 
         transform_exists = False
         for i in range(10):
@@ -51,13 +55,11 @@ def test_tf():
                     Time()
                 )
                 transform_exists = True
+                break
             except Exception as err:
                 print(f'Unable to get transform between base_footprint and '
                       f'map: {type(err)}: {err}')
 
             time.sleep(1)
-
-        pub.undeclare()
-        session.close()
 
         assert transform_exists

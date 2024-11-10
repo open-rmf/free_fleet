@@ -43,6 +43,48 @@ from tf_transformations import quaternion_from_euler
 import zenoh
 
 
+class TfListener:
+    def __init__(self, robot_name, zenoh_session, tf_buffer):
+        self.robot_name = robot_name
+        self.zenoh_session = zenoh_session
+        self.tf_buffer = tf_buffer
+
+        def _tf_callback(sample: zenoh.Sample):
+            try:
+                transform = TFMessage.deserialize(sample.payload.to_bytes())
+            except Exception as e:
+                self.node.get_logger().debug(
+                    f'Failed to deserialize TF payload: {type(e)}: {e}'
+                )
+                return None
+            for zt in transform.transforms:
+                time = rclpy.time.Time(
+                    seconds=zt.header.stamp.sec,
+                    nanoseconds=zt.header.stamp.nanosec
+                )
+                t = TransformStamped()
+                t.header.stamp = time.to_msg()
+                t.header.stamp
+                t.header.frame_id = namespacify(zt.header.frame_id,
+                                                self.robot_name)
+                t.child_frame_id = namespacify(zt.child_frame_id,
+                                               self.robot_name)
+                t.transform.translation.x = zt.transform.translation.x
+                t.transform.translation.y = zt.transform.translation.y
+                t.transform.translation.z = zt.transform.translation.z
+                t.transform.rotation.x = zt.transform.rotation.x
+                t.transform.rotation.y = zt.transform.rotation.y
+                t.transform.rotation.z = zt.transform.rotation.z
+                t.transform.rotation.w = zt.transform.rotation.w
+                self.tf_buffer.set_transform(
+                    t, f'{self.robot_name}_TfListener')
+
+        self.tf_sub = self.zenoh_session.declare_subscriber(
+            namespacify('tf', self.robot_name),
+            _tf_callback
+        )
+
+
 class Nav2RobotAdapter:
     def __init__(
         self,
