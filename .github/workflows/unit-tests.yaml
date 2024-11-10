@@ -13,6 +13,9 @@ jobs:
           - jazzy
           - rolling
     steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
       - name: build-and-test
         uses: ./.github/actions/build-and-test
         with:
