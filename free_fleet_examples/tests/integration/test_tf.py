@@ -16,9 +16,6 @@
 
 import time
 
-# from free_fleet.convert import transform_stamped_to_ros2_msg
-# from free_fleet.types import TFMessage
-# from free_fleet.utils import namespacify
 from free_fleet_adapter.nav2_robot_adapter import TfListener
 from rclpy.time import Time
 from tf2_ros import Buffer
@@ -34,24 +31,12 @@ def test_tf():
         listener = TfListener('turtlebot3_1', session, tf_buffer)
         listener
 
-        # def tf_callback(sample: zenoh.Sample):
-        #     transform = TFMessage.deserialize(sample.payload.to_bytes())
-        #     for zt in transform.transforms:
-        #         t = transform_stamped_to_ros2_msg(zt)
-        #         tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
-
-        # # Subscribe to TF
-        # pub = session.declare_subscriber(
-        #     namespacify('tf', 'turtlebot3_1'),
-        #     tf_callback
-        # )
-
         transform_exists = False
         for i in range(10):
             try:
                 tf_buffer.lookup_transform(
-                    'base_footprint',
-                    'map',
+                    'turtlebot3_1/base_footprint',
+                    'turtlebot3_1/map',
                     Time()
                 )
                 transform_exists = True

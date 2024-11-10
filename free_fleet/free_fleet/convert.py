@@ -33,7 +33,6 @@ def transform_stamped_to_ros2_msg(msg: GeometryMsgs_TransformStamped
                                   ) -> TransformStamped:
     t = TransformStamped()
     t.header.stamp = transform_time_to_ros2_msg(msg.header.stamp)
-    t.header.stamp
     t.header.frame_id = msg.header.frame_id
     t.child_frame_id = msg.child_frame_id
     t.transform.translation.x = msg.transform.translation.x
