@@ -1,0 +1,38 @@
+name: build-and-test
+
+inputs:
+  ros-distribution:
+    description: string, ROS distribution to setup
+    required: true
+  zenoh-version:
+    description: string, version of eclipse-zenoh to install from pip
+    required: true
+  integration-testing:
+    description: string, supports ON or OFF only
+    required: false
+    default: "OFF"
+
+runs:
+  steps:
+    - name: install dependencies
+      run: |
+        sudo apt update && sudo apt install python3-pip -y
+        pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 --break-system-packages
+
+    - uses: ros-tooling/setup-ros@v0.7
+      with:
+        required-ros-distributions: ${{ inputs.ros-distribution }}
+
+    - name: build and test
+      uses: ros-tooling/action-ros-ci@v0.3
+      with:
+        package-name: free_fleet free_fleet_adapter free_fleet_examples
+        target-ros2-distro: ${{ inputs.ros-distribution }}
+        colcon-defaults: |
+          {
+            "build": {
+              "cmake-args": [
+                  "-DINTEGRATION_TESTING=${{ inputs.integration-testing }}"
+              ]
+            }
+          }

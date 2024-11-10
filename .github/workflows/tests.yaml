@@ -1,0 +1,24 @@
+name: tests
+# on:
+#   pull_request:
+#   schedule:
+#     - cron: '0 0 * * *'
+on: push
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+    strategy:
+      matrix:
+        ros_distribution:
+          - jazzy
+          - rolling
+    build-and-test:
+      - name: build-and-test
+        uses: ./.github/actions/build-and-test
+        with:
+          ros-distribution: ${{ matrix.ros_distribution }}
+          zenoh-version: 1.0.1
+          integration-testing: OFF

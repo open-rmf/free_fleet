@@ -2,10 +2,7 @@ version: "3"
 
 services:
   minimal-nav2-bringup:
-    image: minimal-nav2-bringup
-    build:
-      context: ../../../
-      dockerfile: .github/docker/minimal-nav2-bringup/Dockerfile
+    image: ghcr.io/open-rmf/free_fleet/minimal-nav2-bringup:jazzy-latest
     stop_signal: SIGINT
     network_mode: host
     privileged: true
@@ -15,10 +12,7 @@ services:
       - ROS_DOMAIN_ID=42
 
   minimal-zenoh-bridge:
-    image: minimal-zenoh-bridge
-    build:
-      context: ../../../
-      dockerfile: .github/docker/minimal-zenoh-bridge/Dockerfile
+    image: ghcr.io/open-rmf/free_fleet/minimal-zenoh-bridge:jazzy-latest
     network_mode: host
     stdin_open: true
     tty: true
