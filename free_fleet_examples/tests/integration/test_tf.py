@@ -31,7 +31,7 @@ def test_tf():
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
 
-        listener = TfListener('free_fleet_examples_test', session, tf_buffer)
+        listener = TfListener('turtlebot3_1', session, tf_buffer)
         listener
 
         # def tf_callback(sample: zenoh.Sample):
