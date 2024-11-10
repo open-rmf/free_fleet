@@ -1,12 +1,9 @@
-name: tests
-# on:
-#   pull_request:
-#   schedule:
-#     - cron: '0 0 * * *'
+name: unit-tests
+
 on: push
 
 jobs:
-  tests:
+  unit-tests:
     runs-on: ubuntu-latest
     container:
       image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
@@ -15,7 +12,7 @@ jobs:
         ros_distribution:
           - jazzy
           - rolling
-    build-and-test:
+    steps:
       - name: build-and-test
         uses: ./.github/actions/build-and-test
         with:
