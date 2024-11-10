@@ -70,9 +70,11 @@ class Nav2RobotAdapter:
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
 
+        self.replan_counts = 0
+
         def _tf_callback(sample: zenoh.Sample):
             try:
-                transform = TFMessage.deserialize(sample.payload)
+                transform = TFMessage.deserialize(sample.payload.to_bytes())
             except Exception as e:
                 self.node.get_logger().debug(
                     f'Failed to deserialize TF payload: {type(e)}: {e}'
@@ -105,7 +107,9 @@ class Nav2RobotAdapter:
         )
 
         def _battery_state_callback(sample: zenoh.Sample):
-            battery_state = SensorMsgs_BatteryState.deserialize(sample.payload)
+            battery_state = SensorMsgs_BatteryState.deserialize(
+                sample.payload.to_bytes()
+            )
             self.battery_soc = battery_state.percentage
 
         self.battery_state_sub = self.zenoh_session.declare_subscriber(
@@ -124,37 +128,36 @@ class Nav2RobotAdapter:
         # TODO(ac): parameterize the service call timeout
         replies = self.zenoh_session.get(
             namespacify('navigate_to_pose/_action/get_result', self.name),
-            zenoh.Queue(),
-            value=req.serialize(),
+            payload=req.serialize(),
             # timeout=0.5
         )
-        for reply in replies.receiver:
+        for reply in replies:
             try:
                 # Deserialize the response
                 rep = NavigateToPose_GetResult_Response.deserialize(
-                    reply.ok.payload
+                    reply.ok.payload.to_bytes()
                 )
                 self.node.get_logger().debug(f'Result: {rep.status}')
-                if rep.status == GoalStatus.STATUS_EXECUTING:
+                if rep.status == GoalStatus.STATUS_EXECUTING.value:
                     return False
-                elif rep.status == GoalStatus.STATUS_SUCCEEDED:
+                elif rep.status == GoalStatus.STATUS_SUCCEEDED.value:
                     self.node.get_logger().info(
                         f'Navigation goal {self.nav_goal_id} reached'
                     )
                     return True
                 else:
+                    # TODO(ac): test replanning behavior if goal status is
+                    # neither executing or succeeded
+                    self.replan_counts += 1
                     self.node.get_logger().error(
                         f'Navigation goal {self.nav_goal_id} status '
-                        f'{rep.status}')
-                    return True
+                        f'{rep.status}, replan count [{self.replan_counts}]')
+                    self.update_handle.more().replan()
+                    return False
             except Exception as e:
                 self.node.get_logger().debug(
-                    'Received (ERROR: "{}"): {}: {}'
-                    .format(
-                        reply.err.payload.decode('utf-8'),
-                        type(e),
-                        e
-                    ))
+                    f'Received (ERROR: "{reply.err.payload.to_string()}"): '
+                    f'{type(e)}: {e}')
                 continue
 
     def update(self, state):
@@ -166,6 +169,7 @@ class Nav2RobotAdapter:
                 self.execution.finished()
                 self.execution = None
                 self.nav_goal_id = None
+                self.replan_counts = 0
             else:
                 activity_identifier = self.execution.identifier
 
@@ -190,10 +194,14 @@ class Nav2RobotAdapter:
         )
 
         if destination.map != self.map:
+            # TODO(ac): test this map related replanning behavior
+            self.replan_counts += 1
             self.node.get_logger().error(
                 f'Destination is on map [{destination.map}], while robot '
-                f'[{self.name}] is on map [{self.map}]'
+                f'[{self.name}] is on map [{self.map}], replan count '
+                f'[{self.replan_counts}]'
             )
+            self.update_handle.more().replan()
             return
 
         time_now = self.node.get_clock().now().seconds_nanoseconds()
@@ -223,14 +231,14 @@ class Nav2RobotAdapter:
 
         replies = self.zenoh_session.get(
             namespacify('navigate_to_pose/_action/send_goal', self.name),
-            zenoh.Queue(),
-            value=req.serialize(),
+            payload=req.serialize(),
             # timeout=0.5
         )
-        for reply in replies.receiver:
+
+        for reply in replies:
             try:
                 rep = NavigateToPose_SendGoal_Response.deserialize(
-                    reply.ok.payload)
+                    reply.ok.payload.to_bytes())
                 if rep.accepted:
                     self.node.get_logger().info(
                         f'Navigation goal {nav_goal_id} accepted'
@@ -238,13 +246,16 @@ class Nav2RobotAdapter:
                     self.nav_goal_id = nav_goal_id
                     return
 
+                self.replan_counts += 1
                 self.node.get_logger().error(
-                    f'Navigation goal {nav_goal_id} was rejected'
+                    f'Navigation goal {nav_goal_id} was rejected, replan '
+                    f'count [{self.replan_counts}]'
                 )
+                self.update_handle.more().replan()
                 self.nav_goal_id = None
                 return
             except Exception as e:
-                payload = reply.err.payload.decode('utf-8')
+                payload = reply.err.payload.to_string()
                 self.node.get_logger().error(
                     f'Received (ERROR: {payload}: {type(e)}: {e})'
                 )
@@ -266,13 +277,12 @@ class Nav2RobotAdapter:
                         'navigate_to_pose/_action/cancel_goal',
                         self.name,
                     ),
-                    zenoh.Queue(),
-                    value=req.serialize(),
+                    payload=req.serialize(),
                     # timeout=0.5
                 )
-                for reply in replies.receiver:
+                for reply in replies:
                     rep = ActionMsgs_CancelGoal_Response.deserialize(
-                        reply.ok.payload
+                        reply.ok.payload.to_bytes()
                     )
                     self.node.get_logger().info(
                         'Return code: %d' % rep.return_code
@@ -280,11 +290,12 @@ class Nav2RobotAdapter:
                 self.nav_goal_id = None
 
     def execute_action(self, category: str, description: dict, execution):
-        self.execution = execution
-        # ------------------------ #
-        # IMPLEMENT YOUR CODE HERE #
-        # ------------------------ #
         # TODO(ac): change map using map_server load_map, and set initial
         # position again with /initialpose
         # TODO(ac): docking
-        return
+        # We should never reach this point after initialization.
+        error_message = \
+            f'Execute action [{category}] is unsupported, this might be a ' \
+            'configuration error.'
+        self.node.get_logger().error(error_message)
+        raise RuntimeError(error_message)

@@ -31,7 +31,7 @@ tf_buffer = Buffer()
 
 
 def tf_callback(sample: zenoh.Sample):
-    transform = TFMessage.deserialize(sample.payload)
+    transform = TFMessage.deserialize(sample.payload.to_bytes())
     for zt in transform.transforms:
         t = transform_stamped_to_ros2_msg(zt)
         tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
@@ -54,34 +54,41 @@ def main(argv=sys.argv):
     # Create Zenoh Config from file if provoded, or a default one otherwise
     conf = zenoh.Config.from_file(args.config) \
         if args.config is not None else zenoh.Config()
+
+    zenoh.try_init_log_from_env()
+
     # Open Zenoh Session
-    session = zenoh.open(conf)
+    with zenoh.open(conf) as session:
+        info = session.info
+        print(f'zid: {info.zid()}')
+        print(f'routers: {info.routers_zid()}')
+        print(f'peers: {info.peers_zid()}')
 
-    # Subscribe to TF
-    pub = session.declare_subscriber(
-        namespacify('tf', args.namespace),
-        tf_callback
-    )
+        # Subscribe to TF
+        pub = session.declare_subscriber(
+            namespacify('tf', args.namespace),
+            tf_callback
+        )
 
-    try:
-        while True:
-            try:
-                transform = tf_buffer.lookup_transform(
-                    args.base_footprint_frame,
-                    args.map_frame,
-                    Time()
-                )
-                print(transform)
-            except Exception as err:
-                print(f'Unable to get transform between base_footprint and '
-                      f'map: {type(err)}: {err}')
+        try:
+            while True:
+                try:
+                    transform = tf_buffer.lookup_transform(
+                        args.base_footprint_frame,
+                        args.map_frame,
+                        Time()
+                    )
+                    print(transform)
+                except Exception as err:
+                    print(f'Unable to get transform between base_footprint and'
+                          f' map: {type(err)}: {err}')
 
-            time.sleep(1)
-    except (KeyboardInterrupt):
-        pass
-    finally:
-        pub.undeclare()
-        session.close()
+                time.sleep(1)
+        except (KeyboardInterrupt):
+            pass
+        finally:
+            pub.undeclare()
+            session.close()
 
 
 if __name__ == '__main__':
