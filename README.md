@@ -141,7 +141,7 @@ Listen to transforms over `zenoh`,
 
 ```bash
 source ~/ff_ws/install/setup.bash
-ros2 run free_fleet_examples test_tf.py \
+ros2 run free_fleet_examples get_tf.py \
     --namespace turtlebot3_1
 ```
 
@@ -149,7 +149,7 @@ Start a `navigate_to_pose` action over `zenoh`, using example values,
 
 ```bash
 source ~/ff_ws/install/setup.bash
-ros2 run free_fleet_examples test_navigate_to_pose.py \
+ros2 run free_fleet_examples send_navigate_to_pose.py \
     --frame-id map \
     --namespace turtlebot3_1 \
     -x 1.808 \
@@ -294,7 +294,7 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 * hardware testing
 * attempt to optimize tf messages (not all are needed)
-* robot adapter to be abstracted
+* robot adapter and tf handler to be abstracted
 * ROS 1 nav support
 * custom actions to be abstracted
 * map switching support

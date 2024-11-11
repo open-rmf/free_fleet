@@ -18,28 +18,15 @@ import argparse
 import sys
 import time
 
-from free_fleet.convert import transform_stamped_to_ros2_msg
-from free_fleet.types import TFMessage
-from free_fleet.utils import namespacify
-from rclpy.time import Time
+from free_fleet_adapter.nav2_robot_adapter import TfHandler
 from tf2_ros import Buffer
 
 import zenoh
 
 
-tf_buffer = Buffer()
-
-
-def tf_callback(sample: zenoh.Sample):
-    transform = TFMessage.deserialize(sample.payload.to_bytes())
-    for zt in transform.transforms:
-        t = transform_stamped_to_ros2_msg(zt)
-        tf_buffer.set_transform(t, 'free_fleet_examples_test_tf')
-
-
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
-        prog='tf_listener',
+        prog='get_tf',
         description='Zenoh/ROS2 tf example')
     parser.add_argument('--zenoh-config', '-c', dest='config', metavar='FILE',
                         type=str, help='A configuration file.')
@@ -57,6 +44,8 @@ def main(argv=sys.argv):
 
     zenoh.try_init_log_from_env()
 
+    tf_buffer = Buffer()
+
     # Open Zenoh Session
     with zenoh.open(conf) as session:
         info = session.info
@@ -64,30 +53,20 @@ def main(argv=sys.argv):
         print(f'routers: {info.routers_zid()}')
         print(f'peers: {info.peers_zid()}')
 
-        # Subscribe to TF
-        pub = session.declare_subscriber(
-            namespacify('tf', args.namespace),
-            tf_callback
-        )
+        tf_handler = TfHandler('turtlebot3_1', session, tf_buffer)
 
         try:
             while True:
-                try:
-                    transform = tf_buffer.lookup_transform(
-                        args.base_footprint_frame,
-                        args.map_frame,
-                        Time()
-                    )
+                transform = tf_handler.get_transform()
+                if transform is None:
+                    print('Unable to get transform between base_footprint and'
+                          ' map')
+                else:
                     print(transform)
-                except Exception as err:
-                    print(f'Unable to get transform between base_footprint and'
-                          f' map: {type(err)}: {err}')
-
                 time.sleep(1)
         except (KeyboardInterrupt):
             pass
         finally:
-            pub.undeclare()
             session.close()
 
 

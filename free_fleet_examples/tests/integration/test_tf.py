@@ -16,35 +16,43 @@
 
 import time
 
-from free_fleet_adapter.nav2_robot_adapter import TfListener
-from rclpy.time import Time
+from free_fleet_adapter.nav2_robot_adapter import TfHandler
 from tf2_ros import Buffer
 
 import zenoh
 
 
-def test_tf():
+def test_tf_does_not_exist():
     zenoh.try_init_log_from_env()
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
 
-        listener = TfListener('turtlebot3_1', session, tf_buffer)
-        listener
+        tf_handler = TfHandler('missing_turtlebot3_1', session, tf_buffer)
 
         transform_exists = False
         for i in range(10):
-            try:
-                tf_buffer.lookup_transform(
-                    'turtlebot3_1/base_footprint',
-                    'turtlebot3_1/map',
-                    Time()
-                )
+            transform = tf_handler.get_transform()
+            if transform is not None:
                 transform_exists = True
                 break
-            except Exception as err:
-                print(f'Unable to get transform between base_footprint and '
-                      f'map: {type(err)}: {err}')
+            time.sleep(1)
 
+        assert not transform_exists
+
+
+def test_tf_exists():
+    zenoh.try_init_log_from_env()
+    with zenoh.open(zenoh.Config()) as session:
+        tf_buffer = Buffer()
+
+        tf_handler = TfHandler('turtlebot3_1', session, tf_buffer)
+
+        transform_exists = False
+        for i in range(10):
+            transform = tf_handler.get_transform()
+            if transform is not None:
+                transform_exists = True
+                break
             time.sleep(1)
 
         assert transform_exists

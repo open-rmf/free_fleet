@@ -36,33 +36,39 @@ from free_fleet.utils import (
     namespacify,
 )
 
+from geometry_msgs.msg import TransformStamped
 import numpy as np
+import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
 from tf_transformations import quaternion_from_euler
 import zenoh
 
 
-class TfListener:
+class TfHandler:
 
-    def __init__(self, robot_name, zenoh_session, tf_buffer):
+    def __init__(self, robot_name, zenoh_session, tf_buffer, node=None):
         self.robot_name = robot_name
         self.zenoh_session = zenoh_session
+        self.node = node
         self.tf_buffer = tf_buffer
 
         def _tf_callback(sample: zenoh.Sample):
             try:
                 transform = TFMessage.deserialize(sample.payload.to_bytes())
             except Exception as e:
-                self.node.get_logger().debug(
+                error_message = \
                     f'Failed to deserialize TF payload: {type(e)}: {e}'
-                )
+                if self.node is not None:
+                    self.node.get_logger().debug(error_message)
+                else:
+                    print(error_message)
                 return None
             for zt in transform.transforms:
                 t = transform_stamped_to_ros2_msg(zt)
                 t.header.frame_id = namespacify(zt.header.frame_id,
-                                                self.name)
+                                                self.robot_name)
                 t.child_frame_id = namespacify(zt.child_frame_id,
-                                               self.name)
+                                               self.robot_name)
                 self.tf_buffer.set_transform(
                     t, f'{self.robot_name}_TfListener')
 
@@ -70,6 +76,25 @@ class TfListener:
             namespacify('tf', self.robot_name),
             _tf_callback
         )
+
+    def get_transform(self) -> TransformStamped | None:
+        try:
+            # TODO(ac): parameterize the frames for lookup
+            transform = self.tf_buffer.lookup_transform(
+                namespacify('map', self.robot_name),
+                namespacify('base_footprint', self.robot_name),
+                rclpy.time.Time()
+            )
+            return transform
+        except Exception as err:
+            error_message = \
+                'Unable to get transform between base_footprint and map: ' \
+                f'{type(err)}: {err}'
+            if self.node is not None:
+                self.node.get_logger().info(error_message)
+            else:
+                print(error_message)
+        return None
 
 
 class Nav2RobotAdapter:
@@ -102,25 +127,11 @@ class Nav2RobotAdapter:
 
         self.replan_counts = 0
 
-        def _tf_callback(sample: zenoh.Sample):
-            try:
-                transform = TFMessage.deserialize(sample.payload.to_bytes())
-            except Exception as e:
-                self.node.get_logger().debug(
-                    f'Failed to deserialize TF payload: {type(e)}: {e}'
-                )
-                return None
-            for zt in transform.transforms:
-                t = transform_stamped_to_ros2_msg(zt)
-                t.header.frame_id = namespacify(zt.header.frame_id,
-                                                self.name)
-                t.child_frame_id = namespacify(zt.child_frame_id,
-                                               self.name)
-                self.tf_buffer.set_transform(t, f'{self.name}_RobotAdapter')
-
-        self.tf_sub = self.zenoh_session.declare_subscriber(
-            namespacify('tf', self.name),
-            _tf_callback
+        self.tf_handler = TfHandler(
+            self.name,
+            self.zenoh_session,
+            self.tf_buffer,
+            self.node
         )
 
         def _battery_state_callback(sample: zenoh.Sample):

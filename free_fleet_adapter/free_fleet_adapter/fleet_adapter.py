@@ -20,8 +20,6 @@ import sys
 import threading
 import time
 
-from free_fleet.utils import namespacify
-
 import nudged
 import rclpy
 from rclpy.duration import Duration
@@ -214,25 +212,21 @@ def parallel(f):
 
 @parallel
 def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
-    try:
-        # TODO(ac): parameterize the frames for lookup
-        transform = tf_buffer.lookup_transform(
-            namespacify('map', robot.name),
-            namespacify('base_footprint', robot.name),
-            rclpy.time.Time()
-        )
-        orientation = euler_from_quaternion([
-            transform.transform.rotation.x,
-            transform.transform.rotation.y,
-            transform.transform.rotation.z,
-            transform.transform.rotation.w
-        ])
-    except Exception as err:
+    transform = robot.tf_handler.get_transform()
+    if transform is None:
         robot.node.get_logger().info(
             f'Failed to update robot [{robot.name}]: Unable to get transform '
-            f'between base_footprint and map: {type(err)}: {err}'
+            f'between base_footprint and map'
         )
         return None
+
+    orientation = euler_from_quaternion([
+        transform.transform.rotation.x,
+        transform.transform.rotation.y,
+        transform.transform.rotation.z,
+        transform.transform.rotation.w
+    ])
+
     robot_pose = [
         transform.transform.translation.x,
         transform.transform.translation.y,
