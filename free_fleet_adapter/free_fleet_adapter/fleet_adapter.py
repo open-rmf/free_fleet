@@ -133,7 +133,10 @@ def main(argv=sys.argv):
         tf = compute_transforms(level, coords, node)
         fleet_config.add_robot_coordinates_transformation(level, tf)
 
+    # retrieves std::shared_ptr<EasyFullControl>
     fleet_handle = adapter.add_easy_fleet(fleet_config)
+    assert fleet_handle is not None, \
+    "An error was raised on attempt to create EasyFullControl Object"
 
     # Initialize zenoh
     zenoh_config = zenoh.Config.from_file(args.zenoh_config) \
