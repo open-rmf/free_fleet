@@ -172,7 +172,7 @@ def main(argv=sys.argv):
             # Update all the robots in parallel using a thread pool
             update_jobs = []
             for robot in robots.values():
-                update_jobs.append(update_robot(robot, tf_buffer))
+                update_jobs.append(update_robot(robot))
 
             asyncio.get_event_loop().run_until_complete(
                 asyncio.wait(update_jobs)
@@ -211,7 +211,7 @@ def parallel(f):
 
 
 @parallel
-def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
+def update_robot(robot: Nav2RobotAdapter):
     transform = robot.tf_handler.get_transform()
     if transform is None:
         robot.node.get_logger().info(
