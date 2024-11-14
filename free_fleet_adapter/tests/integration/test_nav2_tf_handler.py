@@ -18,16 +18,22 @@ import time
 
 from free_fleet_adapter.nav2_robot_adapter import Nav2TfHandler
 from tf2_ros import Buffer
+import rclpy
+from rclpy.node import Node
 
 import zenoh
 
 
 def test_tf_does_not_exist():
+    rclpy.init()
+    node = Node('missing_turtlebot3_1_node')
     zenoh.try_init_log_from_env()
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
 
-        tf_handler = Nav2TfHandler('missing_turtlebot3_1', session, tf_buffer)
+        tf_handler = Nav2TfHandler(
+            'missing_turtlebot3_1', session, tf_buffer, node
+        )
 
         transform_exists = False
         for i in range(10):
@@ -41,11 +47,13 @@ def test_tf_does_not_exist():
 
 
 def test_tf_exists():
+    rclpy.init()
+    node = Node('turtlebot3_1_node')
     zenoh.try_init_log_from_env()
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
 
-        tf_handler = Nav2TfHandler('turtlebot3_1', session, tf_buffer)
+        tf_handler = Nav2TfHandler('turtlebot3_1', session, tf_buffer, node)
 
         transform_exists = False
         for i in range(10):

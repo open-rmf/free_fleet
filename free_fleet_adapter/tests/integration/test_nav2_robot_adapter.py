@@ -18,11 +18,15 @@ import time
 
 from free_fleet_adapter.nav2_robot_adapter import Nav2RobotAdapter
 from tf2_ros import Buffer
+import rclpy
+from rclpy.node import Node
 
 import zenoh
 
 
 def test_robot_does_not_exist():
+    rclpy.init()
+    node = Node('missing_turtlebot3_1_nav2_robot_adapter_node')
     zenoh.try_init_log_from_env()
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
@@ -33,7 +37,7 @@ def test_robot_does_not_exist():
             robot_config_yaml={
                 'initial_map': 'L1',
             },
-            node=None,
+            node=node,
             zenoh_session=session,
             fleet_handle=None,
             tf_buffer=tf_buffer
@@ -51,6 +55,8 @@ def test_robot_does_not_exist():
 
 
 def test_robot_exists():
+    rclpy.init()
+    node = Node('turtlebot3_1_nav2_robot_adapter_node')
     zenoh.try_init_log_from_env()
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
@@ -61,7 +67,7 @@ def test_robot_exists():
             robot_config_yaml={
                 'initial_map': 'L1',
             },
-            node=None,
+            node=node,
             zenoh_session=session,
             fleet_handle=None,
             tf_buffer=tf_buffer

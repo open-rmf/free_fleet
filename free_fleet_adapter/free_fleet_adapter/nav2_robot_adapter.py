@@ -51,7 +51,7 @@ import zenoh
 
 class Nav2TfHandler:
 
-    def __init__(self, robot_name, zenoh_session, tf_buffer, node=None):
+    def __init__(self, robot_name, zenoh_session, tf_buffer, node):
         self.robot_name = robot_name
         self.zenoh_session = zenoh_session
         self.node = node
@@ -61,12 +61,9 @@ class Nav2TfHandler:
             try:
                 transform = TFMessage.deserialize(sample.payload.to_bytes())
             except Exception as e:
-                error_message = \
+                self.node.get_logger().debug(
                     f'Failed to deserialize TF payload: {type(e)}: {e}'
-                if self.node is not None:
-                    self.node.get_logger().debug(error_message)
-                else:
-                    print(error_message)
+                )
                 return None
             for zt in transform.transforms:
                 t = transform_stamped_to_ros2_msg(zt)
@@ -92,13 +89,10 @@ class Nav2TfHandler:
             )
             return transform
         except Exception as err:
-            error_message = \
-                'Unable to get transform between base_footprint and map: ' \
+            self.node.get_logger().info(
+                'Unable to get transform between base_footprint and map: '
                 f'{type(err)}: {err}'
-            if self.node is not None:
-                self.node.get_logger().info(error_message)
-            else:
-                print(error_message)
+            )
         return None
 
 
@@ -158,10 +152,10 @@ class Nav2RobotAdapter(RobotAdapter):
     def pose(self) -> Annotated[list[float], 3] | None:
         transform = self.tf_handler.get_transform()
         if transform is None:
-            self.node.get_logger().info(
-                f'Failed to update robot [{self.name}]: Unable to get '
+            error_message = \
+                f'Failed to update robot [{self.name}]: Unable to get ' \
                 f'transform between base_footprint and map'
-            )
+            self.node.get_logger().info(error_message)
             return None
 
         orientation = euler_from_quaternion([
