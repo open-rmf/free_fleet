@@ -44,7 +44,7 @@ from tf_transformations import quaternion_from_euler
 import zenoh
 
 
-class TfHandler:
+class Nav2TfHandler:
 
     def __init__(self, robot_name, zenoh_session, tf_buffer, node=None):
         self.robot_name = robot_name
@@ -127,7 +127,7 @@ class Nav2RobotAdapter:
 
         self.replan_counts = 0
 
-        self.tf_handler = TfHandler(
+        self.tf_handler = Nav2TfHandler(
             self.name,
             self.zenoh_session,
             self.tf_buffer,

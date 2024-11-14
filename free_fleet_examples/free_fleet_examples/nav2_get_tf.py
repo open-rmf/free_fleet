@@ -18,7 +18,7 @@ import argparse
 import sys
 import time
 
-from free_fleet_adapter.nav2_robot_adapter import TfHandler
+from free_fleet_adapter.nav2_robot_adapter import Nav2TfHandler
 from tf2_ros import Buffer
 
 import zenoh
@@ -53,7 +53,7 @@ def main(argv=sys.argv):
         print(f'routers: {info.routers_zid()}')
         print(f'peers: {info.peers_zid()}')
 
-        tf_handler = TfHandler('turtlebot3_1', session, tf_buffer)
+        tf_handler = Nav2TfHandler('turtlebot3_1', session, tf_buffer)
 
         try:
             while True:

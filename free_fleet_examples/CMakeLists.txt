@@ -47,9 +47,9 @@ foreach(path ${traffic_editor_paths})
 endforeach()
 
 install(PROGRAMS
-  ${PROJECT_NAME}/cancel_all_goals.py
-  ${PROJECT_NAME}/get_tf.py
-  ${PROJECT_NAME}/send_navigate_to_pose.py
+  ${PROJECT_NAME}/nav2_cancel_all_goals.py
+  ${PROJECT_NAME}/nav2_get_tf.py
+  ${PROJECT_NAME}/nav2_send_navigate_to_pose.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -83,20 +83,6 @@ if(BUILD_TESTING)
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
   endforeach()
-
-  if (INTEGRATION_TESTING)
-    set(_pytest_tests
-      tests/integration/test_tf.py
-    )
-    foreach(_test_path ${_pytest_tests})
-      get_filename_component(_test_name ${_test_path} NAME_WE)
-      ament_add_pytest_test(${_test_name} ${_test_path}
-        APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
-        TIMEOUT 60
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      )
-    endforeach()
-  endif()
 endif()
 
 ament_package()

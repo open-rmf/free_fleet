@@ -22,35 +22,36 @@ from rmf_adapter.robot_update_handle import ActivityIdentifier
 
 
 class RobotAdapter(ABC):
-    
-    '''
+    """Abstract Robot Adapter to be used by the free fleet adapter."""
+
+    """
     This method returns the battery state of charge as a float, with value
     between 0 and 1.0.
-    '''
+    """
     @abstractmethod
     def battery_soc(self) -> float:
         ...
-    
-    '''
+
+    """
     This method returns the last known 2D position in meters and orientation
     (yaw) of the robot in radians as a list of 3 floats, in the form of
     [x, y, yaw]. If the last known position of the robot is not available,
-    returns None. 
-    '''
+    returns None.
+    """
     @abstractmethod
     def pose(self) -> Annotated[list[float], 3] | None:
         ...
-    
-    '''
+
+    """
     This method is called to update RMF with the latest robot state.
-    '''
+    """
     @abstractmethod
     def update(self, state: rmf_easy.RobotState):
         ...
 
-    '''
+    """
     This method is called to send a navigation command to the robot.
-    '''
+    """
     @abstractmethod
     def navigate(
         self,
@@ -59,17 +60,17 @@ class RobotAdapter(ABC):
     ):
         ...
 
-    '''
+    """
     This method is called to stop the execution/continuation of the provided
     activity.
-    '''
+    """
     @abstractmethod
     def stop(self, activity):
         ...
 
-    '''
+    """
     This method is called to send a custom action command to the robot.
-    '''
+    """
     @abstractmethod
     def execute_action(
         self,

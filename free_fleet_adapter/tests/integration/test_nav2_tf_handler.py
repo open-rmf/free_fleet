@@ -16,7 +16,7 @@
 
 import time
 
-from free_fleet_adapter.nav2_robot_adapter import TfHandler
+from free_fleet_adapter.nav2_robot_adapter import Nav2TfHandler
 from tf2_ros import Buffer
 
 import zenoh
@@ -27,7 +27,7 @@ def test_tf_does_not_exist():
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
 
-        tf_handler = TfHandler('missing_turtlebot3_1', session, tf_buffer)
+        tf_handler = Nav2TfHandler('missing_turtlebot3_1', session, tf_buffer)
 
         transform_exists = False
         for i in range(10):
@@ -45,7 +45,7 @@ def test_tf_exists():
     with zenoh.open(zenoh.Config()) as session:
         tf_buffer = Buffer()
 
-        tf_handler = TfHandler('turtlebot3_1', session, tf_buffer)
+        tf_handler = Nav2TfHandler('turtlebot3_1', session, tf_buffer)
 
         transform_exists = False
         for i in range(10):
