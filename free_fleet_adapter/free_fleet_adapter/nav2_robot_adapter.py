@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Annotated
+
 from free_fleet.convert import transform_stamped_to_ros2_msg
 from free_fleet.types import (
     ActionMsgs_CancelGoal_Response,
@@ -35,12 +37,15 @@ from free_fleet.utils import (
     make_cancel_all_goals_request,
     namespacify,
 )
+from free_fleet_adapter.robot_adapter import RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
 import numpy as np
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
-from tf_transformations import quaternion_from_euler
+from rmf_adapter.robot_update_handle import ActivityIdentifier
+from tf_transformations import euler_from_quaternion, quaternion_from_euler
+
 import zenoh
 
 
@@ -97,7 +102,7 @@ class Nav2TfHandler:
         return None
 
 
-class Nav2RobotAdapter:
+class Nav2RobotAdapter(RobotAdapter):
 
     def __init__(
         self,
@@ -109,6 +114,8 @@ class Nav2RobotAdapter:
         fleet_handle,
         tf_buffer
     ):
+        RobotAdapter.__init__(self)
+
         self.name = name
         self.execution = None
         self.update_handle = None
@@ -144,6 +151,31 @@ class Nav2RobotAdapter:
             namespacify('battery_state', name),
             _battery_state_callback
         )
+
+    def battery_soc(self) -> float:
+        return self.battery_soc
+
+    def pose(self) -> Annotated[list[float], 3] | None:
+        transform = self.tf_handler.get_transform()
+        if transform is None:
+            self.node.get_logger().info(
+                f'Failed to update robot [{self.name}]: Unable to get '
+                f'transform between base_footprint and map'
+            )
+            return None
+
+        orientation = euler_from_quaternion([
+            transform.transform.rotation.x,
+            transform.transform.rotation.y,
+            transform.transform.rotation.z,
+            transform.transform.rotation.w
+        ])
+        robot_pose = [
+            transform.transform.translation.x,
+            transform.transform.translation.y,
+            orientation[2]
+        ]
+        return robot_pose
 
     def _make_random_goal_id(self):
         return np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
@@ -188,7 +220,7 @@ class Nav2RobotAdapter:
                     f'{type(e)}: {e}')
                 continue
 
-    def update(self, state):
+    def update(self, state: rmf_easy.RobotState):
         activity_identifier = None
         if self.execution:
             # TODO(ac): use an enum to record what type of execution it is,
@@ -203,18 +235,11 @@ class Nav2RobotAdapter:
 
         self.update_handle.update(state, activity_identifier)
 
-    def make_callbacks(self):
-        return rmf_easy.RobotCallbacks(
-            lambda destination, execution: self.navigate(
-                destination, execution
-            ),
-            lambda activity: self.stop(activity),
-            lambda category, description, execution: self.execute_action(
-                category, description, execution
-            )
-        )
-
-    def navigate(self, destination, execution):
+    def navigate(
+        self,
+        destination: rmf_easy.Destination,
+        execution: rmf_easy.CommandExecution
+    ):
         self.execution = execution
         self.node.get_logger().info(
             f'Commanding [{self.name}] to navigate to {destination.position} '
@@ -289,7 +314,7 @@ class Nav2RobotAdapter:
                 )
                 continue
 
-    def stop(self, activity):
+    def stop(self, activity: ActivityIdentifier):
         if self.execution is None:
             return
 
@@ -317,7 +342,12 @@ class Nav2RobotAdapter:
                     )
                 self.nav_goal_id = None
 
-    def execute_action(self, category: str, description: dict, execution):
+    def execute_action(
+        self,
+        category: str,
+        description: dict,
+        execution: ActivityIdentifier
+    ):
         # TODO(ac): change map using map_server load_map, and set initial
         # position again with /initialpose
         # TODO(ac): docking

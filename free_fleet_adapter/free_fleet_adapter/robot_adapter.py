@@ -65,7 +65,7 @@ class RobotAdapter(ABC):
     activity.
     """
     @abstractmethod
-    def stop(self, activity):
+    def stop(self, activity: ActivityIdentifier):
         ...
 
     """

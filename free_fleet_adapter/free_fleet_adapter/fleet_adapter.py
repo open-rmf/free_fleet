@@ -29,7 +29,6 @@ import rmf_adapter
 from rmf_adapter import Adapter, Transformation
 import rmf_adapter.easy_full_control as rmf_easy
 from tf2_ros import Buffer
-from tf_transformations import euler_from_quaternion
 import yaml
 import zenoh
 
@@ -212,26 +211,10 @@ def parallel(f):
 
 @parallel
 def update_robot(robot: Nav2RobotAdapter):
-    transform = robot.tf_handler.get_transform()
-    if transform is None:
-        robot.node.get_logger().info(
-            f'Failed to update robot [{robot.name}]: Unable to get transform '
-            f'between base_footprint and map'
-        )
+    robot_pose = robot.pose()
+    if robot_pose is None:
+        robot.node.get_logger().info(f'Failed to pose of robot [{robot.name}]')
         return None
-
-    orientation = euler_from_quaternion([
-        transform.transform.rotation.x,
-        transform.transform.rotation.y,
-        transform.transform.rotation.z,
-        transform.transform.rotation.w
-    ])
-
-    robot_pose = [
-        transform.transform.translation.x,
-        transform.transform.translation.y,
-        orientation[2]
-    ]
 
     state = rmf_easy.RobotState(
         robot.map,
@@ -244,7 +227,15 @@ def update_robot(robot: Nav2RobotAdapter):
             robot.name,
             state,
             robot.configuration,
-            robot.make_callbacks()
+            rmf_easy.RobotCallbacks(
+                lambda destination, execution: robot.navigate(
+                    destination, execution
+                ),
+                lambda activity: robot.stop(activity),
+                lambda category, description, execution: robot.execute_action(
+                    category, description, execution
+                )
+            )
         )
         return
 
