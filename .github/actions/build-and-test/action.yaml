@@ -35,6 +35,11 @@ runs:
             "build": {
               "cmake-args": [
                   "-DINTEGRATION_TESTING=${{ inputs.integration-testing }}"
-              ]
+              ],
+              "mixin": ["coverage-pytest"]
+            },
+            "test": {
+              "mixin": ["coverage-pytest"]
             }
           }
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml

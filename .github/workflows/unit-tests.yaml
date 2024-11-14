@@ -22,3 +22,19 @@ jobs:
           ros-distribution: ${{ matrix.ros_distribution }}
           zenoh-version: 1.0.1
           integration-testing: OFF
+
+      - name: Upload failed test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: ros_ws/build/*/test_results/*/*.catch2.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ros_ws/coveragepy/.coverage
+          flags: tests
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
