@@ -29,7 +29,7 @@ class RobotAdapter(ABC):
     between 0 and 1.0.
     """
     @abstractmethod
-    def battery_soc(self) -> float:
+    def get_battery_soc(self) -> float:
         ...
 
     """
@@ -39,7 +39,7 @@ class RobotAdapter(ABC):
     returns None.
     """
     @abstractmethod
-    def pose(self) -> Annotated[list[float], 3] | None:
+    def get_pose(self) -> Annotated[list[float], 3] | None:
         ...
 
     """

@@ -146,10 +146,10 @@ class Nav2RobotAdapter(RobotAdapter):
             _battery_state_callback
         )
 
-    def battery_soc(self) -> float:
+    def get_battery_soc(self) -> float:
         return self.battery_soc
 
-    def pose(self) -> Annotated[list[float], 3] | None:
+    def get_pose(self) -> Annotated[list[float], 3] | None:
         transform = self.tf_handler.get_transform()
         if transform is None:
             error_message = \
@@ -305,6 +305,8 @@ class Nav2RobotAdapter(RobotAdapter):
                 self.update_handle.more().replan()
                 self.nav_goal_id = None
                 return
+            except RuntimeError as e:
+                raise e
             except Exception as e:
                 payload = reply.err.payload.to_string()
                 self.node.get_logger().error(

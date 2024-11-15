@@ -57,7 +57,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
 
         robot_exists = False
         for i in range(10):
-            transform = robot_adapter.pose()
+            transform = robot_adapter.get_pose()
             if transform is not None:
                 robot_exists = True
                 break
@@ -82,7 +82,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
 
         robot_exists = False
         for i in range(10):
-            transform = robot_adapter.pose()
+            transform = robot_adapter.get_pose()
             if transform is not None:
                 robot_exists = True
                 break
@@ -105,7 +105,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        battery_soc = robot_adapter.battery_soc()
+        battery_soc = robot_adapter.get_battery_soc()
         assert math.isclose(battery_soc, 1.0)
 
     def test_robot_unable_to_update(self):
@@ -168,7 +168,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
         assert robot_adapter.execution is None
-        robot_adapter.stop()
+        robot_adapter.stop(None)
         assert robot_adapter.execution is None
         assert robot_adapter._is_navigation_done()
 

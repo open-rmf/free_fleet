@@ -209,7 +209,7 @@ def parallel(f):
 
 @parallel
 def update_robot(robot: Nav2RobotAdapter):
-    robot_pose = robot.pose()
+    robot_pose = robot.get_pose()
     if robot_pose is None:
         robot.node.get_logger().info(f'Failed to pose of robot [{robot.name}]')
         return None
@@ -217,7 +217,7 @@ def update_robot(robot: Nav2RobotAdapter):
     state = rmf_easy.RobotState(
         robot.map,
         robot_pose,
-        robot.battery_soc
+        robot.get_battery_soc()
     )
 
     if robot.update_handle is None:
