@@ -47,9 +47,9 @@ foreach(path ${traffic_editor_paths})
 endforeach()
 
 install(PROGRAMS
-  ${PROJECT_NAME}/tests/test_cancel_all_goals.py
-  ${PROJECT_NAME}/tests/test_navigate_to_pose.py
-  ${PROJECT_NAME}/tests/test_tf.py
+  ${PROJECT_NAME}/nav2_cancel_all_goals.py
+  ${PROJECT_NAME}/nav2_get_tf.py
+  ${PROJECT_NAME}/nav2_send_navigate_to_pose.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

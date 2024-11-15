@@ -1,0 +1,4 @@
+fixes:
+  - "ros_ws/src/*/free_fleet/free_fleet/::"
+  - "ros_ws/src/*/free_fleet/free_fleet_adapter/::"
+  - "ros_ws/src/*/free_fleet/free_fleet_examples/::"

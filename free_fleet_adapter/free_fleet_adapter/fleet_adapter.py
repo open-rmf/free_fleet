@@ -20,8 +20,7 @@ import sys
 import threading
 import time
 
-from free_fleet.utils import namespacify
-
+from free_fleet_adapter.nav2_robot_adapter import Nav2RobotAdapter
 import nudged
 import rclpy
 from rclpy.duration import Duration
@@ -31,12 +30,8 @@ import rmf_adapter
 from rmf_adapter import Adapter, Transformation
 import rmf_adapter.easy_full_control as rmf_easy
 from tf2_ros import Buffer
-from tf_transformations import euler_from_quaternion
 import yaml
 import zenoh
-
-
-from .nav2_robot_adapter import Nav2RobotAdapter
 
 
 # ------------------------------------------------------------------------------
@@ -177,7 +172,7 @@ def main(argv=sys.argv):
             # Update all the robots in parallel using a thread pool
             update_jobs = []
             for robot in robots.values():
-                update_jobs.append(update_robot(robot, tf_buffer))
+                update_jobs.append(update_robot(robot))
 
             asyncio.get_event_loop().run_until_complete(
                 asyncio.wait(update_jobs)
@@ -216,36 +211,16 @@ def parallel(f):
 
 
 @parallel
-def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
-    try:
-        # TODO(ac): parameterize the frames for lookup
-        transform = tf_buffer.lookup_transform(
-            namespacify('map', robot.name),
-            namespacify('base_footprint', robot.name),
-            rclpy.time.Time()
-        )
-        orientation = euler_from_quaternion([
-            transform.transform.rotation.x,
-            transform.transform.rotation.y,
-            transform.transform.rotation.z,
-            transform.transform.rotation.w
-        ])
-    except Exception as err:
-        robot.node.get_logger().info(
-            f'Failed to update robot [{robot.name}]: Unable to get transform '
-            f'between base_footprint and map: {type(err)}: {err}'
-        )
+def update_robot(robot: Nav2RobotAdapter):
+    robot_pose = robot.get_pose()
+    if robot_pose is None:
+        robot.node.get_logger().info(f'Failed to pose of robot [{robot.name}]')
         return None
-    robot_pose = [
-        transform.transform.translation.x,
-        transform.transform.translation.y,
-        orientation[2]
-    ]
 
     state = rmf_easy.RobotState(
         robot.map,
         robot_pose,
-        robot.battery_soc
+        robot.get_battery_soc()
     )
 
     if robot.update_handle is None:
@@ -253,7 +228,15 @@ def update_robot(robot: Nav2RobotAdapter, tf_buffer: Buffer):
             robot.name,
             state,
             robot.configuration,
-            robot.make_callbacks()
+            rmf_easy.RobotCallbacks(
+                lambda destination, execution: robot.navigate(
+                    destination, execution
+                ),
+                lambda activity: robot.stop(activity),
+                lambda category, description, execution: robot.execute_action(
+                    category, description, execution
+                )
+            )
         )
         return
 

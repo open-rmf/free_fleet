@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  minimal-nav2-bringup:
+    image: ghcr.io/open-rmf/free_fleet/minimal-nav2-bringup:jazzy-latest
+    stop_signal: SIGINT
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    environment:
+      - ROS_DOMAIN_ID=42
+
+  minimal-zenoh-bridge:
+    image: ghcr.io/open-rmf/free_fleet/minimal-zenoh-bridge:jazzy-latest
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - ROS_DOMAIN_ID=42
+
+  minimal-zenoh-router:
+    image: eclipse/zenoh
+    restart: unless-stopped
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - RUST_LOG=debug

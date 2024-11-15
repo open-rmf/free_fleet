@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Annotated
+
+from free_fleet.convert import transform_stamped_to_ros2_msg
 from free_fleet.types import (
     ActionMsgs_CancelGoal_Response,
     GeometryMsgs_Point,
@@ -34,16 +37,67 @@ from free_fleet.utils import (
     make_cancel_all_goals_request,
     namespacify,
 )
-from geometry_msgs.msg import TransformStamped
+from free_fleet_adapter.robot_adapter import RobotAdapter
 
+from geometry_msgs.msg import TransformStamped
 import numpy as np
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
-from tf_transformations import quaternion_from_euler
+from rmf_adapter.robot_update_handle import ActivityIdentifier
+from tf_transformations import euler_from_quaternion, quaternion_from_euler
+
 import zenoh
 
 
-class Nav2RobotAdapter:
+class Nav2TfHandler:
+
+    def __init__(self, robot_name, zenoh_session, tf_buffer, node):
+        self.robot_name = robot_name
+        self.zenoh_session = zenoh_session
+        self.node = node
+        self.tf_buffer = tf_buffer
+
+        def _tf_callback(sample: zenoh.Sample):
+            try:
+                transform = TFMessage.deserialize(sample.payload.to_bytes())
+            except Exception as e:
+                self.node.get_logger().debug(
+                    f'Failed to deserialize TF payload: {type(e)}: {e}'
+                )
+                return None
+            for zt in transform.transforms:
+                t = transform_stamped_to_ros2_msg(zt)
+                t.header.frame_id = namespacify(zt.header.frame_id,
+                                                self.robot_name)
+                t.child_frame_id = namespacify(zt.child_frame_id,
+                                               self.robot_name)
+                self.tf_buffer.set_transform(
+                    t, f'{self.robot_name}_TfListener')
+
+        self.tf_sub = self.zenoh_session.declare_subscriber(
+            namespacify('tf', self.robot_name),
+            _tf_callback
+        )
+
+    def get_transform(self) -> TransformStamped | None:
+        try:
+            # TODO(ac): parameterize the frames for lookup
+            transform = self.tf_buffer.lookup_transform(
+                namespacify('map', self.robot_name),
+                namespacify('base_footprint', self.robot_name),
+                rclpy.time.Time()
+            )
+            return transform
+        except Exception as err:
+            self.node.get_logger().info(
+                'Unable to get transform between base_footprint and map: '
+                f'{type(err)}: {err}'
+            )
+        return None
+
+
+class Nav2RobotAdapter(RobotAdapter):
+
     def __init__(
         self,
         name: str,
@@ -54,6 +108,8 @@ class Nav2RobotAdapter:
         fleet_handle,
         tf_buffer
     ):
+        RobotAdapter.__init__(self)
+
         self.name = name
         self.execution = None
         self.update_handle = None
@@ -72,38 +128,11 @@ class Nav2RobotAdapter:
 
         self.replan_counts = 0
 
-        def _tf_callback(sample: zenoh.Sample):
-            try:
-                transform = TFMessage.deserialize(sample.payload.to_bytes())
-            except Exception as e:
-                self.node.get_logger().debug(
-                    f'Failed to deserialize TF payload: {type(e)}: {e}'
-                )
-                return None
-            for zt in transform.transforms:
-                time = rclpy.time.Time(
-                    seconds=zt.header.stamp.sec,
-                    nanoseconds=zt.header.stamp.nanosec
-                )
-                t = TransformStamped()
-                t.header.stamp = time.to_msg()
-                t.header.stamp
-                t.header.frame_id = namespacify(zt.header.frame_id,
-                                                self.name)
-                t.child_frame_id = namespacify(zt.child_frame_id,
-                                               self.name)
-                t.transform.translation.x = zt.transform.translation.x
-                t.transform.translation.y = zt.transform.translation.y
-                t.transform.translation.z = zt.transform.translation.z
-                t.transform.rotation.x = zt.transform.rotation.x
-                t.transform.rotation.y = zt.transform.rotation.y
-                t.transform.rotation.z = zt.transform.rotation.z
-                t.transform.rotation.w = zt.transform.rotation.w
-                self.tf_buffer.set_transform(t, f'{self.name}_RobotAdapter')
-
-        self.tf_sub = self.zenoh_session.declare_subscriber(
-            namespacify('tf', self.name),
-            _tf_callback
+        self.tf_handler = Nav2TfHandler(
+            self.name,
+            self.zenoh_session,
+            self.tf_buffer,
+            self.node
         )
 
         def _battery_state_callback(sample: zenoh.Sample):
@@ -117,8 +146,30 @@ class Nav2RobotAdapter:
             _battery_state_callback
         )
 
-    def _make_random_goal_id(self):
-        return np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
+    def get_battery_soc(self) -> float:
+        return self.battery_soc
+
+    def get_pose(self) -> Annotated[list[float], 3] | None:
+        transform = self.tf_handler.get_transform()
+        if transform is None:
+            error_message = \
+                f'Failed to update robot [{self.name}]: Unable to get ' \
+                f'transform between base_footprint and map'
+            self.node.get_logger().info(error_message)
+            return None
+
+        orientation = euler_from_quaternion([
+            transform.transform.rotation.x,
+            transform.transform.rotation.y,
+            transform.transform.rotation.z,
+            transform.transform.rotation.w
+        ])
+        robot_pose = [
+            transform.transform.translation.x,
+            transform.transform.translation.y,
+            orientation[2]
+        ]
+        return robot_pose
 
     def _is_navigation_done(self) -> bool:
         if self.nav_goal_id is None:
@@ -138,29 +189,49 @@ class Nav2RobotAdapter:
                     reply.ok.payload.to_bytes()
                 )
                 self.node.get_logger().debug(f'Result: {rep.status}')
-                if rep.status == GoalStatus.STATUS_EXECUTING.value:
-                    return False
-                elif rep.status == GoalStatus.STATUS_SUCCEEDED.value:
-                    self.node.get_logger().info(
-                        f'Navigation goal {self.nav_goal_id} reached'
-                    )
-                    return True
-                else:
-                    # TODO(ac): test replanning behavior if goal status is
-                    # neither executing or succeeded
-                    self.replan_counts += 1
-                    self.node.get_logger().error(
-                        f'Navigation goal {self.nav_goal_id} status '
-                        f'{rep.status}, replan count [{self.replan_counts}]')
-                    self.update_handle.more().replan()
-                    return False
+                match rep.status:
+                    case GoalStatus.STATUS_EXECUTING.value | \
+                         GoalStatus.STATUS_ACCEPTED.value | \
+                         GoalStatus.STATUS_CANCELING.value:
+                        return False
+                    case GoalStatus.STATUS_SUCCEEDED.value:
+                        self.node.get_logger().info(
+                            f'Navigation goal {self.nav_goal_id} reached'
+                        )
+                        return True
+                    case GoalStatus.STATUS_CANCELED.value:
+                        self.node.get_logger().info(
+                            f'Navigation goal {self.nav_goal_id} was cancelled'
+                        )
+                        return True
+                    case _:
+                        # TODO(ac): test replanning behavior if goal status is
+                        # neither executing or succeeded
+                        self.replan_counts += 1
+                        self.node.get_logger().error(
+                            f'Navigation goal {self.nav_goal_id} status '
+                            f'{rep.status}, replan count '
+                            f'[{self.replan_counts}]'
+                        )
+                        self.update_handle.more().replan()
+                        return False
             except Exception as e:
                 self.node.get_logger().debug(
                     f'Received (ERROR: "{reply.err.payload.to_string()}"): '
                     f'{type(e)}: {e}')
                 continue
 
-    def update(self, state):
+    def _check_update_handle_initialization(self):
+        if self.update_handle is None:
+            error_message = \
+                f'Failed to update robot {self.name}, robot adapter has not ' \
+                'yet been initialized with a fleet update handle.'
+            self.node.get_logger().error(error_message)
+            raise RuntimeError(error_message)
+
+    def update(self, state: rmf_easy.RobotState):
+        self._check_update_handle_initialization()
+
         activity_identifier = None
         if self.execution:
             # TODO(ac): use an enum to record what type of execution it is,
@@ -175,44 +246,32 @@ class Nav2RobotAdapter:
 
         self.update_handle.update(state, activity_identifier)
 
-    def make_callbacks(self):
-        return rmf_easy.RobotCallbacks(
-            lambda destination, execution: self.navigate(
-                destination, execution
-            ),
-            lambda activity: self.stop(activity),
-            lambda category, description, execution: self.execute_action(
-                category, description, execution
-            )
-        )
-
-    def navigate(self, destination, execution):
-        self.execution = execution
-        self.node.get_logger().info(
-            f'Commanding [{self.name}] to navigate to {destination.position} '
-            f'on map [{destination.map}]'
-        )
-
-        if destination.map != self.map:
+    def _handle_navigate_to_pose(
+        self,
+        map_name: str,
+        x: float,
+        y: float,
+        z: float,
+        yaw: float
+    ):
+        if map_name != self.map:
             # TODO(ac): test this map related replanning behavior
             self.replan_counts += 1
             self.node.get_logger().error(
-                f'Destination is on map [{destination.map}], while robot '
+                f'Destination is on map [{map_name}], while robot '
                 f'[{self.name}] is on map [{self.map}], replan count '
                 f'[{self.replan_counts}]'
             )
+
+            self._check_update_handle_initialization()
             self.update_handle.more().replan()
             return
 
         time_now = self.node.get_clock().now().seconds_nanoseconds()
         stamp = Time(sec=time_now[0], nanosec=time_now[1])
         header = Header(stamp=stamp, frame_id='map')
-        position = GeometryMsgs_Point(
-            x=destination.position[0],
-            y=destination.position[1],
-            z=0
-        )
-        quat = quaternion_from_euler(0, 0, destination.position[2])
+        position = GeometryMsgs_Point(x=x, y=y, z=z)
+        quat = quaternion_from_euler(0, 0, yaw)
         orientation = GeometryMsgs_Quaternion(
             x=quat[0],
             y=quat[1],
@@ -222,7 +281,8 @@ class Nav2RobotAdapter:
         pose = GeometryMsgs_Pose(position=position, orientation=orientation)
         pose_stamped = GeometryMsgs_PoseStamped(header=header, pose=pose)
 
-        nav_goal_id = self._make_random_goal_id()
+        nav_goal_id = \
+            np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
         req = NavigateToPose_SendGoal_Request(
             goal_id=nav_goal_id,
             pose=pose_stamped,
@@ -251,6 +311,7 @@ class Nav2RobotAdapter:
                     f'Navigation goal {nav_goal_id} was rejected, replan '
                     f'count [{self.replan_counts}]'
                 )
+                self._check_update_handle_initialization()
                 self.update_handle.more().replan()
                 self.nav_goal_id = None
                 return
@@ -261,7 +322,43 @@ class Nav2RobotAdapter:
                 )
                 continue
 
-    def stop(self, activity):
+    def navigate(
+        self,
+        destination: rmf_easy.Destination,
+        execution: rmf_easy.CommandExecution
+    ):
+        self.execution = execution
+        self.node.get_logger().info(
+            f'Commanding [{self.name}] to navigate to {destination.position} '
+            f'on map [{destination.map}]'
+        )
+        self._handle_navigate_to_pose(
+            destination.map,
+            destination.position[0],
+            destination.position[1],
+            0.0,
+            destination.position[2]
+        )
+
+    def _handle_stop_navigation(self):
+        req = make_cancel_all_goals_request()
+        replies = self.zenoh_session.get(
+            namespacify(
+                'navigate_to_pose/_action/cancel_goal',
+                self.name,
+            ),
+            payload=req.serialize(),
+            # timeout=0.5
+        )
+        for reply in replies:
+            rep = ActionMsgs_CancelGoal_Response.deserialize(
+                reply.ok.payload.to_bytes()
+            )
+            self.node.get_logger().info(
+                'Return code: %d' % rep.return_code
+            )
+
+    def stop(self, activity: ActivityIdentifier):
         if self.execution is None:
             return
 
@@ -271,25 +368,17 @@ class Nav2RobotAdapter:
             # supporting something other than navigation
 
             if self.nav_goal_id is not None:
-                req = make_cancel_all_goals_request()
-                replies = self.zenoh_session.get(
-                    namespacify(
-                        'navigate_to_pose/_action/cancel_goal',
-                        self.name,
-                    ),
-                    payload=req.serialize(),
-                    # timeout=0.5
-                )
-                for reply in replies:
-                    rep = ActionMsgs_CancelGoal_Response.deserialize(
-                        reply.ok.payload.to_bytes()
-                    )
-                    self.node.get_logger().info(
-                        'Return code: %d' % rep.return_code
-                    )
+                self._handle_stop_navigation()
+                # TODO(ac): check return code before setting nav_goal_id to
+                # None
                 self.nav_goal_id = None
 
-    def execute_action(self, category: str, description: dict, execution):
+    def execute_action(
+        self,
+        category: str,
+        description: dict,
+        execution: ActivityIdentifier
+    ):
         # TODO(ac): change map using map_server load_map, and set initial
         # position again with /initialpose
         # TODO(ac): docking

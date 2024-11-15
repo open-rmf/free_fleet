@@ -1,0 +1,24 @@
+name: unit-tests
+
+on: push
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+    strategy:
+      matrix:
+        ros_distribution:
+          - jazzy
+          - rolling
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: build-and-test
+        uses: ./.github/actions/build-and-test
+        with:
+          ros-distribution: ${{ matrix.ros_distribution }}
+          zenoh-version: 1.0.1
+          integration-testing: OFF
