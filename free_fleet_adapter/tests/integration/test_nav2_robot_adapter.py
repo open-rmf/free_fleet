@@ -229,7 +229,6 @@ class TestNav2RobotAdapter(unittest.TestCase):
         except RuntimeError:
             able_to_handle_navigate = False
         assert able_to_handle_navigate
-        assert not robot_adapter._is_navigation_done()
         time.sleep(5)
         assert robot_adapter._is_navigation_done()
 

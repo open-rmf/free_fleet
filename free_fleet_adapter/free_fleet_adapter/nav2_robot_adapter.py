@@ -189,22 +189,32 @@ class Nav2RobotAdapter(RobotAdapter):
                     reply.ok.payload.to_bytes()
                 )
                 self.node.get_logger().debug(f'Result: {rep.status}')
-                if rep.status == GoalStatus.STATUS_EXECUTING.value:
-                    return False
-                elif rep.status == GoalStatus.STATUS_SUCCEEDED.value:
-                    self.node.get_logger().info(
-                        f'Navigation goal {self.nav_goal_id} reached'
-                    )
-                    return True
-                else:
-                    # TODO(ac): test replanning behavior if goal status is
-                    # neither executing or succeeded
-                    self.replan_counts += 1
-                    self.node.get_logger().error(
-                        f'Navigation goal {self.nav_goal_id} status '
-                        f'{rep.status}, replan count [{self.replan_counts}]')
-                    self.update_handle.more().replan()
-                    return False
+                match rep.status:
+                    case GoalStatus.STATUS_EXECUTING.value | \
+                         GoalStatus.STATUS_ACCEPTED.value | \
+                         GoalStatus.STATUS_CANCELING.value:
+                        return False
+                    case GoalStatus.STATUS_SUCCEEDED.value:
+                        self.node.get_logger().info(
+                            f'Navigation goal {self.nav_goal_id} reached'
+                        )
+                        return True
+                    case GoalStatus.STATUS_CANCELED.value:
+                        self.node.get_logger().info(
+                            f'Navigation goal {self.nav_goal_id} was cancelled'
+                        )
+                        return True
+                    case _:
+                        # TODO(ac): test replanning behavior if goal status is
+                        # neither executing or succeeded
+                        self.replan_counts += 1
+                        self.node.get_logger().error(
+                            f'Navigation goal {self.nav_goal_id} status '
+                            f'{rep.status}, replan count '
+                            f'[{self.replan_counts}]'
+                        )
+                        self.update_handle.more().replan()
+                        return False
             except Exception as e:
                 self.node.get_logger().debug(
                     f'Received (ERROR: "{reply.err.payload.to_string()}"): '
