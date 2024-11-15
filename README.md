@@ -124,7 +124,7 @@ zenohd
 
 # If using released standalaone binaries
 # cd PATH_TO_EXTRACTED_ZENOH_ROUTER
-# ./zenohd 
+# ./zenohd
 ```
 
 Start `zenoh-bridge-ros2dds` with the appropriate zenoh client configuration,
@@ -141,7 +141,7 @@ Listen to transforms over `zenoh`,
 
 ```bash
 source ~/ff_ws/install/setup.bash
-ros2 run free_fleet_examples get_tf.py \
+ros2 run free_fleet_examples nav2_get_tf.py \
     --namespace turtlebot3_1
 ```
 
@@ -149,7 +149,7 @@ Start a `navigate_to_pose` action over `zenoh`, using example values,
 
 ```bash
 source ~/ff_ws/install/setup.bash
-ros2 run free_fleet_examples send_navigate_to_pose.py \
+ros2 run free_fleet_examples nav2_send_navigate_to_pose.py \
     --frame-id map \
     --namespace turtlebot3_1 \
     -x 1.808 \
@@ -214,7 +214,7 @@ zenohd
 
 # If using released standalaone binaries
 # cd PATH_TO_EXTRACTED_ZENOH_ROUTER
-# ./zenohd 
+# ./zenohd
 ```
 
 Start `zenoh-bridge-ros2dds` with the appropriate zenoh client configuration,

@@ -171,11 +171,8 @@ class Nav2RobotAdapter(RobotAdapter):
         ]
         return robot_pose
 
-    def _make_random_goal_id(self):
-        return np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
-
     def _is_navigation_done(self) -> bool:
-        if self.nav_goal_id is None:
+        if self.execution is None or self.nav_goal_id is None:
             return True
 
         req = NavigateToPose_GetResult_Request(goal_id=self.nav_goal_id)
@@ -214,7 +211,17 @@ class Nav2RobotAdapter(RobotAdapter):
                     f'{type(e)}: {e}')
                 continue
 
+    def _check_update_handle_initialization(self):
+        if self.update_handle is None:
+            error_message = \
+                f'Failed to update robot {self.name}, robot adapter has not ' \
+                'yet been initialized with a fleet update handle.'
+            self.node.get_logger().error(error_message)
+            raise RuntimeError(error_message)
+
     def update(self, state: rmf_easy.RobotState):
+        self._check_update_handle_initialization()
+
         activity_identifier = None
         if self.execution:
             # TODO(ac): use an enum to record what type of execution it is,
@@ -229,37 +236,31 @@ class Nav2RobotAdapter(RobotAdapter):
 
         self.update_handle.update(state, activity_identifier)
 
-    def navigate(
+    def _handle_navigate_to_pose(
         self,
-        destination: rmf_easy.Destination,
-        execution: rmf_easy.CommandExecution
+        map_name: str,
+        x: float,
+        y: float,
+        z: float,
+        yaw: float
     ):
-        self.execution = execution
-        self.node.get_logger().info(
-            f'Commanding [{self.name}] to navigate to {destination.position} '
-            f'on map [{destination.map}]'
-        )
-
-        if destination.map != self.map:
+        if map_name != self.map:
             # TODO(ac): test this map related replanning behavior
             self.replan_counts += 1
             self.node.get_logger().error(
-                f'Destination is on map [{destination.map}], while robot '
-                f'[{self.name}] is on map [{self.map}], replan count '
-                f'[{self.replan_counts}]'
+                f'Destination is on map [{map_name}], while robot [{self.name}] is '
+                f'on map [{self.map}], replan count [{self.replan_counts}]'
             )
+
+            self._check_update_handle_initialization()
             self.update_handle.more().replan()
             return
 
         time_now = self.node.get_clock().now().seconds_nanoseconds()
         stamp = Time(sec=time_now[0], nanosec=time_now[1])
         header = Header(stamp=stamp, frame_id='map')
-        position = GeometryMsgs_Point(
-            x=destination.position[0],
-            y=destination.position[1],
-            z=0
-        )
-        quat = quaternion_from_euler(0, 0, destination.position[2])
+        position = GeometryMsgs_Point(x=x, y=y, z=z)
+        quat = quaternion_from_euler(0, 0, yaw)
         orientation = GeometryMsgs_Quaternion(
             x=quat[0],
             y=quat[1],
@@ -269,7 +270,8 @@ class Nav2RobotAdapter(RobotAdapter):
         pose = GeometryMsgs_Pose(position=position, orientation=orientation)
         pose_stamped = GeometryMsgs_PoseStamped(header=header, pose=pose)
 
-        nav_goal_id = self._make_random_goal_id()
+        nav_goal_id = \
+            np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
         req = NavigateToPose_SendGoal_Request(
             goal_id=nav_goal_id,
             pose=pose_stamped,
@@ -298,6 +300,7 @@ class Nav2RobotAdapter(RobotAdapter):
                     f'Navigation goal {nav_goal_id} was rejected, replan '
                     f'count [{self.replan_counts}]'
                 )
+                self._check_update_handle_initialization()
                 self.update_handle.more().replan()
                 self.nav_goal_id = None
                 return
@@ -307,6 +310,24 @@ class Nav2RobotAdapter(RobotAdapter):
                     f'Received (ERROR: {payload}: {type(e)}: {e})'
                 )
                 continue
+
+    def navigate(
+        self,
+        destination: rmf_easy.Destination,
+        execution: rmf_easy.CommandExecution
+    ):
+        self.execution = execution
+        self.node.get_logger().info(
+            f'Commanding [{self.name}] to navigate to {destination.position} '
+            f'on map [{destination.map}]'
+        )
+        self._handle_navigate_to_pose(
+            destination.map,
+            destination.position[0],
+            destination.position[1],
+            0.0,
+            destination.position[2]
+        )
 
     def stop(self, activity: ActivityIdentifier):
         if self.execution is None:

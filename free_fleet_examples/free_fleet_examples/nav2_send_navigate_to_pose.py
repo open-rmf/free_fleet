@@ -132,13 +132,13 @@ def main(argv=sys.argv):
                     )
                     # print("Result: {0}".format(rep.sequence))
                     print(f'Result: {rep.status}')
-                    if rep.status == GoalStatus.STATUS_ABORTED:
+                    if rep.status == GoalStatus.STATUS_ABORTED.value:
                         print(
                             'Received (ERROR: "Plan aborted by '
                             'planner_server")'
                         )
                         break
-                    if rep.status == GoalStatus.STATUS_SUCCEEDED:
+                    if rep.status == GoalStatus.STATUS_SUCCEEDED.value:
                         break
                 except Exception as e:
                     print(e)

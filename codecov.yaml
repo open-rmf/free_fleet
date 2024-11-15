@@ -1,16 +1,4 @@
-# coverage:
-#   precision: 2
-#   round: down
-#   range: "35...100"
-#   status:
-#     project:
-#       default:
-#         informational: true
-#     patch: off
 fixes:
   - "ros_ws/src/*/free_fleet/free_fleet/::"
   - "ros_ws/src/*/free_fleet/free_fleet_adapter/::"
   - "ros_ws/src/*/free_fleet/free_fleet_examples/::"
-# comment:
-#   layout: "diff, flags, files"
-#   behavior: default
