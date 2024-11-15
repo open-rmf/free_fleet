@@ -1,5 +1,7 @@
 # Free Fleet
 
+![Nightly](https://github.com/open-rmf/free_fleet/actions/workflows/nightly.yaml/badge.svg)![Unit tests](https://github.com/open-rmf/free_fleet/actions/workflows/unit-tests.yaml/badge.svg)![Integration tests](https://github.com/open-rmf/free_fleet/actions/workflows/integration-tests.yaml/badge.svg)[![codecov](https://codecov.io/github/open-rmf/free_fleet/graph/badge.svg?token=JCOB9g3YTn)](https://codecov.io/github/open-rmf/free_fleet)
+
 - **[Introduction](#introduction)**
 - **[Dependency installation, source build and setup](#dependency-installation-source-build-and-setup)**
 - **[Simulation examples](#simulation-examples)**
