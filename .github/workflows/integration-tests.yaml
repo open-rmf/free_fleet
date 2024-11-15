@@ -35,13 +35,6 @@ jobs:
         if: always()
         run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml" down
 
-      - name: Upload failed test results
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: test-results
-          path: ros_ws/build/*/test_results/*/*.catch2.xml
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:

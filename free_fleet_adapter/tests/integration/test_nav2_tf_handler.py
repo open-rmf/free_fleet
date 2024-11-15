@@ -15,24 +15,34 @@
 # limitations under the License.
 
 import time
+import unittest
 
 from free_fleet_adapter.nav2_robot_adapter import Nav2TfHandler
 import rclpy
-from rclpy.node import Node
 from tf2_ros import Buffer
 
 import zenoh
 
 
-def test_tf_does_not_exist():
-    rclpy.init()
-    node = Node('missing_turtlebot3_1_node')
-    zenoh.try_init_log_from_env()
-    with zenoh.open(zenoh.Config()) as session:
+class TestNav2TfHandler(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        rclpy.init()
+        cls.node = rclpy.create_node('test_nav2_tf_handler')
+        cls.zenoh_session = zenoh.open(zenoh.Config())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.node.destroy_node()
+        cls.zenoh_session.close()
+        rclpy.shutdown()
+
+    def test_tf_does_not_exist(self):
         tf_buffer = Buffer()
 
         tf_handler = Nav2TfHandler(
-            'missing_turtlebot3_1', session, tf_buffer, node
+            'missing_turtlebot3_1', self.zenoh_session, tf_buffer, self.node
         )
 
         transform_exists = False
@@ -45,15 +55,12 @@ def test_tf_does_not_exist():
 
         assert not transform_exists
 
-
-def test_tf_exists():
-    rclpy.init()
-    node = Node('turtlebot3_1_node')
-    zenoh.try_init_log_from_env()
-    with zenoh.open(zenoh.Config()) as session:
+    def test_tf_exists(self):
         tf_buffer = Buffer()
 
-        tf_handler = Nav2TfHandler('turtlebot3_1', session, tf_buffer, node)
+        tf_handler = Nav2TfHandler(
+            'turtlebot3_1', self.zenoh_session, tf_buffer, self.node
+        )
 
         transform_exists = False
         for i in range(10):

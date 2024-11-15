@@ -15,20 +15,30 @@
 # limitations under the License.
 
 import time
+import unittest
 
 from free_fleet_adapter.nav2_robot_adapter import Nav2RobotAdapter
 import rclpy
-from rclpy.node import Node
 from tf2_ros import Buffer
 
 import zenoh
 
 
-def test_robot_does_not_exist():
-    rclpy.init()
-    node = Node('missing_turtlebot3_1_nav2_robot_adapter_node')
-    zenoh.try_init_log_from_env()
-    with zenoh.open(zenoh.Config()) as session:
+class TestNav2RobotAdapter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        rclpy.init()
+        cls.node = rclpy.create_node('test_nav2_robot_adapter')
+        cls.zenoh_session = zenoh.open(zenoh.Config())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.node.destroy_node()
+        cls.zenoh_session.close()
+        rclpy.shutdown()
+
+    def test_robot_does_not_exist(self):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
@@ -37,8 +47,8 @@ def test_robot_does_not_exist():
             robot_config_yaml={
                 'initial_map': 'L1',
             },
-            node=node,
-            zenoh_session=session,
+            node=self.node,
+            zenoh_session=self.zenoh_session,
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
@@ -53,12 +63,7 @@ def test_robot_does_not_exist():
 
         assert not robot_exists
 
-
-def test_robot_exists():
-    rclpy.init()
-    node = Node('turtlebot3_1_nav2_robot_adapter_node')
-    zenoh.try_init_log_from_env()
-    with zenoh.open(zenoh.Config()) as session:
+    def test_robot_exists(self):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
@@ -67,8 +72,8 @@ def test_robot_exists():
             robot_config_yaml={
                 'initial_map': 'L1',
             },
-            node=node,
-            zenoh_session=session,
+            node=self.node,
+            zenoh_session=self.zenoh_session,
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
@@ -81,8 +86,6 @@ def test_robot_exists():
                 break
             time.sleep(1)
 
-        # To check that it is running
-        assert not robot_exists
+        assert robot_exists
 
-
-# def test_robot_navigate():
+    # def test_robot_navigate():
