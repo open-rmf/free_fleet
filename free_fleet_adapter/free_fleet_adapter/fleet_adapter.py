@@ -20,6 +20,7 @@ import sys
 import threading
 import time
 
+from free_fleet_adapter.nav2_robot_adapter import Nav2RobotAdapter
 import nudged
 import rclpy
 from rclpy.duration import Duration
@@ -31,9 +32,6 @@ import rmf_adapter.easy_full_control as rmf_easy
 from tf2_ros import Buffer
 import yaml
 import zenoh
-
-
-from .nav2_robot_adapter import Nav2RobotAdapter
 
 
 # ------------------------------------------------------------------------------

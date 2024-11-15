@@ -248,8 +248,9 @@ class Nav2RobotAdapter(RobotAdapter):
             # TODO(ac): test this map related replanning behavior
             self.replan_counts += 1
             self.node.get_logger().error(
-                f'Destination is on map [{map_name}], while robot [{self.name}] is '
-                f'on map [{self.map}], replan count [{self.replan_counts}]'
+                f'Destination is on map [{map_name}], while robot '
+                f'[{self.name}] is on map [{self.map}], replan count '
+                f'[{self.replan_counts}]'
             )
 
             self._check_update_handle_initialization()
