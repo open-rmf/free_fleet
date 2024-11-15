@@ -172,7 +172,7 @@ class Nav2RobotAdapter(RobotAdapter):
         return robot_pose
 
     def _is_navigation_done(self) -> bool:
-        if self.execution is None or self.nav_goal_id is None:
+        if self.nav_goal_id is None:
             return True
 
         req = NavigateToPose_GetResult_Request(goal_id=self.nav_goal_id)
@@ -305,8 +305,6 @@ class Nav2RobotAdapter(RobotAdapter):
                 self.update_handle.more().replan()
                 self.nav_goal_id = None
                 return
-            except RuntimeError as e:
-                raise e
             except Exception as e:
                 payload = reply.err.payload.to_string()
                 self.node.get_logger().error(

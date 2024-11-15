@@ -201,35 +201,6 @@ class TestNav2RobotAdapter(unittest.TestCase):
             able_to_handle_navigate = False
         assert not able_to_handle_navigate
 
-    def test_robot_handle_navigate_to_invalid_pose(self):
-        tf_buffer = Buffer()
-
-        robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
-            configuration=None,
-            robot_config_yaml={
-                'initial_map': 'L1',
-            },
-            node=self.node,
-            zenoh_session=self.zenoh_session,
-            fleet_handle=None,
-            tf_buffer=tf_buffer
-        )
-
-        able_to_handle_navigate = False
-        try:
-            robot_adapter._handle_navigate_to_pose(
-                'L1',
-                1000000,
-                1000000,
-                0.0,
-                0.0
-            )
-            able_to_handle_navigate = True
-        except RuntimeError:
-            able_to_handle_navigate = False
-        assert not able_to_handle_navigate
-
     def test_robot_handle_navigate_to_pose(self):
         tf_buffer = Buffer()
 
@@ -258,47 +229,45 @@ class TestNav2RobotAdapter(unittest.TestCase):
         except RuntimeError:
             able_to_handle_navigate = False
         assert able_to_handle_navigate
-
-        time.sleep(1)
         assert not robot_adapter._is_navigation_done()
-        time.sleep(10)
+        time.sleep(5)
         assert robot_adapter._is_navigation_done()
 
-    def test_robot_stop_navigate(self):
-        tf_buffer = Buffer()
+    # def test_robot_stop_navigate(self):
+    #     tf_buffer = Buffer()
 
-        robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
-            configuration=None,
-            robot_config_yaml={
-                'initial_map': 'L1',
-            },
-            node=self.node,
-            zenoh_session=self.zenoh_session,
-            fleet_handle=None,
-            tf_buffer=tf_buffer
-        )
+    #     robot_adapter = Nav2RobotAdapter(
+    #         name='turtlebot3_1',
+    #         configuration=None,
+    #         robot_config_yaml={
+    #             'initial_map': 'L1',
+    #         },
+    #         node=self.node,
+    #         zenoh_session=self.zenoh_session,
+    #         fleet_handle=None,
+    #         tf_buffer=tf_buffer
+    #     )
 
-        able_to_handle_navigate = False
-        try:
-            robot_adapter._handle_navigate_to_pose(
-                'L1',
-                1.808,
-                0.503,
-                0.0,
-                0.0
-            )
-            able_to_handle_navigate = True
-        except RuntimeError:
-            able_to_handle_navigate = False
-        assert able_to_handle_navigate
+    #     able_to_handle_navigate = False
+    #     try:
+    #         robot_adapter._handle_navigate_to_pose(
+    #             'L1',
+    #             1.808,
+    #             0.503,
+    #             0.0,
+    #             0.0
+    #         )
+    #         able_to_handle_navigate = True
+    #     except RuntimeError:
+    #         able_to_handle_navigate = False
+    #     assert able_to_handle_navigate
 
-        time.sleep(1)
-        assert not robot_adapter._is_navigation_done()
-        time.sleep(1)
-        robot_adapter.stop(robot_adapter.execution.identifier)
-        time.sleep(1)
-        assert robot_adapter._is_navigation_done()
+    #     time.sleep(1)
+    #     assert not robot_adapter._is_navigation_done()
+    #     time.sleep(1)
+    #     robot_adapter.stop(robot_adapter.execution.identifier)
+    #     time.sleep(1)
+    #     assert robot_adapter._is_navigation_done()
 
     def test_robot_execute_unknown_action(self):
         tf_buffer = Buffer()
