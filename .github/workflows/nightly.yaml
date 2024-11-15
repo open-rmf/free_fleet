@@ -41,7 +41,7 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distribution }}
             ZENOH_VERSION=1.0.1
-            FREE_FLEET_BRANCH=efc/integration-testing
+            FREE_FLEET_BRANCH=easy-full-control
           tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge:${{ matrix.ros_distribution }}-latest
           context: .github/docker/minimal-zenoh-bridge
 
