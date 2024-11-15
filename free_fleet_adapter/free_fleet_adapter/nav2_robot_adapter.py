@@ -330,6 +330,24 @@ class Nav2RobotAdapter(RobotAdapter):
             destination.position[2]
         )
 
+    def _handle_stop_navigation(self):
+        req = make_cancel_all_goals_request()
+        replies = self.zenoh_session.get(
+            namespacify(
+                'navigate_to_pose/_action/cancel_goal',
+                self.name,
+            ),
+            payload=req.serialize(),
+            # timeout=0.5
+        )
+        for reply in replies:
+            rep = ActionMsgs_CancelGoal_Response.deserialize(
+                reply.ok.payload.to_bytes()
+            )
+            self.node.get_logger().info(
+                'Return code: %d' % rep.return_code
+            )
+
     def stop(self, activity: ActivityIdentifier):
         if self.execution is None:
             return
@@ -340,22 +358,9 @@ class Nav2RobotAdapter(RobotAdapter):
             # supporting something other than navigation
 
             if self.nav_goal_id is not None:
-                req = make_cancel_all_goals_request()
-                replies = self.zenoh_session.get(
-                    namespacify(
-                        'navigate_to_pose/_action/cancel_goal',
-                        self.name,
-                    ),
-                    payload=req.serialize(),
-                    # timeout=0.5
-                )
-                for reply in replies:
-                    rep = ActionMsgs_CancelGoal_Response.deserialize(
-                        reply.ok.payload.to_bytes()
-                    )
-                    self.node.get_logger().info(
-                        'Return code: %d' % rep.return_code
-                    )
+                self._handle_stop_navigation()
+                # TODO(ac): check return code before setting nav_goal_id to
+                # None
                 self.nav_goal_id = None
 
     def execute_action(
