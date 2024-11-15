@@ -130,8 +130,8 @@ def main(argv=sys.argv):
 
     fleet_handle = adapter.add_easy_fleet(fleet_config)
     assert fleet_handle is not None, \
-        "Failed to create EasyFullControl fleet, \
-        please verify that the fleet config is valid."
+        'Failed to create EasyFullControl fleet, \
+        please verify that the fleet config is valid.'
 
     # Initialize zenoh
     zenoh_config = zenoh.Config.from_file(args.zenoh_config) \
