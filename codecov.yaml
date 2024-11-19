@@ -1,8 +1,16 @@
+coverage:
+  precision: 2
+  round: down
+  range: "35...100"
+  status:
+    project:
+      default:
+        informational: true
+    patch: off
 fixes:
   - "ros_ws/src/*/free_fleet/free_fleet/::"
   - "ros_ws/src/*/free_fleet/free_fleet_adapter/::"
-
 ignore:
-  - "**/tests/*"
-  - "**/tests/**/*"
-  - "ros_ws/src/*/free_fleet/free_fleet_adapter/free_fleet_adapter/fleet_adapter.py"
+  - "free_fleet_examples"
+  - "**/test_*.py"
+  - "**/setup.py"
