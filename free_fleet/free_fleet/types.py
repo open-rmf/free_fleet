@@ -122,9 +122,6 @@ class NavigateToPose_GetResult_Response(
     typename='NavigateToPose_GetResult_Response'
 ):
     status: pycdr2.types.int8
-    NONE: pycdr2.types.uint16
-    error_code: pycdr2.types.uint16
-    error_msg: str
 
 
 # https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/NavigateToPose.action
@@ -205,6 +202,7 @@ class ActionMsgs_CancelGoal_Response(
 # https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/msg/BatteryState.msg
 @dataclass
 class SensorMsgs_BatteryState(IdlStruct, typename='SensorMsgs_BatteryState'):
+    header: Header
     voltage: pycdr2.types.float32
     temperature: pycdr2.types.float32
     current: pycdr2.types.float32

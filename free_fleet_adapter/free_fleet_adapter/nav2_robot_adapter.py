@@ -237,8 +237,12 @@ class Nav2RobotAdapter(RobotAdapter):
             # TODO(ac): use an enum to record what type of execution it is,
             # whether navigation or custom executions
             if self.nav_goal_id is not None and self._is_navigation_done():
-                self.execution.finished()
-                self.execution = None
+                # TODO(ac): Refactor this check as as self._is_navigation_done
+                # takes a while and the execution may have become None due to
+                # task cancellation.
+                if self.execution is not None:
+                    self.execution.finished()
+                    self.execution = None
                 self.nav_goal_id = None
                 self.replan_counts = 0
             else:

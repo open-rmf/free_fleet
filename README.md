@@ -32,9 +32,6 @@ We recommend setting up `zenoh-bridge-ros2dds` with the released standalone bina
 
 Most of the tests have been performed using `rmw-cyclonedds-cpp`, while other RMW implementations have shown varying results. Support and testing with other RMW implementations will be set up down the road.
 
-> [!WARNING]
-> This has so far only been tested in simulation, and will undergo updates and changes as more testing is performed. Use at your own risk. For the legacy implementation, check out the [`legacy`](https://github.com/open-rmf/free_fleet/tree/legacy) branch.
-
 ## Dependency installation, source build and setup
 
 System dependencies,
@@ -294,7 +291,6 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 ## TODOs
 
-* hardware testing
 * attempt to optimize tf messages (not all are needed)
 * ROS 1 nav support
 * custom actions to be abstracted
