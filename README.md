@@ -289,6 +289,8 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 * If `zenoh` messages are not received, make sure the versions between the `eclipse-zenoh` in `pip`, `zenoh-bridge-ros2dds` and `zenohd` are all the same. If the debian binary releases of `zenohd` have breaking changes, and the repo has not yet migrate to the newer version, please open an issue ticket and we will look into migrating as soon as possible. In the meantime, using an older standalone release of `zenohd` would be a temporary workaround. Our integration tests will attempt to catch these breaking changes too.
 
+* `zenohd` address already in use. This is most likely due to the `rest-http-port` which uses port 8000 by default, and might cause a conflict with other systems, for example `rmf-web`'s API server. Run `zenohd --rest-http-port 8001` to change it to 8001 or anything else.
+
 ## TODOs
 
 * attempt to optimize tf messages (not all are needed)
