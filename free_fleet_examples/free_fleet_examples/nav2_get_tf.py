@@ -19,12 +19,18 @@ import sys
 import time
 
 from free_fleet_adapter.nav2_robot_adapter import Nav2TfHandler
+import rclpy
 from tf2_ros import Buffer
 
 import zenoh
 
 
 def main(argv=sys.argv):
+    # Init rclpy and adapter
+    rclpy.init(args=argv)
+    args_without_ros = rclpy.utilities.remove_ros_args(argv)
+    node = rclpy.node.Node('nav2_get_tf')
+
     parser = argparse.ArgumentParser(
         prog='get_tf',
         description='Zenoh/ROS2 tf example')
@@ -36,7 +42,7 @@ def main(argv=sys.argv):
     )
     parser.add_argument('-m', '--map-frame', default='map')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args_without_ros[1:])
 
     # Create Zenoh Config from file if provoded, or a default one otherwise
     conf = zenoh.Config.from_file(args.config) \
@@ -53,7 +59,7 @@ def main(argv=sys.argv):
         print(f'routers: {info.routers_zid()}')
         print(f'peers: {info.peers_zid()}')
 
-        tf_handler = Nav2TfHandler('turtlebot3_1', session, tf_buffer)
+        tf_handler = Nav2TfHandler(args.namespace, session, tf_buffer, node)
 
         try:
             while True:

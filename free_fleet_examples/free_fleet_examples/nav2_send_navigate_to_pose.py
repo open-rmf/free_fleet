@@ -50,7 +50,7 @@ def main(argv=sys.argv):
     parser.add_argument('--zenoh-config', '-c', dest='config', metavar='FILE',
                         type=str, help='A configuration file.')
     parser.add_argument('--namespace', '-n', type=str, default='')
-    parser.add_argument('--frame-id', '-f', type=str, default='odom')
+    parser.add_argument('--frame-id', '-f', type=str, default='map')
     parser.add_argument('-x', type=float)
     parser.add_argument('-y', type=float)
 
