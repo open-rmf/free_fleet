@@ -108,20 +108,16 @@ class Nav2RobotAdapter(RobotAdapter):
         fleet_handle,
         tf_buffer
     ):
-        RobotAdapter.__init__(self)
+        RobotAdapter.__init__(self, name, node, fleet_handle)
 
-        self.name = name
         self.execution = None
-        self.update_handle = None
         self.configuration = configuration
         self.robot_config_yaml = robot_config_yaml
-        self.node = node
         self.zenoh_session = zenoh_session
-        self.fleet_handle = fleet_handle
         self.tf_buffer = tf_buffer
 
         self.nav_goal_id = None
-        self.map = self.robot_config_yaml['initial_map']
+        self.map_name = self.robot_config_yaml['initial_map']
 
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
@@ -148,6 +144,9 @@ class Nav2RobotAdapter(RobotAdapter):
 
     def get_battery_soc(self) -> float:
         return self.battery_soc
+
+    def get_map_name(self) -> str:
+        return self.map_name
 
     def get_pose(self) -> Annotated[list[float], 3] | None:
         transform = self.tf_handler.get_transform()
@@ -258,12 +257,12 @@ class Nav2RobotAdapter(RobotAdapter):
         z: float,
         yaw: float
     ):
-        if map_name != self.map:
+        if map_name != self.map_name:
             # TODO(ac): test this map related replanning behavior
             self.replan_counts += 1
             self.node.get_logger().error(
                 f'Destination is on map [{map_name}], while robot '
-                f'[{self.name}] is on map [{self.map}], replan count '
+                f'[{self.name}] is on map [{self.map_name}], replan count '
                 f'[{self.replan_counts}]'
             )
 

@@ -24,12 +24,31 @@ from rmf_adapter.robot_update_handle import ActivityIdentifier
 class RobotAdapter(ABC):
     """Abstract Robot Adapter to be used by the free fleet adapter."""
 
+    def __init__(
+        self,
+        name: str,
+        node,
+        fleet_handle
+    ):
+        self.name = name
+        self.node = node
+        self.fleet_handle = fleet_handle
+        self.update_handle = None
+
     """
     This method returns the battery state of charge as a float, with value
     between 0 and 1.0.
     """
     @abstractmethod
     def get_battery_soc(self) -> float:
+        ...
+
+    """
+    This method returns the name of the current map that the robot is
+    localized on.
+    """
+    @abstractmethod
+    def get_map_name(self) -> str:
         ...
 
     """

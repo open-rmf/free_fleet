@@ -218,7 +218,7 @@ def update_robot(robot: Nav2RobotAdapter):
         return None
 
     state = rmf_easy.RobotState(
-        robot.map,
+        robot.get_map_name(),
         robot_pose,
         robot.get_battery_soc()
     )
