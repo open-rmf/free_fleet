@@ -59,13 +59,8 @@ install(DIRECTORY
 )
 
 install(DIRECTORY
-  fleet_configs/
-  DESTINATION share/${PROJECT_NAME}/fleet_configs
-)
-
-install(DIRECTORY
-  zenoh_configs/
-  DESTINATION share/${PROJECT_NAME}/zenoh_configs
+  config/
+  DESTINATION share/${PROJECT_NAME}/config
 )
 
 if(BUILD_TESTING)

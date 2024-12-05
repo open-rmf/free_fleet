@@ -14,7 +14,7 @@
 
 Free fleet is a python implementation of the Open-RMF Fleet Adapter, based on the [`fleet_adapter_template`](https://github.com/open-rmf/fleet_adapter_template). It uses `zenoh` as a communication layer between each robot and the fleet adapter, allowing access and control over the navigation stacks of the robots.
 
-Using `zenoh` bridges to pipe the necessary ROS 2 messages between each robot and the `free_fleet_adapter`, users have the flexibility to configure and customize their network setups accordingly following the [official guide](https://github.com/eclipse-zenoh/zenoh?tab=readme-ov-file#configuration-options). Examples provided in this repository are using [these configurations](./free_fleet_examples/zenoh_configs/), do take note of the selective topics that are required for the `free_fleet_adapter` to work. The `zenoh` configuration conveniently allows users to filter and limit the rate of messages based on topics as well, which will be helpful in deployments with limited network bandwidth.
+Using `zenoh` bridges to pipe the necessary ROS 2 messages between each robot and the `free_fleet_adapter`, users have the flexibility to configure and customize their network setups accordingly following the [official guide](https://github.com/eclipse-zenoh/zenoh?tab=readme-ov-file#configuration-options). Examples provided in this repository are using [these configurations](./free_fleet_examples/config/zenoh/), do take note of the selective topics that are required for the `free_fleet_adapter` to work. The `zenoh` configuration conveniently allows users to filter and limit the rate of messages based on topics as well, which will be helpful in deployments with limited network bandwidth.
 
 ![](../media/architecture.jpg)
 
@@ -133,7 +133,7 @@ source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
-./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/zenoh_configs/turtlebot3_1_zenoh_config.json5
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/turtlebot3_1_zenoh_config.json5
 ```
 
 Listen to transforms over `zenoh`,
@@ -223,7 +223,7 @@ source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
-./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/zenoh_configs/unique_multi_tb3_zenoh_config.json5
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/unique_multi_tb3_zenoh_config.json5
 ```
 
 Start the RMF core packages on a different `ROS_DOMAIN_ID` to simulate running on a different machine,
