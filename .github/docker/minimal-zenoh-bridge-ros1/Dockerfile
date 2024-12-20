@@ -1,14 +1,14 @@
-ARG ROS_DISTRO=jazzy
+ARG ROS_DISTRO=noetic
 FROM docker.io/ros:$ROS_DISTRO-ros-base
-ARG ZENOH_VERSION=1.0.1
+ARG ZENOH_VERSION=1.0.0-beta.2
 ARG FREE_FLEET_BRANCH=main
 
 RUN apt update && apt install -y wget unzip ros-jazzy-rmw-cyclonedds-cpp
 
 RUN mkdir -p /zenoh-bridge && cd /zenoh-bridge \
-  && wget -O zenoh-plugin-ros2dds.zip https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/download/$ZENOH_VERSION/zenoh-plugin-ros2dds-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip \
-  && unzip zenoh-plugin-ros2dds.zip \
-  && rm zenoh-plugin-ros2dds.zip
+  && wget -O zenoh-plugin-ros1.zip https://github.com/eclipse-zenoh/zenoh-plugin-ros1/releases/download/$ZENOH_VERSION/zenoh-plugin-ros1-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip \
+  && unzip zenoh-plugin-ros1.zip \
+  && rm zenoh-plugin-ros1.zip
 
 RUN cd /zenoh-bridge \
   && wget -O turtlebot3_1_client_zenoh_config.json5 https://raw.githubusercontent.com/open-rmf/free_fleet/refs/heads/$FREE_FLEET_BRANCH/free_fleet_examples/config/zenoh/turtlebot3_1_client_zenoh_config.json5

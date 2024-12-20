@@ -34,7 +34,7 @@ jobs:
           tags: ghcr.io/${{ github.repository }}/minimal-nav2-bringup:${{ matrix.ros_distribution }}-latest
           context: .github/docker/minimal-nav2-bringup
 
-      - name: Build and push minimal-zenoh-bridge
+      - name: Build and push minimal-zenoh-bridge-ros2dds
         uses: docker/build-push-action@v5
         with:
           push: true
@@ -42,8 +42,37 @@ jobs:
             ROS_DISTRO=${{ matrix.ros_distribution }}
             ZENOH_VERSION=1.0.1
             FREE_FLEET_BRANCH=easy-full-control
-          tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge:${{ matrix.ros_distribution }}-latest
-          context: .github/docker/minimal-zenoh-bridge
+          tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros2dds:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-zenoh-bridge-ros2dds
+
+      - name: Build and push minimal-ros1-sim
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=noetic
+          tags: ghcr.io/${{ github.repository }}/minimal-ros1-sim:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-ros1-sim
+
+      - name: Build and push minimal-nav1-bringup
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=noetic
+          tags: ghcr.io/${{ github.repository }}/minimal-nav1-bringup:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-nav1-bringup
+
+      - name: Build and push minimal-zenoh-bridge-ros1
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=noetic
+            ZENOH_VERSION=1.0.0-beta.2
+            FREE_FLEET_BRANCH=easy-full-control
+          tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros1:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-zenoh-bridge-ros1
 
   integration-tests:
     needs: build-minimal-docker-images
@@ -65,7 +94,7 @@ jobs:
           sudo apt update && sudo apt install docker-compose -y
 
       - name: Start test fixture containers
-        run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml" up -d --build
+        run: docker-compose -f ".github/docker/integration-tests/docker-compose-nav2.yaml" up -d --build
 
       - name: build-and-test
         uses: ./.github/actions/build-and-test
@@ -76,4 +105,4 @@ jobs:
 
       - name: Stop test fixture containers
         if: always()
-        run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml" down
+        run: docker-compose -f ".github/docker/integration-tests/docker-compose-nav2.yaml" down

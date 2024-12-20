@@ -1,0 +1,193 @@
+////
+//// This file presents the default configuration used by `zenoh-plugin-ros1` plugin.
+//// The "ros1" JSON5 object below can be used as such in the "plugins" part of a config file for the zenoh router (zenohd).
+////
+{
+  plugins: {
+    ////
+    //// ROS1 bridge related configuration
+    //// All settings are optional and are unset by default - uncomment the ones you want to set
+    ////
+    ros1: {
+      ////
+      //// ros_master_uri: A URI of the ROS1 Master to connect to, the defailt is http://localhost:11311/
+      ////
+      // ros_master_uri: "http://localhost:11311/",
+
+      ////
+      //// ros_hostname: A hostname to send to ROS1 Master, the default is system's hostname
+      ////
+      // ros_hostname: "hostname",
+
+      ////
+      //// ros_name: A bridge node's name for ROS1, the default is "ros1_to_zenoh_bridge"
+      ////
+      // ros_name: "ros1_to_zenoh_bridge",
+
+      ////
+      //// with_rosmaster: An option wether the bridge should run it's own rosmaster process, the default is "false"
+      ////
+      // with_rosmaster: "false",
+
+      ////
+      //// subscriber_bridging_mode: Global subscriber's topic bridging mode. Accepted values:
+      //// - "auto"(default) - bridge topics once they are declared locally or discovered remotely
+      //// - "lazy_auto" - bridge topics once they are both declared locally and discovered remotely
+      //// - "disabled" - never bridge topics. This setting will also suppress the topic discovery."#
+      subscriber_bridging_mode: "disabled",
+
+      ////
+      //// publisher_bridging_mode: Global publisher's topic bridging mode. Accepted values:
+      //// - "auto"(default) - bridge topics once they are declared locally or discovered remotely
+      //// - "lazy_auto" - bridge topics once they are both declared locally and discovered remotely
+      //// - "disabled" - never bridge topics. This setting will also suppress the topic discovery."#
+      publisher_bridging_mode: "disabled",
+
+      ////
+      //// service_bridging_mode: Global service's topic bridging mode. Accepted values:
+      //// - "auto"(default) - bridge topics once they are declared locally or discovered remotely
+      //// - "lazy_auto" - bridge topics once they are both declared locally and discovered remotely
+      //// - "disabled" - never bridge topics. This setting will also suppress the topic discovery."#
+      service_bridging_mode: "disabled",
+
+      ////
+      //// client_bridging_mode: Mode of client's topic bridging. Accepted values:
+      //// - "auto" - bridge topics once they are discovered remotely
+      //// - "disabled"(default) - never bridge topics. This setting will also suppress the topic discovery.
+      //// NOTE: there are some pecularities on how ROS1 handles clients:
+      //// - ROS1 doesn't provide any client discovery mechanism
+      //// - ROS1 doesn't allow multiple services on the same topic
+      //// Due to this, client's bridging works differently compared to pub\sub bridging:
+      //// - lazy bridging mode is not available as there is no way to discover local ROS1 clients
+      //// - client bridging is disabled by default, as it may brake the local ROS1 system if it intends to have client and service interacting on the same topic
+      //// In order to use client bridging, you have two options:
+      //// - globally select auto bridging mode (with caution!) with this option
+      //// - bridge specific topics using 'client_topic_custom_bridging_mode' option (with a little bit less caution!)"#
+      client_bridging_mode: "disabled",
+
+      ////
+      //// subscriber_topic_custom_bridging_mode: A JSON Map describing custom bridging modes for particular topics.
+      //// Custom bridging mode overrides the global one.
+      //// Format: {"topic1":"mode", "topic2":"mode"}
+      //// Example: {"/my/topic1":"lazy_auto","/my/topic2":"auto"}
+      //// where
+      //// - topic: ROS1 topic name
+      //// - mode (auto/lazy_auto/disabled) as described above
+      //// The default is empty
+      //// Zenoh -> ROS 1
+      // subscriber_topic_custom_bridging_mode: {
+      //   "/tf": "auto"
+      // },
+
+      ////
+      //// publisher_topic_custom_bridging_mode: A JSON Map describing custom bridging modes for particular topics.
+      //// Custom bridging mode overrides the global one.
+      //// Format: {"topic1":"mode", "topic2":"mode"}
+      //// Example: {"/my/topic1":"lazy_auto","/my/topic2":"auto"}
+      //// where
+      //// - topic: ROS1 topic name
+      //// - mode (auto/lazy_auto/disabled) as described above
+      //// The default is empty
+      //// ROS 1 -> Zenoh
+      publisher_topic_custom_bridging_mode: {
+        "/tf": "auto"
+      },
+
+      ////
+      //// service_topic_custom_bridging_mode: A JSON Map describing custom bridging modes for particular topics.
+      //// Custom bridging mode overrides the global one.
+      //// Format: {"topic1":"mode", "topic2":"mode"}
+      //// Example: {"/my/topic1":"lazy_auto","/my/topic2":"auto"}
+      //// where
+      //// - topic: ROS1 topic name
+      //// - mode (auto/lazy_auto/disabled) as described above
+      //// The default is empty
+      // service_topic_custom_bridging_mode: ""
+
+      ////
+      //// client_topic_custom_bridging_mode: A JSON Map describing custom bridging modes for particular topics.
+      //// Custom bridging mode overrides the global one.
+      //// Format: {"topic1":"mode", "topic2":"mode"}
+      //// Example: {"/my/topic1":"auto","/my/topic2":"auto"}
+      //// where
+      //// - topic: ROS1 topic name
+      //// - mode (auto/disabled) as described above
+      //// The default is empty
+      // client_topic_custom_bridging_mode: ""
+
+      ////
+      //// ros_master_polling_interval: An interval how to poll the ROS1 master for status
+      //// Bridge polls ROS1 master to get information on local topics, as this is the only way to keep
+      //// this info updated. This is the interval of this polling. The default is "100ms"
+      ////
+      //// Takes a string such as 100ms, 2s, 5m
+      //// The string format is [0-9]+(ns|us|ms|[smhdwy])
+      ////
+      // ros_master_polling_interval: "100ms",
+
+      ////
+      //// This plugin uses Tokio (https://tokio.rs/) for asynchronous programming.
+      //// When running as a plugin within a Zenoh router, the plugin creates its own Runtime managing 2 pools of threads:
+      ////    - worker threads for non-blocking tasks. Those threads are spawn at Runtime creation.
+      ////    - blocking threads for blocking tasks (e.g. I/O). Those threads are spawn when needed.
+      //// For more details see https://github.com/tokio-rs/tokio/discussions/3858#discussioncomment-869878
+      //// When running as a standalone bridge the Zenoh Session's Runtime is used and can be configured via the
+      //// `ZENOH_RUNTIME` environment variable. See https://docs.rs/zenoh-runtime/latest/zenoh_runtime/enum.ZRuntime.html
+      ////
+
+      //// work_thread_num: The number of worker thread in the asynchronous runtime will use. (default: 2)
+      ////                  Only for a plugin, no effect on a bridge.
+      // work_thread_num: 2,
+
+      //// max_block_thread_num: The number of blocking thread in the asynchronous runtime will use. (default: 50)
+      ////                       Only for a plugin, no effect on a bridge.
+      // max_block_thread_num: 50,
+    },
+
+    ////
+    //// REST API configuration (active only if this part is defined)
+    ////
+    // rest: {
+    //   ////
+    //   //// The HTTP port number (for all network interfaces).
+    //   //// You can bind on a specific interface setting a "<local_ip>:<port>" string.
+    //   ////
+    //   http_port: 8000,
+    // },
+  },
+
+  ////
+  //// zenoh related configuration (see zenoh documentation for more details)
+  ////
+
+  ////
+  //// id: The identifier (as hex-string) that zenoh-bridge-ros1 must use. If not set, a random UUIDv4 will be used.
+  //// WARNING: this id must be unique in your zenoh network.
+  // id: "A00001",
+
+  ////
+  //// mode: The bridge's mode (peer or client)
+  ////
+  //mode: "client",
+
+  ////
+  //// Which endpoints to connect to. E.g. tcp/localhost:7447.
+  //// By configuring the endpoints, it is possible to tell zenoh which router/peer to connect to at startup.
+  ////
+  connect: {
+    endpoints: [
+      // "<proto>/<ip>:<port>"
+    ]
+  },
+
+  ////
+  //// Which endpoints to listen on. E.g. tcp/localhost:7447.
+  //// By configuring the endpoints, it is possible to tell zenoh which are the endpoints that other routers,
+  //// peers, or client can use to establish a zenoh session.
+  ////
+  listen: {
+    endpoints: [
+      // "<proto>/<ip>:<port>"
+    ]
+  },
+}

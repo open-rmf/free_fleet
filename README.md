@@ -133,7 +133,7 @@ source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
-./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/turtlebot3_1_zenoh_config.json5
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/turtlebot3_1_zenoh_bridge_ros2dds_client_config.json5
 ```
 
 Listen to transforms over `zenoh`,

@@ -11,8 +11,8 @@ services:
     environment:
       - ROS_DOMAIN_ID=42
 
-  minimal-zenoh-bridge:
-    image: ghcr.io/open-rmf/free_fleet/minimal-zenoh-bridge:jazzy-latest
+  minimal-zenoh-bridge-ros2dds:
+    image: ghcr.io/open-rmf/free_fleet/minimal-zenoh-bridge-ros2dds:jazzy-latest
     network_mode: host
     stdin_open: true
     tty: true
