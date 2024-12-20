@@ -16,7 +16,7 @@
 
 
 from builtin_interfaces.msg import Time as RclTimeMsg
-from free_fleet.types import GeometryMsgs_TransformStamped, Time
+from free_fleet.ros2_types import GeometryMsgs_TransformStamped, Time
 from geometry_msgs.msg import TransformStamped
 from rclpy import time as rclpyTime
 

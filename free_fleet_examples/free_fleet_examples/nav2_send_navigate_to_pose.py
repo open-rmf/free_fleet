@@ -18,7 +18,7 @@ import argparse
 import sys
 import time
 
-from free_fleet.types import (
+from free_fleet.ros2_types import (
     GeometryMsgs_Point,
     GeometryMsgs_Pose,
     GeometryMsgs_PoseStamped,

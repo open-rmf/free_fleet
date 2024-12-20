@@ -223,7 +223,7 @@ source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
-./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/unique_multi_tb3_zenoh_config.json5
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/unique_multi_tb3_zenoh_bridge_ros2dds_client_config.json5
 ```
 
 Start the RMF core packages on a different `ROS_DOMAIN_ID` to simulate running on a different machine,

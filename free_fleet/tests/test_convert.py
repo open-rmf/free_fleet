@@ -18,7 +18,7 @@ from free_fleet.convert import (
     transform_stamped_to_ros2_msg,
     transform_time_to_ros2_msg
 )
-from free_fleet.types import (
+from free_fleet.ros2_types import (
     GeometryMsgs_Quaternion,
     GeometryMsgs_Transform,
     GeometryMsgs_TransformStamped,

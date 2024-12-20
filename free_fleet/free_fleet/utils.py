@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from free_fleet.types import (
+from free_fleet.ros2_types import (
     ActionMsgs_CancelGoal_Request,
     ActionMsgs_GoalInfo,
     Time,

@@ -51,7 +51,6 @@ if __name__ == "__main__":
     ros1_store.register(
         get_types_from_msg(TFMESSAGE_DEFINITION, TYPE),
     )
-    # TFMessage = typestore.types[typename]
 
     zenoh_topic = get_zenoh_name_of_ros1_topic(ros1_store, topic=TOPIC, msg_type=TYPE)
     print(f'ROS topic {TOPIC} is converted to Zenoh {zenoh_topic}')

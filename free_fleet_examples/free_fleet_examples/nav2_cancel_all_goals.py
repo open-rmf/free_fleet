@@ -17,7 +17,7 @@
 import argparse
 import sys
 
-from free_fleet.types import ActionMsgs_CancelGoal_Response
+from free_fleet.ros2_types import ActionMsgs_CancelGoal_Response
 from free_fleet.utils import make_cancel_all_goals_request, namespacify
 
 import zenoh

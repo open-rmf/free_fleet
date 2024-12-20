@@ -17,7 +17,7 @@
 from typing import Annotated
 
 from free_fleet.convert import transform_stamped_to_ros2_msg
-from free_fleet.types import (
+from free_fleet.ros2_types import (
     ActionMsgs_CancelGoal_Response,
     GeometryMsgs_Point,
     GeometryMsgs_Pose,

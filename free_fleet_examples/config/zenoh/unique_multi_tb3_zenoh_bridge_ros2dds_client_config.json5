@@ -12,15 +12,12 @@
       pub_max_frequencies: [".*/navigate_to_pose/*=1", ".*/battery_state=1"],
     },
   },
+  // Zenoh related configurations
   mode: "client",
   connect: {
-    endpoints: [
-      // "<proto>/<ip>:<port>"
-    ]
+    endpoints: []
   },
   listen: {
-    endpoints: [
-      // "<proto>/<ip>:<port>"
-    ]
+    endpoints: []
   },
 }
