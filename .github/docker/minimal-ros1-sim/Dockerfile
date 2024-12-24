@@ -3,7 +3,7 @@ FROM docker.io/ros:$ROS_DISTRO-ros-base
 
 RUN apt update && apt install -y ros-$ROS_DISTRO-turtlebot3-gazebo ros-$ROS_DISTRO-gazebo-ros-pkgs
 
-ENV TURTLEBOT3_MODEL burger
+ENV TURTLEBOT3_MODEL=burger
 
 RUN rm -rf \
   /var/lib/apt/lists \

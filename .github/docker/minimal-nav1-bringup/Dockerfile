@@ -7,7 +7,7 @@ RUN mkdir -p /tb3 && cd /tb3 \
   && curl -sL https://github.com/ros-navigation/navigation2/archive/refs/heads/master.tar.gz -o navigation2.tar.gz \
   && mkdir -p /tb3/navigation2 && tar zxf navigation2.tar.gz -C /tb3/navigation2 --strip-components=1 && rm navigation2.tar.gz
 
-ENV TURTLEBOT3_MODEL burger
+ENV TURTLEBOT3_MODEL=burger
 
 RUN rm -rf \
   /var/lib/apt/lists \
