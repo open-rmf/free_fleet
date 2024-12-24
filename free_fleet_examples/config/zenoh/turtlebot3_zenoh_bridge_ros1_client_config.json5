@@ -1,15 +1,15 @@
 {
   plugins: {
     ros1: {
+      bridge_namespace: "tb3_0",
       subscriber_bridging_mode: "disabled",
       publisher_bridging_mode: "disabled",
       service_bridging_mode: "disabled",
       client_bridging_mode: "disabled",
       // Zenoh -> ROS 1
       subscriber_topic_custom_bridging_mode: {
-        "/tf": "auto",
         "/move_base_simple/goal": "auto",
-        "/move_base/cancel": "auto"
+        "/move_base/cancel": "auto",
       },
       // ROS 1 -> Zenoh
       publisher_topic_custom_bridging_mode: {

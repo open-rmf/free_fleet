@@ -25,7 +25,7 @@ Supports
 * [ROS 2 Jazzy](https://docs.ros.org/en/jazzy/index.html)
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
 * [Open-RMF on main](https://github.com/open-rmf/rmf)
-* [zenoh-bridge-ros2dds v1.0.1](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.0.1)
+* [zenoh-bridge-ros2dds v1.1.0](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.1.0)
 * [zenoh router](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian)
 
 We recommend setting up `zenoh-bridge-ros2dds` with the released standalone binaries. After downloading the appropriate released version and platform, extract and use the standalone binaries as is. For source builds of `zenoh-bridge-ros2dds`, please follow the [official guides](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds).
@@ -73,7 +73,7 @@ Download and extract standalone binaries for `zenoh-bridge-ros2dds` (optionally 
 
 ```bash
 # Change preferred zenoh version here
-export ZENOH_VERSION=1.0.1
+export ZENOH_VERSION=1.1.0
 
 # Download and extract zenoh-bridge-ros2dds release
 wget -O zenoh-plugin-ros2dds.zip https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/download/$ZENOH_VERSION/zenoh-plugin-ros2dds-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip

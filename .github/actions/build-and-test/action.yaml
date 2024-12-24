@@ -18,7 +18,7 @@ runs:
     - name: install dependencies
       run: |
         sudo apt update && sudo apt install python3-pip -y
-        pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 --break-system-packages
+        pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 rosbags --break-system-packages
       shell: bash
 
     - uses: ros-tooling/setup-ros@v0.7

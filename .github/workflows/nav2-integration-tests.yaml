@@ -28,7 +28,7 @@ jobs:
         uses: ./.github/actions/build-and-test
         with:
           ros-distribution: ${{ matrix.ros_distribution }}
-          zenoh-version: 1.0.1
+          zenoh-version: 1.1.0
           integration-testing: ON
 
       - name: Stop test fixture containers
