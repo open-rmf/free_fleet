@@ -4,7 +4,7 @@ ARG ZENOH_BRIDGE_REPO=eclipse-zenoh/zenoh-plugin-ros1
 ARG ZENOH_BRIDGE_TAG=main
 ARG FREE_FLEET_BRANCH=main
 
-RUN apt update && apt install -y wget unzip build-essential curl
+RUN apt update && apt install -y build-essential curl git unzip wget
 
 # Get Rust
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
@@ -12,12 +12,8 @@ RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN mkdir -p /zenoh-bridge && cd /zenoh-bridge \
-  && curl -sL https://github.com/$ZENOH_BRIDGE_REPO/archive/refs/heads/$ZENOH_BRIDGE_TAG.zip -o zenoh-plugin-ros1.tar.gz \
-  && mkdir -p /zenoh-bridge/zenoh-plugin-ros1 \
-  && tar zxf zenoh-plugin-ros1.tar.gz -C /zenoh-bridge/zenoh-plugin-ros1 --strip-components=1 \
-  && rm zenoh-plugin-ros1.tar.gz
-
-RUN cd /zenoh-bridge/zenoh-plugin-ros1 \
+  && git clone --recursive https://github.com/$ZENOH_BRIDGE_REPO -b $ZENOH_BRIDGE_TAG zenoh-plugin-ros1 \
+  && cd /zenoh-bridge/zenoh-plugin-ros1 \
   && cargo build --package zenoh-bridge-ros1 --bin zenoh-bridge-ros1 --release
 
 RUN cd /zenoh-bridge \

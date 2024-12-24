@@ -1,7 +1,7 @@
 ARG ROS_DISTRO=jazzy
 FROM docker.io/ros:$ROS_DISTRO-ros-base
 
-RUN apt update && apt install -y  curl ros-$ROS_DISTRO-nav2-bringup ros-$ROS_DISTRO-rmw-cyclonedds-cpp
+RUN apt update && apt install -y curl ros-$ROS_DISTRO-nav2-bringup ros-$ROS_DISTRO-rmw-cyclonedds-cpp
 
 RUN mkdir -p /tb3 && cd /tb3 \
   && curl -sL https://github.com/ROBOTIS-GIT/turtlebot3_simulations/archive/refs/heads/master.tar.gz -o turtlebot3_simulations.tar.gz \
