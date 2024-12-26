@@ -29,7 +29,7 @@ jobs:
         with:
           ros-distribution: ${{ matrix.ros_distribution }}
           zenoh-version: 1.1.0
-          integration-testing: ON
+          nav2-integration-testing: ON
 
       - name: Stop test fixture containers
         if: always()
