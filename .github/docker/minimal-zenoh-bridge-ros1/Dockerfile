@@ -1,3 +1,5 @@
+### Build bridge
+
 ARG ROS_DISTRO=noetic
 FROM docker.io/ros:$ROS_DISTRO-ros-base
 ARG ZENOH_BRIDGE_REPO=eclipse-zenoh/zenoh-plugin-ros1
@@ -23,4 +25,12 @@ RUN rm -rf \
   /var/lib/apt/lists \
   /dist
 
-ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-plugin-ros1/target/release/zenoh-bridge-ros1 -c /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5"]
+### Set up bare minimum zenoh-bridge-ros1 image
+
+FROM docker.io/ros:$ROS_DISTRO-ros-base
+
+COPY --from=0 /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5 /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5
+
+COPY --from=0 /zenoh-bridge/zenoh-plugin-ros1/target/release/zenoh-bridge-ros1 /zenoh-bridge/zenoh-bridge-ros1
+
+ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-bridge-ros1 -c /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5"]
