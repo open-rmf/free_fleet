@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rosbags.typesys import Stores, get_types_from_msg, get_typestore
+from rosbags.typesys import get_types_from_msg, get_typestore, Stores
 
 
 ROS1_STORE = get_typestore(Stores.ROS1_NOETIC)
