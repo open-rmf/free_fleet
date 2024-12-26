@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   minimal-nav2-bringup:
     image: ghcr.io/open-rmf/free_fleet/minimal-nav2-bringup:jazzy-latest

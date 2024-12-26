@@ -16,12 +16,19 @@
 
 
 from builtin_interfaces.msg import Time as RclTimeMsg
-from free_fleet.ros2_types import GeometryMsgs_TransformStamped, Time
+from free_fleet.ros1_types import (
+    TransformStamped as Ros1TransformStamped,
+    Time as Ros1Time
+)
+from free_fleet.ros2_types import (
+    GeometryMsgs_TransformStamped as Ros2TransformStamped,
+    Time as Ros2Time
+)
 from geometry_msgs.msg import TransformStamped
 from rclpy import time as rclpyTime
 
 
-def transform_time_to_ros2_msg(msg: Time) -> RclTimeMsg:
+def transform_time_to_ros2_msg(msg: Ros1Time | Ros2Time) -> RclTimeMsg:
     time = rclpyTime.Time(
         seconds=msg.sec,
         nanoseconds=msg.nanosec
@@ -29,8 +36,9 @@ def transform_time_to_ros2_msg(msg: Time) -> RclTimeMsg:
     return time.to_msg()
 
 
-def transform_stamped_to_ros2_msg(msg: GeometryMsgs_TransformStamped
-                                  ) -> TransformStamped:
+def transform_stamped_to_ros2_msg(
+    msg: Ros1TransformStamped | Ros2TransformStamped
+) -> TransformStamped:
     t = TransformStamped()
     t.header.stamp = transform_time_to_ros2_msg(msg.header.stamp)
     t.header.frame_id = msg.header.frame_id

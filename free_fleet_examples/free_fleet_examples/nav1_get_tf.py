@@ -27,25 +27,6 @@ from tf2_ros import Buffer
 import zenoh
 
 
-# def listener(sample: zenoh.Sample):
-#     msg = ROS1_STORE.deserialize_ros1(
-#         sample.payload.to_bytes(),
-#         TFMessage.type_name
-#     )
-#     print(f'ROS1 msg: {msg}')
-
-
-# if __name__ == "__main__":
-#     session = zenoh.open(zenoh.Config())
-#     zenoh_topic = get_zenoh_name_of_ros1_topic(
-#         ROS1_STORE,
-#         topic=f'{BRIDGE_NAMESPACE}{TOPIC}',
-#         msg_type=TFMessage.type_name
-#     )
-#     print(f'ROS topic {TOPIC} is converted to Zenoh {zenoh_topic}')
-#     sub = session.declare_subscriber(zenoh_topic, listener)
-#     time.sleep(60)
-
 def main(argv=sys.argv):
     # Init rclpy and adapter
     rclpy.init(args=argv)

@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   minimal-ros1-sim:
     image: ghcr.io/open-rmf/free_fleet/minimal-ros1-sim:noetic-latest

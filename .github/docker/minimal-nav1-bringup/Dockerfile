@@ -13,4 +13,4 @@ RUN rm -rf \
   /var/lib/apt/lists \
   /dist
 
-ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=/tb3/navigation2/nav2_bringup/maps/tb3_sandbox.yaml open_rviz:=false initial_pose_x:=-2.0 initial_pose_y:=-0.5 initial_pose_a:=0.0"]
+ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && roslaunch --wait turtlebot3_navigation turtlebot3_navigation.launch map_file:=/tb3/navigation2/nav2_bringup/maps/tb3_sandbox.yaml open_rviz:=false initial_pose_x:=-2.0 initial_pose_y:=-0.5 initial_pose_a:=0.0"]

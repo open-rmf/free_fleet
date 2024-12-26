@@ -23,4 +23,4 @@ RUN rm -rf \
   /var/lib/apt/lists \
   /dist
 
-ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-bridge-ros1/target/release/zenoh-bridge-ros1 -c /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5"]
+ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-plugin-ros1/target/release/zenoh-bridge-ros1 -c /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5"]
