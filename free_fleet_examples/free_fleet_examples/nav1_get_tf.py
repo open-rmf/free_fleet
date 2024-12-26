@@ -14,52 +14,88 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# # https://github.com/eclipse-zenoh/zenoh-plugin-ros1/issues/131
 
-# import zenoh, time
-# from rosbags.typesys import Stores, get_types_from_msg, get_typestore
+import argparse
+import sys
+import time
 
-# TOPIC = '/tf'
-# # TYPE = 'std_msgs/msg/String'
-# TYPE = 'tf2_msgs/msg/TFMessage'
 
-# # Noetic TFMessage message definition, taken from:
-# #
-# https://github.com/ros/geometry2/blob/noetic-devel/tf2_msgs/msg/TFMessage.msg
-# TFMESSAGE_DEFINITION = """
-# geometry_msgs/TransformStamped[] transforms
-# """
+from free_fleet_adapter.nav1_robot_adapter import Nav1TfHandler
+import rclpy
+from tf2_ros import Buffer
 
-# def get_zenoh_name_of_ros1_topic(ros1_store, topic: str, msg_type: str
-# ) -> str:
-#     # Get md5 and encode msg_type to construct zenoh topic
-#     msg_type_split = msg_type.split('/')
-#     msg_type_encoded = \
-#         '/'.join([msg_type_split[0],msg_type_split[2]]).encode('utf-8').hex()
-#     md5 = ros1_store.generate_msgdef(msg_type)[1]
-#     zenoh_topic = '/'.join([msg_type_encoded, md5, topic[1:]])
-
-#     return zenoh_topic
+import zenoh
 
 
 # def listener(sample: zenoh.Sample):
-#     msg = ros1_store.deserialize_ros1(sample.payload.to_bytes(), TYPE)
+#     msg = ROS1_STORE.deserialize_ros1(
+#         sample.payload.to_bytes(),
+#         TFMessage.type_name
+#     )
 #     print(f'ROS1 msg: {msg}')
 
 
 # if __name__ == "__main__":
 #     session = zenoh.open(zenoh.Config())
-#     ros1_store = get_typestore(Stores.ROS1_NOETIC)
-
-#     ros1_store.register(
-#         get_types_from_msg(TFMESSAGE_DEFINITION, TYPE),
-#     )
-
 #     zenoh_topic = get_zenoh_name_of_ros1_topic(
-#         ros1_store,
-#         topic=TOPIC,
-#         msg_type=TYPE
+#         ROS1_STORE,
+#         topic=f'{BRIDGE_NAMESPACE}{TOPIC}',
+#         msg_type=TFMessage.type_name
 #     )
 #     print(f'ROS topic {TOPIC} is converted to Zenoh {zenoh_topic}')
 #     sub = session.declare_subscriber(zenoh_topic, listener)
 #     time.sleep(60)
+
+def main(argv=sys.argv):
+    # Init rclpy and adapter
+    rclpy.init(args=argv)
+    args_without_ros = rclpy.utilities.remove_ros_args(argv)
+    node = rclpy.node.Node('nav2_get_tf')
+
+    parser = argparse.ArgumentParser(
+        prog='get_tf',
+        description='Zenoh/ROS1 tf example')
+    parser.add_argument('--zenoh-config', '-c', dest='config', metavar='FILE',
+                        type=str, help='A configuration file.')
+    parser.add_argument('--namespace', '-n', type=str, default='')
+    parser.add_argument(
+        '-b', '--base-footprint-frame', default='base_footprint'
+    )
+    parser.add_argument('-m', '--map-frame', default='map')
+
+    args = parser.parse_args(args_without_ros[1:])
+
+    # Create Zenoh Config from file if provoded, or a default one otherwise
+    conf = zenoh.Config.from_file(args.config) \
+        if args.config is not None else zenoh.Config()
+
+    zenoh.try_init_log_from_env()
+
+    tf_buffer = Buffer()
+
+    # Open Zenoh Session
+    with zenoh.open(conf) as session:
+        info = session.info
+        print(f'zid: {info.zid()}')
+        print(f'routers: {info.routers_zid()}')
+        print(f'peers: {info.peers_zid()}')
+
+        tf_handler = Nav1TfHandler(args.namespace, session, tf_buffer, node)
+
+        try:
+            while True:
+                transform = tf_handler.get_transform()
+                if transform is None:
+                    print('Unable to get transform between base_footprint and'
+                          ' map')
+                else:
+                    print(transform)
+                time.sleep(1)
+        except (KeyboardInterrupt):
+            pass
+        finally:
+            session.close()
+
+
+if __name__ == '__main__':
+    main(sys.argv)

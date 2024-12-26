@@ -14,8 +14,61 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from rosbags.typesys import Stores, get_types_from_msg, get_typestore
+
+
+ROS1_STORE = get_typestore(Stores.ROS1_NOETIC)
+
+
 # https://github.com/ros/geometry2/blob/noetic-devel/tf2_msgs/msg/TFMessage.msg
-TFMESSAGE_TYPE = 'tf2_msgs/msg/TFMessage'
-TFMESSAGE_DEFINITION = """
+TFMessage_Definition = """
 geometry_msgs/TransformStamped[] transforms
 """
+ROS1_STORE.register(
+    get_types_from_msg(TFMessage_Definition, 'tf2_msgs/msg/TFMessage')
+)
+
+
+class TFMessage:
+    type_name = 'tf2_msgs/msg/TFMessage'
+    msg_type = ROS1_STORE.types[type_name]
+
+
+class Time:
+    type_name = 'builtin_interfaces/msg/Time'
+    msg_type = ROS1_STORE.types[type_name]
+
+
+class Header:
+    type_name = 'std_msgs/msg/Header'
+    msg_type = ROS1_STORE.types[type_name]
+
+
+class Pose:
+    type_name = 'geometry_msgs/msg/Pose'
+    msg_type = ROS1_STORE.types[type_name]
+
+
+class Point:
+    type_name = 'geometry_msgs/msg/Point'
+    msg_type = ROS1_STORE.types[type_name]
+
+
+class Quaternion:
+    type_name = 'geometry_msgs/msg/Quaternion'
+    msg_type = ROS1_STORE.types[type_name]
+
+
+class PoseStamped:
+    type_name = 'geometry_msgs/msg/PoseStamped'
+    msg_type = ROS1_STORE.types[type_name]
+
+
+class GoalID:
+    type_name = 'actionlib_msgs/msg/GoalID'
+    msg_type = ROS1_STORE.types[type_name]
+
+
+class GoalStatusArray:
+    type_name = 'actionlib_msgs/msg/GoalStatusArray'
+    msg_type = ROS1_STORE.types[type_name]

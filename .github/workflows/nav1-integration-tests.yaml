@@ -1,0 +1,45 @@
+name: nav1-integration-tests
+
+on: push
+
+jobs:
+  integration-tests:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+    strategy:
+      matrix:
+        ros_distribution:
+          - jazzy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Install docker-compose
+        run: |
+          sudo apt update && sudo apt install docker-compose -y
+
+      - name: Start test fixture containers
+        run: docker-compose -f ".github/docker/integration-tests/nav1-docker-compose.yaml" up -d --build
+
+      - name: build-and-test
+        uses: ./.github/actions/build-and-test
+        with:
+          ros-distribution: ${{ matrix.ros_distribution }}
+          zenoh-version: 1.1.0
+          integration-testing: ON
+
+      - name: Stop test fixture containers
+        if: always()
+        run: docker-compose -f ".github/docker/integration-tests/nav1-docker-compose.yaml" down
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ros_ws/coveragepy/.coverage
+          flags: tests
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

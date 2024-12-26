@@ -8,6 +8,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
   ${PROJECT_NAME}/fleet_adapter.py
+  ${PROJECT_NAME}/nav1_robot_adapter.py
   ${PROJECT_NAME}/nav2_robot_adapter.py
   DESTINATION lib/${PROJECT_NAME}
 )
@@ -35,6 +36,7 @@ if(BUILD_TESTING)
 
   if (INTEGRATION_TESTING)
     set(_pytest_tests
+      tests/integration/test_nav1_tf_handler.py
       tests/integration/test_nav2_tf_handler.py
       tests/integration/test_nav2_robot_adapter.py
     )
