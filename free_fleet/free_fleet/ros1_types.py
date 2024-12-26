@@ -34,6 +34,11 @@ class TFMessage:
     msg_type = ROS1_STORE.types[type_name]
 
 
+class TransformStamped:
+    type_name = 'geometry_msgs/msg/TransformStamped'
+    msg_type = ROS1_STORE.types[type_name]
+
+
 class Time:
     type_name = 'builtin_interfaces/msg/Time'
     msg_type = ROS1_STORE.types[type_name]
