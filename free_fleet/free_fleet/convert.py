@@ -21,8 +21,8 @@ from free_fleet.ros1_types import (
     TransformStamped as Ros1TransformStamped
 )
 from free_fleet.ros2_types import (
-    Time as Ros2Time,
-    GeometryMsgs_TransformStamped as Ros2TransformStamped
+    GeometryMsgs_TransformStamped as Ros2TransformStamped,
+    Time as Ros2Time
 )
 from geometry_msgs.msg import TransformStamped
 from rclpy import time as rclpyTime
