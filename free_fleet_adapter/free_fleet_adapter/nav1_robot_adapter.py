@@ -34,6 +34,7 @@ from free_fleet.convert import transform_stamped_to_ros2_msg
 #     Time,
 # )
 from free_fleet.ros1_types import (
+    GoalStatus,
     ROS1_STORE,
     TFMessage
 )
@@ -46,7 +47,7 @@ from free_fleet.utils import (
 from geometry_msgs.msg import TransformStamped
 # import numpy as np
 import rclpy
-# import rmf_adapter.easy_full_control as rmf_easy
+import rmf_adapter.easy_full_control as rmf_easy
 # from rmf_adapter.robot_update_handle import ActivityIdentifier
 # from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
@@ -109,6 +110,7 @@ class Nav1TfHandler:
 
 
 class Nav1MoveBaseHandler:
+
     def __init__(self, robot_name, zenoh_session, node):
         self.robot_name = robot_name
         self.zenoh_session = zenoh_session
@@ -117,5 +119,18 @@ class Nav1MoveBaseHandler:
         def _move_base_status_callback(sample: zenoh.Sample):
             raise NotImplementedError
 
-    def get_move_base_status(self) -> str | None:
+    def get_move_base_status(self) -> GoalStatus | None:
+        return None
+
+    def is_navigation_done(self) -> bool:
+        raise NotImplementedError
+
+    def navigate_to_pose(
+        self,
+        destination: rmf_easy.Destination,
+        execution: rmf_easy.CommandExecution
+    ):
+        raise NotImplementedError
+
+    def stop_navigation(self):
         raise NotImplementedError

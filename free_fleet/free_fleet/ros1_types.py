@@ -74,6 +74,11 @@ class GoalID:
     msg_type = ROS1_STORE.types[type_name]
 
 
+class GoalStatus:
+    type_name = 'actionlib_msgs/msg/GoalStatus'
+    msg_type = ROS1_STORE.types[type_name]
+
+
 class GoalStatusArray:
     type_name = 'actionlib_msgs/msg/GoalStatusArray'
     msg_type = ROS1_STORE.types[type_name]
