@@ -106,3 +106,16 @@ class Nav1TfHandler:
                 f'{type(err)}: {err}'
             )
         return None
+
+
+class Nav1MoveBaseHandler:
+    def __init__(self, robot_name, zenoh_session, node):
+        self.robot_name = robot_name
+        self.zenoh_session = zenoh_session
+        self.node = node
+
+        def _move_base_status_callback(sample: zenoh.Sample):
+            raise NotImplementedError
+
+    def get_move_base_status(self) -> str | None:
+        raise NotImplementedError
