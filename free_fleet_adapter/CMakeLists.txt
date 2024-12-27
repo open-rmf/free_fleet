@@ -49,6 +49,7 @@ if(BUILD_TESTING)
     endforeach()
   elseif (NAV1_INTEGRATION_TESTING)
     set(_pytest_tests
+      tests/integration/test_nav1_move_base.py
       tests/integration/test_nav1_tf_handler.py
     )
     foreach(_test_path ${_pytest_tests})

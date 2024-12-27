@@ -34,7 +34,7 @@ from free_fleet.ros2_types import (
     Time,
 )
 from free_fleet.utils import (
-    make_cancel_all_goals_request,
+    make_nav2_cancel_all_goals_request,
     namespacify,
 )
 
@@ -346,7 +346,7 @@ class Nav2RobotAdapter:
         )
 
     def _handle_stop_navigation(self):
-        req = make_cancel_all_goals_request()
+        req = make_nav2_cancel_all_goals_request()
         replies = self.zenoh_session.get(
             namespacify(
                 'navigate_to_pose/_action/cancel_goal',

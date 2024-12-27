@@ -18,7 +18,7 @@ import argparse
 import sys
 
 from free_fleet.ros2_types import ActionMsgs_CancelGoal_Response
-from free_fleet.utils import make_cancel_all_goals_request, namespacify
+from free_fleet.utils import make_nav2_cancel_all_goals_request, namespacify
 
 import zenoh
 
@@ -39,7 +39,7 @@ def main(argv=sys.argv):
     # Open Zenoh Session
     session = zenoh.open(conf)
 
-    req = make_cancel_all_goals_request()
+    req = make_nav2_cancel_all_goals_request()
 
     # Send the query with the serialized request
     replies = session.get(
