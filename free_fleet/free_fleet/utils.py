@@ -33,7 +33,7 @@ def namespacify(base_name: str, namespace: str, delimiter: str = '/') -> str:
         else base_name
 
 
-def make_cancel_all_goals_request() -> ActionMsgs_CancelGoal_Request:
+def make_nav2_cancel_all_goals_request() -> ActionMsgs_CancelGoal_Request:
     """
     Return a Nav2 CancelGoal request targeting all ongoing goals.
 

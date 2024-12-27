@@ -28,7 +28,9 @@ from geometry_msgs.msg import TransformStamped
 from rclpy import time as rclpyTime
 
 
-def transform_time_to_ros2_msg(msg: Ros1Time | Ros2Time) -> RclTimeMsg:
+def transform_time_to_ros2_msg(
+    msg: Ros1Time.msg_type | Ros2Time
+) -> RclTimeMsg:
     time = rclpyTime.Time(
         seconds=msg.sec,
         nanoseconds=msg.nanosec
@@ -37,7 +39,7 @@ def transform_time_to_ros2_msg(msg: Ros1Time | Ros2Time) -> RclTimeMsg:
 
 
 def transform_stamped_to_ros2_msg(
-    msg: Ros1TransformStamped | Ros2TransformStamped
+    msg: Ros1TransformStamped.msg_type | Ros2TransformStamped
 ) -> TransformStamped:
     t = TransformStamped()
     t.header.stamp = transform_time_to_ros2_msg(msg.header.stamp)
