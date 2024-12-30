@@ -20,6 +20,7 @@ import sys
 import threading
 import time
 
+from free_fleet_adapter.nav1_robot_adapter import Nav1RobotAdapter
 from free_fleet_adapter.nav2_robot_adapter import Nav2RobotAdapter
 import nudged
 import rclpy
@@ -156,9 +157,39 @@ def main(argv=sys.argv):
     for robot_name in fleet_config.known_robots:
         robot_config_yaml = config_yaml['rmf_fleet']['robots'][robot_name]
         robot_config = fleet_config.get_known_robot_configuration(robot_name)
-        robots[robot_name] = Nav2RobotAdapter(
-            robot_name, robot_config, robot_config_yaml, node, zenoh_session,
-            fleet_handle, tf_buffer)
+
+        if 'navigation_stack' not in robot_config_yaml:
+            error_message = \
+                'Navigation stack must be defined to set up RobotAdapter'
+            node.get_logger().error(error_message)
+            raise RuntimeError(error_message)
+
+        nav_stack = robot_config_yaml['navigation_stack']
+        if nav_stack == 2:
+            robots[robot_name] = Nav2RobotAdapter(
+                robot_name,
+                robot_config,
+                robot_config_yaml,
+                node,
+                zenoh_session,
+                fleet_handle,
+                tf_buffer
+            )
+        elif nav_stack == 1:
+            robots[robot_name] = Nav1RobotAdapter(
+                robot_name,
+                robot_config,
+                robot_config_yaml,
+                node,
+                zenoh_session,
+                fleet_handle,
+                tf_buffer
+            )
+        else:
+            error_message = \
+                'Navigation stack can only be 1 (experimental) or 2'
+            node.get_logger().error(error_message)
+            raise RuntimeError(error_message)
 
     update_period = 1.0/config_yaml['rmf_fleet'].get(
         'robot_state_update_frequency', 10.0

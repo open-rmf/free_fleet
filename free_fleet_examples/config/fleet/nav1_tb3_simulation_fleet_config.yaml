@@ -33,11 +33,11 @@ rmf_fleet:
   finishing_request: "nothing" # [park, charge, nothing]
   responsive_wait: True # Should responsive wait be on/off for the whole fleet by default? False if not specified.
   robots:
-    turtlebot3_1:
+    tb3_0:
       charger: "turtlebot3_1_charger"
       responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
-      # For Nav2RobotAdapter
-      navigation_stack: 2
+      # For Nav1RobotAdapter
+      navigation_stack: 1
       initial_map: "L1"
       maps:
         L1:
