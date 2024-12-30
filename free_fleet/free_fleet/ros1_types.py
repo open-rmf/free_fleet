@@ -92,3 +92,8 @@ class GoalStatus:
 class GoalStatusArray:
     type_name = 'actionlib_msgs/msg/GoalStatusArray'
     msg_type = ROS1_STORE.types[type_name]
+
+
+class BatteryState:
+    type_name = 'sensor_msgs/msg/BatteryState'
+    msg_type = ROS1_STORE.types[type_name]

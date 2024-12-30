@@ -37,6 +37,7 @@ from free_fleet.utils import (
     make_nav2_cancel_all_goals_request,
     namespacify,
 )
+from free_fleet_adapter.robot_adapter import RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
 import numpy as np
@@ -95,7 +96,7 @@ class Nav2TfHandler:
         return None
 
 
-class Nav2RobotAdapter:
+class Nav2RobotAdapter(RobotAdapter):
 
     def __init__(
         self,
@@ -107,10 +108,7 @@ class Nav2RobotAdapter:
         fleet_handle,
         tf_buffer
     ):
-        self.name = name
-        self.node = node
-        self.fleet_handle = fleet_handle
-        self.update_handle = None
+        RobotAdapter.__init__(self, name, node, fleet_handle)
 
         self.execution = None
         self.configuration = configuration

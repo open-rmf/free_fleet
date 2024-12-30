@@ -20,7 +20,7 @@ import sys
 import time
 
 
-from free_fleet_adapter.nav1_robot_adapter import Nav1TfHandler
+from free_fleet_adapter.nav1_robot_adapter import Nav1MoveBaseHandler
 import rclpy
 from tf2_ros import Buffer
 
@@ -31,18 +31,18 @@ def main(argv=sys.argv):
     # Init rclpy and adapter
     rclpy.init(args=argv)
     args_without_ros = rclpy.utilities.remove_ros_args(argv)
-    node = rclpy.node.Node('nav1_get_tf')
+    node = rclpy.node.Node('nav1_move_base_simple_goal')
 
     parser = argparse.ArgumentParser(
-        prog='nav1_get_tf',
-        description='Zenoh/ROS1 tf example')
+        prog='nav1_move_base_simple_goal',
+        description='Zenoh/ROS1 move_base simple goal example')
     parser.add_argument('--zenoh-config', '-c', dest='config', metavar='FILE',
                         type=str, help='A configuration file.')
     parser.add_argument('--namespace', '-n', type=str, default='')
-    parser.add_argument(
-        '-b', '--base-footprint-frame', default='base_footprint'
-    )
-    parser.add_argument('-m', '--map-frame', default='map')
+    parser.add_argument('--frame-id', '-f', type=str, default='map')
+    parser.add_argument('-x', type=float)
+    parser.add_argument('-y', type=float)
+    parser.add_argument('--timeout-sec', '-t', type=float, default=3.0)
 
     args = parser.parse_args(args_without_ros[1:])
 
@@ -52,8 +52,6 @@ def main(argv=sys.argv):
 
     zenoh.try_init_log_from_env()
 
-    tf_buffer = Buffer()
-
     # Open Zenoh Session
     with zenoh.open(conf) as session:
         info = session.info
@@ -61,21 +59,22 @@ def main(argv=sys.argv):
         print(f'routers: {info.routers_zid()}')
         print(f'peers: {info.peers_zid()}')
 
-        tf_handler = Nav1TfHandler(args.namespace, session, tf_buffer, node)
+        move_base_handler = Nav1MoveBaseHandler(args.namespace, session, node)
 
-        try:
-            while True:
-                transform = tf_handler.get_transform()
-                if transform is None:
-                    print('Unable to get transform between base_footprint and'
-                          ' map')
-                else:
-                    print(transform)
-                time.sleep(1)
-        except (KeyboardInterrupt):
-            pass
-        finally:
-            session.close()
+        # Wait for move_base/status to be received
+        time.sleep(3)
+
+        goal_id = move_base_handler.navigate_to_pose(
+            args.x,
+            args.y,
+            0.0,
+            0.0,
+            args.timeout_sec
+        )
+        if goal_id is not None:
+            print(f'goal_id: [{goal_id}]')
+        else:
+            print('Timed out getting goal_id')
 
 
 if __name__ == '__main__':

@@ -44,63 +44,58 @@ class TestNav1MoveBaseHandler(unittest.TestCase):
 
         statuses_exists = False
         for i in range(10):
-            statuses = move_base_handler.get_goal_statuses()
-            if statuses is not None:
+            goal_status_array = move_base_handler.get_goal_status_array()
+            if goal_status_array is not None:
                 statuses_exists = True
                 break
             time.sleep(1)
 
         assert not statuses_exists
 
-    def test_move_base_without_navigate(self):
-        move_base_handler = Nav1MoveBaseHandler(
-            'tb3_0', self.zenoh_session, self.node
-        )
-        active_goal_status = move_base_handler.get_active_goal_status()
-        assert active_goal_status is None
-        assert move_base_handler.is_navigation_done()
-
     def test_command_status_and_cancel(self):
         move_base_handler = Nav1MoveBaseHandler(
             'tb3_0', self.zenoh_session, self.node
         )
 
-        statuses = None
+        status_array = None
         for i in range(10):
-            statuses = move_base_handler.get_goal_statuses()
-            if statuses is not None:
+            status_array = move_base_handler.get_goal_status_array()
+            if status_array is not None:
                 break
             time.sleep(1)
-        assert statuses is not None
-        assert len(statuses.status_list) == 0
+        assert status_array is not None
+        assert len(status_array.status_list) == 0
 
         active_goal_status = move_base_handler.get_active_goal_status()
         assert active_goal_status is None
-        assert move_base_handler.is_navigation_done()
 
-        move_base_handler.navigate_to_pose(
+        # Longer timeout during testing
+        goal_id = move_base_handler.navigate_to_pose(
             x=-1.6,
             y=0.5,
             z=0.0,
-            yaw=0.0
+            yaw=0.0,
+            timeout_sec=5.0
         )
+        assert goal_id is not None
 
-        statuses = None
+        status_array = None
         for i in range(10):
-            statuses = move_base_handler.get_goal_statuses()
-            if len(statuses.status_list) == 1 \
-                and statuses.status_list[0].status == \
-                    statuses.status_list[0].ACTIVE:
+            status_array = move_base_handler.get_goal_status_array()
+            if len(status_array.status_list) == 1 \
+                and status_array.status_list[0].status == \
+                    status_array.status_list[0].ACTIVE:
                 break
             time.sleep(1)
-        assert len(statuses.status_list) == 1
+        assert len(status_array.status_list) == 1
 
-        assert statuses.status_list[0].status == statuses.status_list[0].ACTIVE
+        assert status_array.status_list[0].status == \
+            status_array.status_list[0].ACTIVE
 
         active_goal_status = move_base_handler.get_active_goal_status()
         assert active_goal_status is not None
-        assert statuses.status_list[0] == active_goal_status
-        assert not move_base_handler.is_navigation_done()
+        assert status_array.status_list[0] == active_goal_status
+        assert active_goal_status.goal_id.id == goal_id
 
         move_base_handler.stop_navigation()
         for i in range(10):
@@ -109,4 +104,3 @@ class TestNav1MoveBaseHandler(unittest.TestCase):
                 break
             time.sleep(1)
         assert active_goal_status is None
-        assert move_base_handler.is_navigation_done()

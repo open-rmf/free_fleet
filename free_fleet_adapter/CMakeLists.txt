@@ -10,6 +10,7 @@ install(PROGRAMS
   ${PROJECT_NAME}/fleet_adapter.py
   ${PROJECT_NAME}/nav1_robot_adapter.py
   ${PROJECT_NAME}/nav2_robot_adapter.py
+  ${PROJECT_NAME}/robot_adapter.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -48,9 +49,12 @@ if(BUILD_TESTING)
       )
     endforeach()
   elseif (NAV1_INTEGRATION_TESTING)
+    # test_nav1_move_base_handler and test_nav1_robot_adapter will affect one
+    # another, therefore only one can be run during integration testing
     set(_pytest_tests
-      tests/integration/test_nav1_move_base.py
+      # tests/integration/test_nav1_move_base_handler.py
       tests/integration/test_nav1_tf_handler.py
+      tests/integration/test_nav1_robot_adapter.py
     )
     foreach(_test_path ${_pytest_tests})
       get_filename_component(_test_name ${_test_path} NAME_WE)
