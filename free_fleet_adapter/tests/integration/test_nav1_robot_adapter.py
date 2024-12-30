@@ -105,6 +105,16 @@ class TestNav2RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
+        robot_exists = False
+        for i in range(10):
+            transform = robot_adapter.get_pose()
+            if transform is not None:
+                robot_exists = True
+                break
+            time.sleep(1)
+
+        assert robot_exists
+
         battery_soc = robot_adapter.get_battery_soc()
         assert math.isclose(battery_soc, 1.0)
 
@@ -122,6 +132,16 @@ class TestNav2RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
+
+        robot_exists = False
+        for i in range(10):
+            transform = robot_adapter.get_pose()
+            if transform is not None:
+                robot_exists = True
+                break
+            time.sleep(1)
+
+        assert robot_exists
 
         able_to_update = False
         try:
@@ -151,6 +171,16 @@ class TestNav2RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
+
+        robot_exists = False
+        for i in range(10):
+            transform = robot_adapter.get_pose()
+            if transform is not None:
+                robot_exists = True
+                break
+            time.sleep(1)
+
+        assert robot_exists
         assert robot_adapter._is_navigation_done()
 
     def test_robot_stop_without_command(self):
@@ -167,6 +197,16 @@ class TestNav2RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
+
+        robot_exists = False
+        for i in range(10):
+            transform = robot_adapter.get_pose()
+            if transform is not None:
+                robot_exists = True
+                break
+            time.sleep(1)
+
+        assert robot_exists
         assert robot_adapter.execution is None
         robot_adapter.stop(None)
         assert robot_adapter.execution is None
@@ -187,6 +227,16 @@ class TestNav2RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
+        robot_exists = False
+        for i in range(10):
+            transform = robot_adapter.get_pose()
+            if transform is not None:
+                robot_exists = True
+                break
+            time.sleep(1)
+
+        assert robot_exists
+
         able_to_handle_navigate = False
         try:
             robot_adapter._handle_navigate_to_pose(
@@ -201,35 +251,82 @@ class TestNav2RobotAdapter(unittest.TestCase):
             able_to_handle_navigate = False
         assert not able_to_handle_navigate
 
-    # def test_robot_stop_navigate(self):
-    #     tf_buffer = Buffer()
+    def test_robot_handle_navigate_to_pose(self):
+        tf_buffer = Buffer()
 
-    #     robot_adapter = Nav1RobotAdapter(
-    #         name='tb3_0',
-    #         configuration=None,
-    #         robot_config_yaml={
-    #             'initial_map': 'L1',
-    #         },
-    #         node=self.node,
-    #         zenoh_session=self.zenoh_session,
-    #         fleet_handle=None,
-    #         tf_buffer=tf_buffer
-    #     )
+        robot_adapter = Nav1RobotAdapter(
+            name='tb3_0',
+            configuration=None,
+            robot_config_yaml={
+                'initial_map': 'L1',
+            },
+            node=self.node,
+            zenoh_session=self.zenoh_session,
+            fleet_handle=None,
+            tf_buffer=tf_buffer
+        )
 
-    #     robot_adapter._handle_navigate_to_pose(
-    #         'L1',
-    #         -1.6,
-    #         -0.5,
-    #         0.0,
-    #         0.0,
-    #         5.0
-    #     )
-    #     assert robot_adapter.nav_goal_id is not None
-    #     assert not robot_adapter._is_navigation_done()
-    #     time.sleep(1)
-    #     robot_adapter._handle_stop_navigation()
-    #     time.sleep(1)
-    #     assert robot_adapter._is_navigation_done()
+        robot_exists = False
+        for i in range(10):
+            transform = robot_adapter.get_pose()
+            if transform is not None:
+                robot_exists = True
+                break
+            time.sleep(1)
+
+        assert robot_exists
+
+        robot_adapter._handle_navigate_to_pose(
+            'L1',
+            -1.8,
+            -0.5,
+            0.0,
+            0.0,
+            5.0
+        )
+        assert not robot_adapter._is_navigation_done()
+        time.sleep(5)
+        assert robot_adapter._is_navigation_done()
+
+    def test_robot_stop_navigate(self):
+        tf_buffer = Buffer()
+
+        robot_adapter = Nav1RobotAdapter(
+            name='tb3_0',
+            configuration=None,
+            robot_config_yaml={
+                'initial_map': 'L1',
+            },
+            node=self.node,
+            zenoh_session=self.zenoh_session,
+            fleet_handle=None,
+            tf_buffer=tf_buffer
+        )
+
+        robot_exists = False
+        for i in range(10):
+            transform = robot_adapter.get_pose()
+            if transform is not None:
+                robot_exists = True
+                break
+            time.sleep(1)
+
+        assert robot_exists
+
+        robot_adapter._handle_navigate_to_pose(
+            'L1',
+            1.808,
+            0.503,
+            0.0,
+            0.0,
+            5.0
+        )
+        assert robot_adapter.nav_goal_id is not None
+        assert not robot_adapter._is_navigation_done()
+        time.sleep(1)
+        robot_adapter._handle_stop_navigation()
+        time.sleep(1)
+        assert robot_adapter._is_navigation_done()
 
     def test_robot_execute_unknown_action(self):
         tf_buffer = Buffer()

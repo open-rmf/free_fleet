@@ -1,11 +1,11 @@
 name: nightly
 
-on:
-  schedule:
-    # 2am SGT
-    - cron: '0 18 * * *'
+# on:
+#   schedule:
+#     # 2am SGT
+#     - cron: '0 18 * * *'
 
-# on: [push]
+on: [push]
 
 jobs:
   build-minimal-nav2-docker-images:

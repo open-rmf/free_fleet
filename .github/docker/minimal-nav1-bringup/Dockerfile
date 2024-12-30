@@ -9,8 +9,13 @@ RUN mkdir -p /tb3 && cd /tb3 \
 
 ENV TURTLEBOT3_MODEL=burger
 
+# Modify existing launch file to add initial pose
+RUN cd /tb3 \
+  && curl --output turtlebot3_navigation.launch "https://raw.githubusercontent.com/ROBOTIS-GIT/turtlebot3/refs/heads/noetic-devel/turtlebot3_navigation/launch/turtlebot3_navigation.launch" \
+  && sed -z 's|amcl.launch"/>|amcl.launch"><arg name="initial_pose_x" value="-2.0"/><arg name="initial_pose_y" value="-0.5"/></include>|' turtlebot3_navigation.launch > turtlebot3_navigation_edited.launch
+
 RUN rm -rf \
   /var/lib/apt/lists \
   /dist
 
-ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && roslaunch --wait turtlebot3_navigation turtlebot3_navigation.launch map_file:=/tb3/navigation2/nav2_bringup/maps/tb3_sandbox.yaml open_rviz:=false initial_pose_x:=-2.0 initial_pose_y:=-0.5 initial_pose_a:=0.0"]
+ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && roslaunch --wait /tb3/turtlebot3_navigation_edited.launch map_file:=/tb3/navigation2/nav2_bringup/maps/tb3_sandbox.yaml open_rviz:=false"]
