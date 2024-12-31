@@ -14,51 +14,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import argparse
 import sys
 
-from free_fleet.ros2_types import ActionMsgs_CancelGoal_Response
-from free_fleet.utils import make_nav2_cancel_all_goals_request, namespacify
+from free_fleet_adapter.nav1_robot_adapter import Nav1MoveBaseHandler
+import rclpy
 
 import zenoh
 
 
 def main(argv=sys.argv):
+    # Init rclpy and adapter
+    rclpy.init(args=argv)
+    args_without_ros = rclpy.utilities.remove_ros_args(argv)
+    node = rclpy.node.Node('nav1_move_base_cancel')
+
     parser = argparse.ArgumentParser(
-        prog='cancel_all_goals',
-        description='Zenoh/ROS2 cancel all goals example')
+        prog='nav1_move_base_cancel',
+        description='Zenoh/ROS1 move_base cancel example')
     parser.add_argument('--zenoh-config', '-c', dest='config', metavar='FILE',
                         type=str, help='A configuration file.')
     parser.add_argument('--namespace', '-n', type=str, default='')
+    parser.add_argument('--goal-id', '-g', type=str)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args_without_ros[1:])
 
     # Create Zenoh Config from file if provoded, or a default one otherwise
     conf = zenoh.Config.from_file(args.config) \
         if args.config is not None else zenoh.Config()
+
+    zenoh.try_init_log_from_env()
+
     # Open Zenoh Session
-    session = zenoh.open(conf)
+    with zenoh.open(conf) as session:
+        info = session.info
+        print(f'zid: {info.zid()}')
+        print(f'routers: {info.routers_zid()}')
+        print(f'peers: {info.peers_zid()}')
 
-    req = make_nav2_cancel_all_goals_request()
-
-    # Send the query with the serialized request
-    replies = session.get(
-        namespacify(
-            'navigate_to_pose/_action/cancel_goal',
-            args.namespace
-        ),
-        payload=req.serialize()
-    )
-    # Zenoh could get several replies for a request (e.g. from several
-    # 'Service Servers' using the same name)
-    for reply in replies:
-        # Deserialize the response
-        rep = ActionMsgs_CancelGoal_Response.deserialize(
-            reply.ok.payload.to_bytes()
+        move_base_handler = Nav1MoveBaseHandler(args.namespace, session, node)
+        move_base_handler.cancel_navigation(
+            args.goal_id
         )
-        print('Return code: %d' % rep.return_code)
-
-    session.close()
 
 
 if __name__ == '__main__':

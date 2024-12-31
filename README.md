@@ -5,8 +5,9 @@
 - **[Introduction](#introduction)**
 - **[Dependency installation, source build and setup](#dependency-installation-source-build-and-setup)**
 - **[Simulation examples](#simulation-examples)**
-  - [Single turtlebot3 world](#single-turtlebot3-world)
-  - [Multiple turtlebot3 world](#multiple-turtlebot3-world)
+  - [Nav2 Single turtlebot3 world](#nav2-single-turtlebot3-world)
+  - [Nav2 Multiple turtlebot3 world](#nav2-multiple-turtlebot3-world)
+  - [Nav1 Single turtlebot3 world](#nav1-single-turtlebot3-world)
 - **[Troubleshooting](#troubleshooting)**
 - **[TODOs](#todos)**
 
@@ -25,7 +26,7 @@ Supports
 * [ROS 2 Jazzy](https://docs.ros.org/en/jazzy/index.html)
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
 * [Open-RMF on main](https://github.com/open-rmf/rmf)
-* [zenoh-bridge-ros2dds v1.0.1](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.0.1)
+* [zenoh-bridge-ros2dds v1.1.0](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.1.0)
 * [zenoh router](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian)
 
 We recommend setting up `zenoh-bridge-ros2dds` with the released standalone binaries. After downloading the appropriate released version and platform, extract and use the standalone binaries as is. For source builds of `zenoh-bridge-ros2dds`, please follow the [official guides](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds).
@@ -40,10 +41,10 @@ System dependencies,
 sudo apt update && sudo apt install python3-pip ros-jazzy-rmw-cyclonedds-cpp
 ```
 
-The dependencies `eclipse-zenoh` and `pycdr2` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
+The dependencies `eclipse-zenoh`, `pycdr2`, `rosbags` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
 
 ```bash
-pip3 install pip install eclipse-zenoh==1.0.1 pycdr2 --break-system-packages
+pip3 install pip install eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-packages
 ```
 
 Install `zenohd` from the [official guide](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian).
@@ -73,7 +74,7 @@ Download and extract standalone binaries for `zenoh-bridge-ros2dds` (optionally 
 
 ```bash
 # Change preferred zenoh version here
-export ZENOH_VERSION=1.0.1
+export ZENOH_VERSION=1.1.0
 
 # Download and extract zenoh-bridge-ros2dds release
 wget -O zenoh-plugin-ros2dds.zip https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/download/$ZENOH_VERSION/zenoh-plugin-ros2dds-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip
@@ -96,7 +97,7 @@ sudo apt update && sudo apt install ros-jazzy-nav2-bringup
 git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations ~/turtlebot3_simulations
 ```
 
-### Single turtlebot3 world
+### Nav2 Single turtlebot3 world
 
 ![](../media/ff_tb3_faster_smaller.gif)
 
@@ -133,7 +134,7 @@ source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
-./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/turtlebot3_1_zenoh_config.json5
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/turtlebot3_1_zenoh_bridge_ros2dds_client_config.json5
 ```
 
 Listen to transforms over `zenoh`,
@@ -185,7 +186,7 @@ ros2 run rmf_demos_tasks dispatch_patrol \
   -st 0
 ```
 
-### Multiple turtlebot3 world
+### Nav2 Multiple turtlebot3 world
 
 > [!NOTE]
 > This multi-robot simulation example is only for testing purposes, as it is a different setup than `free_fleet` is intended to be used. The simulation spawns 2 already namespaced robots, while the `free_fleet` architecture expects individual non-namespaced robots to be partnered with a namespaced `zenoh-bridge-ros2dds`.
@@ -223,7 +224,7 @@ source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
-./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/unique_multi_tb3_zenoh_config.json5
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/unique_multi_tb3_zenoh_bridge_ros2dds_client_config.json5
 ```
 
 Start the RMF core packages on a different `ROS_DOMAIN_ID` to simulate running on a different machine,
@@ -236,7 +237,7 @@ export ROS_DOMAIN_ID=55
 ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml
 ```
 
-Launch the `free_fleet_adapter` with the current example's configurations, verify that `turtlebot3_1` has been added to fleet `turtletbot`.
+Launch the `free_fleet_adapter` with the current example's configurations, verify that `turtlebot3_1` has been added to fleet `turtlebot3`.
 
 ```bash
 source ~/ff_ws/install/setup.bash
@@ -273,6 +274,97 @@ ros2 run rmf_demos_tasks dispatch_patrol \
   -R robot2
 ```
 
+### Nav1 Single turtlebot3 world
+
+![](../media/nav1_sim_architecture.jpg)
+
+> [!WARNING]
+> The Nav1 integration has only been tested in simulation and in ROS 1 Noetic, and is currently still using a fork of [zenoh-plugin-ros1](https://github.com/aaronchongth/zenoh-plugin-ros1), to support bridge namespacing. This will be updated after contributions to upstream has been made.
+
+Check out the [docker compose integration tests](.github/docker/integration-tests/nav1-docker-compose.yaml) for an overview of how the integration can be set up.
+
+On the machine where the free fleet adapter will run, start a `zenoh` router,
+
+```bash
+zenohd
+
+# If using released standalaone binaries
+# cd PATH_TO_EXTRACTED_ZENOH_ROUTER
+# ./zenohd
+```
+
+In the ROS 1 Noetic environment, set up all the prerequisites as mentioned in the [official guide](https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/#gazebo-simulation), and start the turtlebot3 simulation. See the [relevant docker file](.github/docker/minimal-ros1-sim/Dockerfile) for reference.
+
+```bash
+source /opt/ros/noetic/setup.bash
+export TURTLEBOT3_MODEL=burger
+roslaunch turtlebot3_gazebo turtlebot3_world.launch
+```
+
+In the ROS 1 Noetic environment, bringup the Nav1 stack with the prepared map in [navigation2](https://github.com/ros-navigation/navigation2/tree/main/nav2_bringup/maps). See the [relevant docker file](.github/docker/minimal-nav1-bringup/Dockerfile) for reference.
+
+```bash
+# prepare the map
+git clone https://github.com/ros-navigation/navigation2
+
+source /opt/ros/noetic/setup.bash
+export TURTLEBOT3_MODEL=burger
+roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=/PATH_TO_navigation2/nav2_bringup/maps/tb3_sandbox.yaml
+```
+
+In the ROS 1 Noetic environment, set up prerequisites of [zenoh-plugin-ros1](https://github.com/aaronchongth/zenoh-plugin-ros1), build `zenoh-bridge-ros1` in release, and start it with the [provided config in examples](free_fleet_examples/config/zenoh/turtlebot3_zenoh_bridge_ros1_client_config.json5). See the [relevant docker file](.github/docker/minimal-zenoh-bridge-ros1/Dockerfile) for reference.
+
+```bash
+# Get the config file
+git clone https://github.com/open-rmf/free_fleet -b easy-full-control
+
+# Build the bridge
+git clone --recursive https://github.com/aaronchongth/zenoh-plugin-ros1
+cd zenoh-plugin-ros1
+cargo build --package zenoh-bridge-ros1 --bin zenoh-bridge-ros1 --release
+
+# Use cargo run, or just run the executable directly
+source /opt/ros/noetic/setup.bash
+./target/release/zenoh-bridge-ros1 -c PATH_TO_free_fleet/free_fleet_examples/config/zenoh/turtlebot3_zenoh_bridge_ros1_client_config.json5
+```
+
+On the machine where the free fleet adapter will run, start the common launch files and the free fleet adapter,
+
+```bash
+source ~/ff_ws/install/setup.bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml
+```
+
+Launch the `free_fleet_adapter` with the current example's configurations, verify that `tb3_0` has been added to fleet `turtlebot3`.
+
+```bash
+source ~/ff_ws/install/setup.bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+ros2 launch free_fleet_examples nav1_tb3_simulation_fleet_adapter.launch.xml
+
+# Or launch with the rmf-web API server address
+# ros2 launch free_fleet_examples nav1_tb3_simulation_fleet_adapter.launch.xml  server_uri:="ws://localhost:8000/_internal"
+```
+
+Dispatch example RMF patrol tasks using [`rmf-web`](https://github.com/open-rmf/rmf-web) on the same `ROS_DOMAIN_ID` as the RMF core packages, or use the `dispatch_patrol` scripts, which will cause the robot to negotiate as they perform their tasks.
+
+```bash
+source ~/ff_ws/install/setup.bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export ROS_DOMAIN_ID=55
+
+# tb3_0 to run clockwise around the map
+ros2 run rmf_demos_tasks dispatch_patrol \
+  -p north_west north_east south_east south_west \
+  -n 3 \
+  -st 0 \
+  -F turtlebot3 \
+  -R tb3_0
+```
+
 ## Troubleshooting
 
 * Looking for the legacy implementation of `free_fleet`? Check out the [`legacy`](https://github.com/open-rmf/free_fleet/tree/legacy) branch.
@@ -283,7 +375,9 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 * Simulations don't seem to work properly anymore? Try `ros2 deamon stop`, `ros2 daemon start`, or explicitly kill the `ros` and `gazebo` processes, or restart your machine. It's been noticed that if the ROS 2 or gazebo process are not terminated properly (happens rarely), the network traffic between the simulation robots and the fleet adapter get affected.
 
-* Why is RMF not run with `use_sim_time:=true` in the examples? This is because it is on a different `ROS_DOMAIN_ID` than the simulation, therefore it will not have access to the simulation `clock` topic, the examples running RMF, `free_fleet_adapter` and the tasks will not be using sim time.
+* ROS 1 Navigation stack simulation does not seem to work as expected? Check out the [integration tests docker compose](.github/docker/integration-tests/nav1-docker-compose.yaml), as well as the [simulation](.github/docker/minimal-ros1-sim/Dockerfile) and [bringup](.github/docker/minimal-nav1-bringup/Dockerfile) docker files, for any missing dependencies.
+
+* Why does RMF not run with `use_sim_time:=true` in the examples? This is because it is on a different `ROS_DOMAIN_ID` than the simulation, therefore it will not have access to the simulation `clock` topic, the examples running RMF, `free_fleet_adapter` and the tasks will not be using sim time.
 
 * For potential bandwidth issues, especially during multirobot sim example, spinning up a dedicated zenoh router and routing the `zenoh-bridge-ros2dds` manually to it, could help alleviate such issues.
 
@@ -294,7 +388,6 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 ## TODOs
 
 * attempt to optimize tf messages (not all are needed)
-* ROS 1 nav support
 * custom actions to be abstracted
 * map switching support
 * end-to-end testing with Open-RMF

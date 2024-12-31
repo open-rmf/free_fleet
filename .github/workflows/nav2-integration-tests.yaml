@@ -1,4 +1,4 @@
-name: integration-tests
+name: nav2-integration-tests
 
 on: push
 
@@ -22,18 +22,18 @@ jobs:
           sudo apt update && sudo apt install docker-compose -y
 
       - name: Start test fixture containers
-        run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml" up -d --build
+        run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
       - name: build-and-test
         uses: ./.github/actions/build-and-test
         with:
           ros-distribution: ${{ matrix.ros_distribution }}
-          zenoh-version: 1.0.1
-          integration-testing: ON
+          zenoh-version: 1.1.0
+          nav2-integration-testing: ON
 
       - name: Stop test fixture containers
         if: always()
-        run: docker-compose -f ".github/docker/integration-tests/docker-compose.yaml" down
+        run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

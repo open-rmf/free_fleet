@@ -47,6 +47,9 @@ foreach(path ${traffic_editor_paths})
 endforeach()
 
 install(PROGRAMS
+  ${PROJECT_NAME}/nav1_get_tf.py
+  ${PROJECT_NAME}/nav1_move_base_cancel.py
+  ${PROJECT_NAME}/nav1_move_base_simple_goal.py
   ${PROJECT_NAME}/nav2_cancel_all_goals.py
   ${PROJECT_NAME}/nav2_get_tf.py
   ${PROJECT_NAME}/nav2_send_navigate_to_pose.py

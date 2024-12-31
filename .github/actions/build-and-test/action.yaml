@@ -7,7 +7,11 @@ inputs:
   zenoh-version:
     description: string, version of eclipse-zenoh to install from pip
     required: true
-  integration-testing:
+  nav1-integration-testing:
+    description: string, supports ON or OFF only
+    required: false
+    default: "OFF"
+  nav2-integration-testing:
     description: string, supports ON or OFF only
     required: false
     default: "OFF"
@@ -18,7 +22,7 @@ runs:
     - name: install dependencies
       run: |
         sudo apt update && sudo apt install python3-pip -y
-        pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 --break-system-packages
+        pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 rosbags --break-system-packages
       shell: bash
 
     - uses: ros-tooling/setup-ros@v0.7
@@ -34,7 +38,8 @@ runs:
           {
             "build": {
               "cmake-args": [
-                  "-DINTEGRATION_TESTING=${{ inputs.integration-testing }}"
+                  "-DNAV1_INTEGRATION_TESTING=${{ inputs.nav1-integration-testing }}",
+                  "-DNAV2_INTEGRATION_TESTING=${{ inputs.nav2-integration-testing }}"
               ],
               "mixin": ["coverage-pytest"]
             },

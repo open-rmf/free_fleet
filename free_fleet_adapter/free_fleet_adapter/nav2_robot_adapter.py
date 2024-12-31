@@ -17,7 +17,7 @@
 from typing import Annotated
 
 from free_fleet.convert import transform_stamped_to_ros2_msg
-from free_fleet.types import (
+from free_fleet.ros2_types import (
     ActionMsgs_CancelGoal_Response,
     GeometryMsgs_Point,
     GeometryMsgs_Pose,
@@ -34,9 +34,10 @@ from free_fleet.types import (
     Time,
 )
 from free_fleet.utils import (
-    make_cancel_all_goals_request,
+    make_nav2_cancel_all_goals_request,
     namespacify,
 )
+from free_fleet_adapter.robot_adapter import RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
 import numpy as np
@@ -95,7 +96,7 @@ class Nav2TfHandler:
         return None
 
 
-class Nav2RobotAdapter:
+class Nav2RobotAdapter(RobotAdapter):
 
     def __init__(
         self,
@@ -107,10 +108,7 @@ class Nav2RobotAdapter:
         fleet_handle,
         tf_buffer
     ):
-        self.name = name
-        self.node = node
-        self.fleet_handle = fleet_handle
-        self.update_handle = None
+        RobotAdapter.__init__(self, name, node, fleet_handle)
 
         self.execution = None
         self.configuration = configuration
@@ -346,7 +344,7 @@ class Nav2RobotAdapter:
         )
 
     def _handle_stop_navigation(self):
-        req = make_cancel_all_goals_request()
+        req = make_nav2_cancel_all_goals_request()
         replies = self.zenoh_session.get(
             namespacify(
                 'navigate_to_pose/_action/cancel_goal',
