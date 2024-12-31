@@ -57,38 +57,20 @@ def compute_transforms(level, coords, node=None):
 
 
 # ------------------------------------------------------------------------------
-# Main
+# Fleet adapter
 # ------------------------------------------------------------------------------
-def main(argv=sys.argv):
-    # Init rclpy and adapter
-    rclpy.init(args=argv)
-    rmf_adapter.init_rclcpp()
-    args_without_ros = rclpy.utilities.remove_ros_args(argv)
-
-    parser = argparse.ArgumentParser(
-        prog='fleet_adapter',
-        description='Configure and spin up the fleet adapter')
-    parser.add_argument('-c', '--config_file', type=str, required=True,
-                        help='Path to the config.yaml file')
-    parser.add_argument('-n', '--nav_graph', type=str, required=True,
-                        help='Path to the nav_graph for this fleet adapter')
-    parser.add_argument('-s', '--server_uri', type=str, required=False,
-                        default='',
-                        help='URI of the api server to transmit state and '
-                             'task information.')
-    parser.add_argument('-sim', '--use_sim_time', action='store_true',
-                        help='Use sim time, default: false')
-    parser.add_argument(
-        '--zenoh-config',
-        type=str,
-        help='Path to custom zenoh configuration file to be used, if not '
-        'provided the default config will be used'
-    )
-    args = parser.parse_args(args_without_ros[1:])
+# TODO(ac): End-to-end testing with fleet adapter.
+def start_fleet_adapter(
+    config_path: str,
+    nav_graph_path: str,
+    zenoh_config_path: str | None,
+    server_uri: str | None,
+    use_sim_time: bool
+):
     print('Starting fleet adapter...')
 
-    config_path = args.config_file
-    nav_graph_path = args.nav_graph
+    # Init adapter
+    rmf_adapter.init_rclcpp()
 
     fleet_config = rmf_easy.FleetConfiguration.from_config_files(
         config_path, nav_graph_path
@@ -109,18 +91,13 @@ def main(argv=sys.argv):
     )
 
     # Enable sim time for testing offline
-    if args.use_sim_time:
+    if use_sim_time:
         param = Parameter('use_sim_time', Parameter.Type.BOOL, True)
         node.set_parameters([param])
         adapter.node.use_sim_time()
 
     adapter.start()
     time.sleep(1.0)
-
-    if args.server_uri == '':
-        server_uri = None
-    else:
-        server_uri = args.server_uri
 
     fleet_config.server_uri = server_uri
 
@@ -135,8 +112,8 @@ def main(argv=sys.argv):
         please verify that the fleet config is valid.'
 
     # Initialize zenoh
-    zenoh_config = zenoh.Config.from_file(args.zenoh_config) \
-        if args.zenoh_config is not None else zenoh.Config()
+    zenoh_config = zenoh.Config.from_file(zenoh_config_path) \
+        if zenoh_config_path is not None else zenoh.Config()
     zenoh_session = zenoh.open(zenoh_config)
 
     # Set up tf2 buffer
@@ -226,7 +203,6 @@ def main(argv=sys.argv):
     # Shutdown
     node.destroy_node()
     rclpy_executor.shutdown()
-    rclpy.shutdown()
     zenoh_session.close()
 
 
@@ -242,7 +218,7 @@ def parallel(f):
 
 
 @parallel
-def update_robot(robot: Nav2RobotAdapter):
+def update_robot(robot: Nav1RobotAdapter | Nav2RobotAdapter):
     robot_pose = robot.get_pose()
     if robot_pose is None:
         robot.node.get_logger().info(f'Failed to pose of robot [{robot.name}]')
@@ -272,6 +248,47 @@ def update_robot(robot: Nav2RobotAdapter):
         return
 
     robot.update(state)
+
+
+# ------------------------------------------------------------------------------
+# Main
+# ------------------------------------------------------------------------------
+def main(argv=sys.argv):
+    # Init rclpy
+    rclpy.init(args=argv)
+    args_without_ros = rclpy.utilities.remove_ros_args(argv)
+
+    parser = argparse.ArgumentParser(
+        prog='fleet_adapter',
+        description='Configure and spin up the fleet adapter')
+    parser.add_argument('-c', '--config_file', type=str, required=True,
+                        help='Path to the config.yaml file')
+    parser.add_argument('-n', '--nav_graph', type=str, required=True,
+                        help='Path to the nav_graph for this fleet adapter')
+    parser.add_argument('-s', '--server_uri', type=str, required=False,
+                        default='',
+                        help='URI of the api server to transmit state and '
+                             'task information.')
+    parser.add_argument('-sim', '--use_sim_time', action='store_true',
+                        help='Use sim time, default: false')
+    parser.add_argument(
+        '--zenoh-config',
+        type=str,
+        help='Path to custom zenoh configuration file to be used, if not '
+        'provided the default config will be used'
+    )
+    args = parser.parse_args(args_without_ros[1:])
+
+    start_fleet_adapter(
+        config_path=args.config_file,
+        nav_graph_path=args.nav_graph,
+        zenoh_config_path=args.zenoh_config
+        if args.zenoh_config != '' else None,
+        server_uri=args.server_uri if args.server_uri != '' else None,
+        use_sim_time=args.use_sim_time
+    )
+
+    rclpy.shutdown()
 
 
 if __name__ == '__main__':
