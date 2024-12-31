@@ -15,6 +15,10 @@ inputs:
     description: string, supports ON or OFF only
     required: false
     default: "OFF"
+  e2e-testing:
+    description: string, supports ON or OFF only
+    required: false
+    default: "OFF"
 
 runs:
   using: composite
@@ -39,7 +43,8 @@ runs:
             "build": {
               "cmake-args": [
                   "-DNAV1_INTEGRATION_TESTING=${{ inputs.nav1-integration-testing }}",
-                  "-DNAV2_INTEGRATION_TESTING=${{ inputs.nav2-integration-testing }}"
+                  "-DNAV2_INTEGRATION_TESTING=${{ inputs.nav2-integration-testing }}",
+                  "-DE2E_TESTING=${{ inputs.e2e-testing }}"
               ],
               "mixin": ["coverage-pytest"]
             },

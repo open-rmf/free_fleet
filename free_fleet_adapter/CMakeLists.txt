@@ -64,6 +64,18 @@ if(BUILD_TESTING)
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
     endforeach()
+  elseif (E2E_TESTING)
+    set(_pytest_tests
+      tests/e2e/test_nav1_fleet_adapter.py
+    )
+    foreach(_test_path ${_pytest_tests})
+      get_filename_component(_test_name ${_test_path} NAME_WE)
+      ament_add_pytest_test(${_test_name} ${_test_path}
+        APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
+        TIMEOUT 60
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+    endforeach()
   endif()
 endif()
 
