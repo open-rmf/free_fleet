@@ -388,7 +388,6 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 ## TODOs
 
 * attempt to optimize tf messages (not all are needed)
-* ROS 1 nav support
 * custom actions to be abstracted
 * map switching support
 * end-to-end testing with Open-RMF

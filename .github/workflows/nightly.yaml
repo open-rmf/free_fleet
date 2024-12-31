@@ -41,7 +41,7 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distribution }}
             ZENOH_VERSION=1.1.0
-            FREE_FLEET_BRANCH=efc/ros1
+            FREE_FLEET_BRANCH=easy-full-control
           tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros2dds:${{ matrix.ros_distribution }}-latest
           context: .github/docker/minimal-zenoh-bridge-ros2dds
 
@@ -90,7 +90,7 @@ jobs:
             ROS_DISTRO=${{ matrix.ros_distribution }}
             ZENOH_BRIDGE_REPO=aaronchongth/zenoh-plugin-ros1
             ZENOH_BRIDGE_TAG=namespace
-            FREE_FLEET_BRANCH=efc/ros1
+            FREE_FLEET_BRANCH=easy-full-control
           tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros1:${{ matrix.ros_distribution }}-latest
           context: .github/docker/minimal-zenoh-bridge-ros1
 
