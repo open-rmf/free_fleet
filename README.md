@@ -276,6 +276,8 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 ### Nav1 Single turtlebot3 world
 
+![](../media/nav1_sim_architecture.jpg)
+
 > [!WARNING]
 > The Nav1 integration has only been tested in simulation and in ROS 1 Noetic, and is currently still using a fork of [zenoh-plugin-ros1](https://github.com/aaronchongth/zenoh-plugin-ros1), to support bridge namespacing. This will be updated after contributions to upstream has been made.
 
