@@ -19,7 +19,7 @@ RUN mkdir -p /zenoh-bridge && cd /zenoh-bridge \
   && cargo build --package zenoh-bridge-ros1 --bin zenoh-bridge-ros1 --release
 
 RUN cd /zenoh-bridge \
-  && wget -O turtlebot3_zenoh_bridge_ros1_client_config.json5 https://raw.githubusercontent.com/open-rmf/free_fleet/refs/heads/$FREE_FLEET_BRANCH/free_fleet_examples/config/zenoh/turtlebot3_zenoh_bridge_ros1_client_config.json5
+  && wget -O nav1_tb3_zenoh_bridge_ros1_client_config.json5 https://raw.githubusercontent.com/open-rmf/free_fleet/refs/heads/$FREE_FLEET_BRANCH/free_fleet_examples/config/zenoh/nav1_tb3_zenoh_bridge_ros1_client_config.json5
 
 RUN rm -rf \
   /var/lib/apt/lists \
@@ -29,8 +29,8 @@ RUN rm -rf \
 
 FROM docker.io/ros:$ROS_DISTRO-ros-base
 
-COPY --from=0 /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5 /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5
+COPY --from=0 /zenoh-bridge/nav1_tb3_zenoh_bridge_ros1_client_config.json5 /zenoh-bridge/nav1_tb3_zenoh_bridge_ros1_client_config.json5
 
 COPY --from=0 /zenoh-bridge/zenoh-plugin-ros1/target/release/zenoh-bridge-ros1 /zenoh-bridge/zenoh-bridge-ros1
 
-ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-bridge-ros1 -c /zenoh-bridge/turtlebot3_zenoh_bridge_ros1_client_config.json5"]
+ENTRYPOINT ["bash", "-c", ". /opt/ros/$ROS_DISTRO/setup.bash && /zenoh-bridge/zenoh-bridge-ros1 -c /zenoh-bridge/nav1_tb3_zenoh_bridge_ros1_client_config.json5"]

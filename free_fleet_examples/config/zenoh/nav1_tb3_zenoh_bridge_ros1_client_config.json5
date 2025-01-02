@@ -1,7 +1,7 @@
 {
   plugins: {
     ros1: {
-      bridge_namespace: "tb3_0",
+      bridge_namespace: "nav1_tb3",
       subscriber_bridging_mode: "disabled",
       publisher_bridging_mode: "disabled",
       service_bridging_mode: "disabled",

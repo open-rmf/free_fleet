@@ -33,15 +33,16 @@ rmf_fleet:
   finishing_request: "nothing" # [park, charge, nothing]
   responsive_wait: True # Should responsive wait be on/off for the whole fleet by default? False if not specified.
   robots:
-    tb3_0:
-      charger: "turtlebot3_1_charger"
+    nav1_tb3:
+      charger: "tb3_charger"
       responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
       # For Nav1RobotAdapter
       navigation_stack: 1
       initial_map: "L1"
       maps:
         L1:
-          map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml"
+          # The nav1 robot will generally no access to this nav2_bringup package, this should point to where the nav1 map is stored.
+          map_url: "/tmp/navigation2/nav2_bringup/maps/tb3_sandbox.yaml"
       # initial_pose: [-1.6000019311904907, -0.5031192898750305, 0]
 
   robot_state_update_frequency: 10.0 # Hz
