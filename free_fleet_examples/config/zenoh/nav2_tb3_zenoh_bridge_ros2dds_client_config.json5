@@ -1,7 +1,7 @@
 {
   plugins: {
     ros2dds: {
-      namespace: "/turtlebot3_1",
+      namespace: "/nav2_tb3",
       allow: {
         publishers: [".*/tf", ".*/battery_state"],
         subscribers: [],

@@ -44,7 +44,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='missing_turtlebot3_1',
+            name='missing_nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -69,7 +69,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -94,7 +94,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -112,7 +112,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -141,7 +141,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -157,7 +157,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -176,7 +176,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -205,7 +205,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -236,7 +236,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',
@@ -270,7 +270,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
         tf_buffer = Buffer()
 
         robot_adapter = Nav2RobotAdapter(
-            name='turtlebot3_1',
+            name='nav2_tb3',
             configuration=None,
             robot_config_yaml={
                 'initial_map': 'L1',

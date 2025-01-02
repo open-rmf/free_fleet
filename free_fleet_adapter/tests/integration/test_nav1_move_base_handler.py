@@ -39,7 +39,7 @@ class TestNav1MoveBaseHandler(unittest.TestCase):
 
     def test_move_base_statuses_do_not_exist(self):
         move_base_handler = Nav1MoveBaseHandler(
-            'missing_turtlebot3_1', self.zenoh_session, self.node
+            'missing_nav1_tb3', self.zenoh_session, self.node
         )
 
         statuses_exists = False
@@ -54,7 +54,7 @@ class TestNav1MoveBaseHandler(unittest.TestCase):
 
     def test_command_status_and_cancel(self):
         move_base_handler = Nav1MoveBaseHandler(
-            'tb3_0', self.zenoh_session, self.node
+            'nav1_tb3', self.zenoh_session, self.node
         )
 
         status_array = None

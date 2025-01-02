@@ -42,7 +42,7 @@ class TestNav2TfHandler(unittest.TestCase):
         tf_buffer = Buffer()
 
         tf_handler = Nav2TfHandler(
-            'missing_turtlebot3_1', self.zenoh_session, tf_buffer, self.node
+            'missing_nav2_tb3', self.zenoh_session, tf_buffer, self.node
         )
 
         transform_exists = False
@@ -59,7 +59,7 @@ class TestNav2TfHandler(unittest.TestCase):
         tf_buffer = Buffer()
 
         tf_handler = Nav2TfHandler(
-            'turtlebot3_1', self.zenoh_session, tf_buffer, self.node
+            'nav2_tb3', self.zenoh_session, tf_buffer, self.node
         )
 
         transform_exists = False

@@ -77,7 +77,6 @@ def main(argv=sys.argv):
 
     pose_stamped = GeometryMsgs_PoseStamped(header=header, pose=pose)
 
-    # goal_id = [i for i in range(1, 17)]
     goal_id = np.random.randint(0, 255, size=(16)).astype('uint8').tolist()
     print(goal_id)
     req = NavigateToPose_SendGoal_Request(
@@ -130,7 +129,6 @@ def main(argv=sys.argv):
                     rep = NavigateToPose_GetResult_Response.deserialize(
                         reply.ok.payload.to_bytes()
                     )
-                    # print("Result: {0}".format(rep.sequence))
                     print(f'Result: {rep.status}')
                     if rep.status == GoalStatus.STATUS_ABORTED.value:
                         print(

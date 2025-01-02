@@ -101,7 +101,7 @@ git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations ~/turtlebot3_sim
 
 ![](../media/ff_tb3_faster_smaller.gif)
 
-This simulates running an isolated (by `ROS_DOMAIN_ID`) turtlebot3 with a ROS 2 navigation stack, and setting up RMF with `free_fleet_adapter` (on a different `ROS_DOMAIN_ID`), allowing the fleet adapter to command the robot via a configured `zenoh-bridge-ros2dds` with the namespace `turtlebot3_1`.
+This simulates running an isolated (by `ROS_DOMAIN_ID`) turtlebot3 with a ROS 2 navigation stack, and setting up RMF with `free_fleet_adapter` (on a different `ROS_DOMAIN_ID`), allowing the fleet adapter to command the robot via a configured `zenoh-bridge-ros2dds` with the namespace `nav2_tb3`.
 
 Launch simulation and set up the initial position of the robot (see gif),
 
@@ -134,7 +134,7 @@ source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
-./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/turtlebot3_1_zenoh_bridge_ros2dds_client_config.json5
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/nav2_tb3_zenoh_bridge_ros2dds_client_config.json5
 ```
 
 Listen to transforms over `zenoh`,
@@ -142,7 +142,7 @@ Listen to transforms over `zenoh`,
 ```bash
 source ~/ff_ws/install/setup.bash
 ros2 run free_fleet_examples nav2_get_tf.py \
-    --namespace turtlebot3_1
+    --namespace nav2_tb3
 ```
 
 Start a `navigate_to_pose` action over `zenoh`, using example values,
@@ -151,7 +151,7 @@ Start a `navigate_to_pose` action over `zenoh`, using example values,
 source ~/ff_ws/install/setup.bash
 ros2 run free_fleet_examples nav2_send_navigate_to_pose.py \
     --frame-id map \
-    --namespace turtlebot3_1 \
+    --namespace nav2_tb3 \
     -x 1.808 \
     -y 0.503
 ```
@@ -165,13 +165,16 @@ export ROS_DOMAIN_ID=55
 ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml
 ```
 
-Launch the `free_fleet_adapter` with the current example's configurations, verify that `turtlebot3_1` has been added to fleet `turtletbot`.
+Launch the `free_fleet_adapter` with the current example's configurations, verify that `nav2_tb3` has been added to fleet `turtletbot3`.
 
 ```bash
 source ~/ff_ws/install/setup.bash
 export ROS_DOMAIN_ID=55
 
-ros2 launch free_fleet_examples tb3_simulation_fleet_adapter.launch.xml
+ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml
+
+# Or launch with the rmf-web API server address
+# ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml  server_uri:="ws://localhost:8000/_internal"
 ```
 
 Dispatch an example RMF patrol tasks using [`rmf-web`](https://github.com/open-rmf/rmf-web) on the same `ROS_DOMAIN_ID` as the RMF core packages, or use the `dispatch_patrol` script,
@@ -224,7 +227,7 @@ source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 cd PATH_TO_EXTRACTED_ZENOH_BRIDGE
-./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/unique_multi_tb3_zenoh_bridge_ros2dds_client_config.json5
+./zenoh-bridge-ros2dds -c ~/ff_ws/src/free_fleet/free_fleet_examples/config/zenoh/nav2_unique_multi_tb3_zenoh_bridge_ros2dds_client_config.json5
 ```
 
 Start the RMF core packages on a different `ROS_DOMAIN_ID` to simulate running on a different machine,
@@ -237,17 +240,17 @@ export ROS_DOMAIN_ID=55
 ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml
 ```
 
-Launch the `free_fleet_adapter` with the current example's configurations, verify that `turtlebot3_1` has been added to fleet `turtlebot3`.
+Launch the `free_fleet_adapter` with the current example's configurations, verify that `nav2_tb3` has been added to fleet `turtlebot3`.
 
 ```bash
 source ~/ff_ws/install/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export ROS_DOMAIN_ID=55
 
-ros2 launch free_fleet_examples unique_multi_tb3_simulation_fleet_adapter.launch.xml
+ros2 launch free_fleet_examples nav2_unique_multi_tb3_simulation_fleet_adapter.launch.xml
 
 # Or launch with the rmf-web API server address
-# ros2 launch free_fleet_examples unique_multi_tb3_simulation_fleet_adapter.launch.xml  server_uri:="ws://localhost:8000/_internal"
+# ros2 launch free_fleet_examples nav2_unique_multi_tb3_simulation_fleet_adapter.launch.xml  server_uri:="ws://localhost:8000/_internal"
 ```
 
 Dispatch example RMF patrol tasks using [`rmf-web`](https://github.com/open-rmf/rmf-web) on the same `ROS_DOMAIN_ID` as the RMF core packages, or use the `dispatch_patrol` scripts, which will cause the robot to negotiate as they perform their tasks.
@@ -312,7 +315,7 @@ export TURTLEBOT3_MODEL=burger
 roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=/PATH_TO_navigation2/nav2_bringup/maps/tb3_sandbox.yaml
 ```
 
-In the ROS 1 Noetic environment, set up prerequisites of [zenoh-plugin-ros1](https://github.com/aaronchongth/zenoh-plugin-ros1), build `zenoh-bridge-ros1` in release, and start it with the [provided config in examples](free_fleet_examples/config/zenoh/turtlebot3_zenoh_bridge_ros1_client_config.json5). See the [relevant docker file](.github/docker/minimal-zenoh-bridge-ros1/Dockerfile) for reference.
+In the ROS 1 Noetic environment, set up prerequisites of [zenoh-plugin-ros1](https://github.com/aaronchongth/zenoh-plugin-ros1), build `zenoh-bridge-ros1` in release, and start it with the [provided config in examples](free_fleet_examples/config/zenoh/nav1_tb3_zenoh_bridge_ros1_client_config.json5). See the [relevant docker file](.github/docker/minimal-zenoh-bridge-ros1/Dockerfile) for reference.
 
 ```bash
 # Get the config file
@@ -325,7 +328,7 @@ cargo build --package zenoh-bridge-ros1 --bin zenoh-bridge-ros1 --release
 
 # Use cargo run, or just run the executable directly
 source /opt/ros/noetic/setup.bash
-./target/release/zenoh-bridge-ros1 -c PATH_TO_free_fleet/free_fleet_examples/config/zenoh/turtlebot3_zenoh_bridge_ros1_client_config.json5
+./target/release/zenoh-bridge-ros1 -c PATH_TO_free_fleet/free_fleet_examples/config/zenoh/nav1_tb3_zenoh_bridge_ros1_client_config.json5
 ```
 
 On the machine where the free fleet adapter will run, start the common launch files and the free fleet adapter,
@@ -337,7 +340,7 @@ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml
 ```
 
-Launch the `free_fleet_adapter` with the current example's configurations, verify that `tb3_0` has been added to fleet `turtlebot3`.
+Launch the `free_fleet_adapter` with the current example's configurations, verify that `nav1_tb3` has been added to fleet `turtlebot3`.
 
 ```bash
 source ~/ff_ws/install/setup.bash
@@ -356,13 +359,13 @@ source ~/ff_ws/install/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export ROS_DOMAIN_ID=55
 
-# tb3_0 to run clockwise around the map
+# nav1_tb3 to run clockwise around the map
 ros2 run rmf_demos_tasks dispatch_patrol \
   -p north_west north_east south_east south_west \
   -n 3 \
   -st 0 \
   -F turtlebot3 \
-  -R tb3_0
+  -R nav1_tb3
 ```
 
 ## Troubleshooting
