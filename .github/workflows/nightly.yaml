@@ -1,0 +1,161 @@
+name: nightly
+
+on:
+  schedule:
+    # 2am SGT
+    - cron: '0 18 * * *'
+
+jobs:
+  build-minimal-nav2-docker-images:
+    name: Push minimal nav2 docker images to GitHub Packages
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ros_distribution: [jazzy]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to docker
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push minimal-nav2-bringup
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+          tags: ghcr.io/${{ github.repository }}/minimal-nav2-bringup:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-nav2-bringup
+
+      - name: Build and push minimal-zenoh-bridge-ros2dds
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+            ZENOH_VERSION=1.1.0
+            FREE_FLEET_BRANCH=easy-full-control
+          tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros2dds:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-zenoh-bridge-ros2dds
+
+  build-minimal-nav1-docker-images:
+    name: Push minimal nav1 docker images to GitHub Packages
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ros_distribution: [noetic]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to docker
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push minimal-ros1-sim
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+          tags: ghcr.io/${{ github.repository }}/minimal-ros1-sim:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-ros1-sim
+
+      - name: Build and push minimal-nav1-bringup
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+          tags: ghcr.io/${{ github.repository }}/minimal-nav1-bringup:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-nav1-bringup
+
+      - name: Build and push minimal-zenoh-bridge-ros1
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+            ZENOH_BRIDGE_REPO=aaronchongth/zenoh-plugin-ros1
+            ZENOH_BRIDGE_TAG=namespace
+            FREE_FLEET_BRANCH=easy-full-control
+          tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros1:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/minimal-zenoh-bridge-ros1
+
+  nav1-integration-tests:
+    needs: build-minimal-nav1-docker-images
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+    strategy:
+      matrix:
+        ros_distribution:
+          - jazzy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Install docker-compose
+        run: |
+          sudo apt update && sudo apt install docker-compose -y
+
+      - name: Start test fixture containers
+        run: docker-compose -f ".github/docker/integration-tests/nav1-docker-compose.yaml" up -d --build
+
+      - name: build-and-test
+        uses: ./.github/actions/build-and-test
+        with:
+          ros-distribution: ${{ matrix.ros_distribution }}
+          zenoh-version: 1.1.0
+          nav1-integration-testing: ON
+
+      - name: Stop test fixture containers
+        if: always()
+        run: docker-compose -f ".github/docker/integration-tests/nav1-docker-compose.yaml" down
+
+  nav2-integration-tests:
+    needs: build-minimal-nav2-docker-images
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+    strategy:
+      matrix:
+        ros_distribution:
+          - jazzy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Install docker-compose
+        run: |
+          sudo apt update && sudo apt install docker-compose -y
+
+      - name: Start test fixture containers
+        run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
+
+      - name: build-and-test
+        uses: ./.github/actions/build-and-test
+        with:
+          ros-distribution: ${{ matrix.ros_distribution }}
+          zenoh-version: 1.1.0
+          nav2-integration-testing: ON
+
+      - name: Stop test fixture containers
+        if: always()
+        run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down

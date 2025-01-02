@@ -1,0 +1,63 @@
+# FLEET CONFIG =================================================================
+# RMF Fleet parameters
+
+rmf_fleet:
+  name: "turtlebot3"
+  limits:
+    linear: [0.5, 0.75] # velocity, acceleration
+    angular: [0.6, 2.0] # velocity, acceleration
+  profile: # Robot profile is modelled as a circle
+    footprint: 0.3 # radius in m
+    vicinity: 0.5 # radius in m
+  reversible: True # whether robots in this fleet can reverse
+  battery_system:
+    voltage: 12.0 # V
+    capacity: 24.0 # Ahr
+    charging_current: 5.0 # A
+  mechanical_system:
+    mass: 20.0 # kg
+    moment_of_inertia: 10.0 #kgm^2
+    friction_coefficient: 0.22
+  ambient_system:
+    power: 20.0 # W
+  tool_system:
+    power: 0.0 # W
+  recharge_threshold: 0.10 # Battery level below which robots in this fleet will not operate
+  recharge_soc: 1.0 # Battery level to which robots in this fleet should be charged up to during recharging tasks
+  publish_fleet_state: 10.0 # Publish frequency for fleet state, ensure that it is same as robot_state_update_frequency
+  account_for_battery_drain: True
+  task_capabilities: # Specify the types of RMF Tasks that robots in this fleet are capable of performing
+    loop: True
+    delivery: True
+  # actions: ["some_action_here"]
+  finishing_request: "nothing" # [park, charge, nothing]
+  responsive_wait: True # Should responsive wait be on/off for the whole fleet by default? False if not specified.
+  robots:
+    nav2_tb3:
+      charger: "tb3_charger"
+      responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
+      # For Nav2RobotAdapter
+      navigation_stack: 2
+      initial_map: "L1"
+      maps:
+        L1:
+          map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
+      # initial_pose: [-1.6000019311904907, -0.5031192898750305, 0]
+
+  robot_state_update_frequency: 10.0 # Hz
+
+
+# TRANSFORM CONFIG =============================================================
+# For computing transforms between Robot and RMF coordinate systems
+
+# Optional
+reference_coordinates:
+  L1:
+    rmf: [[8.9508, -6.6006],
+          [7.1006, -9.1508],
+          [12.3511, -9.2008],
+          [11.0510, -11.8010]]
+    robot: [[-1.04555, 2.5456],
+          [-2.90519, 0.00186],
+          [2.39611, -0.061773],
+          [1.08783, -2.59750]]
