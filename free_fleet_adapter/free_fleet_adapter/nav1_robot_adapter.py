@@ -39,7 +39,6 @@ from free_fleet.utils import (
 from free_fleet_adapter.robot_adapter import RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
-# import numpy as np
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier

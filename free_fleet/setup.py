@@ -5,7 +5,7 @@ package_name = 'free_fleet'
 
 setup(
     name=package_name,
-    version='2.4.0',
+    version='2.0.0',
     packages=find_packages(),
     data_files=[
         (

@@ -4,7 +4,7 @@
   <name>free_fleet_examples</name>
   <version>2.0.0</version>
   <description>A package containing example maps and configs for running free fleet</description>
-  <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
+  <maintainer email="aaronchong@intrinsic.ai">Aaron Chong</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
