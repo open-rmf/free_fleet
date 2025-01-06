@@ -23,28 +23,28 @@ from pycdr2 import IdlStruct
 
 # https://github.com/ros2/rcl_interfaces/blob/rolling/builtin_interfaces/msg/Time.msg
 @dataclass
-class Time(IdlStruct, typename='Time'):
+class Time(IdlStruct):
     sec: pycdr2.types.int32
     nanosec: pycdr2.types.uint32
 
 
 # https://github.com/ros2/rcl_interfaces/blob/rolling/builtin_interfaces/msg/Duration.msg
 @dataclass
-class Duration(IdlStruct, typename='Duration'):
+class Duration(IdlStruct):
     sec: pycdr2.types.int32
     nanosec: pycdr2.types.uint32
 
 
 # https://github.com/ros2/common_interfaces/blob/rolling/std_msgs/msg/Header.msg
 @dataclass
-class Header(IdlStruct, typename='Header'):
+class Header(IdlStruct):
     stamp: Time
     frame_id: str
 
 
 # https://github.com/ros2/common_interfaces/blob/rolling/geometry_msgs/msg/Point.msg
 @dataclass
-class GeometryMsgs_Point(IdlStruct, typename='GeometryMsgs_Point'):
+class GeometryMsgs_Point(IdlStruct):
     x: pycdr2.types.float64
     y: pycdr2.types.float64
     z: pycdr2.types.float64
@@ -52,7 +52,7 @@ class GeometryMsgs_Point(IdlStruct, typename='GeometryMsgs_Point'):
 
 # https://github.com/ros2/common_interfaces/blob/rolling/geometry_msgs/msg/Quaternion.msg
 @dataclass
-class GeometryMsgs_Quaternion(IdlStruct, typename='GeometryMsgs_Quaternion'):
+class GeometryMsgs_Quaternion(IdlStruct):
     x: pycdr2.types.float64 = 0
     y: pycdr2.types.float64 = 0
     z: pycdr2.types.float64 = 0
@@ -61,24 +61,21 @@ class GeometryMsgs_Quaternion(IdlStruct, typename='GeometryMsgs_Quaternion'):
 
 # https://github.com/ros2/common_interfaces/blob/rolling/geometry_msgs/msg/Pose.msg
 @dataclass
-class GeometryMsgs_Pose(IdlStruct, typename='GeometryMsgs_Pose'):
+class GeometryMsgs_Pose(IdlStruct):
     position: GeometryMsgs_Point
     orientation: GeometryMsgs_Quaternion
 
 
 # https://github.com/ros2/common_interfaces/blob/rolling/geometry_msgs/msg/PoseStamped.msg
 @dataclass
-class GeometryMsgs_PoseStamped(IdlStruct, typename='GeometryMsgs_PoseStamped'):
+class GeometryMsgs_PoseStamped(IdlStruct):
     header: Header
     pose: GeometryMsgs_Pose
 
 
 # https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/NavigateToPose.action
 @dataclass
-class NavigateToPose_SendGoal_Request(
-    IdlStruct,
-    typename='NavigateToPose_SendGoal_Request'
-):
+class NavigateToPose_SendGoal_Request(IdlStruct):
     goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
     pose: GeometryMsgs_PoseStamped
     behavior_tree: str
@@ -86,20 +83,14 @@ class NavigateToPose_SendGoal_Request(
 
 # https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/NavigateToPose.action
 @dataclass
-class NavigateToPose_SendGoal_Response(
-    IdlStruct,
-    typename='NavigateToPose_SendGoal_Response'
-):
+class NavigateToPose_SendGoal_Response(IdlStruct):
     accepted: bool
     stamp: Time
 
 
 # https://design.ros2.org/articles/actions.html#get-result-service
 @dataclass
-class NavigateToPose_GetResult_Request(
-    IdlStruct,
-    typename='NavigateToPose_GetResult_Request'
-):
+class NavigateToPose_GetResult_Request(IdlStruct):
     goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
 
 
@@ -117,16 +108,13 @@ class GoalStatus(Enum):
 # https://design.ros2.org/articles/actions.html#get-result-service
 # https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/NavigateToPose.action
 @dataclass
-class NavigateToPose_GetResult_Response(
-    IdlStruct,
-    typename='NavigateToPose_GetResult_Response'
-):
+class NavigateToPose_GetResult_Response(IdlStruct):
     status: pycdr2.types.int8
 
 
 # https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/NavigateToPose.action
 @dataclass
-class NavigateToPose_Feedback(IdlStruct, typename='NavigateToPose_Feedback'):
+class NavigateToPose_Feedback(IdlStruct):
     goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
     current_pose: GeometryMsgs_PoseStamped
     navigation_time: Duration
@@ -137,7 +125,7 @@ class NavigateToPose_Feedback(IdlStruct, typename='NavigateToPose_Feedback'):
 
 # https://github.com/ros2/common_interfaces/blob/rolling/geometry_msgs/msg/Vector3.msg
 @dataclass
-class GeometryMsgs_Vector3(IdlStruct, typename='GeometryMsgs_Vector3'):
+class GeometryMsgs_Vector3(IdlStruct):
     x: pycdr2.types.float64
     y: pycdr2.types.float64
     z: pycdr2.types.float64
@@ -145,17 +133,14 @@ class GeometryMsgs_Vector3(IdlStruct, typename='GeometryMsgs_Vector3'):
 
 # https://github.com/ros2/common_interfaces/blob/rolling/geometry_msgs/msg/Transform.msg
 @dataclass
-class GeometryMsgs_Transform(IdlStruct, typename='GeometryMsgs_Transform'):
+class GeometryMsgs_Transform(IdlStruct):
     translation: GeometryMsgs_Vector3
     rotation: GeometryMsgs_Quaternion
 
 
 # https://github.com/ros2/common_interfaces/blob/rolling/geometry_msgs/msg/TransformStamped.msg
 @dataclass
-class GeometryMsgs_TransformStamped(
-    IdlStruct,
-    typename='GeometryMsgs_TransformStamped'
-):
+class GeometryMsgs_TransformStamped(IdlStruct):
     header: Header
     child_frame_id: str
     transform: GeometryMsgs_Transform
@@ -163,45 +148,39 @@ class GeometryMsgs_TransformStamped(
 
 # https://github.com/ros2/geometry2/blob/rolling/tf2_msgs/msg/TFMessage.msg
 @dataclass
-class TFMessage(IdlStruct, typename='TFMessage'):
+class TFMessage(IdlStruct):
     transforms: pycdr2.types.sequence[GeometryMsgs_TransformStamped]
 
 
 # https://github.com/ros2/unique_identifier_msgs/blob/rolling/msg/UUID.msg
 @dataclass
-class UUID(IdlStruct, typename='UUID'):
+class UUID(IdlStruct):
     uuid: pycdr2.types.array[pycdr2.types.uint8, 16]
 
 
 # https://github.com/ros2/rcl_interfaces/blob/rolling/action_msgs/msg/GoalInfo.msg
 @dataclass
-class ActionMsgs_GoalInfo(IdlStruct, typename='ActionMsgs_GoalInfo'):
+class ActionMsgs_GoalInfo(IdlStruct):
     goal_id: UUID
     stamp: Time
 
 
 # https://github.com/ros2/rcl_interfaces/blob/rolling/action_msgs/srv/CancelGoal.srv
 @dataclass
-class ActionMsgs_CancelGoal_Request(
-    IdlStruct,
-    typename='ActionMsgs_CancelGoal_Request'
-):
+class ActionMsgs_CancelGoal_Request(IdlStruct):
     goal_info: ActionMsgs_GoalInfo
 
 
 # https://github.com/ros2/rcl_interfaces/blob/rolling/action_msgs/srv/CancelGoal.srv
 @dataclass
-class ActionMsgs_CancelGoal_Response(
-    IdlStruct,
-    typename='ActionMsgs_CancelGoal_Response'
-):
+class ActionMsgs_CancelGoal_Response(IdlStruct):
     return_code: pycdr2.types.int8
     goals_canceling: pycdr2.types.sequence[ActionMsgs_GoalInfo]
 
 
 # https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/msg/BatteryState.msg
 @dataclass
-class SensorMsgs_BatteryState(IdlStruct, typename='SensorMsgs_BatteryState'):
+class SensorMsgs_BatteryState(IdlStruct):
     header: Header
     voltage: pycdr2.types.float32
     temperature: pycdr2.types.float32

@@ -29,7 +29,7 @@ def namespacify(base_name: str, namespace: str, delimiter: str = '/') -> str:
     If no namespace is provided, returns the base_name. Otherwise, naively
     prefixes the base_name with namespace and delimiter, returning the result.
     """
-    return f'{namespace}{delimiter}{base_name}' if len(namespace) != 0 \
+    return f'{namespace}{delimiter}{base_name}' if not namespace \
         else base_name
 
 
