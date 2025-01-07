@@ -29,8 +29,7 @@ def namespacify(base_name: str, namespace: str, delimiter: str = '/') -> str:
     If no namespace is provided, returns the base_name. Otherwise, naively
     prefixes the base_name with namespace and delimiter, returning the result.
     """
-    return f'{namespace}{delimiter}{base_name}' if not namespace \
-        else base_name
+    return base_name if not namespace else f'{namespace}{delimiter}{base_name}'
 
 
 def make_nav2_cancel_all_goals_request() -> ActionMsgs_CancelGoal_Request:
