@@ -220,16 +220,13 @@ class Nav2RobotAdapter(RobotAdapter):
                     f'{type(e)}: {e}')
                 continue
 
-    def _check_update_handle_initialization(self):
+    def update(self, state: rmf_easy.RobotState):
         if self.update_handle is None:
             error_message = \
                 f'Failed to update robot {self.name}, robot adapter has not ' \
                 'yet been initialized with a fleet update handle.'
             self.node.get_logger().error(error_message)
-            raise RuntimeError(error_message)
-
-    def update(self, state: rmf_easy.RobotState):
-        self._check_update_handle_initialization()
+            return
 
         activity_identifier = None
         if self.execution:
@@ -266,7 +263,12 @@ class Nav2RobotAdapter(RobotAdapter):
                 f'[{self.replan_counts}]'
             )
 
-            self._check_update_handle_initialization()
+            if self.update_handle is None:
+                error_message = \
+                    f'Failed to replan for robot {self.name}, robot adapter ' \
+                    'has not yet been initialized with a fleet update handle.'
+                self.node.get_logger().error(error_message)
+                return
             self.update_handle.more().replan()
             return
 
@@ -314,7 +316,13 @@ class Nav2RobotAdapter(RobotAdapter):
                     f'Navigation goal {nav_goal_id} was rejected, replan '
                     f'count [{self.replan_counts}]'
                 )
-                self._check_update_handle_initialization()
+                if self.update_handle is None:
+                    error_message = \
+                        f'Failed to replan for robot {self.name}, robot ' \
+                        'adapter has not yet been initialized with a fleet ' \
+                        'update handle.'
+                    self.node.get_logger().error(error_message)
+                    return
                 self.update_handle.more().replan()
                 self.nav_goal_id = None
                 return
