@@ -41,7 +41,7 @@ from free_fleet_adapter.robot_adapter import RobotAdapter
 from geometry_msgs.msg import TransformStamped
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
-from rmf_adapter.robot_update_handle import ActivityIdentifier
+from rmf_adapter.robot_update_handle import ActivityIdentifier, Tier
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
 import zenoh
@@ -320,6 +320,7 @@ class Nav1RobotAdapter(RobotAdapter):
         self.battery_soc = 1.0
 
         self.replan_counts = 0
+        self.nav_issue_ticket = None
 
         self.tf_handler = Nav1TfHandler(
             self.name,
@@ -412,6 +413,13 @@ class Nav1RobotAdapter(RobotAdapter):
                 self.node.get_logger().info(
                     f'Navigation goal {nav_goal_id} reached'
                 )
+                if self.nav_issue_ticket is not None:
+                    msg = {}
+                    self.nav_issue_ticket.resolve(msg)
+                    self.nav_issue_ticket = None
+                    self.node.get_logger().info(
+                        'Navigation issue ticket has been resolved'
+                    )
                 return True
             case goal_status.PREEMPTED:
                 self.node.get_logger().info(
@@ -419,6 +427,12 @@ class Nav1RobotAdapter(RobotAdapter):
                 )
                 return True
             case _:
+                self.nav_issue_ticket = self.create_nav_issue_ticket(
+                    'navigation',
+                    f'Navigate to pose result status [{goal_status.status}]',
+                    self.nav_goal_id
+                )
+
                 # TODO(ac): test replanning behavior if goal status is
                 # neither executing or succeeded
                 self.replan_counts += 1
@@ -429,6 +443,28 @@ class Nav1RobotAdapter(RobotAdapter):
                 )
                 self.update_handle.more().replan()
                 return False
+
+    # TODO(ac): issue ticket can be more generic for execute actions too
+    def create_nav_issue_ticket(self, category, msg, nav_goal_id=None):
+        if self.update_handle is None:
+            error_message = \
+                'Failed to create navigation issue ticket for robot ' \
+                f'{self.name}, robot adapter has not yet been initialized ' \
+                'with a fleet update handle.'
+            self.node.get_logger().error(error_message)
+            return None
+
+        tier = Tier.Error
+        detail = {
+            'nav_goal_id': f'{nav_goal_id}',
+            'message': msg
+        }
+        nav_issue_ticket = \
+            self.update_handle.more().create_issue(tier, category, detail)
+        self.node.get_logger().info(
+            f'Created [{category}] issue ticket for robot [{self.name}] with '
+            f'nav goal ID [{nav_goal_id}]')
+        return nav_issue_ticket
 
     def update(self, state: rmf_easy.RobotState):
         if self.update_handle is None:
