@@ -220,8 +220,7 @@ class Nav1MoveBaseHandler:
         self.move_base_simple_goal_pub.put(serialized_msg.tobytes())
         self.node.get_logger().info(
             'Sending move_base_simple/goal, over zenoh topic '
-            f'[{self.move_base_simple_goal_zenoh_topic}], '
-            f'msg: [{pose_stamped}]'
+            f'[{self.move_base_simple_goal_zenoh_topic}]'
         )
 
         self._tmp_active_goal_id = None
@@ -275,7 +274,7 @@ class Nav1MoveBaseHandler:
         self.node.get_logger().info(
             'Sending move_base/cancel, over zenoh topic '
             f'[{self.move_base_cancel_goal_zenoh_topic}], '
-            f'msg: [{goal_id}]'
+            f'goal ID: [{goal_id}]'
         )
 
     def cancel_navigation(self, goal_id_str: str):
@@ -290,7 +289,7 @@ class Nav1MoveBaseHandler:
         self.node.get_logger().info(
             'Sending move_base/cancel, over zenoh topic '
             f'[{self.move_base_cancel_goal_zenoh_topic}], '
-            f'msg: [{goal_id}]'
+            f'goal ID: [{goal_id}]'
         )
 
 
