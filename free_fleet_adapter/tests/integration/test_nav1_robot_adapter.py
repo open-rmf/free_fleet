@@ -20,7 +20,6 @@ import unittest
 
 from free_fleet_adapter.nav1_robot_adapter import Nav1RobotAdapter
 import rclpy
-import rmf_adapter.easy_full_control as rmf_easy
 from tf2_ros import Buffer
 
 import zenoh
@@ -118,45 +117,6 @@ class TestNav1RobotAdapter(unittest.TestCase):
         battery_soc = robot_adapter.get_battery_soc()
         assert math.isclose(battery_soc, 1.0)
 
-    def test_robot_unable_to_update(self):
-        tf_buffer = Buffer()
-
-        robot_adapter = Nav1RobotAdapter(
-            name='nav1_tb3',
-            configuration=None,
-            robot_config_yaml={
-                'initial_map': 'L1',
-            },
-            node=self.node,
-            zenoh_session=self.zenoh_session,
-            fleet_handle=None,
-            tf_buffer=tf_buffer
-        )
-
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
-
-        able_to_update = False
-        try:
-            robot_adapter.update(
-                rmf_easy.RobotState(
-                    'L1',
-                    [0.0, 0.0, 0.0],
-                    1.0
-                )
-            )
-            able_to_update = True
-        except RuntimeError:
-            able_to_update = False
-        assert not able_to_update
-
     def test_idle_robot_navigate_is_done(self):
         tf_buffer = Buffer()
 
@@ -237,19 +197,15 @@ class TestNav1RobotAdapter(unittest.TestCase):
 
         assert robot_exists
 
-        able_to_handle_navigate = False
-        try:
-            robot_adapter._handle_navigate_to_pose(
-                'invalid_map',
-                0.0,
-                1.0,
-                2.0,
-                0.0
-            )
-            able_to_handle_navigate = True
-        except RuntimeError:
-            able_to_handle_navigate = False
-        assert not able_to_handle_navigate
+        prev_replan_count = robot_adapter.replan_counts
+        robot_adapter._handle_navigate_to_pose(
+            'invalid_map',
+            0.0,
+            1.0,
+            2.0,
+            0.0
+        )
+        assert robot_adapter.replan_counts == prev_replan_count + 1
 
     def test_robot_handle_navigate_to_pose(self):
         tf_buffer = Buffer()
