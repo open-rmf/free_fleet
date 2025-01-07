@@ -54,15 +54,9 @@ class TestNav2RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert not robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is None
 
     def test_robot_pose(self):
         tf_buffer = Buffer()
@@ -79,15 +73,9 @@ class TestNav2RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is not None
 
     def test_robot_battery_soc(self):
         tf_buffer = Buffer()

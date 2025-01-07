@@ -54,15 +54,9 @@ class TestNav1RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert not robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is None
 
     def test_robot_pose(self):
         tf_buffer = Buffer()
@@ -79,15 +73,9 @@ class TestNav1RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is not None
 
     def test_robot_battery_soc(self):
         tf_buffer = Buffer()
@@ -104,15 +92,9 @@ class TestNav1RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is not None
 
         battery_soc = robot_adapter.get_battery_soc()
         assert math.isclose(battery_soc, 1.0)
@@ -132,15 +114,9 @@ class TestNav1RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is not None
         assert robot_adapter._is_navigation_done()
 
     def test_robot_stop_without_command(self):
@@ -158,15 +134,9 @@ class TestNav1RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is not None
         assert robot_adapter.execution is None
         robot_adapter.stop(None)
         assert robot_adapter.execution is None
@@ -187,15 +157,9 @@ class TestNav1RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is not None
 
         prev_replan_count = robot_adapter.replan_counts
         robot_adapter._handle_navigate_to_pose(
@@ -222,15 +186,9 @@ class TestNav1RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is not None
 
         robot_adapter._handle_navigate_to_pose(
             'L1',
@@ -259,15 +217,9 @@ class TestNav1RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        robot_exists = False
-        for i in range(10):
-            transform = robot_adapter.get_pose()
-            if transform is not None:
-                robot_exists = True
-                break
-            time.sleep(1)
-
-        assert robot_exists
+        time.sleep(2)
+        transform = robot_adapter.get_pose()
+        assert transform is not None
 
         robot_adapter._handle_navigate_to_pose(
             'L1',

@@ -45,15 +45,9 @@ class TestNav2TfHandler(unittest.TestCase):
             'missing_nav2_tb3', self.zenoh_session, tf_buffer, self.node
         )
 
-        transform_exists = False
-        for i in range(10):
-            transform = tf_handler.get_transform()
-            if transform is not None:
-                transform_exists = True
-                break
-            time.sleep(1)
-
-        assert not transform_exists
+        time.sleep(2)
+        transform = tf_handler.get_transform()
+        assert transform is None
 
     def test_tf_exists(self):
         tf_buffer = Buffer()
@@ -62,12 +56,6 @@ class TestNav2TfHandler(unittest.TestCase):
             'nav2_tb3', self.zenoh_session, tf_buffer, self.node
         )
 
-        transform_exists = False
-        for i in range(10):
-            transform = tf_handler.get_transform()
-            if transform is not None:
-                transform_exists = True
-                break
-            time.sleep(1)
-
-        assert transform_exists
+        time.sleep(2)
+        transform = tf_handler.get_transform()
+        assert transform is not None
