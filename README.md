@@ -322,7 +322,7 @@ In the ROS 1 Noetic environment, set up prerequisites of [zenoh-plugin-ros1](htt
 
 ```bash
 # Get the config file
-git clone https://github.com/open-rmf/free_fleet -b easy-full-control
+git clone https://github.com/open-rmf/free_fleet
 
 # Build the bridge
 git clone --recursive https://github.com/aaronchongth/zenoh-plugin-ros1
@@ -373,7 +373,7 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 ## Troubleshooting
 
-* Looking for the legacy implementation of `free_fleet`? Check out the [`legacy`](https://github.com/open-rmf/free_fleet/tree/legacy) branch.
+* Looking for the legacy implementation of `free_fleet`? Check out the tag [1.3.0](https://github.com/open-rmf/free_fleet/releases/tag/1.3.0), or the [`legacy`](https://github.com/open-rmf/free_fleet/tree/legacy) branch.
 
 * `free_fleet_adapter` can't seem to control the robots? Check if the zenoh messages are going through using the testing scripts in `free_fleet_examples`. For ROS 2 navigation stacks, make sure that the `zenoh-bridge-ros2dds` is launched with the same `RMW_IMPLEMENTATION` and `ROS_DOMAIN_ID` as the robot's navigation stack, otherwise no messages will be passed through the bridge.
 
