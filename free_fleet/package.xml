@@ -1,18 +1,22 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>free_fleet</name>
-  <version>1.3.0</version>
-  <description>Free Fleet client and server library</description>
-  <maintainer email="morgan@openrobotics.org">Morgan Quigley</maintainer>
-  <maintainer email="aaron@openrobotics.org">Aaron Chong</maintainer>
-  <license>Apache 2.0</license>
-  <author email="morgan@openrobotics.org">Morgan Quigley</author>
-  <author email="aaron@openrobotics.org">Aaron Chong</author>
+  <version>2.0.0</version>
+  <description>A free fleet management library</description>
+  <maintainer email="aaronchong@intrinsic.ai">Aaron Chong</maintainer>
+  <license>Apache License 2.0</license>
 
-  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
-  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
-  <depend>cyclonedds</depend>
+  <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+
   <export>
-    <build_type>cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>

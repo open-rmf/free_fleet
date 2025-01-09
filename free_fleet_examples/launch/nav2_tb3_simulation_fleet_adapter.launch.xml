@@ -1,0 +1,14 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <arg name="server_uri" default="" description="The URI of the api server to transmit state and task information."/>
+
+  <group>
+    <include file="$(find-pkg-share free_fleet_adapter)/fleet_adapter.launch.xml">
+      <arg name="use_sim_time" value="false"/>
+      <arg name="nav_graph_file" value="$(find-pkg-share free_fleet_examples)/maps/turtlebot3_world/nav_graphs/0.yaml" />
+      <arg name="config_file" value="$(find-pkg-share free_fleet_examples)/config/fleet/nav2_tb3_simulation_fleet_config.yaml"/>
+      <arg name="server_uri" value="$(var server_uri)"/>
+    </include>
+  </group>
+</launch>

@@ -1,0 +1,30 @@
+{
+  plugins: {
+    ros1: {
+      bridge_namespace: "nav1_tb3",
+      subscriber_bridging_mode: "disabled",
+      publisher_bridging_mode: "disabled",
+      service_bridging_mode: "disabled",
+      client_bridging_mode: "disabled",
+      // Zenoh -> ROS 1
+      subscriber_topic_custom_bridging_mode: {
+        "/move_base_simple/goal": "auto",
+        "/move_base/cancel": "auto",
+      },
+      // ROS 1 -> Zenoh
+      publisher_topic_custom_bridging_mode: {
+        "/tf": "auto",
+        "/battery_state": "auto",
+        "/move_base/status": "auto"
+      },
+    },
+  },
+  // Zenoh related configurations
+  mode: "client",
+  connect: {
+    endpoints: []
+  },
+  listen: {
+    endpoints: []
+  },
+}

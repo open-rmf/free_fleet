@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+
+# Copyright 2024 Open Source Robotics Foundation, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import time
+import unittest
+
+from free_fleet_adapter.nav2_robot_adapter import Nav2TfHandler
+import rclpy
+from tf2_ros import Buffer
+
+import zenoh
+
+
+class TestNav2TfHandler(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        rclpy.init()
+        cls.node = rclpy.create_node('test_nav2_tf_handler')
+        cls.zenoh_session = zenoh.open(zenoh.Config())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.node.destroy_node()
+        cls.zenoh_session.close()
+        rclpy.shutdown()
+
+    def test_tf_does_not_exist(self):
+        tf_buffer = Buffer()
+
+        tf_handler = Nav2TfHandler(
+            'missing_nav2_tb3', self.zenoh_session, tf_buffer, self.node
+        )
+
+        time.sleep(2)
+        transform = tf_handler.get_transform()
+        assert transform is None
+
+    def test_tf_exists(self):
+        tf_buffer = Buffer()
+
+        tf_handler = Nav2TfHandler(
+            'nav2_tb3', self.zenoh_session, tf_buffer, self.node
+        )
+
+        time.sleep(2)
+        transform = tf_handler.get_transform()
+        assert transform is not None

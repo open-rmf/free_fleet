@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>free_fleet_adapter</name>
+  <version>2.0.0</version>
+  <description>Free fleet Open-RMF fleet adapter based on fleet_adapter_template</description>
+  <maintainer email="aaronchong@intrinsic.ai">Aaron Chong</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>launch_xml</exec_depend>
+
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+
+  <exec_depend>free_fleet</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rmf_fleet_adapter_python</exec_depend>
+  <exec_depend>rmf_fleet_msgs</exec_depend>
+  <exec_depend>rmf_task_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf_transformations</exec_depend>
+
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
