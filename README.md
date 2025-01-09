@@ -322,7 +322,7 @@ In the ROS 1 Noetic environment, set up prerequisites of [zenoh-plugin-ros1](htt
 
 ```bash
 # Get the config file
-git clone https://github.com/open-rmf/free_fleet -b easy-full-control
+git clone https://github.com/open-rmf/free_fleet
 
 # Build the bridge
 git clone --recursive https://github.com/aaronchongth/zenoh-plugin-ros1
