@@ -1,12 +1,40 @@
 name: nightly
 
-# on:
-#   schedule:
-#     # 2am SGT
-#     - cron: '0 18 * * *'
-on: push
+on:
+  schedule:
+    # 2am SGT
+    - cron: '0 18 * * *'
 
 jobs:
+  build-free-fleet-docker-images:
+    name: Push free fleet images to GitHub Packages
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ros_distribution: [jazzy]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to docker
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push free-fleet-examples
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+            FREE_FLEET_BRANCH=ci-e2e
+          tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/free-fleet-examples
+
   build-minimal-nav2-docker-images:
     name: Push minimal nav2 docker images to GitHub Packages
     runs-on: ubuntu-latest
@@ -45,16 +73,6 @@ jobs:
             FREE_FLEET_BRANCH=main
           tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros2dds:${{ matrix.ros_distribution }}-latest
           context: .github/docker/minimal-zenoh-bridge-ros2dds
-
-      - name: Build and push free-fleet-examples
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          build-args: |
-            ROS_DISTRO=${{ matrix.ros_distribution }}
-            FREE_FLEET_BRANCH=ci-e2e
-          tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-latest
-          context: .github/docker/free-fleet-examples
 
   build-minimal-nav1-docker-images:
     name: Push minimal nav1 docker images to GitHub Packages
@@ -106,7 +124,7 @@ jobs:
           context: .github/docker/minimal-zenoh-bridge-ros1
 
   nav1-integration-tests:
-    needs: build-minimal-nav1-docker-images
+    needs: [build-free-fleet-docker-images, build-minimal-nav1-docker-images]
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
@@ -139,7 +157,7 @@ jobs:
         run: docker-compose -f ".github/docker/integration-tests/nav1-docker-compose.yaml" down
 
   nav2-integration-tests:
-    needs: build-minimal-nav2-docker-images
+    needs: [build-free-fleet-docker-images, build-minimal-nav2-docker-images]
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:

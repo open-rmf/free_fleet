@@ -23,13 +23,14 @@ import rclpy
 
 
 class TestNav2FreeFleetAdapter(unittest.TestCase):
+
     @pytest.fixture(autouse=True)
     def initdir(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
 
         # Fleet config
         fleet_config_yaml = """
-# FLEET CONFIG =================================================================
+# FLEET CONFIG ================================================================
 # RMF Fleet parameters
 
 rmf_fleet:
@@ -78,7 +79,7 @@ rmf_fleet:
   robot_state_update_frequency: 10.0 # Hz
 
 
-# TRANSFORM CONFIG =============================================================
+# TRANSFORM CONFIG ============================================================
 # For computing transforms between Robot and RMF coordinate systems
 
 # Optional
