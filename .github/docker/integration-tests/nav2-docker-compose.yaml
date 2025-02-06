@@ -25,3 +25,13 @@ services:
     tty: true
     environment:
       - RUST_LOG=debug
+
+  rmf-common:
+    image: ghcr.io/open-rmf/free_fleet/free-fleet-examples:jazzy-latest
+    stop_signal: SIGINT
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - ROS_DOMAIN_ID=42
+    command: bash -c "ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml"

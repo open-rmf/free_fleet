@@ -1,9 +1,10 @@
 name: nightly
 
-on:
-  schedule:
-    # 2am SGT
-    - cron: '0 18 * * *'
+# on:
+#   schedule:
+#     # 2am SGT
+#     - cron: '0 18 * * *'
+on: push
 
 jobs:
   build-minimal-nav2-docker-images:
@@ -44,6 +45,16 @@ jobs:
             FREE_FLEET_BRANCH=main
           tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros2dds:${{ matrix.ros_distribution }}-latest
           context: .github/docker/minimal-zenoh-bridge-ros2dds
+
+      - name: Build and push free-fleet-examples
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distribution }}
+            FREE_FLEET_BRANCH=ci-e2e
+          tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-latest
+          context: .github/docker/free-fleet-examples
 
   build-minimal-nav1-docker-images:
     name: Push minimal nav1 docker images to GitHub Packages
