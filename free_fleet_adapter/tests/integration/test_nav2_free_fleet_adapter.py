@@ -21,6 +21,7 @@ import unittest
 from free_fleet_adapter.fleet_adapter import start_fleet_adapter
 import pytest
 import rclpy
+from rmf_fleet_msgs.msg import FleetState
 
 
 class TestNav2FreeFleetAdapter(unittest.TestCase):
@@ -328,32 +329,47 @@ lifts: {}
     @classmethod
     def setUpClass(cls):
         rclpy.init()
-        # start_fleet_adapter(
-        #     config_path='fleet_config.yaml',
-        #     nav_graph_path='nav_graph.yaml',
-        #     zenoh_config_path=None,
-        #     server_uri=None,
-        #     use_sim_time=True
-        # )
+        cls.node = rclpy.create_node('test_nav2_free_fleet_adapter')
+
+        def start_adapter():
+            start_fleet_adapter(
+                config_path='fleet_config.yaml',
+                nav_graph_path='nav_graph.yaml',
+                zenoh_config_path=None,
+                server_uri=None,
+                use_sim_time=True
+            )
+
+        update_thread = threading.Thread(target=start_adapter, args=())
+        update_thread.start()
 
     @classmethod
     def tearDownClass(cls):
         rclpy.shutdown()
 
-    def start_adapter():
-        start_fleet_adapter(
-            config_path='fleet_config.yaml',
-            nav_graph_path='nav_graph.yaml',
-            zenoh_config_path=None,
-            server_uri=None,
-            use_sim_time=True
+    def test_robot_exists(self):
+        robot_exists = False
+
+        def fleet_states_cb(fleet_state: FleetState):
+            if fleet_state.name != 'turtlebot3':
+                return
+            if len(fleet_state.robots) == 1 and fleet_state.robots[0].name == 'nav2_tb3':
+                robot_exists = True
+
+        self.node.create_subscription(
+            FleetState, 'fleet_states', fleet_states_cb, 10
         )
 
-    def test_start_fleet_adapter_without_crashing(self):
-        update_thread = threading.Thread(target=self.start_adapter, args=())
-        update_thread.start()
-        time.sleep(10)
-        assert 1
+        for i in range(10):
+            rclpy.spin_once(self.node)
+            time.sleep(0.2)
+
+            if robot_exists:
+                break
+
+        assert robot_exists
+
+    # def test_patrol_task(self):
 
     # def test_non_existent_robot_pose(self):
     #     tf_buffer = Buffer()
