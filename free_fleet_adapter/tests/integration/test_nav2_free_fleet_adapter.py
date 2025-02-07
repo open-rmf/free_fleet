@@ -353,8 +353,11 @@ lifts: {}
         def fleet_states_cb(fleet_state: FleetState):
             if fleet_state.name != 'turtlebot3':
                 return
-            if len(fleet_state.robots) == 1 and fleet_state.robots[0].name == 'nav2_tb3':
+            if len(fleet_state.robots) == 1 and \
+                    fleet_state.robots[0].name == 'nav2_tb3':
                 robot_exists = True
+            # To prevent unused variable
+            robot_exists
 
         self.node.create_subscription(
             FleetState, 'fleet_states', fleet_states_cb, 10
