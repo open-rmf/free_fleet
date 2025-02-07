@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import threading
 import time
 import unittest
 
@@ -339,7 +340,7 @@ lifts: {}
     def tearDownClass(cls):
         rclpy.shutdown()
 
-    def test_start_fleet_adapter_without_crashing(self):
+    def start_adapter():
         start_fleet_adapter(
             config_path='fleet_config.yaml',
             nav_graph_path='nav_graph.yaml',
@@ -347,6 +348,10 @@ lifts: {}
             server_uri=None,
             use_sim_time=True
         )
+
+    def test_start_fleet_adapter_without_crashing(self):
+        update_thread = threading.Thread(target=self.start_adapter, args=())
+        update_thread.start()
         time.sleep(10)
         assert 1
 
