@@ -37,18 +37,18 @@ class TestNav2FreeFleetAdapter(unittest.TestCase):
         rclpy.shutdown()
 
     def test_robot_exists(self):
-        def start_adapter():
-            start_fleet_adapter(
-                config_path=str(self.__fleet_config_path),
-                nav_graph_path=str(self.__nav_graph_path),
-                zenoh_config_path=None,
-                server_uri=None,
-                use_sim_time=True
-            )
-        fleet_adapter_thread = \
-            threading.Thread(target=start_adapter, args=())
-        fleet_adapter_thread.daemon = True
-        fleet_adapter_thread.start()
+        # def start_adapter():
+        #     start_fleet_adapter(
+        #         config_path=str(self.__fleet_config_path),
+        #         nav_graph_path=str(self.__nav_graph_path),
+        #         zenoh_config_path=None,
+        #         server_uri=None,
+        #         use_sim_time=True
+        #     )
+        # fleet_adapter_thread = \
+        #     threading.Thread(target=start_adapter, args=())
+        # fleet_adapter_thread.daemon = True
+        # fleet_adapter_thread.start()
 
         robot_exists = asyncio.Future()
 

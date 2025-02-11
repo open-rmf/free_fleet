@@ -23,23 +23,22 @@ jobs:
   #     - name: Build and export free-fleet-examples
   #       uses: docker/build-push-action@v5
   #       with:
-  #         push: false
   #         build-args: |
   #           ROS_DISTRO=${{ matrix.ros_distribution }}
   #           FREE_FLEET_BRANCH=${{ steps.extract_branch.outputs.branch }}
-  #         tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
+  #         tags: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
   #         context: .github/docker/free-fleet-examples
-  #         outputs: type=docker,dest=${{ runner.temp }}/free-fleet-examples.tar
+  #         outputs: type=docker,dest=./free-fleet-examples.tar
 
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: free-fleet-examples
-  #         path: free-fleet-examples.tar
+  #     # - name: Upload artifact
+  #     #   uses: actions/upload-artifact@v4
+  #     #   with:
+  #     #     name: free-fleet-examples
+  #     #     path: free-fleet-examples.tar
 
   integration-tests:
     # needs: [build-free-fleet-docker-image]
-    timeout-minutes: 10
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     container:
       image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
@@ -71,18 +70,19 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distribution }}
             FREE_FLEET_BRANCH=${{ steps.extract_branch.outputs.branch }}
-          tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
+          tags: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
           context: .github/docker/free-fleet-examples
+          outputs: type=docker,dest=./free-fleet-examples.tar
 
       # - name: Download artifact
       #   uses: actions/download-artifact@v4
       #   with:
       #     name: free-fleet-examples
 
-      # - name: Load image
-      #   run: |
-      #     docker load --input free-fleet-examples.tar
-      #     docker image ls -a
+      - name: Load image
+        run: |
+          docker load --input ./free-fleet-examples.tar
+          docker image ls -a
 
       - name: Start test fixture containers
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
@@ -91,14 +91,14 @@ jobs:
         run: |
           docker run --network=host -d \
             -e ROS_DOMAIN_ID=0 \
-            ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
+            free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
             bash -c "ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml"
 
       - name: Start the free fleet adapter
         run: |
           docker run --network=host -d \
             -e ROS_DOMAIN_ID=0 \
-            ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
+            free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
             bash -c "ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml"
 
       - name: build-and-test
