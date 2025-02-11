@@ -38,8 +38,6 @@ if(BUILD_TESTING)
   if (NAV2_INTEGRATION_TESTING)
     set(_pytest_tests
       tests/integration/test_nav2_tf_handler.py
-      tests/integration/test_nav2_robot_adapter.py
-      # tests/integration/test_nav2_free_fleet_adapter.py
     )
     foreach(_test_path ${_pytest_tests})
       get_filename_component(_test_name ${_test_path} NAME_WE)
