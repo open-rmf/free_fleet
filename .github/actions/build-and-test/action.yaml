@@ -21,7 +21,7 @@ runs:
   steps:
     - name: install dependencies
       run: |
-        sudo apt update && sudo apt install python3-pip -y
+        sudo apt update && sudo apt install python3-pip ros-${{ inputs.ros-distribution }}-rmw-cyclonedds-cpp -y
         pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 rosbags nudged --break-system-packages
       shell: bash
 
@@ -31,6 +31,8 @@ runs:
 
     - name: build and test
       uses: ros-tooling/action-ros-ci@v0.3
+      env:
+        RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
       with:
         package-name: free_fleet free_fleet_adapter free_fleet_examples
         target-ros2-distro: ${{ inputs.ros-distribution }}

@@ -19,6 +19,9 @@ RUN cd /ff \
   && colcon build --merge-install --install-base /opt/ff --cmake-args -DCMAKE_BUILD_TYPE=Release \
   && rm -rf /ff
 
+RUN apt update && apt install -y ros-$ROS_DISTRO-rmw-cyclonedds-cpp
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
 # cleanup
 RUN rm -rf \
   /var/lib/apt/lists \
