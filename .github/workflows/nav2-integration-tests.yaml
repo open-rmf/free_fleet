@@ -51,12 +51,16 @@ jobs:
       - name: Start the RMF common nodes
         run: |
           docker run --network=host -d \
+            -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
+            -e ROS_DOMAIN_ID=0 \
             free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
             bash -c "ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml"
 
       - name: Start the free fleet adapter
         run: |
           docker run --network=host -d \
+            -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
+            -e ROS_DOMAIN_ID=0 \
             free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
             bash -c "ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml"
 
