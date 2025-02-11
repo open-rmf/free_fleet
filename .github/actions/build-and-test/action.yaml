@@ -53,5 +53,7 @@ runs:
         ROS_DOMAIN_ID: 0
       run: |
         cd ros_ws/
+        colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+        colcon mixin update default
         colcon test --packages-select free_fleet free_fleet_adapter free_fleet_examples --mixin coverage-pytest
       shell: bash
