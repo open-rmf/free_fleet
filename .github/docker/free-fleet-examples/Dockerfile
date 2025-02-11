@@ -3,7 +3,7 @@ FROM docker.io/ros:$ROS_DISTRO-ros-base
 ARG FREE_FLEET_BRANCH=main
 ARG ZENOH_VERSION=1.1.0
 
-RUN apt update && apt install -y curl ros-$ROS_DISTRO-rmw-cyclonedds-cpp python3-pip
+RUN apt update && apt install -y curl python3-pip
 
 RUN pip3 install eclipse-zenoh==$ZENOH_VERSION pycdr2 rosbags nudged --break-system-packages
 
@@ -23,8 +23,6 @@ RUN cd /ff \
 RUN rm -rf \
   /var/lib/apt/lists \
   /dist
-
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Environment setup
 RUN echo '#!/usr/bin/env bash' > /ff_entrypoint.sh

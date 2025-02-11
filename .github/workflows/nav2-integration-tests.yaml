@@ -3,41 +3,7 @@ name: nav2-integration-tests
 on: push
 
 jobs:
-  # build-free-fleet-docker-image:
-  #   name: Build free fleet image
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       ros_distribution: [jazzy]
-  #   steps:
-  #     - uses: actions/checkout@v4
-
-  #     - name: Extract branch name
-  #       shell: bash
-  #       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-  #       id: extract_branch
-
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v3
-
-  #     - name: Build and export free-fleet-examples
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         build-args: |
-  #           ROS_DISTRO=${{ matrix.ros_distribution }}
-  #           FREE_FLEET_BRANCH=${{ steps.extract_branch.outputs.branch }}
-  #         tags: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
-  #         context: .github/docker/free-fleet-examples
-  #         outputs: type=docker,dest=./free-fleet-examples.tar
-
-  #     # - name: Upload artifact
-  #     #   uses: actions/upload-artifact@v4
-  #     #   with:
-  #     #     name: free-fleet-examples
-  #     #     path: free-fleet-examples.tar
-
   integration-tests:
-    # needs: [build-free-fleet-docker-image]
     timeout-minutes: 20
     runs-on: ubuntu-latest
     container:
@@ -74,11 +40,6 @@ jobs:
           context: .github/docker/free-fleet-examples
           outputs: type=docker,dest=./free-fleet-examples.tar
 
-      # - name: Download artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: free-fleet-examples
-
       - name: Load image
         run: |
           docker load --input ./free-fleet-examples.tar
@@ -90,14 +51,12 @@ jobs:
       - name: Start the RMF common nodes
         run: |
           docker run --network=host -d \
-            -e ROS_DOMAIN_ID=0 \
             free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
             bash -c "ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml"
 
       - name: Start the free fleet adapter
         run: |
           docker run --network=host -d \
-            -e ROS_DOMAIN_ID=0 \
             free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
             bash -c "ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml"
 

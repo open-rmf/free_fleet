@@ -15,12 +15,8 @@
 # limitations under the License.
 
 import asyncio
-import threading
-import time
 import unittest
 
-from free_fleet_adapter.fleet_adapter import start_fleet_adapter
-import pytest
 import rclpy
 from rmf_fleet_msgs.msg import FleetState
 
@@ -37,19 +33,6 @@ class TestNav2FreeFleetAdapter(unittest.TestCase):
         rclpy.shutdown()
 
     def test_robot_exists(self):
-        # def start_adapter():
-        #     start_fleet_adapter(
-        #         config_path=str(self.__fleet_config_path),
-        #         nav_graph_path=str(self.__nav_graph_path),
-        #         zenoh_config_path=None,
-        #         server_uri=None,
-        #         use_sim_time=True
-        #     )
-        # fleet_adapter_thread = \
-        #     threading.Thread(target=start_adapter, args=())
-        # fleet_adapter_thread.daemon = True
-        # fleet_adapter_thread.start()
-
         robot_exists = asyncio.Future()
 
         def fleet_states_cb(fleet_state: FleetState):
