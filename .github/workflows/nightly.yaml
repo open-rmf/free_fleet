@@ -6,8 +6,8 @@ on:
     - cron: '0 18 * * *'
 
 jobs:
-  build-free-fleet-docker-images:
-    name: Push free fleet images to GitHub Packages
+  build-free-fleet-docker-image:
+    name: Push free fleet image to GitHub Packages
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -124,7 +124,7 @@ jobs:
           context: .github/docker/minimal-zenoh-bridge-ros1
 
   nav1-integration-tests:
-    needs: [build-free-fleet-docker-images, build-minimal-nav1-docker-images]
+    needs: [build-free-fleet-docker-image, build-minimal-nav1-docker-images]
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
@@ -157,7 +157,7 @@ jobs:
         run: docker-compose -f ".github/docker/integration-tests/nav1-docker-compose.yaml" down
 
   nav2-integration-tests:
-    needs: [build-free-fleet-docker-images, build-minimal-nav2-docker-images]
+    needs: [build-free-fleet-docker-image, build-minimal-nav2-docker-images]
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
