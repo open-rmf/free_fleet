@@ -48,21 +48,26 @@ jobs:
       - name: Start test fixture containers
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
-      - name: Start the RMF common nodes
-        run: |
-          docker run --network=host -d \
-            -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
-            -e ROS_DOMAIN_ID=0 \
-            free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
-            bash -c "ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml"
+      - name: Start RMF fixture containers
+        env:
+          IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
+        run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" up -d --build
 
-      - name: Start the free fleet adapter
-        run: |
-          docker run --network=host -d \
-            -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
-            -e ROS_DOMAIN_ID=0 \
-            free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
-            bash -c "ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml"
+      # - name: Start the RMF common nodes
+      #   run: |
+      #     docker run --network=host -d \
+      #       -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
+      #       -e ROS_DOMAIN_ID=0 \
+      #       free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
+      #       bash -c "ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml"
+
+      # - name: Start the free fleet adapter
+      #   run: |
+      #     docker run --network=host -d \
+      #       -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
+      #       -e ROS_DOMAIN_ID=0 \
+      #       free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
+      #       bash -c "ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml"
 
       - name: build-and-test
         uses: ./.github/actions/build-and-test
@@ -70,6 +75,12 @@ jobs:
           ros-distribution: ${{ matrix.ros_distribution }}
           zenoh-version: 1.1.0
           nav2-integration-testing: ON
+
+      - name: Stop RMF fixture containers
+        if: always()
+        env:
+          IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
+        run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" down
 
       - name: Stop test fixture containers
         if: always()
