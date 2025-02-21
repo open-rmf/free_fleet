@@ -1,13 +1,52 @@
 name: nav2-integration-tests
 
 on: push
+defaults:
+  run:
+    shell: bash
 
 jobs:
+  # build-free-fleet-docker-image:
+  #   name: Push free fleet image to GitHub Packages
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       ros_distribution: [jazzy]
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Extract branch name
+  #       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+  #       id: extract_branch
+
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+
+  #     - name: Login to docker
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+
+  #     - name: Build and push free-fleet-examples
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         push: true
+  #         build-args: |
+  #           ROS_DISTRO=${{ matrix.ros_distribution }}
+  #           FREE_FLEET_BRANCH=${{ steps.extract_branch.outputs.branch }}
+  #         # tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
+  #         tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-latest
+  #         context: .github/docker/free-fleet-examples
+
   integration-tests:
+    # needs: [build-free-fleet-docker-image]
     timeout-minutes: 20
     runs-on: ubuntu-latest
     container:
       image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+      # image: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-latest
     strategy:
       matrix:
         ros_distribution:
@@ -18,55 +57,59 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Extract branch name
-        shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
 
       - name: Install docker-compose
         run: |
-          sudo apt update && sudo apt install docker-compose -y
+          apt update
+          apt install docker-compose -y
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
 
-      - name: Build and export free-fleet-examples
-        uses: docker/build-push-action@v5
-        with:
-          push: false
-          build-args: |
-            ROS_DISTRO=${{ matrix.ros_distribution }}
-            FREE_FLEET_BRANCH=${{ steps.extract_branch.outputs.branch }}
-          tags: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
-          context: .github/docker/free-fleet-examples
-          outputs: type=docker,dest=./free-fleet-examples.tar
+      # - name: Build and export free-fleet-examples
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     push: false
+      #     build-args: |
+      #       ROS_DISTRO=${{ matrix.ros_distribution }}
+      #       FREE_FLEET_BRANCH=${{ steps.extract_branch.outputs.branch }}
+      #     tags: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
+      #     context: .github/docker/free-fleet-examples
+      #     outputs: type=docker,dest=./free-fleet-examples.tar
 
-      - name: Load image
-        run: |
-          docker load --input ./free-fleet-examples.tar
-          docker image ls -a
+      # - name: Load image
+      #   run: |
+      #     docker load --input ./free-fleet-examples.tar
+      #     docker image ls -a
+
+      # - name: Start test fixture containers
+      #   run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
+
+      # - name: Start RMF fixture containers
+      #   env:
+      #     IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
+      #   run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" up -d --build
 
       - name: Start test fixture containers
-        run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
-
-      - name: Start RMF fixture containers
         env:
           IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
-        run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" up -d --build
+        run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
-      - name: Install cyclonedds
-        run: |
-          sudo apt update && sudo apt install ros-jazzy-rmw-cyclonedds-cpp -y
+      # - name: Install cyclonedds
+      #   run: |
+      #     sudo apt update && sudo apt install ros-jazzy-rmw-cyclonedds-cpp ros-jazzy-rmf-fleet-msgs -y
 
-      - name: Test topics
-        env:
-          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-          ROS_DOMAIN_ID: 42
-        run: |
-          source /opt/ros/jazzy/setup.bash
-          ros2 topic list
-          ros2 node list
-          ros2 topic echo /fleet_states
-        shell: bash
+      # - name: Test topics
+      #   env:
+      #     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      #     ROS_DOMAIN_ID: 0
+      #   run: |
+      #     source /opt/ros/jazzy/setup.bash
+      #     ros2 topic list
+      #     ros2 node list
+      #     ros2 topic echo /fleet_states
 
       # - name: Start the RMF common nodes
       #   run: |
@@ -91,11 +134,39 @@ jobs:
           zenoh-version: 1.1.0
           nav2-integration-testing: ON
 
-      - name: Stop RMF fixture containers
-        if: always()
-        env:
-          IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
-        run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" down
+      # - name: Stop RMF fixture containers
+      #   if: always()
+      #   env:
+      #     IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
+      #   run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" down
+
+      # - name: Setup
+      #   run: |
+      #     apt update
+      #     apt install -y ros-jazzy-rmw-cyclonedds-cpp
+      #     colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      #     colcon mixin update default
+      #     rosdep update
+      #     rosdep install --from-paths . -yir
+
+      # - name: Build
+      #   run: /ros_entrypoint.sh colcon build --packages-up-to free_fleet_adapter free_fleet_examples --mixin release --cmake-args -DNAV2_INTEGRATION_TESTING=ON
+
+      # - name: launch
+      #   run: ros2 launch free_fleet_examples new_test.launch.xml
+
+      # - name: Pre-test
+      #   env:
+      #     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      #     ROS_DOMAIN_ID: 0
+      #   run: |
+      #     . ./install/setup.bash
+      #     ros2 topic list
+      #     ros2 node list
+      #     ros2 topic echo /fleet_states
+
+      # - name: Test - Integration Test
+      #   run: . ./install/setup.bash && cd nexus_demos && RMW_IMPLEMENTATION=rmw_cyclonedds_cpp /ros_entrypoint.sh python3 -m unittest
 
       - name: Stop test fixture containers
         if: always()

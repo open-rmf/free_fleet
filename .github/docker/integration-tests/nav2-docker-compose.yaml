@@ -25,3 +25,27 @@ services:
     tty: true
     environment:
       - RUST_LOG=debug
+
+  # rmf-common:
+  #   image: ${IMAGE_TAG}
+  #   stop_signal: SIGINT
+  #   network_mode: host
+  #   stdin_open: true
+  #   tty: true
+  #   environment:
+  #     - ROS_DOMAIN_ID=0
+  #     - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  #   command:
+  #     bash -c "ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml"
+
+  # free-fleet-adapter:
+  #   image: ${IMAGE_TAG}
+  #   stop_signal: SIGINT
+  #   network_mode: host
+  #   stdin_open: true
+  #   tty: true
+  #   environment:
+  #     - ROS_DOMAIN_ID=0
+  #     - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  #   command:
+  #     bash -c "ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml"
