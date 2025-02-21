@@ -53,6 +53,21 @@ jobs:
           IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
         run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" up -d --build
 
+      - name: Install cyclonedds
+        run: |
+          sudo apt update && sudo apt install ros-jazzy-rmw-cyclonedds-cpp -y
+
+      - name: Test topics
+        env:
+          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+          ROS_DOMAIN_ID: 0
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          ros2 topic list
+          ros2 node list
+          ros2 topic echo /fleet_states
+        shell: bash
+
       # - name: Start the RMF common nodes
       #   run: |
       #     docker run --network=host -d \
