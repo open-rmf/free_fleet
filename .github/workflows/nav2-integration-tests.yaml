@@ -60,7 +60,7 @@ jobs:
       - name: Test topics
         env:
           RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-          ROS_DOMAIN_ID: 0
+          ROS_DOMAIN_ID: 42
         run: |
           source /opt/ros/jazzy/setup.bash
           ros2 topic list
