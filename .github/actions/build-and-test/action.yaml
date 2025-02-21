@@ -21,15 +21,15 @@ runs:
   steps:
     - name: install dependencies
       run: |
-        sudo apt update && sudo apt install python3-pip ros-${{ inputs.ros-distribution }}-rmw-cyclonedds-cpp -y
-        pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 rosbags nudged --break-system-packages
+        sudo apt update && sudo apt install python3-pip -y
+        pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 rosbags --break-system-packages
       shell: bash
 
     - uses: ros-tooling/setup-ros@v0.7
       with:
         required-ros-distributions: ${{ inputs.ros-distribution }}
 
-    - name: build
+    - name: build and test
       uses: ros-tooling/action-ros-ci@v0.3
       with:
         package-name: free_fleet free_fleet_adapter free_fleet_examples
@@ -42,16 +42,19 @@ runs:
                   "-DNAV2_INTEGRATION_TESTING=${{ inputs.nav2-integration-testing }}"
               ],
               "mixin": ["coverage-pytest"]
+            },
+            "test": {
+              "mixin": ["coverage-pytest"]
             }
           }
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-        skip-tests: true
+        # skip-tests: true
 
-    - name: test
-      env:
-        RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-        ROS_DOMAIN_ID: 0
-      run: |
-        cd ros_ws/
-        colcon test --packages-select free_fleet free_fleet_adapter free_fleet_examples --mixin coverage-pytest
-      shell: bash
+    # - name: test
+    #   env:
+    #     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    #     ROS_DOMAIN_ID: 0
+    #   run: |
+    #     cd ros_ws/
+    #     colcon test --packages-select free_fleet free_fleet_adapter free_fleet_examples --mixin coverage-pytest
+    #   shell: bash
