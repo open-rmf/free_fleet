@@ -164,10 +164,30 @@ class RosTestCase(unittest.TestCase):
     async def wait_for_robot_state(self):
         fut = rclpy.Future()
         sub = self.node.create_subscription(
-            RobotState, "/robot_state", fut.set_result, 10
+            FleetState, "fleet_states", fut.set_result, 10
         )
         result = await fut
         self.assertIsNotNone(result)
+
+        def fleet_states_cb(fleet_state: FleetState):
+            if fleet_state.name != 'turtlebot3':
+                return
+            if len(fleet_state.robots) == 1 and \
+                    fleet_state.robots[0].name == 'nav2_tb3':
+                robot_exists.set_result('found nav2_tb3')
+
+        self.node.create_subscription(
+            FleetState, 'fleet_states', fleet_states_cb, 10
+        )
+
+        rclpy.spin_until_future_complete(
+            self.node, robot_exists, timeout_sec=20.0
+        )
+
+        robot_found = False
+        if robot_exists.done():
+            robot_found = True
+        self.assertTrue(robot_found)
 
     async def ros_sleep(self, secs: float):
         """
@@ -303,23 +323,26 @@ class RobotExistsTest(RosTestCase):
                  ),
         )
         self.proc.__enter__()
-        # print("waiting for nodes to be ready...", file=sys.stderr)
-        # self.wait_for_nodes("system_orchestrator")
-        # await self.wait_for_lifecycle_active("system_orchestrator")
 
-        # await self.wait_for_workcells(
-        #   "workcell_1", "workcell_2", "rmf_nexus_transporter")
-        # print("all workcells are ready")
-        await self.wait_for_robot_state()
-        print("AMRs are ready")
+        robot_exists = rclpy.Future()
+
+        def fleet_states_cb(fleet_state: FleetState):
+            if fleet_state.name != 'turtlebot3':
+                return
+            if len(fleet_state.robots) == 1 and \
+                    fleet_state.robots[0].name == 'nav2_tb3':
+                robot_exists.set_result('found nav2_tb3')
+
+        sub = self.node.create_subscription(
+            FleetState, "fleet_states", fleet_states_cb, 10
+        )
+        result = await robot_exists
+        self.assertIsNotNone(result)
+
+        print("Fleet is ready")
 
         # give some time for discovery to happen
         await self.ros_sleep(5)
-
-        # create action client to send work order
-        # self.action_client = ActionClient(
-        #     self.node, ExecuteWorkOrder, "/system_orchestrator/execute_order"
-        # )
 
     def tearDown(self):
         self.proc.__exit__(None, None, None)
@@ -335,18 +358,11 @@ class RobotExistsTest(RosTestCase):
                     fleet_state.robots[0].name == 'nav2_tb3':
                 robot_exists.set_result('found nav2_tb3')
 
-        self.node.create_subscription(
-            FleetState, 'fleet_states', fleet_states_cb, 10
+        sub = self.node.create_subscription(
+            FleetState, "fleet_states", fleet_states_cb, 10
         )
-
-        rclpy.spin_until_future_complete(
-            self.node, robot_exists, timeout_sec=20.0
-        )
-
-        robot_found = False
-        if robot_exists.done():
-            robot_found = True
-        self.assertTrue(robot_found)
+        result = await robot_exists
+        self.assertIsNotNone(result)
 
         # self.action_client.wait_for_server()
         # goal_msg = ExecuteWorkOrder.Goal()
