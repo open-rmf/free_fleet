@@ -65,118 +65,46 @@ jobs:
           apt update
           apt install docker-compose -y
 
-      # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v3
-
-      # - name: Build and export free-fleet-examples
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     push: false
-      #     build-args: |
-      #       ROS_DISTRO=${{ matrix.ros_distribution }}
-      #       FREE_FLEET_BRANCH=${{ steps.extract_branch.outputs.branch }}
-      #     tags: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
-      #     context: .github/docker/free-fleet-examples
-      #     outputs: type=docker,dest=./free-fleet-examples.tar
-
-      # - name: Load image
-      #   run: |
-      #     docker load --input ./free-fleet-examples.tar
-      #     docker image ls -a
-
-      # - name: Start test fixture containers
-      #   run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
-
-      # - name: Start RMF fixture containers
-      #   env:
-      #     IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
-      #   run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" up -d --build
-
       - name: Start test fixture containers
         env:
           IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
-      # - name: Install cyclonedds
-      #   run: |
-      #     sudo apt update && sudo apt install ros-jazzy-rmw-cyclonedds-cpp ros-jazzy-rmf-fleet-msgs -y
+      # - name: build-and-test
+      #   uses: ./.github/actions/build-and-test
+      #   with:
+      #     ros-distribution: ${{ matrix.ros_distribution }}
+      #     zenoh-version: 1.1.0
+      #     nav2-integration-testing: ON
 
-      # - name: Test topics
-      #   env:
-      #     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      #     ROS_DOMAIN_ID: 0
-      #   run: |
-      #     source /opt/ros/jazzy/setup.bash
-      #     ros2 topic list
-      #     ros2 node list
-      #     ros2 topic echo /fleet_states
+      - name: Setup
+        run: |
+          apt update
+          apt install -y ros-jazzy-rmw-cyclonedds-cpp python3-pip
+          pip3 install nudged eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-packages
+          colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          colcon mixin update default
+          rosdep update
+          rosdep install --from-paths . -yir
 
-      # - name: Start the RMF common nodes
-      #   run: |
-      #     docker run --network=host -d \
-      #       -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
-      #       -e ROS_DOMAIN_ID=0 \
-      #       free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
-      #       bash -c "ros2 launch free_fleet_examples turtlebot3_world_rmf_common.launch.xml"
+      - name: Build
+        run: /ros_entrypoint.sh colcon build --packages-up-to free_fleet_adapter free_fleet_examples --mixin release --cmake-args -DNAV2_INTEGRATION_TESTING=ON
 
-      # - name: Start the free fleet adapter
-      #   run: |
-      #     docker run --network=host -d \
-      #       -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
-      #       -e ROS_DOMAIN_ID=0 \
-      #       free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }} \
-      #       bash -c "ros2 launch free_fleet_examples nav2_tb3_simulation_fleet_adapter.launch.xml"
-
-      - name: build-and-test
-        uses: ./.github/actions/build-and-test
-        with:
-          ros-distribution: ${{ matrix.ros_distribution }}
-          zenoh-version: 1.1.0
-          nav2-integration-testing: ON
-
-      # - name: Stop RMF fixture containers
-      #   if: always()
-      #   env:
-      #     IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
-      #   run: docker-compose -f ".github/docker/integration-tests/free-fleet-examples-docker-compose.yaml" down
-
-      # - name: Setup
-      #   run: |
-      #     apt update
-      #     apt install -y ros-jazzy-rmw-cyclonedds-cpp
-      #     colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-      #     colcon mixin update default
-      #     rosdep update
-      #     rosdep install --from-paths . -yir
-
-      # - name: Build
-      #   run: /ros_entrypoint.sh colcon build --packages-up-to free_fleet_adapter free_fleet_examples --mixin release --cmake-args -DNAV2_INTEGRATION_TESTING=ON
-
-      # - name: launch
-      #   run: ros2 launch free_fleet_examples new_test.launch.xml
-
-      # - name: Pre-test
-      #   env:
-      #     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      #     ROS_DOMAIN_ID: 0
-      #   run: |
-      #     . ./install/setup.bash
-      #     ros2 topic list
-      #     ros2 node list
-      #     ros2 topic echo /fleet_states
-
-      # - name: Test - Integration Test
-      #   run: . ./install/setup.bash && cd nexus_demos && RMW_IMPLEMENTATION=rmw_cyclonedds_cpp /ros_entrypoint.sh python3 -m unittest
+      - name: Test
+        env:
+          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+          ROS_DOMAIN_ID: 0
+        run: . ./install/setup.bash && cd free_fleet_examples/tests/integration/ && python3 -m unittest
 
       - name: Stop test fixture containers
         if: always()
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: ros_ws/coveragepy/.coverage
-          flags: tests
-          fail_ci_if_error: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     files: ros_ws/coveragepy/.coverage
+      #     flags: tests
+      #     fail_ci_if_error: true
+      #   env:
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
