@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-# Copyright 2025 Open Source Robotics Foundation, Inc.
+# Copyright (C) 2022 Johnson & Johnson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atexit
-from collections.abc import Callable, Coroutine, Sequence
-from contextlib import contextmanager
-import inspect
-import os
-import signal
-import subprocess
-from subprocess import Popen
+# Vendored from https://github.com/osrf/nexus
 
+from collections.abc import Callable, Coroutine, Sequence
+import inspect
 import time
 from typing import cast, TypeVar
 import unittest
@@ -33,39 +26,7 @@ from lifecycle_msgs.srv import GetState
 import rclpy
 import rclpy.executors
 import rclpy.node
-from rmf_fleet_msgs.msg import FleetState
-
-
-def kill_process(proc: Popen):
-    if proc.poll() is None:
-        os.kill(-proc.pid, signal.SIGINT)
-        proc.wait()
-
-
-@contextmanager
-def managed_process(*args, **kwargs):
-    """
-    Test.
-
-    A context managed process group that kills the process group when the
-    context or when the script is exited. This avoid zombie processes in
-    `ros2 run`, `ros2 launch` and other process launchers that do not kill
-    their subprocesses on exit.
-
-    :param args: The arguments to pass to `subprocess.Popen`.
-    :param kwargs: The keyword arguments to pass to `subprocess.Popen`, except
-    `start_new_session` which will always be `True`.
-    """
-    with subprocess.Popen(*args, **kwargs, start_new_session=True) as proc:
-        def exit_cb():
-            kill_process(proc)
-
-        atexit.register(exit_cb)
-        try:
-            yield proc
-        finally:
-            exit_cb()
-            atexit.unregister(exit_cb)
+from rmf_fleet_msgs.msg import RobotState
 
 
 T = TypeVar('T', bound='RosTestCase')
@@ -84,7 +45,7 @@ class RosTestCase(unittest.TestCase):
         async def test_echo(self):
             fut = rclpy.Future()
             sub = self.node.create_subscription(
-                std_msgs.msg.String, "/talker", fut.set_result, 10
+                std_msgs.msg.String, '/talker', fut.set_result, 10
             )
             result = await fut
             self.assertIsNotNone(result)
@@ -92,7 +53,6 @@ class RosTestCase(unittest.TestCase):
     """
 
     class Context:
-
         def __init__(self):
             self.ros_ctx = rclpy.Context()
             self.ros_ctx.init()
@@ -114,7 +74,6 @@ class RosTestCase(unittest.TestCase):
             return f'{prefix}_{suffix}'
 
     class TestConfig:
-
         def __init__(self, *, timeout: float = 10):
             self.timeout = timeout
 
@@ -150,6 +109,14 @@ class RosTestCase(unittest.TestCase):
             time.sleep(0.1)
             undiscovered.difference_update(self.node.get_node_names())
 
+    async def wait_for_robot_state(self):
+        fut = rclpy.Future()
+        self.node.create_subscription(
+            RobotState, '/robot_state', fut.set_result, 10
+        )
+        result = await fut
+        self.assertIsNotNone(result)
+
     async def ros_sleep(self, secs: float):
         """Async sleep using ros timers."""
         fut = rclpy.Future()
@@ -162,8 +129,7 @@ class RosTestCase(unittest.TestCase):
         await fut
 
     def wait_for(
-            self, rclpy_fut: rclpy.Future, timeout: float
-    ) -> rclpy.Future:
+            self, rclpy_fut: rclpy.Future, timeout: float) -> rclpy.Future:
         """
         Wait for a future to complete.
 
@@ -259,137 +225,3 @@ class RosTestCase(unittest.TestCase):
             return self._spin_ros(ret, test_config.timeout)
         else:
             return ret
-
-
-class RobotExistsTest(RosTestCase):
-
-    @RosTestCase.timeout(60)
-    async def asyncSetUp(self):
-        self.rmf_common_proc = managed_process(
-            (
-                'ros2',
-                'launch',
-                'free_fleet_examples',
-                'turtlebot3_world_rmf_common.launch.xml'
-            ),
-        )
-        self.rmf_common_proc.__enter__()
-
-        self.free_fleet_adapter_proc = managed_process(
-            (
-                'ros2',
-                'launch',
-                'free_fleet_examples',
-                'nav2_tb3_simulation_fleet_adapter.launch.xml'
-            ),
-        )
-        self.free_fleet_adapter_proc.__enter__()
-
-        robot_exists = rclpy.Future()
-
-        def fleet_states_cb(fleet_state: FleetState):
-            if fleet_state.name != 'turtlebot3':
-                return
-            if len(fleet_state.robots) == 1 and \
-                    fleet_state.robots[0].name == 'nav2_tb3':
-                robot_exists.set_result('found nav2_tb3')
-
-        self.node.create_subscription(
-            FleetState, 'fleet_states', fleet_states_cb, 10
-        )
-        result = await robot_exists
-        self.assertIsNotNone(result)
-
-        print('Fleet is ready')
-
-        # give some time for discovery to happen
-        await self.ros_sleep(5)
-
-    def tearDown(self):
-        self.free_fleet_adapter_proc.__exit__(None, None, None)
-        self.rmf_common_proc.__exit__(None, None, None)
-
-    @RosTestCase.timeout(600)  # 10min
-    async def test_robot_exists(self):
-        robot_exists = rclpy.Future()
-
-        def fleet_states_cb(fleet_state: FleetState):
-            if fleet_state.name != 'turtlebot3':
-                return
-            if len(fleet_state.robots) == 1 and \
-                    fleet_state.robots[0].name == 'nav2_tb3':
-                robot_exists.set_result('found nav2_tb3')
-
-        self.node.create_subscription(
-            FleetState, 'fleet_states', fleet_states_cb, 10
-        )
-        result = await robot_exists
-        self.assertIsNotNone(result)
-
-#     # def test_patrol_task(self):
-#     #     transient_qos = QoSProfile(
-#     #         history=History.KEEP_LAST,
-#     #         depth=1,
-#     #         reliability=Reliability.RELIABLE,
-#     #         durability=Durability.TRANSIENT_LOCAL,
-#     #     )
-#     #     pub = self.node.create_publisher(
-#     #         ApiRequest, 'task_api_requests', transient_qos
-#     #     )
-
-#     #     # Set task request request time and start time
-#     #     now = self.get_clock().now().to_msg()
-#     #     now.sec = now.sec + self.args.start_time
-#     #     start_time = now.sec * 1000 + round(now.nanosec / 10**6)
-#     #     request['unix_millis_request_time'] = start_time
-#     #     request['unix_millis_earliest_start_time'] = start_time
-#     #     # todo(YV): Fill priority after schema is added
-
-#     #     request['requester'] = self.args.requester
-
-#     #     # Define task request category
-#     #     request['category'] = 'patrol'
-
-#     #     if self.args.fleet:
-#     #         request['fleet_name'] = self.args.fleet
-
-#     #     # Define task request description
-#     #     description = \
-#     #         {'places': self.args.places, 'rounds': self.args.rounds}
-#     #     request['description'] = description
-#     #     payload['request'] = request
-#     #     msg.json_msg = json.dumps(payload)
-
-#     #     def receive_response(response_msg: ApiResponse):
-#     #         if response_msg.request_id == msg.request_id:
-#     #             self.response.set_result(json.loads(response_msg.json_msg))
-
-#     #     transient_qos.depth = 10
-#     #     self.sub = self.create_subscription(
-#     #         ApiResponse, 'task_api_responses', receive_response,
-#     #         transient_qos
-#     #     )
-
-# # ros2 run rmf_demos_tasks dispatch_patrol \
-# #   -p north_west north_east south_east south_west \
-# #   -n 2 \
-# #   -st 0
-
-#     # def test_non_existent_robot_pose(self):
-#     #     tf_buffer = Buffer()
-
-#     #     robot_adapter = Nav2RobotAdapter(
-#     #         name='missing_nav2_tb3',
-#     #         configuration=None,
-#     #         robot_config_yaml={
-#     #             'initial_map': 'L1',
-#     #         },
-#     #         node=self.node,
-#     #         zenoh_session=self.zenoh_session,
-#     #         fleet_handle=None,
-#     #         tf_buffer=tf_buffer
-#     #     )
-
-#     #     time.sleep(2)
-#     #     transform = robot_adapter.get_pose()
-#     #     assert transform is None

@@ -50,7 +50,7 @@ jobs:
         env:
           RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
           ROS_DOMAIN_ID: 0
-        run: . ./install/setup.bash && cd free_fleet_examples/tests/nav2-e2e/ && python3 -m unittest
+        run: . ./install/setup.bash && cd free_fleet_examples/tests/e2e/nav2/ && python3 -m unittest
 
       - name: Stop test fixture containers
         if: always()
