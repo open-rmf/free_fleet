@@ -392,7 +392,6 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 * attempt to optimize tf messages (not all are needed)
 * custom actions to be abstracted
 * map switching support
-* end-to-end testing with Open-RMF
 * test replanning behavior
 * support for Rolling
 * docker images
