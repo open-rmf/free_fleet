@@ -14,10 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from managed_process import managed_process
 import rclpy
 from rmf_fleet_msgs.msg import FleetState
-
-from managed_process import managed_process
 from ros_testcase import RosTestCase
 
 
