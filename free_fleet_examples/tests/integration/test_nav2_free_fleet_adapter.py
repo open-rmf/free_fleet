@@ -15,29 +15,26 @@
 # limitations under the License.
 
 import atexit
-import pytest
+from collections.abc import Callable, Coroutine, Sequence
+from contextlib import contextmanager
+import inspect
 import os
 import signal
 import subprocess
-from contextlib import contextmanager
 from subprocess import Popen
 
-
-import inspect
 import time
+from typing import cast, TypeVar
 import unittest
-from collections.abc import Callable, Coroutine, Sequence
-from typing import TypeVar, cast
 from uuid import uuid4
 
+from lifecycle_msgs.msg import State
+from lifecycle_msgs.srv import GetState
+import pytest
 import rclpy
 import rclpy.executors
 import rclpy.node
-from lifecycle_msgs.msg import State
-from lifecycle_msgs.srv import GetState
 from rmf_fleet_msgs.msg import FleetState
-
-import sys
 
 
 def kill_process(proc: Popen):
@@ -49,6 +46,8 @@ def kill_process(proc: Popen):
 @contextmanager
 def managed_process(*args, **kwargs):
     """
+    Test.
+
     A context managed process group that kills the process group when the
     context or when the script is exited. This avoid zombie processes in
     `ros2 run`, `ros2 launch` and other process launchers that do not kill
@@ -70,12 +69,13 @@ def managed_process(*args, **kwargs):
             atexit.unregister(exit_cb)
 
 
-T = TypeVar("T", bound="RosTestCase")
+T = TypeVar('T', bound='RosTestCase')
 
 
 class RosTestCase(unittest.TestCase):
     """
     A subclass of `unittest.TestCase` that supports async tests ran with ROS.
+
     This is similar to `IsolatedAsyncioTestCase` but using ROS executors
     instead of `asyncio`.
 
@@ -93,11 +93,12 @@ class RosTestCase(unittest.TestCase):
     """
 
     class Context:
+
         def __init__(self):
             self.ros_ctx = rclpy.Context()
             self.ros_ctx.init()
             self.node = rclpy.node.Node(  # type: ignore
-                self._random_node_name("test_node"), context=self.ros_ctx
+                self._random_node_name('test_node'), context=self.ros_ctx
             )
             self.executor = rclpy.executors.SingleThreadedExecutor(
                 context=self.ros_ctx)
@@ -110,20 +111,21 @@ class RosTestCase(unittest.TestCase):
 
         @staticmethod
         def _random_node_name(prefix: str):
-            suffix = str(uuid4()).replace("-", "_")
-            return f"{prefix}_{suffix}"
+            suffix = str(uuid4()).replace('-', '_')
+            return f'{prefix}_{suffix}'
 
     class TestConfig:
+
         def __init__(self, *, timeout: float = 10):
             self.timeout = timeout
 
     @staticmethod
     def get_test_config(method: Callable) -> TestConfig:
-        if hasattr(method, "__func__"):
+        if hasattr(method, '__func__'):
             target = method.__func__
         else:
             target = method
-        if not hasattr(target, "_test_config") or target._test_config is None:
+        if not hasattr(target, '_test_config') or target._test_config is None:
             target._test_config = RosTestCase.TestConfig()
         return target._test_config
 
@@ -136,7 +138,7 @@ class RosTestCase(unittest.TestCase):
 
         return deco
 
-    def __init__(self, methodName="runTest"):
+    def __init__(self, methodName='runTest'):
         super().__init__(methodName)
         self._ros_test_ctx: RosTestCase.Context
         self.node: rclpy.node.Node
@@ -145,42 +147,12 @@ class RosTestCase(unittest.TestCase):
         undiscovered = set(nodes)
         undiscovered.difference_update(self.node.get_node_names())
         while undiscovered:
-            print("waiting for", undiscovered)
+            print('waiting for', undiscovered)
             time.sleep(0.1)
             undiscovered.difference_update(self.node.get_node_names())
 
-    async def wait_for_robot_state(self):
-        fut = rclpy.Future()
-        sub = self.node.create_subscription(
-            FleetState, "fleet_states", fut.set_result, 10
-        )
-        result = await fut
-        self.assertIsNotNone(result)
-
-        def fleet_states_cb(fleet_state: FleetState):
-            if fleet_state.name != 'turtlebot3':
-                return
-            if len(fleet_state.robots) == 1 and \
-                    fleet_state.robots[0].name == 'nav2_tb3':
-                robot_exists.set_result('found nav2_tb3')
-
-        self.node.create_subscription(
-            FleetState, 'fleet_states', fleet_states_cb, 10
-        )
-
-        rclpy.spin_until_future_complete(
-            self.node, robot_exists, timeout_sec=20.0
-        )
-
-        robot_found = False
-        if robot_exists.done():
-            robot_found = True
-        self.assertTrue(robot_found)
-
     async def ros_sleep(self, secs: float):
-        """
-        async sleep using ros timers
-        """
+        """Async sleep using ros timers."""
         fut = rclpy.Future()
 
         def done():
@@ -195,6 +167,7 @@ class RosTestCase(unittest.TestCase):
     ) -> rclpy.Future:
         """
         Wait for a future to complete.
+
         Returns a future that resolves to `True` if the inner future completes,
         or `False` if timeout occurs.
         """
@@ -216,16 +189,16 @@ class RosTestCase(unittest.TestCase):
 
     async def wait_for_lifecycle_active(self, target_node: str):
         get_state_client: rclpy.node.Client = self.node.create_client(
-            GetState, f"/{target_node}/get_state"
+            GetState, f'/{target_node}/get_state'
         )
         if not get_state_client.wait_for_service(5):
-            raise TimeoutError("timed out waiting for get_state service")
+            raise TimeoutError('timed out waiting for get_state service')
         resp = cast(
             GetState.Response,
             await get_state_client.call_async(GetState.Request())
         )
         while resp.current_state.id != State.PRIMARY_STATE_ACTIVE:
-            print(f"waiting for {target_node} to be active")
+            print(f'waiting for {target_node} to be active')
             await self.ros_sleep(0.1)
             resp = cast(
                 GetState.Response,
@@ -276,11 +249,11 @@ class RosTestCase(unittest.TestCase):
         while not task.done() and not timeout_fut.done():
             self._ros_test_ctx.executor.spin_once()
         if not task.done():
-            raise TimeoutError("Test timed out")
+            raise TimeoutError('Test timed out')
 
     def _callTestMethod(self, method):
         assert self._ros_test_ctx is not None, \
-            "RosTestCase context is not initialized"
+            'RosTestCase context is not initialized'
         test_config = RosTestCase.get_test_config(method)
         ret = method()
         if inspect.iscoroutine(ret):
@@ -290,25 +263,16 @@ class RosTestCase(unittest.TestCase):
 
 
 class RobotExistsTest(RosTestCase):
+
     @RosTestCase.timeout(60)
     async def asyncSetUp(self):
-        # todo(YV): Find a better fix to the problem below.
-        # zenoh-bridge was bumped to 0.72 as part of the upgrade to
-        # ROS 2 Iron. However with this upgrade, the bridge does not clearly
-        # terminate when a SIGINT is received leaving behind zombie bridge
-        # processes from previous test cases. As a result, workcell
-        # registration fails for this testcase due to multiple bridges
-        # remaining active. Hence we explicitly kill any zenoh processes before
-        # launching the test.
-        # subprocess.Popen('pkill -9 -f zenoh', shell=True)
-
         self.proc = managed_process(
-                (
-                     "ros2",
-                     "launch",
-                     "free_fleet_examples",
-                     "new_test.launch.xml"
-                 ),
+            (
+                'ros2',
+                'launch',
+                'free_fleet_examples',
+                'new_test.launch.xml'
+            ),
         )
         self.proc.__enter__()
 
@@ -321,13 +285,14 @@ class RobotExistsTest(RosTestCase):
                     fleet_state.robots[0].name == 'nav2_tb3':
                 robot_exists.set_result('found nav2_tb3')
 
-        sub = self.node.create_subscription(
-            FleetState, "fleet_states", fleet_states_cb, 10
+        self.node.create_subscription(
+            FleetState, 'fleet_states', fleet_states_cb, 10
         )
         result = await robot_exists
-        self.assertIsNotNone(result)
+        # self.assertIsNotNone(result)
+        assert result is not None
 
-        print("Fleet is ready")
+        print('Fleet is ready')
 
         # give some time for discovery to happen
         await self.ros_sleep(5)
@@ -347,58 +312,12 @@ class RobotExistsTest(RosTestCase):
                     fleet_state.robots[0].name == 'nav2_tb3':
                 robot_exists.set_result('found nav2_tb3')
 
-        sub = self.node.create_subscription(
-            FleetState, "fleet_states", fleet_states_cb, 10
+        self.node.create_subscription(
+            FleetState, 'fleet_states', fleet_states_cb, 10
         )
         result = await robot_exists
-        self.assertIsNotNone(result)
-
-        # self.action_client.wait_for_server()
-        # goal_msg = ExecuteWorkOrder.Goal()
-        # goal_msg.order.work_order_id = "1"
-        # with open(
-        #   f"{os.path.dirname(__file__)}/config/pick_and_place.json"
-        # ) as f:
-        #     goal_msg.order.work_order = f.read()
-        # feedbacks: list[ExecuteWorkOrder.Feedback] = []
-        # fb_fut = Future()
-
-        # def on_fb(msg):
-        #     feedbacks.append(msg.feedback)
-        #     if len(feedbacks) >= 5:
-        #         fb_fut.set_result(None)
-
-        # goal_handle = cast(
-        #     ClientGoalHandle,
-        #     await self.action_client.send_goal_async(goal_msg, on_fb)
-        # )
-        # self.assertTrue(goal_handle.accepted)
-
-        # results = await goal_handle.get_result_async()
-        # self.assertEqual(results.status, GoalStatus.STATUS_SUCCEEDED)
-
-        # # check that we receive the correct feedbacks
-        # # FIXME(koonpeng): First few feedbacks are sometimes missed when the
-        # system in under high load so we only check the last feedback as a
-        # workaround.
-        # self.assertGreater(len(feedbacks), 0)
-        # for msg in feedbacks:
-        #     # The first task is transportation
-        #     self.assertEqual(len(msg.task_states), 3)
-        #     state: TaskState = msg.task_states[1]  # type: ignore
-        #     self.assertEqual(state.workcell_id, "workcell_1")
-        #     self.assertEqual(state.task_id, "1/place_on_conveyor/0")
-        #     state: TaskState = msg.task_states[2]  # type: ignore
-        #     self.assertEqual(state.workcell_id, "workcell_2")
-        #     self.assertEqual(state.task_id, "1/pick_from_conveyor/1")
-
-        # state: TaskState = feedbacks[-1].task_states[0]  # type: ignore
-        # self.assertEqual(state.status, TaskState.STATUS_FINISHED)
-        # state: TaskState = feedbacks[-1].task_states[1]  # type: ignore
-        # self.assertEqual(state.status, TaskState.STATUS_FINISHED)
-        # state: TaskState = feedbacks[-1].task_states[2]  # type: ignore
-        # self.assertEqual(state.status, TaskState.STATUS_FINISHED)
-
+        # self.assertIsNotNone(result)
+        assert result is not None
 
 # import asyncio
 # import unittest
@@ -409,16 +328,22 @@ class RobotExistsTest(RosTestCase):
 # class TestNav2FreeFleetAdapter(unittest.TestCase):
 
 #     @classmethod
-#     def setUpClass(cls):
+#     @pytest.mark.asyncio
+#     async def setUpClass(cls):
 #         rclpy.init()
 #         cls.node = rclpy.create_node('test_nav2_free_fleet_adapter')
 
-#     @classmethod
-#     def tearDownClass(cls):
-#         rclpy.shutdown()
+#         cls.proc = managed_process(
+#             (
+#                 'ros2',
+#                 'launch',
+#                 'free_fleet_examples',
+#                 'new_test.launch.xml'
+#             ),
+#         )
+#         cls.proc.__enter__()
 
-#     def test_robot_exists(self):
-#         robot_exists = asyncio.Future()
+#         robot_exists = rclpy.Future()
 
 #         def fleet_states_cb(fleet_state: FleetState):
 #             if fleet_state.name != 'turtlebot3':
@@ -427,18 +352,45 @@ class RobotExistsTest(RosTestCase):
 #                     fleet_state.robots[0].name == 'nav2_tb3':
 #                 robot_exists.set_result('found nav2_tb3')
 
-#         self.node.create_subscription(
+#         cls.node.create_subscription(
 #             FleetState, 'fleet_states', fleet_states_cb, 10
 #         )
+#         result = await robot_exists
+#         assert result is not None
+#         self.assertIsNotNone(result)
 
-#         rclpy.spin_until_future_complete(
-#             self.node, robot_exists, timeout_sec=20.0
-#         )
+#         print('Fleet is ready')
 
-#         robot_found = False
-#         if robot_exists.done():
-#             robot_found = True
-#         assert robot_found
+#         # give some time for discovery to happen
+#         await self.ros_sleep(5)
+
+#     @classmethod
+#     def tearDownClass(cls):
+#         cls.proc.__exit__(None, None, None)
+#         rclpy.shutdown()
+
+    # def test_robot_exists(self):
+    #     robot_exists = asyncio.Future()
+
+    #     def fleet_states_cb(fleet_state: FleetState):
+    #         if fleet_state.name != 'turtlebot3':
+    #             return
+    #         if len(fleet_state.robots) == 1 and \
+    #                 fleet_state.robots[0].name == 'nav2_tb3':
+    #             robot_exists.set_result('found nav2_tb3')
+
+    #     self.node.create_subscription(
+    #         FleetState, 'fleet_states', fleet_states_cb, 10
+    #     )
+
+    #     rclpy.spin_until_future_complete(
+    #         self.node, robot_exists, timeout_sec=20.0
+    #     )
+
+    #     robot_found = False
+    #     if robot_exists.done():
+    #         robot_found = True
+    #     assert robot_found
 
 #     # def test_patrol_task(self):
 #     #     transient_qos = QoSProfile(
