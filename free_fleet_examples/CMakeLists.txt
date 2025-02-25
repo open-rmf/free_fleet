@@ -81,32 +81,6 @@ if(BUILD_TESTING)
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
   endforeach()
-
-  if (NAV2_INTEGRATION_TESTING)
-    set(_pytest_tests
-      tests/integration/test_nav2_free_fleet_adapter.py
-    )
-    foreach(_test_path ${_pytest_tests})
-      get_filename_component(_test_name ${_test_path} NAME_WE)
-      ament_add_pytest_test(${_test_name} ${_test_path}
-        APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
-        TIMEOUT 60
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      )
-    endforeach()
-  # elseif (NAV1_INTEGRATION_TESTING)
-  #   set(_pytest_tests
-  #     tests/integration/test_nav1_free_fleet_adapter.py
-  #   )
-  #   foreach(_test_path ${_pytest_tests})
-  #     get_filename_component(_test_name ${_test_path} NAME_WE)
-  #     ament_add_pytest_test(${_test_name} ${_test_path}
-  #       APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
-  #       TIMEOUT 60
-  #       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  #     )
-  #   endforeach()
-  endif()
 endif()
 
 ament_package()

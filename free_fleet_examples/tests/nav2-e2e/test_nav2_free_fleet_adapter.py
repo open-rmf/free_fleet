@@ -30,7 +30,6 @@ from uuid import uuid4
 
 from lifecycle_msgs.msg import State
 from lifecycle_msgs.srv import GetState
-import pytest
 import rclpy
 import rclpy.executors
 import rclpy.node
@@ -266,15 +265,25 @@ class RobotExistsTest(RosTestCase):
 
     @RosTestCase.timeout(60)
     async def asyncSetUp(self):
-        self.proc = managed_process(
+        self.rmf_common_proc = managed_process(
             (
                 'ros2',
                 'launch',
                 'free_fleet_examples',
-                'new_test.launch.xml'
+                'turtlebot3_world_rmf_common.launch.xml'
             ),
         )
-        self.proc.__enter__()
+        self.rmf_common_proc.__enter__()
+
+        self.free_fleet_adapter_proc = managed_process(
+            (
+                'ros2',
+                'launch',
+                'free_fleet_examples',
+                'nav2_tb3_simulation_fleet_adapter.launch.xml'
+            ),
+        )
+        self.free_fleet_adapter_proc.__enter__()
 
         robot_exists = rclpy.Future()
 
@@ -289,8 +298,7 @@ class RobotExistsTest(RosTestCase):
             FleetState, 'fleet_states', fleet_states_cb, 10
         )
         result = await robot_exists
-        # self.assertIsNotNone(result)
-        assert result is not None
+        self.assertIsNotNone(result)
 
         print('Fleet is ready')
 
@@ -298,10 +306,10 @@ class RobotExistsTest(RosTestCase):
         await self.ros_sleep(5)
 
     def tearDown(self):
-        self.proc.__exit__(None, None, None)
+        self.free_fleet_adapter_proc.__exit__(None, None, None)
+        self.rmf_common_proc.__exit__(None, None, None)
 
     @RosTestCase.timeout(600)  # 10min
-    @pytest.mark.asyncio
     async def test_robot_exists(self):
         robot_exists = rclpy.Future()
 
@@ -316,81 +324,7 @@ class RobotExistsTest(RosTestCase):
             FleetState, 'fleet_states', fleet_states_cb, 10
         )
         result = await robot_exists
-        # self.assertIsNotNone(result)
-        assert result is not None
-
-# import asyncio
-# import unittest
-
-# import rclpy
-# from rmf_fleet_msgs.msg import FleetState
-
-# class TestNav2FreeFleetAdapter(unittest.TestCase):
-
-#     @classmethod
-#     @pytest.mark.asyncio
-#     async def setUpClass(cls):
-#         rclpy.init()
-#         cls.node = rclpy.create_node('test_nav2_free_fleet_adapter')
-
-#         cls.proc = managed_process(
-#             (
-#                 'ros2',
-#                 'launch',
-#                 'free_fleet_examples',
-#                 'new_test.launch.xml'
-#             ),
-#         )
-#         cls.proc.__enter__()
-
-#         robot_exists = rclpy.Future()
-
-#         def fleet_states_cb(fleet_state: FleetState):
-#             if fleet_state.name != 'turtlebot3':
-#                 return
-#             if len(fleet_state.robots) == 1 and \
-#                     fleet_state.robots[0].name == 'nav2_tb3':
-#                 robot_exists.set_result('found nav2_tb3')
-
-#         cls.node.create_subscription(
-#             FleetState, 'fleet_states', fleet_states_cb, 10
-#         )
-#         result = await robot_exists
-#         assert result is not None
-#         self.assertIsNotNone(result)
-
-#         print('Fleet is ready')
-
-#         # give some time for discovery to happen
-#         await self.ros_sleep(5)
-
-#     @classmethod
-#     def tearDownClass(cls):
-#         cls.proc.__exit__(None, None, None)
-#         rclpy.shutdown()
-
-    # def test_robot_exists(self):
-    #     robot_exists = asyncio.Future()
-
-    #     def fleet_states_cb(fleet_state: FleetState):
-    #         if fleet_state.name != 'turtlebot3':
-    #             return
-    #         if len(fleet_state.robots) == 1 and \
-    #                 fleet_state.robots[0].name == 'nav2_tb3':
-    #             robot_exists.set_result('found nav2_tb3')
-
-    #     self.node.create_subscription(
-    #         FleetState, 'fleet_states', fleet_states_cb, 10
-    #     )
-
-    #     rclpy.spin_until_future_complete(
-    #         self.node, robot_exists, timeout_sec=20.0
-    #     )
-
-    #     robot_found = False
-    #     if robot_exists.done():
-    #         robot_found = True
-    #     assert robot_found
+        self.assertIsNotNone(result)
 
 #     # def test_patrol_task(self):
 #     #     transient_qos = QoSProfile(
