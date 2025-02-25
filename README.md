@@ -385,6 +385,8 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 * `zenohd` address already in use. This is most likely due to the `rest-http-port` which uses port 8000 by default, and might cause a conflict with other systems, for example `rmf-web`'s API server. Run `zenohd --rest-http-port 8001` to change it to 8001 or anything else.
 
+* Please also check past or [existing issues on this repository](https://github.com/open-rmf/free_fleet/issues), or any discussions on the main [RMF discussion page](https://github.com/open-rmf/rmf/discussions).
+
 ## TODOs
 
 * attempt to optimize tf messages (not all are needed)

@@ -14,17 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import time
+import unittest
+import uuid
+
 from managed_process import managed_process
 import rclpy
+from rclpy.qos import QoSDurabilityPolicy as Durability
+from rclpy.qos import QoSHistoryPolicy as History
+from rclpy.qos import QoSProfile
+from rclpy.qos import QoSReliabilityPolicy as Reliability
 from rmf_fleet_msgs.msg import FleetState
-from ros_testcase import RosTestCase
+from rmf_task_msgs.msg import ApiRequest
+from rmf_task_msgs.msg import ApiResponse
 
 
-class RobotExistsTest(RosTestCase):
+class TestNav2FreeFleetAdapter(unittest.IsolatedAsyncioTestCase):
 
-    @RosTestCase.timeout(60)
-    async def asyncSetUp(self):
-        self.rmf_common_proc = managed_process(
+    @classmethod
+    def setUpClass(cls):
+        cls.rmf_common_proc = managed_process(
             (
                 'ros2',
                 'launch',
@@ -32,9 +42,9 @@ class RobotExistsTest(RosTestCase):
                 'turtlebot3_world_rmf_common.launch.xml'
             ),
         )
-        self.rmf_common_proc.__enter__()
+        cls.rmf_common_proc.__enter__()
 
-        self.free_fleet_adapter_proc = managed_process(
+        cls.free_fleet_adapter_proc = managed_process(
             (
                 'ros2',
                 'launch',
@@ -42,34 +52,34 @@ class RobotExistsTest(RosTestCase):
                 'nav2_tb3_simulation_fleet_adapter.launch.xml'
             ),
         )
-        self.free_fleet_adapter_proc.__enter__()
+        cls.free_fleet_adapter_proc.__enter__()
 
-        robot_exists = rclpy.Future()
-
-        def fleet_states_cb(fleet_state: FleetState):
-            if fleet_state.name != 'turtlebot3':
-                return
-            if len(fleet_state.robots) == 1 and \
-                    fleet_state.robots[0].name == 'nav2_tb3':
-                robot_exists.set_result('found nav2_tb3')
-
-        self.node.create_subscription(
-            FleetState, 'fleet_states', fleet_states_cb, 10
+        cls.task_proc = managed_process(
+            (
+                'ros2',
+                'run',
+                'rmf_demos_tasks',
+                'dispatch_patrol',
+                '-p',
+                'north_west',
+                '-st',
+                '0',
+            ),
         )
-        result = await robot_exists
-        self.assertIsNotNone(result)
 
-        print('Fleet is ready')
+        rclpy.init()
+        cls.node = rclpy.create_node('test_nav2_robot_adapter')
 
         # give some time for discovery to happen
-        await self.ros_sleep(5)
+        time.sleep(5)
 
-    def tearDown(self):
-        self.free_fleet_adapter_proc.__exit__(None, None, None)
-        self.rmf_common_proc.__exit__(None, None, None)
+    @classmethod
+    def tearDownClass(cls):
+        cls.task_proc.__exit__(None, None, None)
+        cls.free_fleet_adapter_proc.__exit__(None, None, None)
+        cls.rmf_common_proc.__exit__(None, None, None)
 
-    @RosTestCase.timeout(600)  # 10min
-    async def test_robot_exists(self):
+    async def test_patrol_task(self):
         robot_exists = rclpy.Future()
 
         def fleet_states_cb(fleet_state: FleetState):
@@ -85,70 +95,67 @@ class RobotExistsTest(RosTestCase):
         result = await robot_exists
         self.assertIsNotNone(result)
 
-#     # def test_patrol_task(self):
-#     #     transient_qos = QoSProfile(
-#     #         history=History.KEEP_LAST,
-#     #         depth=1,
-#     #         reliability=Reliability.RELIABLE,
-#     #         durability=Durability.TRANSIENT_LOCAL,
-#     #     )
-#     #     pub = self.node.create_publisher(
-#     #         ApiRequest, 'task_api_requests', transient_qos
-#     #     )
+        self.task_proc.__enter__()
 
-#     #     # Set task request request time and start time
-#     #     now = self.get_clock().now().to_msg()
-#     #     now.sec = now.sec + self.args.start_time
-#     #     start_time = now.sec * 1000 + round(now.nanosec / 10**6)
-#     #     request['unix_millis_request_time'] = start_time
-#     #     request['unix_millis_earliest_start_time'] = start_time
-#     #     # todo(YV): Fill priority after schema is added
+        # # Modified from rmf_demos_tasks, dispatch_patrol
+        # transient_qos = QoSProfile(
+        #     history=History.KEEP_LAST,
+        #     depth=1,
+        #     reliability=Reliability.RELIABLE,
+        #     durability=Durability.TRANSIENT_LOCAL,
+        # )
+        # pub = self.node.create_publisher(
+        #     ApiRequest, 'task_api_requests', transient_qos
+        # )
 
-#     #     request['requester'] = self.args.requester
+        # # Set task request request time and start time
+        # request = {}
+        # request['unix_millis_request_time'] = 0
+        # request['unix_millis_earliest_start_time'] = 0
+        # request['requester'] = 'test_patrol_task'
+        # request['category'] = 'patrol'
+        # request['description'] = {
+        #     'places': ['north_west', 'north_east'],
+        #     'rounds': 1
+        # }
 
-#     #     # Define task request category
-#     #     request['category'] = 'patrol'
+        # msg = ApiRequest()
+        # msg.request_id = 'patrol_' + str(uuid.uuid4())
+        # payload = {}
+        # payload['request'] = request
+        # msg.json_msg = json.dumps(payload)
 
-#     #     if self.args.fleet:
-#     #         request['fleet_name'] = self.args.fleet
+        # api_response = rclpy.Future()
 
-#     #     # Define task request description
-#     #     description = \
-#     #         {'places': self.args.places, 'rounds': self.args.rounds}
-#     #     request['description'] = description
-#     #     payload['request'] = request
-#     #     msg.json_msg = json.dumps(payload)
+        # def receive_response(response_msg: ApiResponse):
+        #     if response_msg.request_id == msg.request_id:
+        #         api_response.set_result(json.loads(response_msg.json_msg))
 
-#     #     def receive_response(response_msg: ApiResponse):
-#     #         if response_msg.request_id == msg.request_id:
-#     #             self.response.set_result(json.loads(response_msg.json_msg))
+        # transient_qos.depth = 10
+        # self.node.create_subscription(
+        #     ApiResponse, 'task_api_responses', receive_response,
+        #     transient_qos
+        # )
 
-#     #     transient_qos.depth = 10
-#     #     self.sub = self.create_subscription(
-#     #         ApiResponse, 'task_api_responses', receive_response,
-#     #         transient_qos
-#     #     )
+        # print(f'Json msg payload: \n{json.dumps(payload, indent=2)}')
+        # pub.publish(msg)
 
-# # ros2 run rmf_demos_tasks dispatch_patrol \
-# #   -p north_west north_east south_east south_west \
-# #   -n 2 \
-# #   -st 0
+        # result = await api_response
+        # self.assertIsNotNone(result)
 
-#     # def test_non_existent_robot_pose(self):
-#     #     tf_buffer = Buffer()
+        # assert len(result.request_id) != 0
 
-#     #     robot_adapter = Nav2RobotAdapter(
-#     #         name='missing_nav2_tb3',
-#     #         configuration=None,
-#     #         robot_config_yaml={
-#     #             'initial_map': 'L1',
-#     #         },
-#     #         node=self.node,
-#     #         zenoh_session=self.zenoh_session,
-#     #         fleet_handle=None,
-#     #         tf_buffer=tf_buffer
-#     #     )
+        robot_performing_task_exists = rclpy.Future()
 
-#     #     time.sleep(2)
-#     #     transform = robot_adapter.get_pose()
-#     #     assert transform is None
+        def fleet_states_cb(fleet_state: FleetState):
+            if fleet_state.name != 'turtlebot3':
+                return
+            for robot in fleet_state.robots:
+                if len(robot.task_id) != 0:
+                    robot_performing_task_exists.set_result(True)
+
+        self.node.create_subscription(
+            FleetState, 'fleet_states', fleet_states_cb, 10
+        )
+        result = await robot_performing_task_exists
+        self.assertIsNotNone(result)

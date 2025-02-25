@@ -7,7 +7,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
-      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
       matrix:
         ros_distribution:
