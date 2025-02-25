@@ -6,47 +6,11 @@ defaults:
     shell: bash
 
 jobs:
-  # build-free-fleet-docker-image:
-  #   name: Push free fleet image to GitHub Packages
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       ros_distribution: [jazzy]
-  #   steps:
-  #     - uses: actions/checkout@v4
-
-  #     - name: Extract branch name
-  #       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-  #       id: extract_branch
-
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v3
-
-  #     - name: Login to docker
-  #       uses: docker/login-action@v3
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Build and push free-fleet-examples
-  #       uses: docker/build-push-action@v5
-  #       with:
-  #         push: true
-  #         build-args: |
-  #           ROS_DISTRO=${{ matrix.ros_distribution }}
-  #           FREE_FLEET_BRANCH=${{ steps.extract_branch.outputs.branch }}
-  #         # tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
-  #         tags: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-latest
-  #         context: .github/docker/free-fleet-examples
-
   integration-tests:
-    # needs: [build-free-fleet-docker-image]
     timeout-minutes: 20
     runs-on: ubuntu-latest
     container:
-      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
-      # image: ghcr.io/${{ github.repository }}/free-fleet-examples:${{ matrix.ros_distribution }}-latest
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
       matrix:
         ros_distribution:
@@ -66,45 +30,24 @@ jobs:
           apt install docker-compose -y
 
       - name: Start test fixture containers
-        env:
-          IMAGE_TAG: free-fleet-examples:${{ matrix.ros_distribution }}-${{ steps.extract_branch.outputs.branch }}
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
-      # - name: build-and-test
-      #   uses: ./.github/actions/build-and-test
-      #   with:
-      #     ros-distribution: ${{ matrix.ros_distribution }}
-      #     zenoh-version: 1.1.0
-      #     nav2-integration-testing: ON
-
-      - name: Setup
-        run: |
-          apt update
-          apt install -y ros-jazzy-rmw-cyclonedds-cpp python3-pip
-          pip3 install nudged eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-packages
-          colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-          colcon mixin update default
-          rosdep update
-          rosdep install --from-paths . -yir
-
-      - name: Build
-        run: /ros_entrypoint.sh colcon build --packages-up-to free_fleet_adapter free_fleet_examples --mixin release --cmake-args -DNAV2_INTEGRATION_TESTING=ON
-
-      - name: Test
-        env:
-          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-          ROS_DOMAIN_ID: 0
-        run: . ./install/setup.bash && cd free_fleet_examples/tests/integration/ && python3 -m unittest
+      - name: build-and-test
+        uses: ./.github/actions/build-and-test
+        with:
+          ros-distribution: ${{ matrix.ros_distribution }}
+          zenoh-version: 1.1.0
+          nav2-integration-testing: ON
 
       - name: Stop test fixture containers
         if: always()
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down
 
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v4
-      #   with:
-      #     files: ros_ws/coveragepy/.coverage
-      #     flags: tests
-      #     fail_ci_if_error: true
-      #   env:
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ros_ws/coveragepy/.coverage
+          flags: tests
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

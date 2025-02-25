@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import atexit
+import pytest
 import os
 import signal
 import subprocess
@@ -34,22 +35,9 @@ import rclpy.executors
 import rclpy.node
 from lifecycle_msgs.msg import State
 from lifecycle_msgs.srv import GetState
-from rmf_fleet_msgs.msg import FleetState, RobotState
+from rmf_fleet_msgs.msg import FleetState
 
-# import os
 import sys
-# from typing import cast
-
-# from action_msgs.msg import GoalStatus
-# from managed_process import managed_process
-# from nexus_orchestrator_msgs.action import ExecuteWorkOrder
-# from nexus_orchestrator_msgs.msg import TaskState
-# from nexus_test_case import NexusTestCase
-# from rclpy import Future
-# from rclpy.action import ActionClient
-# from rclpy.action.client import ClientGoalHandle, GoalStatus
-# from ros_testcase import RosTestCase
-# import subprocess
 
 
 def kill_process(proc: Popen):
@@ -348,6 +336,7 @@ class RobotExistsTest(RosTestCase):
         self.proc.__exit__(None, None, None)
 
     @RosTestCase.timeout(600)  # 10min
+    @pytest.mark.asyncio
     async def test_robot_exists(self):
         robot_exists = rclpy.Future()
 
