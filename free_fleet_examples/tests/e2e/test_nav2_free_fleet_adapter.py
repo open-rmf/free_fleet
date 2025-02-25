@@ -17,8 +17,8 @@
 import rclpy
 from rmf_fleet_msgs.msg import FleetState
 
-from ..managed_process import managed_process
-from ..ros_testcase import RosTestCase
+from managed_process import managed_process
+from ros_testcase import RosTestCase
 
 
 class RobotExistsTest(RosTestCase):

@@ -53,6 +53,7 @@ class RosTestCase(unittest.TestCase):
     """
 
     class Context:
+
         def __init__(self):
             self.ros_ctx = rclpy.Context()
             self.ros_ctx.init()
@@ -74,6 +75,7 @@ class RosTestCase(unittest.TestCase):
             return f'{prefix}_{suffix}'
 
     class TestConfig:
+
         def __init__(self, *, timeout: float = 10):
             self.timeout = timeout
 
