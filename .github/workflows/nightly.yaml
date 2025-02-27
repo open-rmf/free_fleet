@@ -1,9 +1,10 @@
 name: nightly
 
-on:
-  schedule:
-    # 2am SGT
-    - cron: '0 18 * * *'
+# on:
+#   schedule:
+#     # 2am SGT
+#     - cron: '0 18 * * *'
+on: push
 
 jobs:
   build-minimal-nav2-docker-images:
@@ -88,7 +89,7 @@ jobs:
           push: true
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distribution }}
-            ZENOH_BRIDGE_TAG=3d90897d22a066da88e88e0a32b2c4dfd14d82f1
+            ZENOH_BRIDGE_TAG=main
             FREE_FLEET_BRANCH=main
           tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros1:${{ matrix.ros_distribution }}-latest
           context: .github/docker/minimal-zenoh-bridge-ros1
