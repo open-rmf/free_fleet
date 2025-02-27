@@ -27,12 +27,12 @@ Supports
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
 * [Open-RMF on main](https://github.com/open-rmf/rmf)
 * [zenoh-bridge-ros2dds v1.1.0](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.1.0)
-* [zenoh-bridge-ros1 main](https://github.com/aaronchongth/zenoh-plugin-ros1)
+* [zenoh-bridge-ros1 main](https://github.com/eclipse-zenoh/zenoh-plugin-ros1)
 * [zenoh router](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian)
 
 We recommend setting up `zenoh-bridge-ros2dds` with the released standalone binaries. After downloading the appropriate released version and platform, extract and use the standalone binaries as is. For source builds of `zenoh-bridge-ros2dds`, please follow the [official guides](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds).
 
-As for `zenoh-bridge-ros1`, a custom fork is currently used to support bridge namespaces, and requires to be built from source. Once the changes have been merged upstream, this will be updated.
+As for `zenoh-bridge-ros1`, it requires the new [support for bridge namespaces](https://github.com/eclipse-zenoh/zenoh-plugin-ros1/pull/225), and therefore needs to be built from source. Once the feature has been released, this will be updated.
 
 Most of the tests have been performed using `rmw-cyclonedds-cpp`, while other RMW implementations have shown varying results. Support and testing with other RMW implementations will be set up down the road.
 
@@ -285,7 +285,7 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 ![](../media/nav1_sim_architecture.jpg)
 
 > [!WARNING]
-> The Nav1 integration has only been tested in simulation and in ROS 1 Noetic, and is currently still using a fork of [zenoh-plugin-ros1](https://github.com/aaronchongth/zenoh-plugin-ros1), to support bridge namespacing. This will be updated after contributions to upstream has been made.
+> The Nav1 integration has only been tested in simulation and in ROS 1 Noetic, and currently requires a source build of [zenoh-plugin-ros1](https://github.com/eclipse-zenoh/zenoh-plugin-ros1), to [support bridge namespacing](https://github.com/eclipse-zenoh/zenoh-plugin-ros1/pull/225). This will be updated after the feature has been added to a release.
 
 Check out the [docker compose integration tests](.github/docker/integration-tests/nav1-docker-compose.yaml) for an overview of how the integration can be set up.
 
@@ -318,14 +318,14 @@ export TURTLEBOT3_MODEL=burger
 roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=/PATH_TO_navigation2/nav2_bringup/maps/tb3_sandbox.yaml
 ```
 
-In the ROS 1 Noetic environment, set up prerequisites of [zenoh-plugin-ros1](https://github.com/aaronchongth/zenoh-plugin-ros1), build `zenoh-bridge-ros1` in release, and start it with the [provided config in examples](free_fleet_examples/config/zenoh/nav1_tb3_zenoh_bridge_ros1_client_config.json5). See the [relevant docker file](.github/docker/minimal-zenoh-bridge-ros1/Dockerfile) for reference.
+In the ROS 1 Noetic environment, set up prerequisites of [zenoh-plugin-ros1](https://github.com/eclipse-zenoh/zenoh-plugin-ros1), build `zenoh-bridge-ros1` in release, and start it with the [provided config in examples](free_fleet_examples/config/zenoh/nav1_tb3_zenoh_bridge_ros1_client_config.json5). See the [relevant docker file](.github/docker/minimal-zenoh-bridge-ros1/Dockerfile) for reference.
 
 ```bash
 # Get the config file
 git clone https://github.com/open-rmf/free_fleet
 
 # Build the bridge
-git clone --recursive https://github.com/aaronchongth/zenoh-plugin-ros1
+git clone --recursive https://github.com/eclipse-zenoh/zenoh-plugin-ros1
 cd zenoh-plugin-ros1
 cargo build --package zenoh-bridge-ros1 --bin zenoh-bridge-ros1 --release
 

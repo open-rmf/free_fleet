@@ -88,8 +88,7 @@ jobs:
           push: true
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distribution }}
-            ZENOH_BRIDGE_REPO=aaronchongth/zenoh-plugin-ros1
-            ZENOH_BRIDGE_TAG=namespace
+            ZENOH_BRIDGE_TAG=main
             FREE_FLEET_BRANCH=main
           tags: ghcr.io/${{ github.repository }}/minimal-zenoh-bridge-ros1:${{ matrix.ros_distribution }}-latest
           context: .github/docker/minimal-zenoh-bridge-ros1
