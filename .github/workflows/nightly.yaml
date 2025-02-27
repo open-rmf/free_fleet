@@ -4,6 +4,9 @@ on:
   schedule:
     # 2am SGT
     - cron: '0 18 * * *'
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build-minimal-nav2-docker-images:
@@ -98,7 +101,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
-      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
       matrix:
         ros_distribution:
@@ -131,7 +134,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
-      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
       matrix:
         ros_distribution:
@@ -154,6 +157,51 @@ jobs:
           ros-distribution: ${{ matrix.ros_distribution }}
           zenoh-version: 1.1.0
           nav2-integration-testing: ON
+
+      - name: Stop test fixture containers
+        if: always()
+        run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down
+
+  e2e-tests:
+    needs: nav2-integration-tests
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop
+    strategy:
+      matrix:
+        ros_distribution:
+          - jazzy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install docker-compose
+        run: |
+          sudo apt update && sudo apt install docker-compose -y
+
+      - name: Start test fixture containers
+        run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
+
+      - name: Setup
+        run: |
+          apt update
+          apt install -y ros-${{ matrix.ros_distribution }}-rmw-cyclonedds-cpp python3-pip
+          pip3 install nudged eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-packages
+          colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          colcon mixin update default
+          rosdep update
+          rosdep install --from-paths . -yir
+
+      - name: Build
+        run: /ros_entrypoint.sh colcon build --packages-up-to free_fleet_examples --event-handlers=console_cohesion+ --mixin release --cmake-args -DNAV2_INTEGRATION_TESTING=ON
+
+      - name: Tests
+        env:
+          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+          ROS_DOMAIN_ID: 0
+        run: . ./install/setup.bash && cd free_fleet_examples/tests/e2e/ && python3 -m unittest
 
       - name: Stop test fixture containers
         if: always()

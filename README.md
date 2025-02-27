@@ -25,7 +25,7 @@ Supports
 * [Ubuntu 24.04](https://ubuntu.com/blog/ubuntu-desktop-24-04-noble-numbat-deep-dive)
 * [ROS 2 Jazzy](https://docs.ros.org/en/jazzy/index.html)
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
-* [Open-RMF on main](https://github.com/open-rmf/rmf)
+* [Open-RMF binaries on ROS 2 Jazzy](https://github.com/open-rmf/rmf)
 * [zenoh-bridge-ros2dds v1.1.0](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.1.0)
 * [zenoh-bridge-ros1 main](https://github.com/eclipse-zenoh/zenoh-plugin-ros1)
 * [zenoh router](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian)
@@ -52,16 +52,10 @@ pip3 install pip install eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-pack
 
 Install `zenohd` from the [official guide](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian).
 
-> [!NOTE]
-> If an Open-RMF workspace has already been set up, users can choose to only set up an overlay workspace, which reduces build time. The following steps will assume a fresh new workspace is required.
-
 Set up workspace, install dependencies and build,
 
 ```bash
 mkdir -p ~/ff_ws/src
-wget https://raw.githubusercontent.com/open-rmf/rmf/main/rmf.repos
-vcs import ~/ff_ws/src < rmf.repos
-
 cd ~/ff_ws/src
 git clone https://github.com/open-rmf/free_fleet
 
@@ -391,12 +385,13 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 * `zenohd` address already in use. This is most likely due to the `rest-http-port` which uses port 8000 by default, and might cause a conflict with other systems, for example `rmf-web`'s API server. Run `zenohd --rest-http-port 8001` to change it to 8001 or anything else.
 
+* Please also check past or [existing issues on this repository](https://github.com/open-rmf/free_fleet/issues), or any discussions on the main [RMF discussion page](https://github.com/open-rmf/rmf/discussions).
+
 ## TODOs
 
 * attempt to optimize tf messages (not all are needed)
 * custom actions to be abstracted
 * map switching support
-* end-to-end testing with Open-RMF
 * test replanning behavior
 * support for Rolling
 * docker images

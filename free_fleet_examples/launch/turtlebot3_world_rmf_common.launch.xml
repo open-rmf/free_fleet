@@ -3,7 +3,7 @@
 <launch>
   <arg name="server_uri" default="" description="The URI of the api server to transmit state and task information."/>
 
-  <include file="$(find-pkg-share rmf_demos)/common.launch.xml">
+  <include file="$(find-pkg-share free_fleet_examples)/include/rmf_common.launch.xml">
     <arg name="use_sim_time" value="false"/>
     <arg name="config_file" value="$(find-pkg-share free_fleet_examples)/turtlebot3_world/turtlebot3_world.building.yaml"/>
     <arg name="server_uri" value="$(var server_uri)"/>
