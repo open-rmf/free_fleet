@@ -1,13 +1,16 @@
 name: nav2-integration-tests
 
 on: push
+defaults:
+  run:
+    shell: bash
 
 jobs:
   integration-tests:
-    timeout-minutes: 10
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     container:
-      image: osrf/ros:${{ matrix.ros_distribution }}-desktop-noble
+      image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
       matrix:
         ros_distribution:
@@ -15,11 +18,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
+
+      - name: Extract branch name
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
 
       - name: Install docker-compose
         run: |
-          sudo apt update && sudo apt install docker-compose -y
+          apt update
+          apt install docker-compose -y
 
       - name: Start test fixture containers
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
