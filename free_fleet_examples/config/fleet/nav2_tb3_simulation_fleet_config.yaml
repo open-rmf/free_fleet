@@ -39,6 +39,8 @@ rmf_fleet:
       # For Nav2RobotAdapter
       navigation_stack: 2
       initial_map: "L1"
+      map_frame: "map"
+      base_footprint_frame: "base_link"
       maps:
         L1:
           map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
