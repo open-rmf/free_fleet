@@ -38,8 +38,10 @@ from free_fleet.utils import (
     namespacify,
 )
 from free_fleet_adapter.robot_adapter import RobotAdapter
+from free_fleet_adapter.action import RobotActionContext
 
 from geometry_msgs.msg import TransformStamped
+import importlib
 import numpy as np
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
@@ -103,6 +105,7 @@ class Nav2RobotAdapter(RobotAdapter):
         name: str,
         configuration,
         robot_config_yaml,
+        plugin_config: dict | None,
         node,
         zenoh_session,
         fleet_handle,
@@ -142,6 +145,61 @@ class Nav2RobotAdapter(RobotAdapter):
             namespacify('battery_state', name),
             _battery_state_callback
         )
+
+        # Track the current ongoing action
+        self.current_action = None
+
+        # Import and store plugin actions and action factories
+        self.action_to_plugin_name = {}  # Maps action name to plugin name
+        self.action_factories = {}  # Maps plugin name to action factory
+        for plugin_name, action_config in plugin_config.items():
+            try:
+                module = action_config['module']
+                plugin = importlib.import_module(module)
+                action_context = RobotActionContext(
+                    self.node, self.name, self.fleet_handle,
+                    self.fleet_config, action_config
+                )
+                action_factory = plugin.ActionFactory(action_context)
+                for action in action_factory.actions:
+                    # Verify that this action is not duplicated across plugins
+                    target_plugin = self.action_to_plugin_name.get(action)
+                    if (target_plugin is not None and
+                            target_plugin != plugin_name):
+                        raise Exception(
+                            f'Action [{action}] is indicated to be supported '
+                            f'by multiple plugins: {target_plugin} and '
+                            f'{plugin_name}. The fleet adapter is unable to '
+                            f'select the intended plugin to be paired for '
+                            f'this action. Please ensure that action names '
+                            f'are not duplicated across supported plugins. '
+                            f'Unable to create ActionFactory for '
+                            f'{plugin_name}. Robot [{self.name}] will not be '
+                            f'able to perform actions associated with this '
+                            f'plugin.'
+                        )
+                    # Verify that this ActionFactory supports this action
+                    if not action_factory.supports_action(action):
+                        raise ValueError(
+                            f'The plugin config provided [{action}] as a '
+                            f'performable action, but it is not a supported '
+                            f'action in the {plugin_name} ActionFactory!'
+                        )
+                    self.action_to_plugin_name[action] = plugin_name
+                self.action_factories[plugin_name] = action_factory
+            except KeyError:
+                self.node.get_logger().info(
+                    f'Unable to create ActionFactory for {plugin_name}! '
+                    f'Configured plugin config is invalid. '
+                    f'Robot [{self.name}] will not be able to perform '
+                    f'actions associated with this plugin.'
+                )
+            except ImportError:
+                self.node.get_logger().info(
+                    f'Unable to import module for {plugin_name}! '
+                    f'Robot [{self.name}] will not be able to perform '
+                    f'actions associated with this plugin.'
+                )
 
     def get_battery_soc(self) -> float:
         return self.battery_soc
@@ -426,6 +484,9 @@ class Nav2RobotAdapter(RobotAdapter):
         description: dict,
         execution: ActivityIdentifier
     ):
+        if self.
+
+
         # TODO(ac): change map using map_server load_map, and set initial
         # position again with /initialpose
         # TODO(ac): docking
