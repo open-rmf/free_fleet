@@ -272,7 +272,7 @@ def main(argv=sys.argv):
     parser.add_argument('-sim', '--use_sim_time', action='store_true',
                         help='Use sim time, default: false')
     parser.add_argument(
-        '--zenoh-config',
+        '--zenoh_config',
         type=str,
         help='Path to custom zenoh configuration file to be used, if not '
         'provided the default config will be used'

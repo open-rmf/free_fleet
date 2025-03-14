@@ -27,7 +27,7 @@ def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
         prog='cancel_all_goals',
         description='Zenoh/ROS2 cancel all goals example')
-    parser.add_argument('--zenoh-config', '-c', dest='config', metavar='FILE',
+    parser.add_argument('--zenoh_config', '-c', dest='config', metavar='FILE',
                         type=str, help='A configuration file.')
     parser.add_argument('--namespace', '-n', type=str, default='')
 
