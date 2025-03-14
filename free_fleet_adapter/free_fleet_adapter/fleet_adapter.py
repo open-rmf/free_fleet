@@ -229,24 +229,6 @@ def update_robot(robot: Nav1RobotAdapter | Nav2RobotAdapter):
         robot_pose,
         robot.get_battery_soc()
     )
-
-    if robot.update_handle is None:
-        robot.update_handle = robot.fleet_handle.add_robot(
-            robot.name,
-            state,
-            robot.configuration,
-            rmf_easy.RobotCallbacks(
-                lambda destination, execution: robot.navigate(
-                    destination, execution
-                ),
-                lambda activity: robot.stop(activity),
-                lambda category, description, execution: robot.execute_action(
-                    category, description, execution
-                )
-            )
-        )
-        return
-
     robot.update(state)
 
 

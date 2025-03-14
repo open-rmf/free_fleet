@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 from typing import Annotated
 
 from free_fleet.convert import transform_stamped_to_ros2_msg
@@ -141,6 +142,60 @@ class Nav2RobotAdapter(RobotAdapter):
         self.battery_state_sub = self.zenoh_session.declare_subscriber(
             namespacify('battery_state', name),
             _battery_state_callback
+        )
+
+        # Initialize robot
+        self.node.get_logger().info(f'Initializing robot [{self.name}]...')
+        init_robot_pose = rclpy.Future()
+
+        def _get_init_pose():
+            robot_pose = self.get_pose()
+            if robot_pose is not None:
+                init_robot_pose.set_result(robot_pose)
+                init_robot_pose.done()
+
+        init_pose_timer = self.node.create_timer(1, _get_init_pose)
+        # TODO: parameterize initialization timeout
+        rclpy.spin_until_future_complete(
+            self.node, init_robot_pose, timeout_sec=10
+        )
+
+        for i in range(11):
+            self.node.get_logger().info(
+                f'Waiting for pose of robot [{self.name}]...'
+            )
+            result = init_robot_pose.result()
+            if result is None:
+                time.sleep(1)
+                continue
+
+            self.node.destroy_timer(init_pose_timer)
+            break
+
+        if init_robot_pose.result() is None:
+            error_message = \
+                f'Timeout trying to initialize robot [{self.name}]'
+            self.node.get_logger().error(error_message)
+            raise RuntimeError(error_message)
+
+        state = rmf_easy.RobotState(
+            self.get_map_name(),
+            init_robot_pose.result(),
+            self.get_battery_soc()
+        )
+        self.update_handle = self.fleet_handle.add_robot(
+            self.name,
+            state,
+            self.configuration,
+            rmf_easy.RobotCallbacks(
+                lambda destination, execution: self.navigate(
+                    destination, execution
+                ),
+                lambda activity: self.stop(activity),
+                lambda category, description, execution: self.execute_action(
+                    category, description, execution
+                )
+            )
         )
 
     def get_battery_soc(self) -> float:
