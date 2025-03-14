@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 from typing import Annotated
 
 from free_fleet.convert import transform_stamped_to_ros2_msg
@@ -145,6 +144,7 @@ class Nav2RobotAdapter(RobotAdapter):
         )
 
         # Initialize robot
+        init_timeout_sec = self.robot_config_yaml.get('init_timeout_sec', 10)
         self.node.get_logger().info(f'Initializing robot [{self.name}]...')
         init_robot_pose = rclpy.Future()
 
@@ -155,22 +155,9 @@ class Nav2RobotAdapter(RobotAdapter):
                 init_robot_pose.done()
 
         init_pose_timer = self.node.create_timer(1, _get_init_pose)
-        # TODO: parameterize initialization timeout
         rclpy.spin_until_future_complete(
-            self.node, init_robot_pose, timeout_sec=10
+            self.node, init_robot_pose, timeout_sec=init_timeout_sec
         )
-
-        for i in range(11):
-            self.node.get_logger().info(
-                f'Waiting for pose of robot [{self.name}]...'
-            )
-            result = init_robot_pose.result()
-            if result is None:
-                time.sleep(1)
-                continue
-
-            self.node.destroy_timer(init_pose_timer)
-            break
 
         if init_robot_pose.result() is None:
             error_message = \
@@ -178,6 +165,7 @@ class Nav2RobotAdapter(RobotAdapter):
             self.node.get_logger().error(error_message)
             raise RuntimeError(error_message)
 
+        self.node.destroy_timer(init_pose_timer)
         state = rmf_easy.RobotState(
             self.get_map_name(),
             init_robot_pose.result(),
