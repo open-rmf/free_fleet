@@ -58,14 +58,15 @@ def main(argv=sys.argv):
         print(f'routers: {info.routers_zid()}')
         print(f'peers: {info.peers_zid()}')
 
-        tf_handler = Nav2TfHandler(args.namespace, session, tf_buffer, node, args=args)
+        tf_handler = Nav2TfHandler(args.namespace, session, tf_buffer, node, \
+                                   args=args)
 
         try:
             while True:
                 transform = tf_handler.get_transform()
                 if transform is None:
-                    print(f'Unable to get transform between {args.base_footprint_frame} and \
-                           {args.map_frame}')
+                    print(f'Unable to get transform between \
+                          {args.base_footprint_frame} and {args.map_frame}')
                 else:
                     print(transform)
                 time.sleep(1)

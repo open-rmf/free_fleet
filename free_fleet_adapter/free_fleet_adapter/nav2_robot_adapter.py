@@ -51,13 +51,17 @@ import zenoh
 
 class Nav2TfHandler:
 
-    def __init__(self, robot_name, zenoh_session, tf_buffer, node, robot_config_yaml=None, args=None):
+    def __init__(self, robot_name, zenoh_session, tf_buffer, node, \
+                 robot_config_yaml=None, args=None):
         self.robot_name = robot_name
         self.zenoh_session = zenoh_session
         self.node = node
         self.tf_buffer = tf_buffer
-        self.frame_map = args.map_frame if args is not None else robot_config_yaml['map_frame']
-        self.frame_base_footprint = args.base_footprint_frame if args is not None else robot_config_yaml['base_footprint_frame']
+        self.frame_map = args.map_frame if args is not None \
+            else robot_config_yaml['map_frame']
+        self.frame_base_footprint = args.base_footprint_frame \
+            if args is not None else \
+                robot_config_yaml['base_footprint_frame']
 
         def _tf_callback(sample: zenoh.Sample):
             try:
@@ -91,8 +95,8 @@ class Nav2TfHandler:
             return transform
         except Exception as err:
             self.node.get_logger().info(
-                f'Unable to get transform between {self.frame_base_footprint} and {self.frame_map}: \
-                {type(err)}: {err}'
+                f'Unable to get transform between {self.frame_base_footprint} \
+                    and {self.frame_map}: {type(err)}: {err}'
             )
         return None
 
@@ -159,7 +163,8 @@ class Nav2RobotAdapter(RobotAdapter):
         if transform is None:
             error_message = \
                 f'Failed to update robot [{self.name}]: Unable to get \
-                transform between {self.frame_base_footprint} and self.frame_map'
+                transform between {self.frame_base_footprint} and \
+                self.frame_map'
             self.node.get_logger().info(error_message)
             return None
 
