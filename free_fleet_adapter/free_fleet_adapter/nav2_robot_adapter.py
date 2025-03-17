@@ -52,16 +52,13 @@ import zenoh
 class Nav2TfHandler:
 
     def __init__(self, robot_name, zenoh_session, tf_buffer, node, \
-                 robot_config_yaml=None, args=None):
+                 robot_frame='base_footprint', map_frame='map'):
         self.robot_name = robot_name
         self.zenoh_session = zenoh_session
         self.node = node
         self.tf_buffer = tf_buffer
-        self.frame_map = args.map_frame if args is not None \
-            else robot_config_yaml['map_frame']
-        self.frame_base_footprint = args.base_footprint_frame \
-            if args is not None else \
-                robot_config_yaml['base_footprint_frame']
+        self.frame_robot = robot_frame
+        self.frame_map = map_frame
 
         def _tf_callback(sample: zenoh.Sample):
             try:
@@ -89,13 +86,13 @@ class Nav2TfHandler:
         try:
             transform = self.tf_buffer.lookup_transform(
                 namespacify(self.frame_map, self.robot_name),
-                namespacify(self.frame_base_footprint, self.robot_name),
+                namespacify(self.frame_robot, self.robot_name),
                 rclpy.time.Time()
                 )
             return transform
         except Exception as err:
             self.node.get_logger().info(
-                f'Unable to get transform between {self.frame_base_footprint} \
+                f'Unable to get transform between {self.frame_robot} \
                     and {self.frame_map}: {type(err)}: {err}'
             )
         return None
@@ -125,7 +122,7 @@ class Nav2RobotAdapter(RobotAdapter):
         self.map_name = self.robot_config_yaml['initial_map']
 
         self.frame_map = self.robot_config_yaml['map_frame']
-        self.frame_base_footprint = self.robot_config_yaml['base_footprint_frame']
+        self.frame_robot = self.robot_config_yaml['robot_frame']
 
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
@@ -138,7 +135,8 @@ class Nav2RobotAdapter(RobotAdapter):
             self.zenoh_session,
             self.tf_buffer,
             self.node, 
-            robot_config_yaml=self.robot_config_yaml
+            robot_frame=self.frame_robot,
+            map_frame=self.frame_map
         )
 
         def _battery_state_callback(sample: zenoh.Sample):
@@ -163,8 +161,7 @@ class Nav2RobotAdapter(RobotAdapter):
         if transform is None:
             error_message = \
                 f'Failed to update robot [{self.name}]: Unable to get \
-                transform between {self.frame_base_footprint} and \
-                self.frame_map'
+                transform between {self.frame_robot} and {self.frame_map}'
             self.node.get_logger().info(error_message)
             return None
 

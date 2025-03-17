@@ -33,13 +33,13 @@ def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
         prog='get_tf',
         description='Zenoh/ROS2 tf example')
-    parser.add_argument('--zenoh_config', '-c', dest='config', metavar='FILE',
+    parser.add_argument('--zenoh-config', '-c', dest='config', metavar='FILE',
                         type=str, help='A configuration file.')
     parser.add_argument('--namespace', '-n', type=str, default='')
     parser.add_argument(
-        '-b', '--base_footprint_frame', default='base_footprint'
+        '-b', '--base-footprint-frame', default='base_footprint'
     )
-    parser.add_argument('-m', '--map_frame', default='map')
+    parser.add_argument('-m', '--map-frame', default='map')
 
     args = parser.parse_args(args_without_ros[1:])
 
@@ -59,7 +59,8 @@ def main(argv=sys.argv):
         print(f'peers: {info.peers_zid()}')
 
         tf_handler = Nav2TfHandler(args.namespace, session, tf_buffer, node, \
-                                   args=args)
+                                   robot_frame=args.base_footprint_frame, \
+                                   map_frame=args.map_frame)
 
         try:
             while True:
