@@ -1,6 +1,6 @@
 name: nav1-integration-tests
 
-on: push
+on: [pull_request, push]
 
 jobs:
   integration-tests:
