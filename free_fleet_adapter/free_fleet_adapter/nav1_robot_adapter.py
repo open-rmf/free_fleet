@@ -386,6 +386,14 @@ class Nav1RobotAdapter(RobotAdapter):
             init_robot_pose.result(),
             self.get_battery_soc()
         )
+
+        if self.fleet_handle is None:
+            self.node.get_logger().warn(
+                f'Fleet unavailable, skipping adding robot [{self.name}] '
+                'to fleet'
+            )
+            return
+
         self.update_handle = self.fleet_handle.add_robot(
             self.name,
             state,
