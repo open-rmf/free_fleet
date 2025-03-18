@@ -134,7 +134,7 @@ class Nav2RobotAdapter(RobotAdapter):
             self.name,
             self.zenoh_session,
             self.tf_buffer,
-            self.node, 
+            self.node,
             robot_frame=self.frame_robot,
             map_frame=self.frame_map
         )

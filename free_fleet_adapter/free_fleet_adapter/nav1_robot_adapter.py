@@ -317,7 +317,6 @@ class Nav1RobotAdapter(RobotAdapter):
         self.tf_buffer = tf_buffer
 
         self.map_name = self.robot_config_yaml['initial_map']
-
         self.frame_map = self.robot_config_yaml['map_frame']
         self.frame_robot = self.robot_config_yaml['robot_frame']
 
