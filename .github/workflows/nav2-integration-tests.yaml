@@ -1,6 +1,11 @@
 name: nav2-integration-tests
 
-on: [pull_request, push]
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
 defaults:
   run:
     shell: bash
