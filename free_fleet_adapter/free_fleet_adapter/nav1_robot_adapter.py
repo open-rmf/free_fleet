@@ -49,7 +49,7 @@ import zenoh
 
 class Nav1TfHandler:
 
-    def __init__(self, robot_name, zenoh_session, tf_buffer, node, \
+    def __init__(self, robot_name, zenoh_session, tf_buffer, node,
                  robot_frame='base_footprint', map_frame='map'):
         self.robot_name = robot_name
         self.zenoh_session = zenoh_session
