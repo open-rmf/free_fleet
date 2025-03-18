@@ -17,6 +17,7 @@ jobs:
     container:
       image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
+      fail-fast: false
       matrix:
         ros_distribution:
           - jazzy

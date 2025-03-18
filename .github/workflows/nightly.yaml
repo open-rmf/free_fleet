@@ -13,6 +13,7 @@ jobs:
     name: Push minimal nav2 docker images to GitHub Packages
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         ros_distribution: [jazzy]
     steps:
