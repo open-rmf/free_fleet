@@ -55,8 +55,8 @@ class Nav1TfHandler:
         self.zenoh_session = zenoh_session
         self.node = node
         self.tf_buffer = tf_buffer
-        self.frame_robot = robot_frame
-        self.frame_map = map_frame
+        self.robot_frame = robot_frame
+        self.map_frame = map_frame
 
         def _tf_callback(sample: zenoh.Sample):
             try:
@@ -92,15 +92,15 @@ class Nav1TfHandler:
         try:
             # TODO(ac): parameterize the frames for lookup
             transform = self.tf_buffer.lookup_transform(
-                namespacify(self.frame_map, self.robot_name),
-                namespacify(self.frame_robot, self.robot_name),
+                namespacify(self.map_frame, self.robot_name),
+                namespacify(self.robot_frame, self.robot_name),
                 rclpy.time.Time()
             )
             return transform
         except Exception as err:
             self.node.get_logger().info(
-                f'Unable to get transform between {self.frame_robot} and \
-                    {self.frame_map}: {type(err)}: {err}'
+                f'Unable to get transform between {self.robot_frame} and \
+                    {self.map_frame}: {type(err)}: {err}'
             )
         return None
 
@@ -317,8 +317,10 @@ class Nav1RobotAdapter(RobotAdapter):
         self.tf_buffer = tf_buffer
 
         self.map_name = self.robot_config_yaml['initial_map']
-        self.frame_map = self.robot_config_yaml['map_frame']
-        self.frame_robot = self.robot_config_yaml['robot_frame']
+        default_map_frame = 'map'
+        default_robot_frame = 'base_footprint'
+        self.map_frame = self.robot_config_yaml.get('map_frame', default_map_frame)
+        self.robot_frame = self.robot_config_yaml.get('robot_frame', default_robot_frame)
 
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
@@ -331,8 +333,8 @@ class Nav1RobotAdapter(RobotAdapter):
             self.zenoh_session,
             self.tf_buffer,
             self.node,
-            robot_frame=self.frame_robot,
-            map_frame=self.frame_map
+            robot_frame=self.robot_frame,
+            map_frame=self.map_frame
         )
         self.move_base_handler = Nav1MoveBaseHandler(
             self.name,
@@ -376,7 +378,7 @@ class Nav1RobotAdapter(RobotAdapter):
         if transform is None:
             error_message = \
                 f'Failed to update robot [{self.name}]: Unable to get \
-                    transform between {self.frame_robot} and {self.frame_map}'
+                    transform between {self.robot_frame} and {self.map_frame}'
             self.node.get_logger().info(error_message)
             return None
 
