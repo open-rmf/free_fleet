@@ -175,7 +175,7 @@ class Nav2RobotAdapter(RobotAdapter):
         if self.fleet_handle is None:
             self.node.get_logger().warn(
                 f'Fleet unavailable, skipping adding robot [{self.name}] '
-                'to fleet'
+                'to fleet.'
             )
             return
 
@@ -193,6 +193,13 @@ class Nav2RobotAdapter(RobotAdapter):
                 )
             )
         )
+        if not self.update_handle:
+            error_message = \
+                f'Failed to add robot [{self.name}] to fleet ' \
+                f'[{self.fleet_handle.more().fleet_name()}], this is most ' \
+                'likely due to a configuration error.'
+            self.node.get_logger().error(error_message)
+            raise RuntimeError(error_message)
 
     def get_battery_soc(self) -> float:
         return self.battery_soc
