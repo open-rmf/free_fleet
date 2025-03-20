@@ -38,6 +38,7 @@ rmf_fleet:
       responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
       # For Nav1RobotAdapter
       navigation_stack: 1
+      init_timeout_sec: 5
       initial_map: "L1"
       map_frame: "map"
       robot_frame: "base_link"

@@ -39,24 +39,28 @@ class TestNav2RobotAdapter(unittest.TestCase):
         cls.zenoh_session.close()
         rclpy.shutdown()
 
-    def test_non_existent_robot_pose(self):
+    def test_non_existent_robot(self):
         tf_buffer = Buffer()
 
-        robot_adapter = Nav2RobotAdapter(
-            name='missing_nav2_tb3',
-            configuration=None,
-            robot_config_yaml={
-                'initial_map': 'L1',
-            },
-            node=self.node,
-            zenoh_session=self.zenoh_session,
-            fleet_handle=None,
-            tf_buffer=tf_buffer
-        )
-
-        time.sleep(2)
-        transform = robot_adapter.get_pose()
-        assert transform is None
+        robot_found = False
+        try:
+            _ = Nav2RobotAdapter(
+                name='missing_nav2_tb3',
+                configuration=None,
+                robot_config_yaml={
+                    'initial_map': 'L1',
+                },
+                node=self.node,
+                zenoh_session=self.zenoh_session,
+                fleet_handle=None,
+                tf_buffer=tf_buffer
+            )
+            robot_found = True
+        except RuntimeError as e:
+            error_message = str(e)
+            assert 'Timeout trying to initialize robot [missing_nav2_tb3]' \
+                in error_message
+        assert not robot_found
 
     def test_robot_pose(self):
         tf_buffer = Buffer()
@@ -73,7 +77,6 @@ class TestNav2RobotAdapter(unittest.TestCase):
             tf_buffer=tf_buffer
         )
 
-        time.sleep(2)
         transform = robot_adapter.get_pose()
         assert transform is not None
 
