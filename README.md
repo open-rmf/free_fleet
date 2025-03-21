@@ -45,10 +45,10 @@ System dependencies,
 sudo apt update && sudo apt install python3-pip ros-jazzy-rmw-cyclonedds-cpp
 ```
 
-The dependencies `eclipse-zenoh`, `pycdr2`, `rosbags` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
+The dependencies `nudged`, `eclipse-zenoh`, `pycdr2`, `rosbags` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
 
 ```bash
-pip3 install pip install eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-packages
+pip3 install nudged eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-packages
 ```
 
 Install `zenohd` from the [official guide](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian).
