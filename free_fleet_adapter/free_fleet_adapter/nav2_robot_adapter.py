@@ -92,7 +92,7 @@ class Nav2TfHandler:
             return transform
         except Exception as err:
             self.node.get_logger().info(
-                f'Unable to get transform between {self.robot_frame} ' \
+                f'Unable to get transform between {self.robot_frame} '
                 f'and {self.map_frame}: {type(err)}: {err}'
             )
         return None

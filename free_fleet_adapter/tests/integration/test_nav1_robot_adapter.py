@@ -188,24 +188,14 @@ class TestNav1RobotAdapter(unittest.TestCase):
         transform = robot_adapter.get_pose()
         assert transform is not None
 
-        # The planner fails to plan a route sometimes, retrying a few times
-        # mimics the replanning mechanism from the fleet handle. The flakiness
-        # might also be due to parallel tests running at the same time.
-        nav_goal_id = None
-        for i in range(3):
-            robot_adapter._handle_navigate_to_pose(
-                'L1',
-                -1.8,
-                -0.5,
-                0.0,
-                0.0,
-                5.0
-            )
-            if robot_adapter.nav_goal_id is not None:
-                nav_goal_id = robot_adapter.nav_goal_id
-                break
-            time.sleep(1)
-        assert nav_goal_id is not None
+        robot_adapter._handle_navigate_to_pose(
+            'L1',
+            -1.8,
+            -0.5,
+            0.0,
+            0.0,
+            5.0
+        )
         assert not robot_adapter._is_navigation_done()
         time.sleep(5)
         assert robot_adapter._is_navigation_done()
@@ -227,26 +217,15 @@ class TestNav1RobotAdapter(unittest.TestCase):
 
         transform = robot_adapter.get_pose()
         assert transform is not None
-
-        # The planner fails to plan a route sometimes, retrying a few times
-        # mimics the replanning mechanism from the fleet handle. The flakiness
-        # might also be due to parallel tests running at the same time.
-        nav_goal_id = None
-        for i in range(3):
-            robot_adapter._handle_navigate_to_pose(
-                'L1',
-                1.808,
-                0.503,
-                0.0,
-                0.0,
-                5.0
-            )
-            if robot_adapter.nav_goal_id is not None:
-                nav_goal_id = robot_adapter.nav_goal_id
-                break
-            time.sleep(1)
-
-        assert nav_goal_id is not None
+        robot_adapter._handle_navigate_to_pose(
+            'L1',
+            1.808,
+            0.503,
+            0.0,
+            0.0,
+            5.0
+        )
+        assert robot_adapter.nav_goal_id is not None
         assert not robot_adapter._is_navigation_done()
         time.sleep(1)
         robot_adapter._handle_stop_navigation()
