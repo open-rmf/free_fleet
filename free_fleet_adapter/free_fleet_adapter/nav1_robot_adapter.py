@@ -99,8 +99,8 @@ class Nav1TfHandler:
             return transform
         except Exception as err:
             self.node.get_logger().info(
-                f'Unable to get transform between {self.robot_frame} and \
-                    {self.map_frame}: {type(err)}: {err}'
+                f'Unable to get transform between {self.robot_frame} and '
+                f'{self.map_frame}: {type(err)}: {err}'
             )
         return None
 
@@ -435,8 +435,8 @@ class Nav1RobotAdapter(RobotAdapter):
         transform = self.tf_handler.get_transform()
         if transform is None:
             error_message = \
-                f'Failed to update robot [{self.name}]: Unable to get \
-                    transform between {self.robot_frame} and {self.map_frame}'
+                f'Failed to update robot [{self.name}]: Unable to get ' \
+                f'transform between {self.robot_frame} and {self.map_frame}'
             self.node.get_logger().info(error_message)
             return None
 

@@ -48,3 +48,13 @@ jobs:
           fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  retry-on-failure:
+    if: failure() && fromJSON(github.run_attempt) < 3
+    needs: [integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
