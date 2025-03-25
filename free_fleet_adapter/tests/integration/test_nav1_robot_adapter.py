@@ -217,7 +217,6 @@ class TestNav1RobotAdapter(unittest.TestCase):
 
         transform = robot_adapter.get_pose()
         assert transform is not None
-
         robot_adapter._handle_navigate_to_pose(
             'L1',
             1.808,
