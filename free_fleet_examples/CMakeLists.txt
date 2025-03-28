@@ -5,13 +5,13 @@ project(free_fleet_examples)
 find_package(ament_cmake REQUIRED)
 
 install(DIRECTORY
-  maps/
+  /data/maps/
   DESTINATION share/${PROJECT_NAME}
 )
 
 ament_python_install_package(${PROJECT_NAME})
 
-file(GLOB_RECURSE traffic_editor_paths "maps/*.building.yaml")
+file(GLOB_RECURSE traffic_editor_paths "/data/maps/*.building.yaml")
 
 foreach(path ${traffic_editor_paths})
 
