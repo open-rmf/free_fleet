@@ -393,7 +393,7 @@ class Nav2RobotAdapter(RobotAdapter):
         req = NavigateThroughPoses_SendGoal_Request(
             goal_id=nav_goal_id,
             poses=[pose_stamped],
-            behavior_tree=''
+            behavior_tree='/data/behavior_trees/zc_nav_rmf.xml'
         )
 
         replies = self.zenoh_session.get(
