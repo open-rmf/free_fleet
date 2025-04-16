@@ -49,7 +49,7 @@ jobs:
         env:
           RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
           ROS_DOMAIN_ID: 0
-        run: . ./install/setup.bash && cd free_fleet_examples/tests/e2e/ && python3 -m unittest
+        run: . ./install/setup.bash && colcon test --pacakges-select free_fleet_examples  --event-handlers=console_cohesion+
 
       - name: Stop test fixture containers
         if: always()

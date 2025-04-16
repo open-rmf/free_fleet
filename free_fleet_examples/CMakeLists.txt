@@ -81,6 +81,8 @@ if(BUILD_TESTING)
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
   endforeach()
+
+  add_test(NAME e2e_tests COMMAND python3 -m unittest WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e)
 endif()
 
 ament_package()
