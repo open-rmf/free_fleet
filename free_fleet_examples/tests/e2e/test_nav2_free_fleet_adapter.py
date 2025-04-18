@@ -113,7 +113,7 @@ class RobotExistsTest(RosTestCase):
                 return
             for robot in fleet_state.robots:
                 if len(robot.task_id) == 0 and \
-                        math.sqrt((robot.location.x - end_x)**2 + (robot.location.y - end_y)) \
+                        math.sqrt((robot.location.x - end_x)**2 + (robot.location.y - end_y)**2) \
                         < 0.1 and \
                         robot.location.level_name == end_level:
                     robot_done_with_task.set_result(True)
