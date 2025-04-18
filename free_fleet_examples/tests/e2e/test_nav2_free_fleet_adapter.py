@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
+
 from managed_process import managed_process
 import rclpy
 from rmf_fleet_msgs.msg import FleetState
@@ -69,7 +71,7 @@ class RobotExistsTest(RosTestCase):
     async def test_patrol_task(self):
         robot_exists = rclpy.Future()
 
-        def fleet_states_cb(fleet_state: FleetState):
+        def fleet_states_check_robot_exists_cb(fleet_state: FleetState):
             if fleet_state.name != 'turtlebot3':
                 return
             if len(fleet_state.robots) == 1 and \
@@ -77,7 +79,7 @@ class RobotExistsTest(RosTestCase):
                 robot_exists.set_result('found nav2_tb3')
 
         self.node.create_subscription(
-            FleetState, 'fleet_states', fleet_states_cb, 10
+            FleetState, 'fleet_states', fleet_states_check_robot_exists_cb, 10
         )
         result = await robot_exists
         self.assertIsNotNone(result)
@@ -86,7 +88,7 @@ class RobotExistsTest(RosTestCase):
 
         robot_performing_task_exists = rclpy.Future()
 
-        def fleet_states_cb(fleet_state: FleetState):
+        def fleet_states_check_start_task_cb(fleet_state: FleetState):
             if fleet_state.name != 'turtlebot3':
                 return
             for robot in fleet_state.robots:
@@ -94,7 +96,30 @@ class RobotExistsTest(RosTestCase):
                     robot_performing_task_exists.set_result(True)
 
         self.node.create_subscription(
-            FleetState, 'fleet_states', fleet_states_cb, 10
+            FleetState, 'fleet_states', fleet_states_check_start_task_cb, 10
         )
         result = await robot_performing_task_exists
         self.assertIsNotNone(result)
+
+        # TODO(aaronchongth): Test with task_state_update ROS 2 topic when
+        # released instead
+        robot_done_with_task = rclpy.Future()
+        end_x = 8.392851
+        end_y = -7.75286
+        end_level = 'L1'
+
+        def fleet_states_check_task_done_cb(fleet_state: FleetState):
+            if fleet_state.name != 'turtlebot3':
+                return
+            for robot in fleet_state.robots:
+                if len(robot.task_id) == 0 and \
+                        math.sqrt((robot.location.x - end_x)**2 + (robot.location.y - end_y)) \
+                        < 0.1 and \
+                        robot.location.level_name == end_level:
+                    robot_done_with_task.set_result(True)
+
+        self.node.create_subscription(
+            FleetState, 'fleet_states', fleet_states_check_task_done_cb, 10
+        )
+        result = await robot_done_with_task
+        self.assertIsnotNone(result)
