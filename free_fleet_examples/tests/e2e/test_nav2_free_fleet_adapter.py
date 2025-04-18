@@ -122,4 +122,4 @@ class RobotExistsTest(RosTestCase):
             FleetState, 'fleet_states', fleet_states_check_task_done_cb, 10
         )
         result = await robot_done_with_task
-        self.assertIsnotNone(result)
+        self.assertIsNotNone(result)
