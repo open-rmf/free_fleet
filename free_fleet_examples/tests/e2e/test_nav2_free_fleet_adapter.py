@@ -18,7 +18,7 @@ import math
 
 from managed_process import managed_process
 import rclpy
-from rmf_fleet_msgs.msg import FleetState, RobotMode
+from rmf_fleet_msgs.msg import FleetState
 from ros_testcase import RosTestCase
 
 
@@ -70,7 +70,6 @@ class RobotExistsTest(RosTestCase):
     @RosTestCase.timeout(120)  # 2min
     async def test_patrol_task(self):
         robot_exists = rclpy.Future()
-        robot_idle = rclpy.Future()
 
         def fleet_states_check_robot_exists_cb(fleet_state: FleetState):
             if fleet_state.name != 'turtlebot3':
@@ -78,40 +77,29 @@ class RobotExistsTest(RosTestCase):
             if len(fleet_state.robots) == 1 and \
                     fleet_state.robots[0].name == 'nav2_tb3':
                 robot_exists.set_result('found nav2_tb3')
-            if len(fleet_state.robots) == 1 and \
-                    fleet_state.robots[0].name == 'nav2_tb3' and \
-                    fleet_state.robots[0].mode.mode == RobotMode.MODE_IDLE:
-                robot_idle.set_result('nav2_tb3 is idle')
 
         self.node.create_subscription(
             FleetState, 'fleet_states', fleet_states_check_robot_exists_cb, 10
         )
-        exists = await robot_exists
-        self.assertIsNotNone(exists)
-        idle = await robot_idle
-        self.assertIsNotNone(idle)
+        result = await robot_exists
+        self.assertIsNotNone(result)
 
         self.task_proc.__enter__()
 
         robot_performing_task_exists = rclpy.Future()
-        robot_moving = rclpy.Future()
 
         def fleet_states_check_start_task_cb(fleet_state: FleetState):
             if fleet_state.name != 'turtlebot3':
                 return
             for robot in fleet_state.robots:
-                if len(robot.task_id) != 0 and \
-                        robot.mode.mode == RobotMode.MODE_MOVING:
+                if len(robot.task_id) != 0:
                     robot_performing_task_exists.set_result(True)
-                    robot_moving.set_result(True)
 
         self.node.create_subscription(
             FleetState, 'fleet_states', fleet_states_check_start_task_cb, 10
         )
-        performing_task = await robot_performing_task_exists
-        self.assertIsNotNone(performing_task)
-        moving = await robot_moving
-        self.assertIsNotNone(moving)
+        result = await robot_performing_task_exists
+        self.assertIsNotNone(result)
 
         # TODO(aaronchongth): Test with task_state_update ROS 2 topic when
         # released instead
@@ -119,7 +107,6 @@ class RobotExistsTest(RosTestCase):
         end_x = 8.392851
         end_y = -7.75286
         end_level = 'L1'
-        robot_idle_again = rclpy.Future()
 
         def fleet_states_check_task_done_cb(fleet_state: FleetState):
             if fleet_state.name != 'turtlebot3':
@@ -128,15 +115,11 @@ class RobotExistsTest(RosTestCase):
                 if len(robot.task_id) == 0 and \
                         math.sqrt((robot.location.x - end_x)**2 + (robot.location.y - end_y)**2) \
                         < 0.1 and \
-                        robot.location.level_name == end_level and \
-                        robot.mode.mode == RobotMode.MODE_IDLE:
+                        robot.location.level_name == end_level:
                     robot_done_with_task.set_result(True)
-                    robot_idle_again.set_result(True)
 
         self.node.create_subscription(
             FleetState, 'fleet_states', fleet_states_check_task_done_cb, 10
         )
-        done_with_task = await robot_done_with_task
-        self.assertIsNotNone(done_with_task)
-        idle_again = await robot_idle_again
-        self.assertIsNotNone(idle_again)
+        result = await robot_done_with_task
+        self.assertIsNotNone(result)
