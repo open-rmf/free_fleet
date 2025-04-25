@@ -102,7 +102,7 @@ class RobotExistsTest(RosTestCase):
         self.assertIsNotNone(result)
 
         # TODO(aaronchongth): Test with task_state_update ROS 2 topic when
-        # released instead
+        # released instead, as well as fleet_state_update for mode changes
         robot_done_with_task = rclpy.Future()
         end_x = 8.392851
         end_y = -7.75286
