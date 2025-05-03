@@ -18,6 +18,7 @@ import enum
 from abc import ABC, abstractmethod
 from typing import Callable
 import rmf_adapter.easy_full_control as rmf_easy
+from rmf_adapter import RobotUpdateHandle
 import rclpy.node as Node
 
 
@@ -34,7 +35,7 @@ class RobotActionContext:
             self,
             node: Node,
             name: str,
-            update_handle,  # rmf_fleet_adapter.RobotUpdateHandle
+            update_handle: RobotUpdateHandle
             fleet_config: rmf_easy.FleetConfiguration,
             action_config: dict
         ):

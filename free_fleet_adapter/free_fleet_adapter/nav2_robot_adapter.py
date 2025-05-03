@@ -159,7 +159,7 @@ class Nav2RobotAdapter(RobotAdapter):
                 module = action_config['module']
                 plugin = importlib.import_module(module)
                 action_context = RobotActionContext(
-                    self.node, self.name, self.fleet_handle,
+                    self.node, self.name, self.update_handle,
                     self.fleet_config, action_config
                 )
                 action_factory = plugin.ActionFactory(action_context)
