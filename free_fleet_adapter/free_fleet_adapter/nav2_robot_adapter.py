@@ -109,6 +109,7 @@ class Nav2RobotAdapter(RobotAdapter):
         node,
         zenoh_session,
         fleet_handle,
+        fleet_config: rmf_easy.FleetConfiguration,
         tf_buffer
     ):
         RobotAdapter.__init__(self, name, node, fleet_handle)
@@ -117,6 +118,7 @@ class Nav2RobotAdapter(RobotAdapter):
         self.configuration = configuration
         self.robot_config_yaml = robot_config_yaml
         self.zenoh_session = zenoh_session
+        self.fleet_config = fleet_config
         self.tf_buffer = tf_buffer
 
         self.nav_goal_id = None
@@ -484,15 +486,41 @@ class Nav2RobotAdapter(RobotAdapter):
         description: dict,
         execution: ActivityIdentifier
     ):
-        if self.
+        if self.current_action:
+            # This should never be reached
+            self.node.get_logger().error(
+                f'Robot [{self.name}] received a new action while it is busy '
+                'with another action. Ending current action and accepting '
+                f'incoming action [{category}]'
+            )
+            if self.current_action.execution is not None:
+                self.current_action.execution.finished()
+            self.current_action = None
 
+        action_factory = None
+        plugin_name = self.action_to_plugin_name.get(category)
+        if plugin_name:
+            action_factory = self.action_factories.get(plugin_name)
+        else:
+            for plugin, factory in self.action_factories.items():
+                if factory.supports_action(category):
+                    factory.actions.append(category)
+                    action_factory = factory
+                    break
+
+        if action_factory:
+            # Valid action-plugin pair exists, create RobotAction
+            robot_action = action_factory.perform_action(
+                category, description, execution
+            )
+            self.current_action = robot_action
+            return
 
         # TODO(ac): change map using map_server load_map, and set initial
         # position again with /initialpose
         # TODO(ac): docking
         # We should never reach this point after initialization.
         error_message = \
-            f'Execute action [{category}] is unsupported, this might be a ' \
-            'configuration error.'
+            f'RobotAction [{category}] was not configured for this fleet.'
         self.node.get_logger().error(error_message)
-        raise RuntimeError(error_message)
+        raise NotImplementedError(error_message)

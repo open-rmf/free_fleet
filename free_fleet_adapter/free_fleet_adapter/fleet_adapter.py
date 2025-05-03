@@ -163,6 +163,7 @@ def start_fleet_adapter(
                 node,
                 zenoh_session,
                 fleet_handle,
+                fleet_config,
                 tf_buffer
             )
         elif nav_stack == 1:
@@ -174,6 +175,7 @@ def start_fleet_adapter(
                 node,
                 zenoh_session,
                 fleet_handle,
+                fleet_config,
                 tf_buffer
             )
         else:

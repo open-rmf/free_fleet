@@ -303,6 +303,7 @@ class Nav1RobotAdapter(RobotAdapter):
         node,
         zenoh_session,
         fleet_handle,
+        fleet_config: rmf_easy.FleetConfiguration,
         tf_buffer
     ):
         RobotAdapter.__init__(self, name, node, fleet_handle)
@@ -311,6 +312,7 @@ class Nav1RobotAdapter(RobotAdapter):
         self.configuration = configuration
         self.robot_config_yaml = robot_config_yaml
         self.zenoh_session = zenoh_session
+        self.fleet_config = fleet_config
         self.tf_buffer = tf_buffer
 
         self.map_name = self.robot_config_yaml['initial_map']
