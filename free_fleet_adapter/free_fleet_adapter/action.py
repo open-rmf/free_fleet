@@ -35,7 +35,7 @@ class RobotActionContext:
             self,
             node: Node,
             name: str,
-            update_handle: RobotUpdateHandle
+            update_handle: RobotUpdateHandle,
             fleet_config: rmf_easy.FleetConfiguration,
             action_config: dict
         ):
