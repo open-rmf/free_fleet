@@ -9,6 +9,7 @@
   - [Nav2 Multiple turtlebot3 world](#nav2-multiple-turtlebot3-world)
   - [Nav1 Single turtlebot3 world](#nav1-single-turtlebot3-world)
 - **[Troubleshooting](#troubleshooting)**
+- **[Contributing](#contributing)**
 - **[TODOs](#todos)**
 
 ## Introduction
@@ -26,7 +27,7 @@ Supports
 * [ROS 2 Jazzy](https://docs.ros.org/en/jazzy/index.html)
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
 * [Open-RMF binaries on ROS 2 Jazzy](https://github.com/open-rmf/rmf)
-* [zenoh-bridge-ros2dds v1.1.0](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.1.0)
+* [zenoh-bridge-ros2dds v1.3.3](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.3.3)
 * [zenoh-bridge-ros1 main](https://github.com/eclipse-zenoh/zenoh-plugin-ros1)
 * [zenoh router](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian)
 
@@ -44,10 +45,10 @@ System dependencies,
 sudo apt update && sudo apt install python3-pip ros-jazzy-rmw-cyclonedds-cpp
 ```
 
-The dependencies `eclipse-zenoh`, `pycdr2`, `rosbags` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
+The dependencies `nudged`, `eclipse-zenoh`, `pycdr2`, `rosbags` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
 
 ```bash
-pip3 install pip install eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-packages
+pip3 install nudged eclipse-zenoh==1.3.3 pycdr2 rosbags --break-system-packages
 ```
 
 Install `zenohd` from the [official guide](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian).
@@ -71,7 +72,7 @@ Download and extract standalone binaries for `zenoh-bridge-ros2dds` (optionally 
 
 ```bash
 # Change preferred zenoh version here
-export ZENOH_VERSION=1.1.0
+export ZENOH_VERSION=1.3.3
 
 # Download and extract zenoh-bridge-ros2dds release
 wget -O zenoh-plugin-ros2dds.zip https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/download/$ZENOH_VERSION/zenoh-plugin-ros2dds-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip
@@ -386,6 +387,14 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 * `zenohd` address already in use. This is most likely due to the `rest-http-port` which uses port 8000 by default, and might cause a conflict with other systems, for example `rmf-web`'s API server. Run `zenohd --rest-http-port 8001` to change it to 8001 or anything else.
 
 * Please also check past or [existing issues on this repository](https://github.com/open-rmf/free_fleet/issues), or any discussions on the main [RMF discussion page](https://github.com/open-rmf/rmf/discussions).
+
+## Contributing
+
+* Contributions will follow guidelines from the [OSRA Open-RMF project charter](https://osralliance.org/wp-content/uploads/2024/03/open-rmf-project-charter.pdf), so for community contributions, the best way would be to fork and start a pull requests.
+* Make sure commits are signed off (`--signoff`) and [GPG signed (`-S`)](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification). To retroactively sign past commits on a PR, check out this [post](https://superuser.com/questions/397149/can-you-gpg-sign-old-commits).
+* To test the integration tests locally, build with `colcon build --cmake-args -DNAV2_INTEGRATION_TESTING=ON`, pull docker images mentioned [here](.github/docker/integration-tests/nav2-docker-compose.yaml), start the docker compose `docker compose -f nav2-docker-compose.yaml up -d`, and test as usual using `colcon test`. This applies to the flag `-DNAV1_INTEGRATION_TESTING=ON` as well. Shut down the docker compose with `docker compose -f nav2-docker-compose.yaml down`.
+* Check out [Open-RMF project board](https://github.com/orgs/open-rmf/projects/10/views/1) for tickets or ways to contribute to other projects in the Open-RMF ecosystem.
+* Join the bi-weekly [Open-RMF Project Management Committee Open Sessions](https://discourse.ros.org/t/launch-of-open-rmf-project-management-committee-open-sessions/38552).
 
 ## TODOs
 

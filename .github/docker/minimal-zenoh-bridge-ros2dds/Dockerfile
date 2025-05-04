@@ -1,6 +1,6 @@
 ARG ROS_DISTRO=jazzy
 FROM docker.io/ros:$ROS_DISTRO-ros-base
-ARG ZENOH_VERSION=1.1.0
+ARG ZENOH_VERSION=1.3.3
 ARG FREE_FLEET_BRANCH=main
 
 RUN apt update && apt install -y wget unzip ros-$ROS_DISTRO-rmw-cyclonedds-cpp

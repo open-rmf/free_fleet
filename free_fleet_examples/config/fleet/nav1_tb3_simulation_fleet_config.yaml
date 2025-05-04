@@ -37,7 +37,10 @@ rmf_fleet:
       responsive_wait: False # Should responsive wait be on/off for this specific robot? Overrides the fleet-wide setting.
       # For Nav1RobotAdapter
       navigation_stack: 1
+      init_timeout_sec: 5
       initial_map: "L1"
+      map_frame: "map"
+      robot_frame: "base_footprint"
       maps:
         L1:
           # The nav1 robot will generally no access to this nav2_bringup package, this should point to where the nav1 map is stored.

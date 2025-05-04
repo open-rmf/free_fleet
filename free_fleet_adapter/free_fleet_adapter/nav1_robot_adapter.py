@@ -49,11 +49,14 @@ import zenoh
 
 class Nav1TfHandler:
 
-    def __init__(self, robot_name, zenoh_session, tf_buffer, node):
+    def __init__(self, robot_name, zenoh_session, tf_buffer, node,
+                 robot_frame='base_footprint', map_frame='map'):
         self.robot_name = robot_name
         self.zenoh_session = zenoh_session
         self.node = node
         self.tf_buffer = tf_buffer
+        self.robot_frame = robot_frame
+        self.map_frame = map_frame
 
         def _tf_callback(sample: zenoh.Sample):
             try:
@@ -89,15 +92,15 @@ class Nav1TfHandler:
         try:
             # TODO(ac): parameterize the frames for lookup
             transform = self.tf_buffer.lookup_transform(
-                namespacify('map', self.robot_name),
-                namespacify('base_footprint', self.robot_name),
+                namespacify(self.map_frame, self.robot_name),
+                namespacify(self.robot_frame, self.robot_name),
                 rclpy.time.Time()
             )
             return transform
         except Exception as err:
             self.node.get_logger().info(
-                'Unable to get transform between base_footprint and map: '
-                f'{type(err)}: {err}'
+                f'Unable to get transform between {self.robot_frame} and '
+                f'{self.map_frame}: {type(err)}: {err}'
             )
         return None
 
@@ -316,6 +319,10 @@ class Nav1RobotAdapter(RobotAdapter):
         self.tf_buffer = tf_buffer
 
         self.map_name = self.robot_config_yaml['initial_map']
+        default_map_frame = 'map'
+        default_robot_frame = 'base_footprint'
+        self.map_frame = self.robot_config_yaml.get('map_frame', default_map_frame)
+        self.robot_frame = self.robot_config_yaml.get('robot_frame', default_robot_frame)
 
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
@@ -327,7 +334,9 @@ class Nav1RobotAdapter(RobotAdapter):
             self.name,
             self.zenoh_session,
             self.tf_buffer,
-            self.node
+            self.node,
+            robot_frame=self.robot_frame,
+            map_frame=self.map_frame
         )
         self.move_base_handler = Nav1MoveBaseHandler(
             self.name,
@@ -360,6 +369,64 @@ class Nav1RobotAdapter(RobotAdapter):
             _battery_state_callback
         )
 
+        # Initialize robot
+        init_timeout_sec = self.robot_config_yaml.get('init_timeout_sec', 10)
+        self.node.get_logger().info(f'Initializing robot [{self.name}]...')
+        init_robot_pose = rclpy.Future()
+
+        def _get_init_pose():
+            robot_pose = self.get_pose()
+            if robot_pose is not None:
+                init_robot_pose.set_result(robot_pose)
+                init_robot_pose.done()
+
+        init_pose_timer = self.node.create_timer(1, _get_init_pose)
+        rclpy.spin_until_future_complete(
+            self.node, init_robot_pose, timeout_sec=init_timeout_sec
+        )
+
+        if init_robot_pose.result() is None:
+            error_message = \
+                f'Timeout trying to initialize robot [{self.name}]'
+            self.node.get_logger().error(error_message)
+            raise RuntimeError(error_message)
+
+        self.node.destroy_timer(init_pose_timer)
+        state = rmf_easy.RobotState(
+            self.get_map_name(),
+            init_robot_pose.result(),
+            self.get_battery_soc()
+        )
+
+        if self.fleet_handle is None:
+            self.node.get_logger().warn(
+                f'Fleet unavailable, skipping adding robot [{self.name}] '
+                'to fleet'
+            )
+            return
+
+        self.update_handle = self.fleet_handle.add_robot(
+            self.name,
+            state,
+            self.configuration,
+            rmf_easy.RobotCallbacks(
+                lambda destination, execution: self.navigate(
+                    destination, execution
+                ),
+                lambda activity: self.stop(activity),
+                lambda category, description, execution: self.execute_action(
+                    category, description, execution
+                )
+            )
+        )
+        if not self.update_handle:
+            error_message = \
+                f'Failed to add robot [{self.name}] to fleet ' \
+                f'[{self.fleet_handle.more().fleet_name()}], this is most ' \
+                'likely due to a configuration error.'
+            self.node.get_logger().error(error_message)
+            raise RuntimeError(error_message)
+
     def get_battery_soc(self) -> float:
         return self.battery_soc
 
@@ -371,7 +438,7 @@ class Nav1RobotAdapter(RobotAdapter):
         if transform is None:
             error_message = \
                 f'Failed to update robot [{self.name}]: Unable to get ' \
-                f'transform between base_footprint and map'
+                f'transform between {self.robot_frame} and {self.map_frame}'
             self.node.get_logger().info(error_message)
             return None
 
