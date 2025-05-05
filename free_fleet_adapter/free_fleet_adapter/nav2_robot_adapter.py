@@ -113,7 +113,7 @@ class Nav2RobotAdapter(RobotAdapter):
         node,
         zenoh_session,
         fleet_handle,
-        fleet_config: rmf_easy.FleetConfiguration,
+        fleet_config: rmf_easy.FleetConfiguration | None,
         tf_buffer
     ):
         RobotAdapter.__init__(self, name, node, fleet_handle)
@@ -219,9 +219,16 @@ class Nav2RobotAdapter(RobotAdapter):
         # Track the current ongoing action
         self.current_action = None
 
-        # Import and store plugin actions and action factories
         self.action_to_plugin_name = {}  # Maps action name to plugin name
         self.action_factories = {}  # Maps plugin name to action factory
+        if self.fleet_config is None:
+            self.node.get_logger().info(
+                'No fleet configuration provided for RobotAdapter of '
+                f'[{self.name}]. No plugin actions will be loaded.'
+            )
+            return
+
+        # Import and store plugin actions and action factories
         for plugin_name, action_config in plugin_config.items():
             try:
                 module = action_config['module']
