@@ -26,6 +26,7 @@ from std_msgs.msg import Empty
 
 
 class ActionFactory(RobotActionFactory):
+
     def __init__(self, context: RobotActionContext):
         RobotActionFactory.__init__(self, context)
         self.supported_actions = [
@@ -54,6 +55,7 @@ class ActionFactory(RobotActionFactory):
 # The hello_world custom action parses the description for a user name,
 # performs logging, and completes the action immediately.
 class HelloWorld(RobotAction):
+
     def __init__(
         self,
         description: dict,
@@ -95,6 +97,7 @@ class HelloWorld(RobotAction):
 # Cancel the action with the following command
 # ros2 topic pub --once  /cancel_delayed_hello_world std_msgs/msg/Empty "{}"
 class DelayedHelloWorld(RobotAction):
+
     def __init__(
         self,
         description: dict,

@@ -59,6 +59,19 @@ class RobotExistsTest(RosTestCase):
             ),
         )
 
+        self.custom_action_proc = managed_process(
+            (
+                'ros2',
+                'run',
+                'rmf_demos_tasks',
+                'dispatch_action',
+                '-a',
+                'delayed_hello_world',
+                '-st',
+                '0',
+            ),
+        )
+
         # give some time for discovery to happen
         await self.ros_sleep(5)
 
@@ -122,4 +135,38 @@ class RobotExistsTest(RosTestCase):
             FleetState, 'fleet_states', fleet_states_check_task_done_cb, 10
         )
         result = await robot_done_with_task
+        self.assertIsNotNone(result)
+
+        self.custom_action_proc.__enter__()
+
+        robot_performing_action_exists = rclpy.Future()
+
+        def fleet_states_check_start_action_cb(fleet_state: FleetState):
+            if fleet_state.name != 'turtlebot3':
+                return
+            for robot in fleet_state.robots:
+                if len(robot.task_id) != 0:
+                    robot_performing_action_exists.set_result(True)
+
+        self.node.create_subscription(
+            FleetState, 'fleet_states', fleet_states_check_start_action_cb, 10
+        )
+        result = await robot_performing_action_exists
+        self.assertIsNotNone(result)
+
+        # TODO(aaronchongth): Test with task_state_update ROS 2 topic when
+        # released instead, as well as fleet_state_update for mode changes
+        robot_done_with_action = rclpy.Future()
+
+        def fleet_states_check_action_done_cb(fleet_state: FleetState):
+            if fleet_state.name != 'turtlebot3':
+                return
+            for robot in fleet_state.robots:
+                if len(robot.task_id) == 0:
+                    robot_done_with_action.set_result(True)
+
+        self.node.create_subscription(
+            FleetState, 'fleet_states', fleet_states_check_action_done_cb, 10
+        )
+        result = await robot_done_with_action
         self.assertIsNotNone(result)

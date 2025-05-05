@@ -69,6 +69,3 @@ plugins:
   hello_world:
     module: "free_fleet_examples.actions.hello_world"
     actions: ["hello_world", "delayed_hello_world"]
-  # nav2_dock:
-  #   module: "free_fleet_adapter.actions.nav2_tb4_dock"
-  #   actions: ["nav2_tb4_dock", "nav2_tb4_undock"]

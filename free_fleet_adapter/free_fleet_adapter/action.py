@@ -48,6 +48,7 @@ class RobotActionContext:
 
 
 class RobotAction(ABC):
+
     def __init__(self, context: RobotActionContext, execution):
         self.context = context
         self.execution = execution
@@ -93,6 +94,7 @@ class RobotAction(ABC):
 
 
 class RobotActionFactory(ABC):
+
     def __init__(self, context: RobotActionContext):
         self.context = context
 
