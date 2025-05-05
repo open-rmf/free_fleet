@@ -138,6 +138,13 @@ class Nav2RobotAdapter(RobotAdapter):
         self.replan_counts = 0
         self.nav_issue_ticket = None
 
+        # Track the current ongoing action
+        self.current_action = None
+        # Maps action name to plugin name
+        self.action_to_plugin_name = {}
+        # Maps plugin name to action factory
+        self.action_factories = {}
+
         self.tf_handler = Nav2TfHandler(
             self.name,
             self.zenoh_session,
@@ -216,11 +223,6 @@ class Nav2RobotAdapter(RobotAdapter):
             self.node.get_logger().error(error_message)
             raise RuntimeError(error_message)
 
-        # Track the current ongoing action
-        self.current_action = None
-
-        self.action_to_plugin_name = {}  # Maps action name to plugin name
-        self.action_factories = {}  # Maps plugin name to action factory
         if self.fleet_config is None:
             self.node.get_logger().info(
                 'No fleet configuration provided for RobotAdapter of '

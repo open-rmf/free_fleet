@@ -306,7 +306,7 @@ class Nav1RobotAdapter(RobotAdapter):
         node,
         zenoh_session,
         fleet_handle,
-        fleet_config: rmf_easy.FleetConfiguration,
+        fleet_config: rmf_easy.FleetConfiguration | None,
         tf_buffer
     ):
         RobotAdapter.__init__(self, name, node, fleet_handle)

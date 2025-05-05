@@ -53,6 +53,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
                 node=self.node,
                 zenoh_session=self.zenoh_session,
                 fleet_handle=None,
+                fleet_config=None,
                 tf_buffer=tf_buffer
             )
             robot_found = True
@@ -74,6 +75,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -92,6 +94,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -113,6 +116,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -132,6 +136,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -154,6 +159,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -182,6 +188,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -212,6 +219,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -244,6 +252,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
