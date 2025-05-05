@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import importlib
 from typing import Annotated
 
 from free_fleet.convert import transform_stamped_to_ros2_msg
@@ -37,17 +38,18 @@ from free_fleet.utils import (
     make_nav2_cancel_all_goals_request,
     namespacify,
 )
+from free_fleet_adapter.action import (
+    RobotActionContext,
+    RobotActionState,
+)
 from free_fleet_adapter.robot_adapter import RobotAdapter
-from free_fleet_adapter.action import RobotActionContext
 
 from geometry_msgs.msg import TransformStamped
-import importlib
 import numpy as np
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier, Tier
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
-
 import zenoh
 
 
@@ -394,6 +396,7 @@ class Nav2RobotAdapter(RobotAdapter):
         if self.execution:
             # TODO(ac): use an enum to record what type of execution it is,
             # whether navigation or custom executions
+            # Handle navigation commands
             if self.nav_goal_id is not None and self._is_navigation_done():
                 # TODO(ac): Refactor this check as as self._is_navigation_done
                 # takes a while and the execution may have become None due to
@@ -403,6 +406,21 @@ class Nav2RobotAdapter(RobotAdapter):
                     self.execution = None
                 self.nav_goal_id = None
                 self.replan_counts = 0
+            # Handle custom actions
+            elif self.current_action is not None:
+                current_action_state = self.current_action.update_action()
+                match current_action_state:
+                    case RobotActionState.CANCELED | \
+                            RobotActionState.COMPLETED | \
+                            RobotActionState.FAILED:
+                        self.node.get_logger().info(
+                            f'Robot [{self.name}] current action '
+                            f'[{current_action_state}]'
+                        )
+                        if self.current_action.execution is not None:
+                            self.current_action.execution.finished()
+                        self.current_action = None
+            # Commands are still being carried out
             else:
                 activity_identifier = self.execution.identifier
 
@@ -552,7 +570,8 @@ class Nav2RobotAdapter(RobotAdapter):
         description: dict,
         execution: ActivityIdentifier
     ):
-        if self.current_action:
+        self.execution = execution
+        if self.current_action is not None:
             # This should never be reached
             self.node.get_logger().error(
                 f'Robot [{self.name}] received a new action while it is busy '

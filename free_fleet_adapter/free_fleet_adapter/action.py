@@ -14,33 +14,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import enum
 from abc import ABC, abstractmethod
+from enum import StrEnum
 from typing import Callable
-import rmf_adapter.easy_full_control as rmf_easy
-from rmf_adapter import RobotUpdateHandle
+
 import rclpy.node as Node
+from rmf_adapter import RobotUpdateHandle
+import rmf_adapter.easy_full_control as rmf_easy
 
 
-class RobotActionState(enum.IntEnum):
-    IN_PROGRESS = 0
-    CANCELING = 1
-    CANCELED = 2
-    COMPLETED = 3
-    FAILED = 4
+class RobotActionState(StrEnum):
+    IN_PROGRESS = 'in progress'
+    CANCELING = 'canceling'
+    CANCELED = 'canceled'
+    COMPLETED = 'completed'
+    FAILED = 'failed'
 
 
 class RobotActionContext:
     def __init__(
-            self,
-            node: Node,
-            name: str,
-            update_handle: RobotUpdateHandle,
-            fleet_config: rmf_easy.FleetConfiguration,
-            action_config: dict
-        ):
+        self,
+        node: Node,
+        robot_name: str,
+        update_handle: RobotUpdateHandle,
+        fleet_config: rmf_easy.FleetConfiguration,
+        action_config: dict
+    ):
         self.node = node
-        self.name = name
+        self.robot_name = robot_name
         self.update_handle = update_handle
         self.fleet_config = fleet_config
         self.action_config = action_config
@@ -53,19 +54,19 @@ class RobotAction(ABC):
         self.action_task_id = \
             self.context.update_handle.more().current_task_id()
 
-    '''
+    """
     This method is called on every update by the robot adapter to monitor the
     progress and completion of the action.
     Returns the state of the action.
-    '''
+    """
     @abstractmethod
     def update_action(self) -> RobotActionState:
         # To be populated in the plugins
         ...
 
-    '''
+    """
     This method may be used to cancel the current ongoing task.
-    '''
+    """
     def cancel_task_of_action(
         self,
         cancel_success: Callable[[], None],
@@ -73,18 +74,18 @@ class RobotAction(ABC):
         label: str = ''
     ):
         self.context.node.get_logger().info(
-            f'[{self.context.name}] Cancel task requested for '
+            f'[{self.context.robot_name}] Cancel task requested for '
             f'[{self.action_task_id}]')
 
         def _on_cancel(result: bool):
             if result:
                 self.context.node.get_logger().info(
-                    f'[{self.context.name}] Found task [{self.action_task_id}], '
-                    f'cancelling...')
+                    f'[{self.context.robot_name}] Found task '
+                    f'[{self.action_task_id}], cancelling...')
                 cancel_success()
             else:
                 self.context.node.get_logger().info(
-                    f'[{self.context.name}] Failed to cancel task '
+                    f'[{self.context.robot_name}] Failed to cancel task '
                     f'[{self.action_task_id}]')
                 cancel_fail()
         self.context.update_handle.more().cancel_task(
@@ -97,23 +98,23 @@ class RobotActionFactory(ABC):
 
         if 'actions' not in context.action_config:
             raise KeyError(
-                f'List of supported actions is not provided in the action '
-                f'config! Unable to instantiate an ActionFactory.')
+                'List of supported actions is not provided in the action '
+                'config! Unable to instantiate an ActionFactory.')
         self.actions = context.action_config['actions']
 
-    '''
+    """
     This method can be used to verify whether this ActionFactory supports
     the configured action.
-    '''
+    """
     @abstractmethod
     def supports_action(self, category: str) -> bool:
         # To be populated in the plugins
         ...
 
-    '''
+    """
     This method creates a Action object for the robot adapter to begin and
     interact with an action.
-    '''
+    """
     @abstractmethod
     def perform_action(
         self,
