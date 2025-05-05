@@ -43,8 +43,10 @@ class ActionFactory(RobotActionFactory):
         description: dict,
         execution
     ) -> RobotAction:
-        execution.set_automatic_cancel(True)
-
+        # TODO(ac): Re-instate this for ROS 2 Kilted onwards, as this feature
+        # is only added after Jazzy release.
+        # See https://github.com/open-rmf/rmf_ros2/pull/392 for more info.
+        # execution.set_automatic_cancel(False)
         match category:
             case 'hello_world':
                 return HelloWorld(description, execution, self.context)

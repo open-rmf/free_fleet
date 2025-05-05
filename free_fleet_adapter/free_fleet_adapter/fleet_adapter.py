@@ -171,11 +171,9 @@ def start_fleet_adapter(
                 robot_name,
                 robot_config,
                 robot_config_yaml,
-                plugin_config,
                 node,
                 zenoh_session,
                 fleet_handle,
-                fleet_config,
                 tf_buffer
             )
         else:

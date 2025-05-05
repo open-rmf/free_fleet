@@ -81,7 +81,7 @@ class RobotExistsTest(RosTestCase):
         self.rmf_common_proc.__exit__(None, None, None)
 
     @RosTestCase.timeout(120)  # 2min
-    async def test_patrol_task(self):
+    async def test_patrol_task_and_action(self):
         robot_exists = rclpy.Future()
 
         def fleet_states_check_robot_exists_cb(fleet_state: FleetState):
