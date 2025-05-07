@@ -27,7 +27,7 @@ Supports
 * [ROS 2 Jazzy](https://docs.ros.org/en/jazzy/index.html)
 * [rmw-cyclonedds-cpp](https://github.com/ros2/rmw_cyclonedds)
 * [Open-RMF binaries on ROS 2 Jazzy](https://github.com/open-rmf/rmf)
-* [zenoh-bridge-ros2dds v1.1.0](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.1.0)
+* [zenoh-bridge-ros2dds v1.3.3](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/tag/1.3.3)
 * [zenoh-bridge-ros1 main](https://github.com/eclipse-zenoh/zenoh-plugin-ros1)
 * [zenoh router](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian)
 
@@ -48,7 +48,7 @@ sudo apt update && sudo apt install python3-pip ros-jazzy-rmw-cyclonedds-cpp
 The dependencies `nudged`, `eclipse-zenoh`, `pycdr2`, `rosbags` are available through `pip`. Users can choose to set up a virtual environment, or `--break-system-packages` by performing the installation directly.
 
 ```bash
-pip3 install nudged eclipse-zenoh==1.1.0 pycdr2 rosbags --break-system-packages
+pip3 install nudged eclipse-zenoh==1.3.3 pycdr2 rosbags --break-system-packages
 ```
 
 Install `zenohd` from the [official guide](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian).
@@ -72,7 +72,7 @@ Download and extract standalone binaries for `zenoh-bridge-ros2dds` (optionally 
 
 ```bash
 # Change preferred zenoh version here
-export ZENOH_VERSION=1.1.0
+export ZENOH_VERSION=1.3.3
 
 # Download and extract zenoh-bridge-ros2dds release
 wget -O zenoh-plugin-ros2dds.zip https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/download/$ZENOH_VERSION/zenoh-plugin-ros2dds-$ZENOH_VERSION-x86_64-unknown-linux-gnu-standalone.zip
