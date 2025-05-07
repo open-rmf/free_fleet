@@ -16,9 +16,31 @@
 
 from abc import ABC, abstractmethod
 from typing import Annotated
+from threading import Lock
 
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier
+
+
+class NavigationHandle:
+    def __init__(self, execution: rmf_easy.CommandExecution):
+        self.execution = execution
+        self.goal_id = None
+        self.mutex = Lock()
+        self.mutex.acquire(blocking=True)
+
+    def set_goal_id(self, goal_id):
+        self.goal_id = goal_id
+        self.mutex.release()
+
+    @property
+    def activity(self):
+        # Move the execution reference into a separate variable just in case
+        # another thread modifies self.execution while we're still using it.
+        execution = self.execution
+        if execution is not None:
+            return execution.identifier
+        return None
 
 
 class RobotAdapter(ABC):

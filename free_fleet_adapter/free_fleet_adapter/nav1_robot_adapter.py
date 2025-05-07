@@ -36,7 +36,7 @@ from free_fleet.utils import (
     get_zenoh_name_of_ros1_topic,
     namespacify,
 )
-from free_fleet_adapter.robot_adapter import RobotAdapter
+from free_fleet_adapter.robot_adapter import RobotAdapter, NavigationHandle
 
 from geometry_msgs.msg import TransformStamped
 import rclpy
@@ -310,7 +310,6 @@ class Nav1RobotAdapter(RobotAdapter):
     ):
         RobotAdapter.__init__(self, name, node, fleet_handle)
 
-        self.execution = None
         self.configuration = configuration
         self.robot_config_yaml = robot_config_yaml
         self.zenoh_session = zenoh_session
@@ -341,7 +340,7 @@ class Nav1RobotAdapter(RobotAdapter):
             self.zenoh_session,
             self.node
         )
-        self.nav_goal_id = None
+        self.nav_handle: NavigationHandle = None
 
         def _battery_state_callback(sample: zenoh.Sample):
             try:
@@ -453,18 +452,17 @@ class Nav1RobotAdapter(RobotAdapter):
         ]
         return robot_pose
 
-    def _is_navigation_done(self) -> bool:
-        if self.nav_goal_id is None:
+    def _is_navigation_done(self, nav_handle: NavigationHandle) -> bool:
+        if nav_handle.goal_id is None:
             return True
 
-        nav_goal_id = self.nav_goal_id
         goal_status = \
-            self.move_base_handler.get_goal_status(nav_goal_id)
+            self.move_base_handler.get_goal_status(nav_handle.goal_id)
         if goal_status is None:
             self.replan_counts += 1
             self.node.get_logger().error(
-                f'Navigation goal {nav_goal_id} is not found, replan count '
-                f'[{self.replan_counts}]'
+                f'Navigation goal {nav_handle.goal_id} is not found, '
+                f'replan count [{self.replan_counts}]'
             )
             self.update_handle.more().replan()
             return False
@@ -477,7 +475,7 @@ class Nav1RobotAdapter(RobotAdapter):
                 return False
             case goal_status.SUCCEEDED:
                 self.node.get_logger().info(
-                    f'Navigation goal {nav_goal_id} reached'
+                    f'Navigation goal {nav_handle.goal_id} reached'
                 )
                 if self.nav_issue_ticket is not None:
                     msg = {}
@@ -489,21 +487,21 @@ class Nav1RobotAdapter(RobotAdapter):
                 return True
             case goal_status.PREEMPTED:
                 self.node.get_logger().info(
-                    f'Navigation goal {nav_goal_id} was cancelled'
+                    f'Navigation goal {nav_handle.goal_id} was cancelled'
                 )
                 return True
             case _:
                 self.nav_issue_ticket = self.create_nav_issue_ticket(
                     'navigation',
                     f'Navigate to pose result status [{goal_status.status}]',
-                    self.nav_goal_id
+                    nav_handle.goal_id
                 )
 
                 # TODO(ac): test replanning behavior if goal status is
                 # neither executing or succeeded
                 self.replan_counts += 1
                 self.node.get_logger().error(
-                    f'Navigation goal {nav_goal_id} status '
+                    f'Navigation goal {nav_handle.goal_id} status '
                     f'{goal_status.status}, replan count '
                     f'[{self.replan_counts}]'
                 )
@@ -541,15 +539,13 @@ class Nav1RobotAdapter(RobotAdapter):
             return
 
         activity_identifier = None
-        if self.execution:
-            if self.nav_goal_id is not None and self._is_navigation_done():
-                if self.execution is not None:
-                    self.execution.finished()
-                    self.execution = None
-                self.nav_goal_id = None
+        nav_handle = self.nav_handle
+        if nav_handle:
+            if nav_handle.execution and self._is_navigation_done(nav_handle):
+                nav_handle.execution.finished()
+                nav_handle.execution = None
                 self.replan_counts = 0
-            else:
-                activity_identifier = self.execution.identifier
+            activity_identifier = nav_handle.activity
 
         self.update_handle.update(state, activity_identifier)
 
@@ -560,6 +556,7 @@ class Nav1RobotAdapter(RobotAdapter):
         y: float,
         z: float,
         yaw: float,
+        nav_handle: NavigationHandle,
         timeout_sec: float = 3.0
     ):
         if map_name != self.map_name:
@@ -592,7 +589,7 @@ class Nav1RobotAdapter(RobotAdapter):
             self.node.get_logger().info(
                 f'Navigation goal {nav_goal_id} accepted'
             )
-            self.nav_goal_id = nav_goal_id
+            nav_handle.set_goal_id(nav_goal_id)
             return
 
         self.replan_counts += 1
@@ -607,43 +604,46 @@ class Nav1RobotAdapter(RobotAdapter):
             self.node.get_logger().error(error_message)
             return
         self.update_handle.more().replan()
-        self.nav_goal_id = None
 
     def navigate(
         self,
         destination: rmf_easy.Destination,
         execution: rmf_easy.CommandExecution
     ):
-        self.execution = execution
+        self.request_stop(self.nav_handle)
         self.node.get_logger().info(
             f'Commanding [{self.name}] to navigate to {destination.position}'
             f' on map [{destination.map}]'
         )
+        self.nav_handle = NavigationHandle(execution)
         self._handle_navigate_to_pose(
             destination.map,
             destination.position[0],
             destination.position[1],
             0.0,
-            destination.position[2]
+            destination.position[2],
+            self.nav_handle
         )
+
+    def request_stop(self, nav_handle: NavigationHandle):
+        if nav_handle is not None:
+            with nav_handle.mutex:
+                if (nav_handle.goal_id is not None):
+                    self._handle_stop_navigation()
 
     def _handle_stop_navigation(self):
         self.move_base_handler.stop_current_navigation()
 
     def stop(self, activity: ActivityIdentifier):
-        if self.execution is None:
+        nav_handle = self.nav_handle
+        if nav_handle is None:
             return
 
-        if self.execution.identifier.is_same(activity):
-            self.execution = None
-            # TODO(ac): check what is the type of execution when we start
-            # supporting something other than navigation
-
-            if self.nav_goal_id is not None:
-                self._handle_stop_navigation()
-                # TODO(ac): check return code before setting nav_goal_id to
-                # None
-                self.nav_goal_id = None
+        if nav_handle.execution is not None and \
+                activity.is_same(nav_handle.activity):
+            self.request_stop(nav_handle)
+            self.nav_handle = None
+            # TODO(ac/xy): check return code before setting nav_handle to None
 
     def execute_action(
         self,
