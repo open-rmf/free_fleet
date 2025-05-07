@@ -106,6 +106,7 @@ Launch simulation and set up the initial position of the robot (see gif),
 ```bash
 source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export TURTLEBOT3_MODEL=waffle
 export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/turtlebot3_simulations/turtlebot3_gazebo/models
 
 # Launch the simulation
