@@ -39,6 +39,8 @@ class RobotActionContext:
         update_handle: RobotUpdateHandle,
         fleet_config: rmf_easy.FleetConfiguration,
         action_config: dict,
+        get_battery_soc: Callable[[], float],
+        get_map_name: Callable[[], str],
         get_pose: Callable[[], Annotated[list[float], 3] | None]
     ):
         self.node = node
@@ -46,6 +48,8 @@ class RobotActionContext:
         self.update_handle = update_handle
         self.fleet_config = fleet_config
         self.action_config = action_config
+        self.get_battery_soc = get_battery_soc
+        self.get_map_name = get_map_name
         self.get_pose = get_pose
 
 
