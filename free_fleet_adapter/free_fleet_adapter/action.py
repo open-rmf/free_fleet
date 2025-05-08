@@ -16,7 +16,7 @@
 
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import Callable
+from typing import Annotated, Callable
 
 import rclpy.node as Node
 from rmf_adapter import RobotUpdateHandle
@@ -38,13 +38,15 @@ class RobotActionContext:
         robot_name: str,
         update_handle: RobotUpdateHandle,
         fleet_config: rmf_easy.FleetConfiguration,
-        action_config: dict
+        action_config: dict,
+        get_pose: Callable[[], Annotated[list[float], 3] | None]
     ):
         self.node = node
         self.robot_name = robot_name
         self.update_handle = update_handle
         self.fleet_config = fleet_config
         self.action_config = action_config
+        self.get_pose = get_pose
 
 
 class RobotAction(ABC):

@@ -81,6 +81,11 @@ class HelloWorld(RobotAction):
 
         # Perform the action if it has not been handled yet, update the state
         self.context.node.get_logger().info('Hello, world!')
+        current_pose = self.context.get_pose()
+        if current_pose is None:
+            self.context.node.get_logger().error('Unable to get pose!')
+        else:
+            self.context.node.get_logger().info(f'Current pose: {current_pose}')
 
         # Use information in perform_action description for custom logic
         user = self.description.get('user')
@@ -175,6 +180,13 @@ class DelayedHelloWorld(RobotAction):
         if current_millis - self.start_millis > self.wait_duration_sec * 1000:
             # Perform the action if it has not been handled yet, update the state
             self.context.node.get_logger().info('Hello, world!')
+            current_pose = self.context.get_pose()
+            if current_pose is None:
+                self.context.node.get_logger().error('Unable to get pose!')
+            else:
+                self.context.node.get_logger().info(
+                    f'Current pose: {current_pose}')
+
             if self.user is not None:
                 self.context.node.get_logger().info(f'Hello, {self.user} too!')
 
