@@ -36,7 +36,7 @@ from free_fleet.utils import (
     get_zenoh_name_of_ros1_topic,
     namespacify,
 )
-from free_fleet_adapter.robot_adapter import RobotAdapter, NavigationHandle
+from free_fleet_adapter.robot_adapter import NavigationHandle, RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
 import rclpy

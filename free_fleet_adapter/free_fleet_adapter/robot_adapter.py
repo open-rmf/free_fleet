@@ -15,15 +15,16 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Annotated
 from threading import Lock
+from typing import Annotated
 
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier
 
 
 class NavigationHandle:
-    def __init__(self, execution: rmf_easy.CommandExecution):
+
+    def __init__(self, execution: rmf_easy.CommandExecution | None):
         self.execution = execution
         self.goal_id = None
         self.mutex = Lock()

@@ -37,7 +37,7 @@ from free_fleet.utils import (
     make_nav2_cancel_all_goals_request,
     namespacify,
 )
-from free_fleet_adapter.robot_adapter import RobotAdapter, NavigationHandle
+from free_fleet_adapter.robot_adapter import NavigationHandle, RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
 import numpy as np
