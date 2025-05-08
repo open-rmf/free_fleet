@@ -50,9 +50,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
                 robot_config_yaml={
                     'initial_map': 'L1',
                 },
+                plugin_config=None,
                 node=self.node,
                 zenoh_session=self.zenoh_session,
                 fleet_handle=None,
+                fleet_config=None,
                 tf_buffer=tf_buffer
             )
             robot_found = True
@@ -71,9 +73,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             robot_config_yaml={
                 'initial_map': 'L1',
             },
+            plugin_config=None,
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -89,9 +93,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             robot_config_yaml={
                 'initial_map': 'L1',
             },
+            plugin_config=None,
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -107,9 +113,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             robot_config_yaml={
                 'initial_map': 'L1',
             },
+            plugin_config=None,
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
         assert robot_adapter._is_navigation_done()
@@ -123,9 +131,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             robot_config_yaml={
                 'initial_map': 'L1',
             },
+            plugin_config=None,
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
         assert robot_adapter.execution is None
@@ -142,9 +152,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             robot_config_yaml={
                 'initial_map': 'L1',
             },
+            plugin_config=None,
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -167,9 +179,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             robot_config_yaml={
                 'initial_map': 'L1',
             },
+            plugin_config=None,
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -192,9 +206,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             robot_config_yaml={
                 'initial_map': 'L1',
             },
+            plugin_config=None,
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 
@@ -220,9 +236,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             robot_config_yaml={
                 'initial_map': 'L1',
             },
+            plugin_config=None,
             node=self.node,
             zenoh_session=self.zenoh_session,
             fleet_handle=None,
+            fleet_config=None,
             tf_buffer=tf_buffer
         )
 

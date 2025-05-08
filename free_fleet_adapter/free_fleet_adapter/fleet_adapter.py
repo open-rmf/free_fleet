@@ -30,6 +30,7 @@ from rclpy.parameter import Parameter
 import rmf_adapter
 from rmf_adapter import Adapter, Transformation
 import rmf_adapter.easy_full_control as rmf_easy
+import rmf_adapter.fleet_update_handle as rmf_fleet
 from tf2_ros import Buffer
 import yaml
 import zenoh
@@ -119,16 +120,27 @@ def start_fleet_adapter(
     # Set up tf2 buffer
     tf_buffer = Buffer()
 
-    # TODO(ac): Support custom actions, see Nav2RobotAdapter.execute_action
-    # For now, custom actions are not supported. This section to be removed
-    # once custom actions have been implemented.
-    if 'actions' in config_yaml['rmf_fleet'] and \
-            len(config_yaml['rmf_fleet']['actions']) > 0:
-        error_message = \
-            'Execute actions are currently unsupported, this might be a ' \
-            'configuration error.'
-        node.get_logger().error(error_message)
-        raise RuntimeError(error_message)
+    # Set up custom action plugins
+    plugin_config = config_yaml.get('plugins')
+
+    def _accept_action(description: dict):
+        confirm = rmf_fleet.Confirmation()
+        confirm.accept()
+        return confirm
+
+    for plugin_name, plugin_data in plugin_config.items():
+        plugin_actions = plugin_data.get('actions')
+        if not plugin_actions:
+            node.get_logger().warn(
+                f'No action provided for plugin [{plugin_name}]! Fleet '
+                f'[{fleet_handle.fleet_name}] will not bid on tasks submitted '
+                f'with actions associated with this plugin unless the action '
+                f'is registered as a performable action for this fleet by '
+                f'the user.'
+            )
+            continue
+        for action in plugin_actions:
+            fleet_handle.more().add_performable_action(action, _accept_action)
 
     robots = {}
     for robot_name in fleet_config.known_robots:
@@ -147,9 +159,11 @@ def start_fleet_adapter(
                 robot_name,
                 robot_config,
                 robot_config_yaml,
+                plugin_config,
                 node,
                 zenoh_session,
                 fleet_handle,
+                fleet_config,
                 tf_buffer
             )
         elif nav_stack == 1:
