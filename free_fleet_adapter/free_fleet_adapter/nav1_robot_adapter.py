@@ -36,7 +36,7 @@ from free_fleet.utils import (
     get_zenoh_name_of_ros1_topic,
     namespacify,
 )
-from free_fleet_adapter.robot_adapter import NavigationHandle, RobotAdapter
+from free_fleet_adapter.robot_adapter import ExecutionHandle, RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
 import rclpy
@@ -340,7 +340,7 @@ class Nav1RobotAdapter(RobotAdapter):
             self.zenoh_session,
             self.node
         )
-        self.nav_handle: NavigationHandle = None
+        self.nav_handle: ExecutionHandle = None
 
         def _battery_state_callback(sample: zenoh.Sample):
             try:
@@ -452,7 +452,7 @@ class Nav1RobotAdapter(RobotAdapter):
         ]
         return robot_pose
 
-    def _is_navigation_done(self, nav_handle: NavigationHandle) -> bool:
+    def _is_navigation_done(self, nav_handle: ExecutionHandle) -> bool:
         if nav_handle.goal_id is None:
             return True
 
@@ -556,7 +556,7 @@ class Nav1RobotAdapter(RobotAdapter):
         y: float,
         z: float,
         yaw: float,
-        nav_handle: NavigationHandle,
+        nav_handle: ExecutionHandle,
         timeout_sec: float = 3.0
     ):
         if map_name != self.map_name:
@@ -615,7 +615,7 @@ class Nav1RobotAdapter(RobotAdapter):
             f'Commanding [{self.name}] to navigate to {destination.position}'
             f' on map [{destination.map}]'
         )
-        self.nav_handle = NavigationHandle(execution)
+        self.nav_handle = ExecutionHandle(execution)
         self._handle_navigate_to_pose(
             destination.map,
             destination.position[0],
@@ -625,7 +625,7 @@ class Nav1RobotAdapter(RobotAdapter):
             self.nav_handle
         )
 
-    def request_stop(self, nav_handle: NavigationHandle):
+    def request_stop(self, nav_handle: ExecutionHandle):
         if nav_handle is not None:
             with nav_handle.mutex:
                 if (nav_handle.goal_id is not None):

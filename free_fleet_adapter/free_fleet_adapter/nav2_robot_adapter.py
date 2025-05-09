@@ -37,7 +37,7 @@ from free_fleet.utils import (
     make_nav2_cancel_all_goals_request,
     namespacify,
 )
-from free_fleet_adapter.robot_adapter import NavigationHandle, RobotAdapter
+from free_fleet_adapter.robot_adapter import ExecutionHandle, RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
 import numpy as np
@@ -117,7 +117,7 @@ class Nav2RobotAdapter(RobotAdapter):
         self.zenoh_session = zenoh_session
         self.tf_buffer = tf_buffer
 
-        self.nav_handle: NavigationHandle = None
+        self.nav_handle: ExecutionHandle = None
         self.map_name = self.robot_config_yaml['initial_map']
         default_map_frame = 'map'
         default_robot_frame = 'base_footprint'
@@ -236,7 +236,7 @@ class Nav2RobotAdapter(RobotAdapter):
         ]
         return robot_pose
 
-    def _is_navigation_done(self, nav_handle: NavigationHandle) -> bool:
+    def _is_navigation_done(self, nav_handle: ExecutionHandle) -> bool:
         if nav_handle.goal_id is None:
             return True
 
@@ -352,7 +352,7 @@ class Nav2RobotAdapter(RobotAdapter):
         y: float,
         z: float,
         yaw: float,
-        nav_handle: NavigationHandle
+        nav_handle: ExecutionHandle
     ):
         if map_name != self.map_name:
             # TODO(ac): test this map related replanning behavior
@@ -442,7 +442,7 @@ class Nav2RobotAdapter(RobotAdapter):
             f'Commanding [{self.name}] to navigate to {destination.position} '
             f'on map [{destination.map}]'
         )
-        self.nav_handle = NavigationHandle(execution)
+        self.nav_handle = ExecutionHandle(execution)
         self._handle_navigate_to_pose(
             destination.map,
             destination.position[0],
@@ -452,7 +452,7 @@ class Nav2RobotAdapter(RobotAdapter):
             self.nav_handle
         )
 
-    def request_stop(self, nav_handle: NavigationHandle):
+    def request_stop(self, nav_handle: ExecutionHandle):
         if nav_handle is not None:
             with nav_handle.mutex:
                 if (nav_handle.goal_id is not None):

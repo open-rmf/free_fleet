@@ -22,7 +22,7 @@ import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier
 
 
-class NavigationHandle:
+class ExecutionHandle:
 
     def __init__(self, execution: rmf_easy.CommandExecution | None):
         self.execution = execution

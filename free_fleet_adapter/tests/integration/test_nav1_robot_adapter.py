@@ -19,7 +19,7 @@ import time
 import unittest
 
 from free_fleet_adapter.nav1_robot_adapter import Nav1RobotAdapter
-from free_fleet_adapter.robot_adapter import NavigationHandle
+from free_fleet_adapter.robot_adapter import ExecutionHandle
 import rclpy
 from tf2_ros import Buffer
 
@@ -116,7 +116,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
-        nav_handle = NavigationHandle(None)
+        nav_handle = ExecutionHandle(None)
         transform = robot_adapter.get_pose()
         assert transform is not None
         assert robot_adapter._is_navigation_done(nav_handle)
@@ -135,7 +135,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
-        nav_handle = NavigationHandle(None)
+        nav_handle = ExecutionHandle(None)
 
         transform = robot_adapter.get_pose()
         assert transform is not None
@@ -163,7 +163,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
         assert transform is not None
 
         prev_replan_count = robot_adapter.replan_counts
-        nav_handle = NavigationHandle(None)
+        nav_handle = ExecutionHandle(None)
         robot_adapter._handle_navigate_to_pose(
             'invalid_map',
             0.0,
@@ -192,7 +192,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
         transform = robot_adapter.get_pose()
         assert transform is not None
 
-        nav_handle = NavigationHandle(None)
+        nav_handle = ExecutionHandle(None)
         robot_adapter._handle_navigate_to_pose(
             'L1',
             -1.8,
@@ -223,7 +223,7 @@ class TestNav1RobotAdapter(unittest.TestCase):
 
         transform = robot_adapter.get_pose()
         assert transform is not None
-        nav_handle = NavigationHandle(None)
+        nav_handle = ExecutionHandle(None)
         robot_adapter._handle_navigate_to_pose(
             'L1',
             1.808,
