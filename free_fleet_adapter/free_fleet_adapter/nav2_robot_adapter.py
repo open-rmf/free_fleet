@@ -124,7 +124,7 @@ class Nav2RobotAdapter(RobotAdapter):
         self.fleet_config = fleet_config
         self.tf_buffer = tf_buffer
 
-        self.nav_handle: ExecutionHandle | None = None
+        self.exec_handle: ExecutionHandle | None = None
         self.map_name = self.robot_config_yaml['initial_map']
         default_map_frame = 'map'
         default_robot_frame = 'base_footprint'
@@ -407,14 +407,15 @@ class Nav2RobotAdapter(RobotAdapter):
             return
 
         activity_identifier = None
-        nav_handle = self.nav_handle
-        if nav_handle:
-            if nav_handle.execution and self._is_navigation_done(nav_handle):
+        exec_handle = self.exec_handle
+        if exec_handle:
+            if exec_handle.execution and exec_handle.goal_id and \
+                    self._is_navigation_done(exec_handle):
                 # TODO(ac): Refactor this check as as self._is_navigation_done
                 # takes a while and the execution may have become None due to
                 # task cancellation.
-                nav_handle.execution.finished()
-                nav_handle.execution = None
+                exec_handle.execution.finished()
+                exec_handle.execution = None
                 # TODO(ac): use an enum to record what type of execution it is,
                 # whether navigation or custom executions
                 self.replan_counts = 0
@@ -433,7 +434,7 @@ class Nav2RobotAdapter(RobotAdapter):
                             self.current_action.execution.finished()
                         self.current_action = None
             # Commands are still being carried out
-            activity_identifier = nav_handle.activity
+            activity_identifier = exec_handle.activity
 
         self.update_handle.update(state, activity_identifier)
 
@@ -529,25 +530,25 @@ class Nav2RobotAdapter(RobotAdapter):
         destination: rmf_easy.Destination,
         execution: rmf_easy.CommandExecution
     ):
-        self.request_stop(self.nav_handle)
+        self._request_stop(self.exec_handle)
         self.node.get_logger().info(
             f'Commanding [{self.name}] to navigate to {destination.position} '
             f'on map [{destination.map}]'
         )
-        self.nav_handle = ExecutionHandle(execution)
+        self.exec_handle = ExecutionHandle(execution)
         self._handle_navigate_to_pose(
             destination.map,
             destination.position[0],
             destination.position[1],
             0.0,
             destination.position[2],
-            self.nav_handle
+            self.exec_handle
         )
 
-    def _request_stop(self, nav_handle: ExecutionHandle):
-        if nav_handle is not None:
-            with nav_handle.mutex:
-                if (nav_handle.goal_id is not None):
+    def _request_stop(self, exec_handle: ExecutionHandle):
+        if exec_handle is not None:
+            with exec_handle.mutex:
+                if (exec_handle.goal_id is not None):
                     self._handle_stop_navigation()
 
     def _handle_stop_navigation(self):
@@ -569,15 +570,15 @@ class Nav2RobotAdapter(RobotAdapter):
             )
 
     def stop(self, activity: ActivityIdentifier):
-        nav_handle = self.nav_handle
-        if nav_handle is None:
+        exec_handle = self.exec_handle
+        if exec_handle is None:
             return
 
-        if nav_handle.execution is not None and \
-                activity.is_same(nav_handle.activity):
-            self.request_stop(nav_handle)
-            self.nav_handle = None
-            # TODO(ac/xy): check return code before setting nav_handle to None
+        if exec_handle.execution is not None and \
+                activity.is_same(exec_handle.activity):
+            self._request_stop(exec_handle)
+            self.exec_handle = None
+            # TODO(ac/xy): check return code before setting exec_handle to None
 
     def execute_action(
         self,

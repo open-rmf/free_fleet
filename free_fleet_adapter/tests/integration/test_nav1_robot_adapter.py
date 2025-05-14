@@ -116,10 +116,10 @@ class TestNav1RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
-        robot_adapter.nav_handle = ExecutionHandle(None)
+        robot_adapter.exec_handle = ExecutionHandle(None)
         transform = robot_adapter.get_pose()
         assert transform is not None
-        assert robot_adapter._is_navigation_done(robot_adapter.nav_handle)
+        assert robot_adapter._is_navigation_done(robot_adapter.exec_handle)
 
     def test_robot_stop_without_command(self):
         tf_buffer = Buffer()
@@ -135,14 +135,14 @@ class TestNav1RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
-        robot_adapter.nav_handle = ExecutionHandle(None)
+        robot_adapter.exec_handle = ExecutionHandle(None)
 
         transform = robot_adapter.get_pose()
         assert transform is not None
-        assert robot_adapter.nav_handle.execution is None
+        assert robot_adapter.exec_handle.execution is None
         robot_adapter.stop(None)
-        assert robot_adapter.nav_handle.execution is None
-        assert robot_adapter._is_navigation_done(robot_adapter.nav_handle)
+        assert robot_adapter.exec_handle.execution is None
+        assert robot_adapter._is_navigation_done(robot_adapter.exec_handle)
 
     def test_robot_handle_navigate_to_invalid_map(self):
         tf_buffer = Buffer()
@@ -163,14 +163,14 @@ class TestNav1RobotAdapter(unittest.TestCase):
         assert transform is not None
 
         prev_replan_count = robot_adapter.replan_counts
-        robot_adapter.nav_handle = ExecutionHandle(None)
+        robot_adapter.exec_handle = ExecutionHandle(None)
         robot_adapter._handle_navigate_to_pose(
             'invalid_map',
             0.0,
             1.0,
             2.0,
             0.0,
-            robot_adapter.nav_handle
+            robot_adapter.exec_handle
         )
         assert robot_adapter.replan_counts == prev_replan_count + 1
 
@@ -192,19 +192,19 @@ class TestNav1RobotAdapter(unittest.TestCase):
         transform = robot_adapter.get_pose()
         assert transform is not None
 
-        robot_adapter.nav_handle = ExecutionHandle(None)
+        robot_adapter.exec_handle = ExecutionHandle(None)
         robot_adapter._handle_navigate_to_pose(
             'L1',
             -1.8,
             -0.5,
             0.0,
             0.0,
-            robot_adapter.nav_handle,
+            robot_adapter.exec_handle,
             5.0
         )
-        assert not robot_adapter._is_navigation_done(robot_adapter.nav_handle)
+        assert not robot_adapter._is_navigation_done(robot_adapter.exec_handle)
         time.sleep(5)
-        assert robot_adapter._is_navigation_done(robot_adapter.nav_handle)
+        assert robot_adapter._is_navigation_done(robot_adapter.exec_handle)
 
     def test_robot_stop_navigate(self):
         tf_buffer = Buffer()
@@ -223,22 +223,22 @@ class TestNav1RobotAdapter(unittest.TestCase):
 
         transform = robot_adapter.get_pose()
         assert transform is not None
-        robot_adapter.nav_handle = ExecutionHandle(None)
+        robot_adapter.exec_handle = ExecutionHandle(None)
         robot_adapter._handle_navigate_to_pose(
             'L1',
             1.808,
             0.503,
             0.0,
             0.0,
-            robot_adapter.nav_handle,
+            robot_adapter.exec_handle,
             5.0
         )
-        assert robot_adapter.nav_handle.goal_id is not None
-        assert not robot_adapter._is_navigation_done(robot_adapter.nav_handle)
+        assert robot_adapter.exec_handle.goal_id is not None
+        assert not robot_adapter._is_navigation_done(robot_adapter.exec_handle)
         time.sleep(1)
         robot_adapter._handle_stop_navigation()
         time.sleep(1)
-        assert robot_adapter._is_navigation_done(robot_adapter.nav_handle)
+        assert robot_adapter._is_navigation_done(robot_adapter.exec_handle)
 
     def test_robot_execute_unknown_action(self):
         tf_buffer = Buffer()
