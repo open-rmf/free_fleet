@@ -106,6 +106,7 @@ Launch simulation and set up the initial position of the robot (see gif),
 ```bash
 source /opt/ros/jazzy/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export TURTLEBOT3_MODEL=waffle
 export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/turtlebot3_simulations/turtlebot3_gazebo/models
 
 # Launch the simulation
@@ -185,6 +186,30 @@ ros2 run rmf_demos_tasks dispatch_patrol \
   -p north_west north_east south_east south_west \
   -n 2 \
   -st 0
+```
+
+Dispatch example custom actions `hello_world` and `delayed_hello_world`. These example custom actions simply prints messages, and can be observed in the terminal logs.
+
+```bash
+source ~/ff_ws/install/setup.bash
+export ROS_DOMAIN_ID=55
+
+# hello_world
+ros2 run rmf_demos_tasks dispatch_action -st 0 -a hello_world
+
+# hello_world with user name in description
+ros2 run rmf_demos_tasks dispatch_action -st 0 -a hello_world \
+  -ad '{"user": "John Doe"}'
+
+# delayed_hello_world, default as 5 seconds
+ros2 run rmf_demos_tasks dispatch_action -st 0 -a delayed_hello_world
+
+# delayed_hello_world with user name and custom wait duration in description
+ros2 run rmf_demos_tasks dispatch_action -st 0 -a delayed_hello_world \
+  -ad '{"user": "Jane Doe", "wait_duration_sec": 20}'
+
+# While a `delayed_hello_world` is ongoing, users can also trigger a cancellation manually on the action, which will cause the task to be cancelled as well.
+ros2 topic pub --once  /cancel_delayed_hello_world std_msgs/msg/Empty "{}"
 ```
 
 ### Nav2 Multiple turtlebot3 world
@@ -399,9 +424,9 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 ## TODOs
 
 * attempt to optimize tf messages (not all are needed)
-* custom actions to be abstracted
 * map switching support
 * test replanning behavior
+* support for Kilted
 * support for Rolling
 * docker images
 * releases
