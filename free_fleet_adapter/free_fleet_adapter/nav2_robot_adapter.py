@@ -137,8 +137,6 @@ class Nav2RobotAdapter(RobotAdapter):
         self.replan_counts = 0
         self.nav_issue_ticket = None
 
-        # Track the current ongoing action
-        self.current_action = None
         # Maps action name to plugin name
         self.action_to_plugin_name = {}
         # Maps plugin name to action factory
@@ -409,6 +407,7 @@ class Nav2RobotAdapter(RobotAdapter):
         activity_identifier = None
         exec_handle = self.exec_handle
         if exec_handle:
+            # Handle navigation
             if exec_handle.execution and exec_handle.goal_id and \
                     self._is_navigation_done(exec_handle):
                 # TODO(ac): Refactor this check as as self._is_navigation_done
@@ -420,8 +419,8 @@ class Nav2RobotAdapter(RobotAdapter):
                 # whether navigation or custom executions
                 self.replan_counts = 0
             # Handle custom actions
-            elif self.current_action is not None:
-                current_action_state = self.current_action.update_action()
+            elif exec_handle.execution and exec_handle.action:
+                current_action_state = exec_handle.action.update_action()
                 match current_action_state:
                     case RobotActionState.CANCELED | \
                             RobotActionState.COMPLETED | \
@@ -430,9 +429,8 @@ class Nav2RobotAdapter(RobotAdapter):
                             f'Robot [{self.name}] current action '
                             f'[{current_action_state}]'
                         )
-                        if self.current_action.execution is not None:
-                            self.current_action.execution.finished()
-                        self.current_action = None
+                        exec_handle.execution.finished()
+                        exec_handle.action = None
             # Commands are still being carried out
             activity_identifier = exec_handle.activity
 
@@ -586,17 +584,17 @@ class Nav2RobotAdapter(RobotAdapter):
         description: dict,
         execution: ActivityIdentifier
     ):
-        self.execution = execution
-        if self.current_action is not None:
+        current_exec_handle = self.exec_handle
+        if current_exec_handle.action is not None:
             # This should never be reached
             self.node.get_logger().error(
                 f'Robot [{self.name}] received a new action while it is busy '
                 'with another action. Ending current action and accepting '
                 f'incoming action [{category}]'
             )
-            if self.current_action.execution is not None:
-                self.current_action.execution.finished()
-            self.current_action = None
+            if current_exec_handle.execution is not None:
+                current_exec_handle.execution.finished()
+            current_exec_handle.action = None
 
         action_factory = None
         plugin_name = self.action_to_plugin_name.get(category)
@@ -614,7 +612,8 @@ class Nav2RobotAdapter(RobotAdapter):
             robot_action = action_factory.perform_action(
                 category, description, execution
             )
-            self.current_action = robot_action
+            self.exec_handle = ExecutionHandle(execution)
+            self.exec_handle.set_action(robot_action)
             return
 
         # TODO(ac): change map using map_server load_map, and set initial

@@ -27,11 +27,16 @@ class ExecutionHandle:
     def __init__(self, execution: rmf_easy.CommandExecution | None):
         self.execution = execution
         self.goal_id = None
+        self.action = None
         self.mutex = Lock()
         self.mutex.acquire(blocking=True)
 
     def set_goal_id(self, goal_id):
         self.goal_id = goal_id
+        self.mutex.release()
+
+    def set_action(self, action):
+        self.action = action
         self.mutex.release()
 
     @property
