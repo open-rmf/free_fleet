@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import importlib
 from typing import Annotated
 
 from free_fleet.convert import transform_stamped_to_ros2_msg
@@ -37,6 +38,10 @@ from free_fleet.utils import (
     make_nav2_cancel_all_goals_request,
     namespacify,
 )
+from free_fleet_adapter.action import (
+    RobotActionContext,
+    RobotActionState,
+)
 from free_fleet_adapter.robot_adapter import RobotAdapter
 
 from geometry_msgs.msg import TransformStamped
@@ -45,7 +50,6 @@ import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier, Tier
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
-
 import zenoh
 
 
@@ -105,9 +109,11 @@ class Nav2RobotAdapter(RobotAdapter):
         name: str,
         configuration,
         robot_config_yaml,
+        plugin_config: dict | None,
         node,
         zenoh_session,
         fleet_handle,
+        fleet_config: rmf_easy.FleetConfiguration | None,
         tf_buffer
     ):
         RobotAdapter.__init__(self, name, node, fleet_handle)
@@ -116,6 +122,7 @@ class Nav2RobotAdapter(RobotAdapter):
         self.configuration = configuration
         self.robot_config_yaml = robot_config_yaml
         self.zenoh_session = zenoh_session
+        self.fleet_config = fleet_config
         self.tf_buffer = tf_buffer
 
         self.nav_goal_id = None
@@ -130,6 +137,13 @@ class Nav2RobotAdapter(RobotAdapter):
 
         self.replan_counts = 0
         self.nav_issue_ticket = None
+
+        # Track the current ongoing action
+        self.current_action = None
+        # Maps action name to plugin name
+        self.action_to_plugin_name = {}
+        # Maps plugin name to action factory
+        self.action_factories = {}
 
         self.tf_handler = Nav2TfHandler(
             self.name,
@@ -208,6 +222,69 @@ class Nav2RobotAdapter(RobotAdapter):
                 'likely due to a configuration error.'
             self.node.get_logger().error(error_message)
             raise RuntimeError(error_message)
+
+        if self.fleet_config is None:
+            self.node.get_logger().info(
+                'No fleet configuration provided for RobotAdapter of '
+                f'[{self.name}]. No plugin actions will be loaded.'
+            )
+            return
+
+        # Import and store plugin actions and action factories
+        for plugin_name, action_config in plugin_config.items():
+            try:
+                module = action_config['module']
+                plugin = importlib.import_module(module)
+                action_context = RobotActionContext(
+                    self.node,
+                    self.name,
+                    self.update_handle,
+                    self.fleet_config,
+                    action_config,
+                    self.get_battery_soc,
+                    self.get_map_name,
+                    self.get_pose
+                )
+                action_factory = plugin.ActionFactory(action_context)
+                for action in action_factory.actions:
+                    # Verify that this action is not duplicated across plugins
+                    target_plugin = self.action_to_plugin_name.get(action)
+                    if (target_plugin is not None and
+                            target_plugin != plugin_name):
+                        raise Exception(
+                            f'Action [{action}] is indicated to be supported '
+                            f'by multiple plugins: {target_plugin} and '
+                            f'{plugin_name}. The fleet adapter is unable to '
+                            f'select the intended plugin to be paired for '
+                            f'this action. Please ensure that action names '
+                            f'are not duplicated across supported plugins. '
+                            f'Unable to create ActionFactory for '
+                            f'{plugin_name}. Robot [{self.name}] will not be '
+                            f'able to perform actions associated with this '
+                            f'plugin.'
+                        )
+                    # Verify that this ActionFactory supports this action
+                    if not action_factory.supports_action(action):
+                        raise ValueError(
+                            f'The plugin config provided [{action}] as a '
+                            f'performable action, but it is not a supported '
+                            f'action in the {plugin_name} ActionFactory!'
+                        )
+                    self.action_to_plugin_name[action] = plugin_name
+                self.action_factories[plugin_name] = action_factory
+            except KeyError:
+                self.node.get_logger().info(
+                    f'Unable to create ActionFactory for {plugin_name}! '
+                    f'Configured plugin config is invalid. '
+                    f'Robot [{self.name}] will not be able to perform '
+                    f'actions associated with this plugin.'
+                )
+            except ImportError:
+                self.node.get_logger().info(
+                    f'Unable to import module for {plugin_name}! '
+                    f'Robot [{self.name}] will not be able to perform '
+                    f'actions associated with this plugin.'
+                )
 
     def get_battery_soc(self) -> float:
         return self.battery_soc
@@ -334,6 +411,7 @@ class Nav2RobotAdapter(RobotAdapter):
         if self.execution:
             # TODO(ac): use an enum to record what type of execution it is,
             # whether navigation or custom executions
+            # Handle navigation commands
             if self.nav_goal_id is not None and self._is_navigation_done():
                 # TODO(ac): Refactor this check as as self._is_navigation_done
                 # takes a while and the execution may have become None due to
@@ -343,6 +421,21 @@ class Nav2RobotAdapter(RobotAdapter):
                     self.execution = None
                 self.nav_goal_id = None
                 self.replan_counts = 0
+            # Handle custom actions
+            elif self.current_action is not None:
+                current_action_state = self.current_action.update_action()
+                match current_action_state:
+                    case RobotActionState.CANCELED | \
+                            RobotActionState.COMPLETED | \
+                            RobotActionState.FAILED:
+                        self.node.get_logger().info(
+                            f'Robot [{self.name}] current action '
+                            f'[{current_action_state}]'
+                        )
+                        if self.current_action.execution is not None:
+                            self.current_action.execution.finished()
+                        self.current_action = None
+            # Commands are still being carried out
             else:
                 activity_identifier = self.execution.identifier
 
@@ -492,12 +585,42 @@ class Nav2RobotAdapter(RobotAdapter):
         description: dict,
         execution: ActivityIdentifier
     ):
+        self.execution = execution
+        if self.current_action is not None:
+            # This should never be reached
+            self.node.get_logger().error(
+                f'Robot [{self.name}] received a new action while it is busy '
+                'with another action. Ending current action and accepting '
+                f'incoming action [{category}]'
+            )
+            if self.current_action.execution is not None:
+                self.current_action.execution.finished()
+            self.current_action = None
+
+        action_factory = None
+        plugin_name = self.action_to_plugin_name.get(category)
+        if plugin_name:
+            action_factory = self.action_factories.get(plugin_name)
+        else:
+            for plugin, factory in self.action_factories.items():
+                if factory.supports_action(category):
+                    factory.actions.append(category)
+                    action_factory = factory
+                    break
+
+        if action_factory:
+            # Valid action-plugin pair exists, create RobotAction
+            robot_action = action_factory.perform_action(
+                category, description, execution
+            )
+            self.current_action = robot_action
+            return
+
         # TODO(ac): change map using map_server load_map, and set initial
         # position again with /initialpose
         # TODO(ac): docking
         # We should never reach this point after initialization.
         error_message = \
-            f'Execute action [{category}] is unsupported, this might be a ' \
-            'configuration error.'
+            f'RobotAction [{category}] was not configured for this fleet.'
         self.node.get_logger().error(error_message)
-        raise RuntimeError(error_message)
+        raise NotImplementedError(error_message)
