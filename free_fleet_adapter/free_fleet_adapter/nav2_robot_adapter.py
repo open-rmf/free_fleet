@@ -585,7 +585,8 @@ class Nav2RobotAdapter(RobotAdapter):
         execution: ActivityIdentifier
     ):
         current_exec_handle = self.exec_handle
-        if current_exec_handle.action is not None:
+        if current_exec_handle is not None and \
+                current_exec_handle.action is not None:
             # This should never be reached
             self.node.get_logger().error(
                 f'Robot [{self.name}] received a new action while it is busy '
