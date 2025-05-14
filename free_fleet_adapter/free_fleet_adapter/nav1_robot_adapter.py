@@ -340,7 +340,7 @@ class Nav1RobotAdapter(RobotAdapter):
             self.zenoh_session,
             self.node
         )
-        self.nav_handle: ExecutionHandle = None
+        self.nav_handle: ExecutionHandle | None = None
 
         def _battery_state_callback(sample: zenoh.Sample):
             try:
@@ -625,7 +625,7 @@ class Nav1RobotAdapter(RobotAdapter):
             self.nav_handle
         )
 
-    def request_stop(self, nav_handle: ExecutionHandle):
+    def _request_stop(self, nav_handle: ExecutionHandle):
         if nav_handle is not None:
             with nav_handle.mutex:
                 if (nav_handle.goal_id is not None):

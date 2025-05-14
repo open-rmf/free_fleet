@@ -113,8 +113,8 @@ class TestNav2RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
-        nav_handle = ExecutionHandle(None)
-        assert robot_adapter._is_navigation_done(nav_handle)
+        robot_adapter.nav_handle = ExecutionHandle(None)
+        assert robot_adapter._is_navigation_done(robot_adapter.nav_handle)
 
     def test_robot_stop_without_command(self):
         tf_buffer = Buffer()
@@ -130,11 +130,11 @@ class TestNav2RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
-        nav_handle = ExecutionHandle(None)
-        assert nav_handle.execution is None
+        robot_adapter.nav_handle = ExecutionHandle(None)
+        assert robot_adapter.nav_handle.execution is None
         robot_adapter.stop(None)
-        assert nav_handle.execution is None
-        assert robot_adapter._is_navigation_done(nav_handle)
+        assert robot_adapter.nav_handle.execution is None
+        assert robot_adapter._is_navigation_done(robot_adapter.nav_handle)
 
     def test_robot_handle_navigate_to_invalid_map(self):
         tf_buffer = Buffer()
@@ -152,14 +152,14 @@ class TestNav2RobotAdapter(unittest.TestCase):
         )
 
         prev_replan_count = robot_adapter.replan_counts
-        nav_handle = ExecutionHandle(None)
+        robot_adapter.nav_handle = ExecutionHandle(None)
         robot_adapter._handle_navigate_to_pose(
             'invalid_map',
             0.0,
             1.0,
             2.0,
             0.0,
-            nav_handle
+            robot_adapter.nav_handle
         )
         assert robot_adapter.replan_counts == prev_replan_count + 1
 
@@ -177,7 +177,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
-        nav_handle = ExecutionHandle(None)
+        robot_adapter.nav_handle = ExecutionHandle(None)
 
         robot_adapter._handle_navigate_to_pose(
             'L1',
@@ -185,10 +185,10 @@ class TestNav2RobotAdapter(unittest.TestCase):
             -0.606,
             0.0,
             0.0,
-            nav_handle
+            robot_adapter.nav_handle
         )
         time.sleep(5)
-        assert robot_adapter._is_navigation_done(nav_handle)
+        assert robot_adapter._is_navigation_done(robot_adapter.nav_handle)
 
     def test_robot_stop_navigate(self):
         tf_buffer = Buffer()
@@ -204,7 +204,7 @@ class TestNav2RobotAdapter(unittest.TestCase):
             fleet_handle=None,
             tf_buffer=tf_buffer
         )
-        nav_handle = ExecutionHandle(None)
+        robot_adapter.nav_handle = ExecutionHandle(None)
 
         robot_adapter._handle_navigate_to_pose(
             'L1',
@@ -212,13 +212,13 @@ class TestNav2RobotAdapter(unittest.TestCase):
             0.503,
             0.0,
             0.0,
-            nav_handle
+            robot_adapter.nav_handle
         )
-        assert not robot_adapter._is_navigation_done(nav_handle)
+        assert not robot_adapter._is_navigation_done(robot_adapter.nav_handle)
         time.sleep(1)
         robot_adapter._handle_stop_navigation()
         time.sleep(1)
-        assert robot_adapter._is_navigation_done(nav_handle)
+        assert robot_adapter._is_navigation_done(robot_adapter.nav_handle)
 
     def test_robot_execute_unknown_action(self):
         tf_buffer = Buffer()

@@ -117,7 +117,7 @@ class Nav2RobotAdapter(RobotAdapter):
         self.zenoh_session = zenoh_session
         self.tf_buffer = tf_buffer
 
-        self.nav_handle: ExecutionHandle = None
+        self.nav_handle: ExecutionHandle | None = None
         self.map_name = self.robot_config_yaml['initial_map']
         default_map_frame = 'map'
         default_robot_frame = 'base_footprint'
@@ -452,7 +452,7 @@ class Nav2RobotAdapter(RobotAdapter):
             self.nav_handle
         )
 
-    def request_stop(self, nav_handle: ExecutionHandle):
+    def _request_stop(self, nav_handle: ExecutionHandle):
         if nav_handle is not None:
             with nav_handle.mutex:
                 if (nav_handle.goal_id is not None):

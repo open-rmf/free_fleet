@@ -35,7 +35,7 @@ class ExecutionHandle:
         self.mutex.release()
 
     @property
-    def activity(self):
+    def activity(self) -> ActivityIdentifier | None:
         # Move the execution reference into a separate variable just in case
         # another thread modifies self.execution while we're still using it.
         execution = self.execution
