@@ -393,25 +393,7 @@ ros2 run rmf_demos_tasks dispatch_patrol \
 
 ## Troubleshooting
 
-* Looking for the legacy implementation of `free_fleet`? Check out the tag [1.3.0](https://github.com/open-rmf/free_fleet/releases/tag/1.3.0), or the [`legacy`](https://github.com/open-rmf/free_fleet/tree/legacy) branch.
-
-* `free_fleet_adapter` can't seem to control the robots? Check if the zenoh messages are going through using the testing scripts in `free_fleet_examples`. For ROS 2 navigation stacks, make sure that the `zenoh-bridge-ros2dds` is launched with the same `RMW_IMPLEMENTATION` and `ROS_DOMAIN_ID` as the robot's navigation stack, otherwise no messages will be passed through the bridge.
-
-* Failing to start `free_fleet_adapter` due to missing API in `rmf_fleet_adapter_python`? This may be due to using outdated `rmf_fleet_adapter_python` released binaries, either perform a `sudo apt update && sudo apt upgrade`, or build RMF from source following the [official guide](https://github.com/open-rmf/rmf).
-
-* Simulations don't seem to work properly anymore? Try `ros2 deamon stop`, `ros2 daemon start`, or explicitly kill the `ros` and `gazebo` processes, or restart your machine. It's been noticed that if the ROS 2 or gazebo process are not terminated properly (happens rarely), the network traffic between the simulation robots and the fleet adapter get affected.
-
-* ROS 1 Navigation stack simulation does not seem to work as expected? Check out the [integration tests docker compose](.github/docker/integration-tests/nav1-docker-compose.yaml), as well as the [simulation](.github/docker/minimal-ros1-sim/Dockerfile) and [bringup](.github/docker/minimal-nav1-bringup/Dockerfile) docker files, for any missing dependencies.
-
-* Why does RMF not run with `use_sim_time:=true` in the examples? This is because it is on a different `ROS_DOMAIN_ID` than the simulation, therefore it will not have access to the simulation `clock` topic, the examples running RMF, `free_fleet_adapter` and the tasks will not be using sim time.
-
-* For potential bandwidth issues, especially during multirobot sim example, spinning up a dedicated zenoh router and routing the `zenoh-bridge-ros2dds` manually to it, could help alleviate such issues.
-
-* If `zenoh` messages are not received, make sure the versions between the `eclipse-zenoh` in `pip`, `zenoh-bridge-ros2dds` and `zenohd` are all the same. If the debian binary releases of `zenohd` have breaking changes, and the repo has not yet migrate to the newer version, please open an issue ticket and we will look into migrating as soon as possible. In the meantime, using an older standalone release of `zenohd` would be a temporary workaround. Our integration tests will attempt to catch these breaking changes too.
-
-* `zenohd` address already in use. This is most likely due to the `rest-http-port` which uses port 8000 by default, and might cause a conflict with other systems, for example `rmf-web`'s API server. Run `zenohd --rest-http-port 8001` to change it to 8001 or anything else.
-
-* Please also check past or [existing issues on this repository](https://github.com/open-rmf/free_fleet/issues), or any discussions on the main [RMF discussion page](https://github.com/open-rmf/rmf/discussions).
+Check out the [Troubleshooting wiki](https://github.com/open-rmf/free_fleet/wiki/Troubleshooting).
 
 ## Contributing
 

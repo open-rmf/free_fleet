@@ -72,7 +72,8 @@ class RobotAction(ABC):
         ...
 
     """
-    This method may be used to cancel the current ongoing task.
+    This method may be used by the action's implementation to cancel the current
+    ongoing task.
     """
     def cancel_task_of_action(
         self,
