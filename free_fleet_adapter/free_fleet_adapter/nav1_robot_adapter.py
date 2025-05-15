@@ -629,7 +629,7 @@ class Nav1RobotAdapter(RobotAdapter):
     def _request_stop(self, exec_handle: ExecutionHandle):
         if exec_handle is not None:
             with exec_handle.mutex:
-                if (exec_handle.goal_id is not None):
+                if exec_handle.goal_id is not None:
                     self._handle_stop_navigation()
 
     def _handle_stop_navigation(self):
