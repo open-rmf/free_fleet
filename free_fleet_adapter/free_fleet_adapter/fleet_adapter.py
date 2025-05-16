@@ -119,16 +119,6 @@ def start_fleet_adapter(
     # Set up tf2 buffer
     tf_buffer = Buffer()
 
-    # TODO(ac): Support custom actions, see Nav2RobotAdapter.execute_action
-    # For now, custom actions are not supported. This section to be removed
-    # once custom actions have been implemented.
-    if 'actions' in config_yaml['rmf_fleet'] and \
-            len(config_yaml['rmf_fleet']['actions']) > 0:
-        error_message = \
-            'Execute actions are currently unsupported, this might be a ' \
-            'configuration error.'
-        node.get_logger().error(error_message)
-        raise RuntimeError(error_message)
 
     robots = {}
     for robot_name in fleet_config.known_robots:

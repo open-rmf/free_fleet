@@ -496,8 +496,9 @@ class Nav2RobotAdapter(RobotAdapter):
         # position again with /initialpose
         # TODO(ac): docking
         # We should never reach this point after initialization.
-        error_message = \
-            f'Execute action [{category}] is unsupported, this might be a ' \
-            'configuration error.'
-        self.node.get_logger().error(error_message)
-        raise RuntimeError(error_message)
+        message = \
+            f'Robot [{self.name}] received  action [{category}]'
+        message += \
+            f' with description [{description}] and execution [{execution}]'
+        self.node.get_logger().info(message)
+        
