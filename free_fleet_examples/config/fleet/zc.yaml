@@ -76,3 +76,8 @@ reference_coordinates:
           [5.0, 0.0],
           [5.0, -5.0],
           [0.0, -5.0]]
+
+plugins:
+  hello_world:
+    module: "free_fleet_examples.actions.hello_world"
+    actions: ["hello_world", "delayed_hello_world"]
