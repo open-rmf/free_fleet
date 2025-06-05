@@ -1,9 +1,10 @@
 name: nightly
 
-on:
-  schedule:
-    # 2am SGT
-    - cron: '0 18 * * *'
+# on:
+#   schedule:
+#     # 2am SGT
+#     - cron: '0 18 * * *'
+on: push
 defaults:
   run:
     shell: bash
