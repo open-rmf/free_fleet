@@ -68,24 +68,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push minimal-ros1-sim
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          build-args: |
-            ROS_DISTRO=${{ matrix.ros_distribution }}
-          tags: ghcr.io/${{ github.repository }}/minimal-ros1-sim:${{ matrix.ros_distribution }}-latest
-          context: .github/docker/minimal-ros1-sim
-
-      - name: Build and push minimal-nav1-bringup
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          build-args: |
-            ROS_DISTRO=${{ matrix.ros_distribution }}
-          tags: ghcr.io/${{ github.repository }}/minimal-nav1-bringup:${{ matrix.ros_distribution }}-latest
-          context: .github/docker/minimal-nav1-bringup
-
       - name: Build and push minimal-zenoh-bridge-ros1
         uses: docker/build-push-action@v5
         with:
