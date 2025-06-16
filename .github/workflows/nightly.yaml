@@ -50,7 +50,6 @@ jobs:
           context: .github/docker/minimal-zenoh-bridge-ros2dds
 
   nav1-integration-tests:
-    needs: build-minimal-nav1-docker-images
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
