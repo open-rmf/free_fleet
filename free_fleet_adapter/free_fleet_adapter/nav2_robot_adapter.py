@@ -466,7 +466,7 @@ class Nav2RobotAdapter(RobotAdapter):
 
         time_now = self.node.get_clock().now().seconds_nanoseconds()
         stamp = Time(sec=time_now[0], nanosec=time_now[1])
-        header = Header(stamp=stamp, frame_id='map')
+        header = Header(stamp=stamp, frame_id=self.map_frame)
         position = GeometryMsgs_Point(x=x, y=y, z=z)
         quat = quaternion_from_euler(0, 0, yaw)
         orientation = GeometryMsgs_Quaternion(
