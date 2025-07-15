@@ -1,9 +1,10 @@
 name: nightly
 
 on:
-  schedule:
-    # 2am SGT
-    - cron: '0 18 * * *'
+  pull_request:
+  # schedule:
+  #   # 2am SGT
+  #   - cron: '0 18 * * *'
 defaults:
   run:
     shell: bash
@@ -15,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution: [jazzy]
+        ros_distribution: [jazzy, kilted]
     steps:
       - uses: actions/checkout@v4
 
@@ -55,9 +56,9 @@ jobs:
     container:
       image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
+      fail-fast: false
       matrix:
-        ros_distribution:
-          - jazzy
+        ros_distribution: [jazzy, kilted]
 
     steps:
       - name: Checkout
@@ -88,9 +89,9 @@ jobs:
     container:
       image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
+      fail-fast: false
       matrix:
-        ros_distribution:
-          - jazzy
+        ros_distribution: [jazzy, kilted]
 
     steps:
       - name: Checkout
@@ -121,9 +122,9 @@ jobs:
     container:
       image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
+      fail-fast: false
       matrix:
-        ros_distribution:
-          - jazzy
+        ros_distribution: [jazzy, kilted]
 
     steps:
       - name: Checkout

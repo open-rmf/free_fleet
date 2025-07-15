@@ -14,9 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution:
-          - jazzy
-          - rolling
+        ros_distribution: [jazzy, kilted, rolling]
     steps:
       - name: Checkout
         uses: actions/checkout@v1

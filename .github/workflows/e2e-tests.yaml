@@ -18,8 +18,7 @@ jobs:
       image: osrf/ros:${{ matrix.ros_distribution }}-desktop
     strategy:
       matrix:
-        ros_distribution:
-          - jazzy
+        ros_distribution: [jazzy, kilted]
 
     steps:
       - name: Checkout
