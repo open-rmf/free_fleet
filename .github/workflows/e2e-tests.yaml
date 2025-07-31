@@ -44,8 +44,8 @@ jobs:
           rosdep install --from-paths . -yir
 
       # Due to https://github.com/DLu/tf_transformations?tab=readme-ov-file#installation and unreleased binaries
-      - name: Install transforms3d
-        if: ${{ matrix.ros_distribution == 'kilted' }}
+      - name: install transforms3d
+        if: ${{ matrix.ros_distribution != 'jazzy' }}
         run: |
           sudo pip3 install transforms3d --break-system-packages
         shell: bash
