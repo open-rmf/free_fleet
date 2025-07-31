@@ -41,7 +41,7 @@ jobs:
         uses: ./.github/actions/build-and-test
         with:
           ros-distribution: ${{ matrix.ros_distribution }}
-          zenoh-version: 1.3.3
+          zenoh-version: 1.5.0
           nav2-integration-testing: ON
 
       - name: Stop test fixture containers
