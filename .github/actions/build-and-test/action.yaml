@@ -25,10 +25,11 @@ runs:
         pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 rosbags --break-system-packages
       shell: bash
 
+    # Due to https://github.com/DLu/tf_transformations?tab=readme-ov-file#installation and unreleased binaries
     - name: install transforms3d
       if: ${{ inputs.ros-distribution != 'jazzy' }}
       run: |
-        sudo pip3 install transforms3d
+        sudo pip3 install transforms3d --break-system-packages
       shell: bash
 
     - uses: ros-tooling/setup-ros@v0.7
