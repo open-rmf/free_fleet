@@ -25,6 +25,12 @@ runs:
         pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 rosbags --break-system-packages
       shell: bash
 
+    - name: install transforms3d
+      if: ${{ inputs.ros-distribution != 'jazzy' }}
+      run: |
+        sudo pip3 install transforms3d
+      shell: bash
+
     - uses: ros-tooling/setup-ros@v0.7
       with:
         required-ros-distributions: ${{ inputs.ros-distribution }}
