@@ -102,6 +102,8 @@ jobs:
           sudo apt update && sudo apt install docker-compose -y
 
       - name: Start test fixture containers
+        env:
+          ROS_DISTRO: ${{ matrix.ros_distribution }}
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
       - name: build-and-test
@@ -134,7 +136,9 @@ jobs:
         run: |
           sudo apt update && sudo apt install docker-compose -y
 
-      - name: Start test fixture containers
+      - name: Start test fixture
+        env:
+          ROS_DISTRO: ${{ matrix.ros_distribution }}
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
       - name: Setup
