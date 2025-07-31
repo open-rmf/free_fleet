@@ -151,6 +151,13 @@ jobs:
           rosdep update
           rosdep install --from-paths . -yir
 
+      # Due to https://github.com/DLu/tf_transformations?tab=readme-ov-file#installation and unreleased binaries
+      - name: Install transforms3d
+        if: ${{ matrix.ros_distribution == 'kilted' }}
+        run: |
+          sudo pip3 install transforms3d --break-system-packages
+        shell: bash
+
       - name: Build
         run: /ros_entrypoint.sh colcon build --packages-up-to free_fleet_examples --event-handlers=console_cohesion+ --mixin release --cmake-args -DNAV2_INTEGRATION_TESTING=ON
 
