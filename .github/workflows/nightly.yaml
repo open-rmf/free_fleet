@@ -1,10 +1,9 @@
 name: nightly
 
 on:
-  pull_request:
-  # schedule:
-  #   # 2am SGT
-  #   - cron: '0 18 * * *'
+  schedule:
+    # 2am SGT
+    - cron: '0 18 * * *'
 defaults:
   run:
     shell: bash
