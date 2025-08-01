@@ -26,6 +26,8 @@ jobs:
           sudo apt update && sudo apt install docker-compose -y
 
       - name: Start test fixture containers
+        env:
+          ZENOH_VERSION: 1.5.0
         run: docker-compose -f ".github/docker/integration-tests/nav1-docker-compose.yaml" up -d --build
 
       - name: build-and-test

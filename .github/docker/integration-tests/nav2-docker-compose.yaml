@@ -18,7 +18,7 @@ services:
       - ROS_DOMAIN_ID=42
 
   minimal-zenoh-router:
-    image: eclipse/zenoh
+    image: eclipse/zenoh:${ZENOH_VERSION}
     restart: unless-stopped
     network_mode: host
     stdin_open: true

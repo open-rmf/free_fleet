@@ -31,6 +31,7 @@ jobs:
       - name: Start test fixture containers
         env:
           ROS_DISTRO: ${{ matrix.ros_distribution }}
+          ZENOH_VERSION: 1.5.0
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
       - name: Setup
