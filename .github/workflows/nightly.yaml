@@ -82,15 +82,15 @@ jobs:
         if: always()
         run: docker-compose -f ".github/docker/integration-tests/nav1-docker-compose.yaml" down
 
-  retry-nav1-integration-tests-on-failure:
-    if: failure() && fromJSON(github.run_attempt) < 3
-    needs: [nav1-integration-tests]
-    runs-on: ubuntu-latest
-    steps:
-      - env:
-          GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
+  # retry-nav1-integration-tests-on-failure:
+  #   if: failure() && fromJSON(github.run_attempt) < 3
+  #   needs: [nav1-integration-tests]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - env:
+  #         GH_REPO: ${{ github.repository }}
+  #         GH_TOKEN: ${{ github.token }}
+  #       run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
 
   nav2-integration-tests:
     needs: build-minimal-nav2-docker-images
@@ -127,15 +127,15 @@ jobs:
         if: always()
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down
 
-  retry-nav2-integration-tests-on-failure:
-    if: failure() && fromJSON(github.run_attempt) < 3
-    needs: [nav2-integration-tests]
-    runs-on: ubuntu-latest
-    steps:
-      - env:
-          GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
+  # retry-nav2-integration-tests-on-failure:
+  #   if: failure() && fromJSON(github.run_attempt) < 3
+  #   needs: [nav2-integration-tests]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - env:
+  #         GH_REPO: ${{ github.repository }}
+  #         GH_TOKEN: ${{ github.token }}
+  #       run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
 
   e2e-tests:
     needs: nav2-integration-tests
@@ -191,12 +191,12 @@ jobs:
         if: always()
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down
 
-  retry-e2e-tests-on-failure:
-    if: failure() && fromJSON(github.run_attempt) < 3
-    needs: [e2e-tests]
-    runs-on: ubuntu-latest
-    steps:
-      - env:
-          GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
+  # retry-e2e-tests-on-failure:
+  #   if: failure() && fromJSON(github.run_attempt) < 3
+  #   needs: [e2e-tests]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - env:
+  #         GH_REPO: ${{ github.repository }}
+  #         GH_TOKEN: ${{ github.token }}
+  #       run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
