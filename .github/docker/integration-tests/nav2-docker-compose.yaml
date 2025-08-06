@@ -1,6 +1,6 @@
 services:
   minimal-nav2-bringup:
-    image: ghcr.io/open-rmf/free_fleet/minimal-nav2-bringup:jazzy-latest
+    image: ghcr.io/open-rmf/free_fleet/minimal-nav2-bringup:${ROS_DISTRO}-latest
     stop_signal: SIGINT
     network_mode: host
     privileged: true
@@ -10,7 +10,7 @@ services:
       - ROS_DOMAIN_ID=42
 
   minimal-zenoh-bridge-ros2dds:
-    image: ghcr.io/open-rmf/free_fleet/minimal-zenoh-bridge-ros2dds:jazzy-latest
+    image: ghcr.io/open-rmf/free_fleet/minimal-zenoh-bridge-ros2dds:${ROS_DISTRO}-latest
     network_mode: host
     stdin_open: true
     tty: true
@@ -18,7 +18,7 @@ services:
       - ROS_DOMAIN_ID=42
 
   minimal-zenoh-router:
-    image: eclipse/zenoh
+    image: eclipse/zenoh:${ZENOH_VERSION}
     restart: unless-stopped
     network_mode: host
     stdin_open: true

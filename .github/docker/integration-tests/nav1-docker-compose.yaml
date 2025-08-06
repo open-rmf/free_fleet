@@ -22,7 +22,7 @@ services:
     tty: true
 
   minimal-zenoh-router:
-    image: eclipse/zenoh
+    image: eclipse/zenoh:${ZENOH_VERSION}
     restart: unless-stopped
     network_mode: host
     stdin_open: true

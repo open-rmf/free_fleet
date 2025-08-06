@@ -25,12 +25,19 @@ runs:
         pip3 install eclipse-zenoh==${{ inputs.zenoh-version }} pycdr2 rosbags --break-system-packages
       shell: bash
 
+    # Due to https://github.com/DLu/tf_transformations/issues/15
+    - name: install transforms3d
+      if: ${{ inputs.ros-distribution != 'jazzy' }}
+      run: |
+          sudo apt install python3-transforms3d
+      shell: bash
+
     - uses: ros-tooling/setup-ros@v0.7
       with:
         required-ros-distributions: ${{ inputs.ros-distribution }}
 
     - name: build and test
-      uses: ros-tooling/action-ros-ci@v0.3
+      uses: ros-tooling/action-ros-ci@v0.4
       with:
         package-name: free_fleet free_fleet_adapter free_fleet_examples
         target-ros2-distro: ${{ inputs.ros-distribution }}

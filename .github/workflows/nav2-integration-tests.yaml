@@ -10,6 +10,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  ZENOH_VERSION: 1.5.0
+
 jobs:
   integration-tests:
     timeout-minutes: 10
@@ -19,8 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution:
-          - jazzy
+        ros_distribution: [jazzy, kilted]
 
     steps:
       - name: Checkout
@@ -36,13 +38,16 @@ jobs:
           apt install docker-compose -y
 
       - name: Start test fixture containers
+        env:
+          ROS_DISTRO: ${{ matrix.ros_distribution }}
+          ZENOH_VERSION: ${{ env.ZENOH_VERSION }}
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
       - name: build-and-test
         uses: ./.github/actions/build-and-test
         with:
           ros-distribution: ${{ matrix.ros_distribution }}
-          zenoh-version: 1.3.3
+          zenoh-version: ${{ env.ZENOH_VERSION }}
           nav2-integration-testing: ON
 
       - name: Stop test fixture containers
