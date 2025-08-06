@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
 
+env:
+  ZENOH_VERSION: 1.5.0
+
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
@@ -23,5 +26,5 @@ jobs:
         uses: ./.github/actions/build-and-test
         with:
           ros-distribution: ${{ matrix.ros_distribution }}
-          zenoh-version: 1.5.0
+          zenoh-version: ${{ env.ZENOH_VERSION }}
           integration-testing: OFF

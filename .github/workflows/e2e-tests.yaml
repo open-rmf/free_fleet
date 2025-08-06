@@ -10,6 +10,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  ZENOH_VERSION: 1.5.0
+
 jobs:
   e2e-tests:
     timeout-minutes: 10
@@ -31,24 +34,24 @@ jobs:
       - name: Start test fixture containers
         env:
           ROS_DISTRO: ${{ matrix.ros_distribution }}
-          ZENOH_VERSION: 1.5.0
+          ZENOH_VERSION: ${{ env.ZENOH_VERSION }}
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" up -d --build
 
       - name: Setup
         run: |
           apt update
           apt install -y ros-${{ matrix.ros_distribution }}-rmw-cyclonedds-cpp python3-pip
-          pip3 install nudged eclipse-zenoh==1.5.0 pycdr2 rosbags --break-system-packages
+          pip3 install nudged eclipse-zenoh==${{ env.ZENOH_VERSION }} pycdr2 rosbags --break-system-packages
           colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           colcon mixin update default
           rosdep update
           rosdep install --from-paths . -yir
 
-      # Due to https://github.com/DLu/tf_transformations?tab=readme-ov-file#installation and unreleased binaries
+      # Due to https://github.com/DLu/tf_transformations/issues/15
       - name: install transforms3d
         if: ${{ matrix.ros_distribution != 'jazzy' }}
         run: |
-          sudo pip3 install transforms3d --break-system-packages
+          sudo apt install python3-transforms3d
         shell: bash
 
       - name: Build
@@ -63,13 +66,3 @@ jobs:
       - name: Stop test fixture containers
         if: always()
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down
-
-  retry-on-failure:
-    if: failure() && fromJSON(github.run_attempt) < 3
-    needs: [e2e-tests]
-    runs-on: ubuntu-latest
-    steps:
-      - env:
-          GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
