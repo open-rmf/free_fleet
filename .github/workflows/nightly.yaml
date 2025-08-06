@@ -186,3 +186,13 @@ jobs:
       - name: Stop test fixture containers
         if: always()
         run: docker-compose -f ".github/docker/integration-tests/nav2-docker-compose.yaml" down
+
+  retry-e2e-tests-on-failure:
+    if: failure() && fromJSON(github.run_attempt) < 3
+    needs: [e2e-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run retry-workflow.yaml -F run_id=${{ github.run_id }}
