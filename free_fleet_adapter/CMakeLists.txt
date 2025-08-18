@@ -9,6 +9,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   ${PROJECT_NAME}/fleet_adapter.py
   ${PROJECT_NAME}/nav1_robot_adapter.py
+  ${PROJECT_NAME}/nav2_execution_item.py
   ${PROJECT_NAME}/nav2_robot_adapter.py
   ${PROJECT_NAME}/robot_adapter.py
   DESTINATION lib/${PROJECT_NAME}

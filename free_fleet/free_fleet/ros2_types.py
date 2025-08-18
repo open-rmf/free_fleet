@@ -73,6 +73,17 @@ class GeometryMsgs_PoseStamped(IdlStruct):
     pose: GeometryMsgs_Pose
 
 
+# https://github.com/ros2/rcl/blob/rolling/rcl_action/include/rcl_action/types.h
+class GoalStatus(Enum):
+    STATUS_UNKNOWN: pycdr2.types.int8 = 0
+    STATUS_ACCEPTED: pycdr2.types.int8 = 1
+    STATUS_EXECUTING: pycdr2.types.int8 = 2
+    STATUS_CANCELING: pycdr2.types.int8 = 3
+    STATUS_SUCCEEDED: pycdr2.types.int8 = 4
+    STATUS_CANCELED: pycdr2.types.int8 = 5
+    STATUS_ABORTED: pycdr2.types.int8 = 6
+
+
 # https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/NavigateToPose.action
 @dataclass
 class NavigateToPose_SendGoal_Request(IdlStruct):
@@ -94,17 +105,6 @@ class NavigateToPose_GetResult_Request(IdlStruct):
     goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
 
 
-# https://github.com/ros2/rcl/blob/rolling/rcl_action/include/rcl_action/types.h
-class GoalStatus(Enum):
-    STATUS_UNKNOWN: pycdr2.types.int8 = 0
-    STATUS_ACCEPTED: pycdr2.types.int8 = 1
-    STATUS_EXECUTING: pycdr2.types.int8 = 2
-    STATUS_CANCELING: pycdr2.types.int8 = 3
-    STATUS_SUCCEEDED: pycdr2.types.int8 = 4
-    STATUS_CANCELED: pycdr2.types.int8 = 5
-    STATUS_ABORTED: pycdr2.types.int8 = 6
-
-
 # https://design.ros2.org/articles/actions.html#get-result-service
 # https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/NavigateToPose.action
 @dataclass
@@ -121,6 +121,57 @@ class NavigateToPose_Feedback(IdlStruct):
     estimated_time_remaining: Duration
     number_of_recoveries: pycdr2.types.int16
     distance_remaining: pycdr2.types.float32
+
+
+# https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/DockRobot.action
+@dataclass
+class DockRobot_SendGoal_Request(IdlStruct):
+    goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
+    use_dock_id: bool
+    dock_id: str
+    dock_pose: GeometryMsgs_PoseStamped
+    dock_type: str
+    max_staging_time: pycdr2.types.float32
+    navigate_to_staging_pose: bool
+
+
+# https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/DockRobot.action
+@dataclass
+class DockRobot_SendGoal_Response(IdlStruct):
+    accepted: bool
+    stamp: Time
+
+
+# https://design.ros2.org/articles/actions.html#get-result-service
+@dataclass
+class DockRobot_GetResult_Request(IdlStruct):
+    goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
+
+
+# https://design.ros2.org/articles/actions.html#get-result-service
+# https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/DockRobot.action
+@dataclass
+class DockRobot_GetResult_Response(IdlStruct):
+    status: pycdr2.types.int8
+
+
+# https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/DockRobot.action
+class DockRobot_Feedback_DockingState(Enum):
+    NONE: pycdr2.types.int16 = 0
+    NAV_TO_STAGING_POSE: pycdr2.types.int16 = 1
+    INITIAL_PERCEPTION: pycdr2.types.int16 = 2
+    CONTROLLING: pycdr2.types.int16 = 3
+    WAIT_FOR_CHARGE: pycdr2.types.int16 = 4
+    RETRY: pycdr2.types.int16 = 5
+
+
+# https://github.com/ros-navigation/navigation2/blob/main/nav2_msgs/action/DockRobot.action
+@dataclass
+class DockRobot_Feedback(IdlStruct):
+    goal_id: pycdr2.types.array[pycdr2.types.uint8, 16]
+    state: pycdr2.types.int16
+    docking_time: Duration
+    num_retries: pycdr2.types.int16
 
 
 # https://github.com/ros2/common_interfaces/blob/rolling/geometry_msgs/msg/Vector3.msg
