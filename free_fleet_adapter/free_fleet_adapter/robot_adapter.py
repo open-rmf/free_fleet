@@ -23,6 +23,7 @@ from rmf_adapter.robot_update_handle import ActivityIdentifier
 
 
 class ExecutionFeedback:
+
     def __init__(self, feedback, time_sec):
         self.feedback = feedback
         self.time_sec: int = time_sec
