@@ -26,6 +26,7 @@ from free_fleet.ros2_types import (
     GeometryMsgs_Quaternion,
     GoalStatus,
     Header,
+    NavigateToPose_Feedback,
     NavigateToPose_GetResult_Request,
     NavigateToPose_GetResult_Response,
     NavigateToPose_SendGoal_Request,
@@ -42,7 +43,11 @@ from free_fleet_adapter.action import (
     RobotActionContext,
     RobotActionState,
 )
-from free_fleet_adapter.robot_adapter import ExecutionHandle, RobotAdapter
+from free_fleet_adapter.robot_adapter import (
+    ExecutionFeedback,
+    ExecutionHandle,
+    RobotAdapter,
+)
 
 from geometry_msgs.msg import TransformStamped
 import numpy as np
@@ -161,6 +166,25 @@ class Nav2RobotAdapter(RobotAdapter):
             namespacify('battery_state', name),
             _battery_state_callback
         )
+
+        def _feedback_callback(sample: zenoh.Sample):
+            if self.exec_handle is None:
+                return
+
+            # TODO(ac): ideally we update the exec with feedback for all types
+            # of actions and executions. For now, we support only NavigateToPose
+            if self.exec_handle.goal_id is None:
+                return
+
+            feedback = NavigateToPose_Feedback.deserialize(
+                sample.payload.to_bytes())
+            self.exec_handle.last_received_feedback = ExecutionFeedback(
+                feedback,
+                self.node.get_clock().now().seconds_nanoseconds()[0])
+
+        self.feedback_callback_sub = self.zenoh_session.declare_subscriber(
+            namespacify('navigate_to_pose/_action/feedback', name),
+            _feedback_callback)
 
         # Initialize robot
         init_timeout_sec = self.robot_config_yaml.get('init_timeout_sec', 10)
@@ -315,6 +339,13 @@ class Nav2RobotAdapter(RobotAdapter):
     def _is_navigation_done(self, nav_handle: ExecutionHandle) -> bool:
         if nav_handle.goal_id is None:
             return True
+
+        if nav_handle.last_received_feedback is not None:
+            estimated_completion_sec = \
+                nav_handle.last_received_feedback.time_sec + \
+                nav_handle.last_received_feedback.feedback.estimated_time_remaining.sec
+            if estimated_completion_sec > self.node.get_clock().now().seconds_nanoseconds()[0]:
+                return False
 
         req = NavigateToPose_GetResult_Request(goal_id=nav_handle.goal_id)
         # TODO(ac): parameterize the service call timeout
