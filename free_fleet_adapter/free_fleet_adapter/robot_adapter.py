@@ -123,6 +123,6 @@ class RobotAdapter(ABC):
         self,
         category: str,
         description: dict,
-        execution: ActivityIdentifier
+        execution: rmf_easy.CommandExecution
     ):
         ...
