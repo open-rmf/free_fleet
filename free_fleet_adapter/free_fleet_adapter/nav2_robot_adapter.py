@@ -352,7 +352,7 @@ class Nav2RobotAdapter(RobotAdapter):
         replies = self.zenoh_session.get(
             namespacify('navigate_to_pose/_action/get_result', self.name),
             payload=req.serialize(),
-            # timeout=0.5
+            timeout=1.0
         )
         for reply in replies:
             try:
