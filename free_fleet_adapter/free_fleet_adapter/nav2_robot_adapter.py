@@ -135,6 +135,8 @@ class Nav2RobotAdapter(RobotAdapter):
         default_robot_frame = 'base_footprint'
         self.map_frame = self.robot_config_yaml.get('map_frame', default_map_frame)
         self.robot_frame = self.robot_config_yaml.get('robot_frame', default_robot_frame)
+        self.service_call_timeout_sec = \
+            self.robot_config_yaml.get('service_call_timeout_sec', None)
 
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
@@ -352,7 +354,7 @@ class Nav2RobotAdapter(RobotAdapter):
         replies = self.zenoh_session.get(
             namespacify('navigate_to_pose/_action/get_result', self.name),
             payload=req.serialize(),
-            timeout=1.0
+            timeout=self.service_call_timeout_sec
         )
         for reply in replies:
             try:
@@ -520,7 +522,7 @@ class Nav2RobotAdapter(RobotAdapter):
         replies = self.zenoh_session.get(
             namespacify('navigate_to_pose/_action/send_goal', self.name),
             payload=req.serialize(),
-            # timeout=0.5
+            timeout=self.service_call_timeout_sec
         )
 
         for reply in replies:
@@ -589,7 +591,7 @@ class Nav2RobotAdapter(RobotAdapter):
                 self.name,
             ),
             payload=req.serialize(),
-            # timeout=0.5
+            timeout=self.service_call_timeout_sec
         )
         for reply in replies:
             rep = ActionMsgs_CancelGoal_Response.deserialize(
