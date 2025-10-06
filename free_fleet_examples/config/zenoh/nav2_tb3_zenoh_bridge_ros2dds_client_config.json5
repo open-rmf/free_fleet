@@ -10,7 +10,7 @@
         action_servers: [".*/navigate_to_pose"],
         action_clients: [],
       },
-      pub_max_frequencies: [".*/navigate_to_pose/*=1", ".*/battery_state=1"],
+      pub_max_frequencies: [".*/battery_state=1"],
     },
   },
   // Zenoh related configurations

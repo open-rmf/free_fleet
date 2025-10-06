@@ -39,6 +39,7 @@ rmf_fleet:
       navigation_stack: 2
       init_timeout_sec: 5
       initial_map: "L1"
+      service_call_timeout_sec: 1.0
       map_frame: "map"
       robot_frame: "base_footprint"
       maps:

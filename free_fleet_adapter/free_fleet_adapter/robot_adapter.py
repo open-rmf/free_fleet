@@ -22,12 +22,20 @@ import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier
 
 
+class ExecutionFeedback:
+
+    def __init__(self, feedback, time_sec):
+        self.feedback = feedback
+        self.time_sec: int = time_sec
+
+
 class ExecutionHandle:
 
     def __init__(self, execution: rmf_easy.CommandExecution | None):
         self.execution = execution
         self.goal_id = None
         self.action = None
+        self.last_received_feedback: ExecutionFeedback | None = None
         self.mutex = Lock()
         self.mutex.acquire(blocking=True)
 
