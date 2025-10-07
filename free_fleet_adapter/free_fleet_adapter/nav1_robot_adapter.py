@@ -650,7 +650,7 @@ class Nav1RobotAdapter(RobotAdapter):
         self,
         category: str,
         description: dict,
-        execution: ActivityIdentifier
+        execution: rmf_easy.CommandExecution
     ):
         # TODO(ac): change map using map_server load_map, and set initial
         # position again with /initialpose

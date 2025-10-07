@@ -129,7 +129,7 @@ class RobotActionFactory(ABC):
         self,
         category: str,
         description: dict,
-        execution,
+        execution: rmf_easy.CommandExecution,
     ) -> RobotAction:
         # To be populated in the plugins
         ...

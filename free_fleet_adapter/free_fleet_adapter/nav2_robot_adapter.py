@@ -616,7 +616,7 @@ class Nav2RobotAdapter(RobotAdapter):
         self,
         category: str,
         description: dict,
-        execution: ActivityIdentifier
+        execution: rmf_easy.CommandExecution
     ):
         current_exec_handle = self.exec_handle
         if current_exec_handle is not None and \
