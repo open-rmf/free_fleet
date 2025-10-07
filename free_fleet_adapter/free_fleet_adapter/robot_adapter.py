@@ -19,7 +19,7 @@ from threading import Lock
 from typing import Annotated
 
 import rmf_adapter.easy_full_control as rmf_easy
-from rmf_adapter.robot_update_handle import ActivityIdentifier
+from rmf_adapter.robot_update_handle import ActionExecution, ActivityIdentifier
 
 
 class ExecutionFeedback:
@@ -31,7 +31,10 @@ class ExecutionFeedback:
 
 class ExecutionHandle:
 
-    def __init__(self, execution: rmf_easy.CommandExecution | None):
+    def __init__(
+        self,
+        execution: rmf_easy.CommandExecution | ActionExecution | None,
+    ):
         self.execution = execution
         self.goal_id = None
         self.action = None
@@ -131,6 +134,6 @@ class RobotAdapter(ABC):
         self,
         category: str,
         description: dict,
-        execution: rmf_easy.CommandExecution
+        execution: ActionExecution
     ):
         ...

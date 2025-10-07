@@ -53,7 +53,11 @@ from geometry_msgs.msg import TransformStamped
 import numpy as np
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
-from rmf_adapter.robot_update_handle import ActivityIdentifier, Tier
+from rmf_adapter.robot_update_handle import (
+    ActionExecution,
+    ActivityIdentifier,
+    Tier,
+)
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 import zenoh
 
@@ -616,7 +620,7 @@ class Nav2RobotAdapter(RobotAdapter):
         self,
         category: str,
         description: dict,
-        execution: rmf_easy.CommandExecution
+        execution: ActionExecution,
     ):
         current_exec_handle = self.exec_handle
         if current_exec_handle is not None and \
