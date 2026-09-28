@@ -101,6 +101,13 @@ def start_fleet_adapter(
     adapter.start()
     time.sleep(1.0)
 
+    # Fall back to the server_uri ROS parameter (as set by
+    # fleet_adapter.launch.xml) when -s/--server_uri was not provided.
+    if server_uri is None:
+        server_uri_param = node.declare_parameter('server_uri', '').value
+        if server_uri_param:
+            server_uri = server_uri_param
+    node.get_logger().info(f'Using server_uri: {server_uri}')
     fleet_config.server_uri = server_uri
 
     # Configure the transforms between robot and RMF frames
