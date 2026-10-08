@@ -195,11 +195,16 @@ class NavigationActionInterface(Ros2ActionInterface):
             return (True, None)
 
         if self.exec_handle.last_received_feedback is not None:
-            estimated_completion_sec = \
-                self.exec_handle.last_received_feedback.time_sec + \
-                self.exec_handle.last_received_feedback.feedback.estimated_time_remaining.sec
-            if estimated_completion_sec > self.node.get_clock().now().seconds_nanoseconds()[0]:
-                return (False, None)
+            # DockRobot feedback has no estimated_time_remaining
+            feedback = self.exec_handle.last_received_feedback.feedback
+            remaining = getattr(feedback, 'estimated_time_remaining', None)
+            if remaining is not None:
+                estimated_completion_sec = \
+                    self.exec_handle.last_received_feedback.time_sec + \
+                    remaining.sec
+                if estimated_completion_sec > \
+                        self.node.get_clock().now().seconds_nanoseconds()[0]:
+                    return (False, None)
 
         action_name = self.get_action_name()
         req = self._create_ros2_action_get_result_request(goal_id=self.exec_handle.goal_id)
