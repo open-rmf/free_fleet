@@ -167,6 +167,11 @@ class NavigationActionInterface(Ros2ActionInterface):
                 )
                 raise RequestRejected
 
+        self.node.get_logger().error(
+            f'{action_name} goal {nav_goal_id} got no valid response'
+        )
+        raise RequestRejected
+
     def feedback(self, action, payload):
         if action != self.get_action_name():
             return

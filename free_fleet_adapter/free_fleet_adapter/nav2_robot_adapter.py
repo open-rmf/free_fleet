@@ -462,6 +462,8 @@ class Nav2RobotAdapter(RobotAdapter):
             self.nav_handle.execute()
             self._setup_action_feedback_subscriber(action_name)
         except RequestRejected:
+            # Drop the handle so the next stop() does not block on its mutex.
+            self.nav_handle = None
             self._trigger_replan()
 
     def _request_nav_stop(self):
