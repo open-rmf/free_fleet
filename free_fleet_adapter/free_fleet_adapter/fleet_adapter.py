@@ -120,8 +120,8 @@ def start_fleet_adapter(
 
     fleet_handle = adapter.add_easy_fleet(fleet_config)
     assert fleet_handle is not None, \
-        'Failed to create EasyFullControl fleet, \
-        please verify that the fleet config is valid.'
+        'Failed to create EasyFullControl fleet, ' \
+        'please verify that the fleet config is valid.'
 
     # Initialize zenoh
     zenoh_config = zenoh.Config.from_file(zenoh_config_path) \
@@ -247,7 +247,7 @@ def parallel(f):
 def update_robot(robot: Nav1RobotAdapter | Nav2RobotAdapter):
     robot_pose = robot.get_pose()
     if robot_pose is None:
-        robot.node.get_logger().info(f'Failed to pose of robot [{robot.name}]')
+        robot.node.get_logger().info(f'Failed to get pose of robot [{robot.name}]')
         return None
 
     state = rmf_easy.RobotState(
